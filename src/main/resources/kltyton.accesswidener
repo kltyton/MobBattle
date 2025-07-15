@@ -1,0 +1,12 @@
+accessWidener v2 named
+accessible method net/minecraft/entity/player/PlayerEntity closeHandledScreen ()V
+accessible field net/minecraft/screen/slot/FurnaceOutputSlot amount I
+accessible field net/minecraft/structure/StructureTemplate$StructureBlockInfo state Lnet/minecraft/block/BlockState;
+accessible method net/minecraft/entity/Entity initDataTracker ()V
+accessible field net/minecraft/entity/Entity world Lnet/minecraft/world/World;
+accessible method net/minecraft/client/render/entity/LivingEntityRenderer addFeature (Lnet/minecraft/client/render/entity/feature/FeatureRenderer;)Z
+accessible field net/minecraft/client/render/entity/EntityRenderer dispatcher Lnet/minecraft/client/render/entity/EntityRenderDispatcher;
+accessible field net/minecraft/client/gui/screen/SplashTextRenderer text Ljava/lang/String;
+accessible field net/minecraft/client/gui/widget/PressableTextWidget hoverText Lnet/minecraft/text/Text;
+accessible field net/minecraft/client/gui/widget/PressableTextWidget textRenderer Lnet/minecraft/client/font/TextRenderer;
+accessible field net/minecraft/client/gui/widget/PressableTextWidget text Lnet/minecraft/text/Text;
