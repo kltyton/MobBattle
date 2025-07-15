@@ -1,4 +1,4 @@
-package com.kltyton.mob_battle.core;
+package com.kltyton.mob_battle.event;
 
 import com.kltyton.mob_battle.Mob_battle;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;

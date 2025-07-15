@@ -1,11 +1,18 @@
-package com.kltyton.mob_battle.core;
+package com.kltyton.mob_battle.event;
 
 import com.kltyton.mob_battle.Mob_battle;
 import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityPose;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.ai.brain.Brain;
+import net.minecraft.entity.ai.brain.MemoryModuleType;
+import net.minecraft.entity.mob.Angriness;
 import net.minecraft.entity.mob.MobEntity;
+import net.minecraft.entity.mob.WardenEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.world.World;
@@ -76,8 +83,18 @@ public class EntitySelectionHandlerYH {
                     !entityB.isRemoved()) {
 
                 // 强制设置攻击目标
-                mobA.setTarget(mobB);
-                mobB.setTarget(mobA);
+                // 特殊处理坚守者
+                if (mobA instanceof WardenEntity wardenA) {
+                    forceWardenTarget(wardenA, mobB, world);
+                } else {
+                    mobA.setTarget(mobB);
+                }
+
+                if (mobB instanceof WardenEntity wardenB) {
+                    forceWardenTarget(wardenB, mobA, world);
+                } else {
+                    mobB.setTarget(mobA);
+                }
 
                 // 添加AI强制更新（针对特殊生物）
                 if (mobA.getTarget() == null) {
@@ -85,12 +102,28 @@ public class EntitySelectionHandlerYH {
                     mobA.getLookControl().lookAt(mobB);
                 }
                 // 清除选择
-                selectedEntityA.remove(player);
-                selectedEntityB.remove(player);
-            } else {
-                selectedEntityA.remove(player);
-                selectedEntityB.remove(player);
             }
+            selectedEntityA.remove(player);
+            selectedEntityB.remove(player);
         }
+    }
+    // 强制设置坚守者目标
+    public static void forceWardenTarget(WardenEntity warden, LivingEntity target, World world) {
+        if (world.isClient) return;
+        if (warden.getWorld().isClient) return;
+        // 设置强制攻击标志
+        warden.dataTracker.set(DataTrackers.FORCED_ATTACK_FLAG, true);
+        // 更新攻击目标
+        warden.updateAttackTarget(target);
+        // 设置愤怒值到攻击阈值
+        warden.increaseAngerAt(target, Angriness.ANGRY.getThreshold() + 20, false);
+
+        // 强制大脑更新
+        Brain<WardenEntity> brain = warden.getBrain();
+        brain.forget(MemoryModuleType.ROAR_TARGET);
+        brain.remember(MemoryModuleType.ATTACK_TARGET, target);
+        brain.forget(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE);
+        // 重置姿势
+        warden.setPose(EntityPose.STANDING);
     }
 }

@@ -1,5 +1,6 @@
 package com.kltyton.mob_battle.client.render;
 
+import com.kltyton.mob_battle.entity.ArcherVillager;
 import com.kltyton.mob_battle.entity.WarriorVillager;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -13,7 +14,6 @@ import net.minecraft.client.render.entity.model.VillagerResemblingModel;
 import net.minecraft.client.render.entity.state.ItemHolderEntityRenderState;
 import net.minecraft.client.render.entity.state.VillagerEntityRenderState;
 import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.Identifier;
 import net.minecraft.village.VillagerData;
@@ -21,11 +21,11 @@ import net.minecraft.village.VillagerProfession;
 import net.minecraft.village.VillagerType;
 
 @Environment(EnvType.CLIENT)
-public class WarriorVillagerRenderer extends AgeableMobEntityRenderer<WarriorVillager, VillagerEntityRenderState, VillagerResemblingModel> {
+public class ArcherVillagerRenderer extends AgeableMobEntityRenderer<ArcherVillager, VillagerEntityRenderState, VillagerResemblingModel> {
     private static final Identifier TEXTURE = Identifier.ofVanilla("textures/entity/villager/villager.png");
     public static final HeadFeatureRenderer.HeadTransformation HEAD_TRANSFORMATION = new HeadFeatureRenderer.HeadTransformation(-0.1171875F, -0.07421875F, 1.0F);
 
-    public WarriorVillagerRenderer(EntityRendererFactory.Context context) {
+    public ArcherVillagerRenderer(EntityRendererFactory.Context context) {
         super(
                 context,
                 new VillagerResemblingModel(context.getPart(EntityModelLayers.VILLAGER)),
@@ -50,10 +50,10 @@ public class WarriorVillagerRenderer extends AgeableMobEntityRenderer<WarriorVil
         return new VillagerEntityRenderState();
     }
 
-    public void updateRenderState(WarriorVillager villagerEntity, VillagerEntityRenderState villagerEntityRenderState, float f) {
+    public void updateRenderState(ArcherVillager villagerEntity, VillagerEntityRenderState villagerEntityRenderState, float f) {
         super.updateRenderState(villagerEntity, villagerEntityRenderState, f);
         ItemHolderEntityRenderState.update(villagerEntity, villagerEntityRenderState, this.itemModelResolver);
-/*        RegistryEntry<VillagerType> villagerTypeEntry = Registries.VILLAGER_TYPE.getOrThrow(VillagerType.SAVANNA);
+        RegistryEntry<VillagerType> villagerTypeEntry = Registries.VILLAGER_TYPE.getOrThrow(VillagerType.SAVANNA);
         RegistryEntry<VillagerProfession> villagerProfessionEntry = Registries.VILLAGER_PROFESSION.getOrThrow(VillagerProfession.FLETCHER);
         // 设置村民为制箭师（Fletcher）和热带草原（Savanna）
         VillagerData villagerData = new VillagerData(
@@ -61,6 +61,6 @@ public class WarriorVillagerRenderer extends AgeableMobEntityRenderer<WarriorVil
                 villagerProfessionEntry,
                 1
         );
-        villagerEntityRenderState.villagerData = villagerData;*/
+        villagerEntityRenderState.villagerData = villagerData;
     }
 }

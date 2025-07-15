@@ -1,6 +1,6 @@
 {
   "model": {
     "type": "minecraft:model",
-    "model": "mob_battle:item/fireball_scroll"
+    "model": "mob_battle:item/big_fireball_scroll"
   }
 }

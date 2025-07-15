@@ -1,7 +1,7 @@
 {
   "parent": "item/generated",
   "textures": {
-    "layer0": "mob_battle:item/universal_lead"
+    "layer0": "mob_battle:item/fireball_scroll"
   },
   "display": {
     "head": {

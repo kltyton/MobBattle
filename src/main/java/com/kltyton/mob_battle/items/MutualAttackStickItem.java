@@ -1,4 +1,10 @@
 package com.kltyton.mob_battle.items;
 
-public class MutualAttackStickItem {
+import net.minecraft.item.Item;
+
+public class MutualAttackStickItem extends Item {
+    public MutualAttackStickItem(Settings settings) {
+        super(settings);
+    }
 }
+

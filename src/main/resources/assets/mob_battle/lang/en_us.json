@@ -1,3 +1,11 @@
 {
-  "item.mob_battle.mutual_attack_stick": "Mutual Attack Stick"
+  "item.mob_battle.mutual_attack_stick": "Mutual Attack Stick",
+  "item.mob_battle.universal_lead": "Univaersal Lead",
+  "item.mob_battle.fireball_scroll": "Fireball Scroll",
+  "item.mob_battle.big_fireball_scroll": "Big Fireball Scroll",
+  "effect.mob_battle.insect_bite": "Insect Bite",
+  "item.mob_battle.fireman_scroll": "Fireman Scroll",
+  "entity.mob_battle.archer_villager": "Archer Villager",
+  "entity.mob_battle.warrior_villager": "Warrior Villager",
+  "entity.mob_battle.xun_sheng": "Follow Man"
 }

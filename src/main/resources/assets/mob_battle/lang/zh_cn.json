@@ -1,3 +1,11 @@
 {
-  "item.mob_battle.mutual_attack_stick": "仇恨棒"
+  "item.mob_battle.mutual_attack_stick": "仇恨棒",
+  "item.mob_battle.universal_lead": "万能拴绳",
+  "item.mob_battle.fireball_scroll": "火球卷轴",
+  "item.mob_battle.big_fireball_scroll": "豪火球卷轴",
+  "item.mob_battle.fireman_scroll": "烈焰人火球卷轴",
+  "effect.mob_battle.insect_bite": "虫噬",
+  "entity.mob_battle.archer_villager": "射手村民",
+  "entity.mob_battle.warrior_villager": "战士村民",
+  "entity.mob_battle.xun_sheng": "循声者"
 }

@@ -1,54 +1,52 @@
-package com.kltyton.mob_battle.event;
+package com.kltyton.mob_battle.event.team;
 
 import java.util.*;
+import net.minecraft.scoreboard.Team;
 
 public class TeamFightManager {
-    private static final Set<TeamPair> activeFights = new HashSet<>();
+    private static final Map<Team, Team> FIGHTING_TEAMS = new HashMap<>();
+    private static final Set<Team> ACTIVE_TEAMS = new HashSet<>();
 
-    public static void addFight(String team1, String team2) {
-        activeFights.add(new TeamPair(team1, team2));
+    public static void startTeamFight(Team team1, Team team2) {
+        FIGHTING_TEAMS.put(team1, team2);
+        FIGHTING_TEAMS.put(team2, team1);
+        ACTIVE_TEAMS.add(team1);
+        ACTIVE_TEAMS.add(team2);
     }
 
-    public static Set<TeamPair> getActiveFights() {
-        return Collections.unmodifiableSet(activeFights);
+    public static void stopTeamFight(Team team) {
+        Team opponent = FIGHTING_TEAMS.remove(team);
+        if (opponent != null) {
+            FIGHTING_TEAMS.remove(opponent);
+            ACTIVE_TEAMS.remove(team);
+            ACTIVE_TEAMS.remove(opponent);
+        }
     }
 
-    public static class TeamPair {
-        private final String team1;
-        private final String team2;
+    public static boolean isInFight(Team team) {
+        return ACTIVE_TEAMS.contains(team);
+    }
 
-        public TeamPair(String t1, String t2) {
-            // 确保队伍名称按顺序存储
-            if (t1.compareTo(t2) < 0) {
-                this.team1 = t1;
-                this.team2 = t2;
-            } else {
-                this.team1 = t2;
-                this.team2 = t1;
-            }
-        }
+    public static Team getOpponent(Team team) {
+        return FIGHTING_TEAMS.get(team);
+    }
+    public static int clearAllFights() {
+        int count = FIGHTING_TEAMS.size() / 2; // 因为每个对战存了两次
+        FIGHTING_TEAMS.clear();
+        ACTIVE_TEAMS.clear();
+        return count;
+    }
 
-        public boolean contains(String team) {
-            return team.equals(team1) || team.equals(team2);
+    // 新增调试方法（可选）
+    public static String getActiveFights() {
+        StringBuilder sb = new StringBuilder();
+        for (Map.Entry<Team, Team> entry : FIGHTING_TEAMS.entrySet()) {
+            sb.append(entry.getKey().getName())
+                    .append(" vs ")
+                    .append(entry.getValue().getName())
+                    .append("\n");
         }
-
-        public String getOther(String team) {
-            if (team.equals(team1)) return team2;
-            if (team.equals(team2)) return team1;
-            return null;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            TeamPair pair = (TeamPair) o;
-            return team1.equals(pair.team1) && team2.equals(pair.team2);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(team1, team2);
-        }
+        return sb.toString().trim();
     }
 }
+

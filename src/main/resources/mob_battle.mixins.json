@@ -4,8 +4,16 @@
   "package": "com.kltyton.mob_battle.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "ArrowEntityMixin",
+    "ClampedEntityAttributeAccessor",
+    "EntityMixin",
+    "IronGolemEntityMixin",
+    "MobEntityMixin",
+    "SnowGolemEntityMixin",
+    "WardenEntityMixin"
   ],
   "client": [
+    "client.render.EntityRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1

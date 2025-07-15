@@ -1,6 +1,6 @@
 {
   "model": {
     "type": "minecraft:model",
-    "model": "mob_battle:item/universal_lead"
+    "model": "mob_battle:item/fireball_scroll"
   }
 }
