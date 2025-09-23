@@ -1,11 +1,14 @@
 package com.kltyton.mob_battle.client;
 
 import com.kltyton.mob_battle.entity.ModEntities;
+import com.kltyton.mob_battle.entity.blueirongolem.BlueIronGolemEntityRenderer;
 import com.kltyton.mob_battle.entity.customfireball.render.CustomSuperBigFireballEntityRenderer;
+import com.kltyton.mob_battle.entity.firewall.FireWallEntityRenderer;
 import com.kltyton.mob_battle.entity.highbird.adulthood.HighbirdAdulthoodEntityRenderer;
 import com.kltyton.mob_battle.entity.highbird.baby.HighbirdBabyEntityRenderer;
 import com.kltyton.mob_battle.entity.highbird.egg.HighbirdEggEntityRenderer;
 import com.kltyton.mob_battle.entity.highbird.teenage.HighbirdTeenageEntityRenderer;
+import com.kltyton.mob_battle.entity.sugarmanscorpion.SugarManScorpionRenderer;
 import com.kltyton.mob_battle.entity.villager.archervillager.ArcherVillagerRenderer;
 import com.kltyton.mob_battle.entity.villager.warriorvillager.WarriorVillagerRenderer;
 import com.kltyton.mob_battle.entity.xunsheng.XunShengEntityRenderer;
@@ -24,5 +27,8 @@ public class Mob_battleClient implements ClientModInitializer {
         EntityRendererRegistry.register(ModEntities.HIGHBIRD_TEENAGE, HighbirdTeenageEntityRenderer::new);
         EntityRendererRegistry.register(ModEntities.HIGHBIRD_ADULTHOOD, HighbirdAdulthoodEntityRenderer::new);
         EntityRendererRegistry.register(ModEntities.BIG_CUSTOM_FIREBALL, CustomSuperBigFireballEntityRenderer::new);
+        EntityRendererRegistry.register(ModEntities.FIRE_WALL, FireWallEntityRenderer::new);
+        EntityRendererRegistry.register(ModEntities.BLUE_IRON_GOLEM, BlueIronGolemEntityRenderer::new);
+        EntityRendererRegistry.register(ModEntities.SUGAR_MAN_SCORPION, SugarManScorpionRenderer::new);
     }
 }

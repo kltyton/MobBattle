@@ -1,11 +1,14 @@
 package com.kltyton.mob_battle.entity;
 
 import com.kltyton.mob_battle.Mob_battle;
+import com.kltyton.mob_battle.entity.blueirongolem.BlueIronGolemEntity;
 import com.kltyton.mob_battle.entity.customfireball.CustomSuperBigFireballEntity;
+import com.kltyton.mob_battle.entity.firewall.FireWallEntity;
 import com.kltyton.mob_battle.entity.highbird.adulthood.HighbirdAdulthoodEntity;
 import com.kltyton.mob_battle.entity.highbird.baby.HighbirdBabyEntity;
 import com.kltyton.mob_battle.entity.highbird.egg.HighbirdEggEntity;
 import com.kltyton.mob_battle.entity.highbird.teenage.HighbirdTeenageEntity;
+import com.kltyton.mob_battle.entity.sugarmanscorpion.SugarManScorpion;
 import com.kltyton.mob_battle.entity.villager.archervillager.ArcherVillager;
 import com.kltyton.mob_battle.entity.villager.warriorvillager.WarriorVillager;
 import com.kltyton.mob_battle.entity.xunsheng.XunShengEntity;
@@ -30,8 +33,10 @@ public class ModEntities {
     public static final RegistryKey<EntityType<?>> highbird_teenage = RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(Mob_battle.MOD_ID,"highbird_teenage"));
     public static final RegistryKey<EntityType<?>> highbird_adulthood = RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(Mob_battle.MOD_ID,"highbird_adulthood"));
     public static final RegistryKey<EntityType<?>> highbird_egg = RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(Mob_battle.MOD_ID,"highbird_egg"));
-
     public static final RegistryKey<EntityType<?>> bigfireball = RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(Mob_battle.MOD_ID,"bigfireball"));
+    public static final RegistryKey<EntityType<?>> firewall = RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(Mob_battle.MOD_ID,"fairewall"));
+    public static final RegistryKey<EntityType<?>> blue_iron_golem = RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(Mob_battle.MOD_ID,"blue_iron_golem"));
+    public static final RegistryKey<EntityType<?>> sugar_man_scorpion = RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(Mob_battle.MOD_ID,"sugar_man_scorpion"));
     public static final EntityType<WarriorVillager> WARRIOR_VILLAGER = FabricEntityType.Builder.createMob(WarriorVillager::new, SpawnGroup.CREATURE,
                     (mob) -> mob.defaultAttributes(() -> VillagerEntity.createVillagerAttributes()
                             .add(EntityAttributes.ATTACK_DAMAGE, 5.0D)
@@ -99,8 +104,29 @@ public class ModEntities {
                     .dimensions(1.0F, 1.0F)
                     .maxTrackingRange(4)
                     .trackingTickInterval(10)
-            .build(bigfireball);
-
+                    .build(bigfireball);
+    public static final EntityType<FireWallEntity> FIRE_WALL =
+            EntityType.Builder.<FireWallEntity>create(FireWallEntity::new, SpawnGroup.MISC)
+                    .dropsNothing()
+                    .dimensions(1f, 3f)
+                    .maxTrackingRange(4)
+                    .trackingTickInterval(10)
+                    .build(firewall);
+    public static final EntityType<BlueIronGolemEntity> BLUE_IRON_GOLEM =
+            FabricEntityType.Builder.createMob(BlueIronGolemEntity::new, SpawnGroup.MISC, (mob) -> mob.defaultAttributes(BlueIronGolemEntity::createIronGolemAttributes)
+                            .spawnRestriction(SpawnLocationTypes.ON_GROUND,
+                                    Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,(type, world, reason, pos, random) -> false))
+                    .dimensions(1.4F, 2.7F)
+                    .maxTrackingRange(10)
+                    .build(blue_iron_golem);
+    public static final EntityType<SugarManScorpion> SUGAR_MAN_SCORPION =
+            FabricEntityType.Builder.createMob(SugarManScorpion::new, SpawnGroup.MONSTER,
+                    (mob) -> mob.defaultAttributes(SugarManScorpion::createSugarManScorpionAttributes)
+                            .spawnRestriction(SpawnLocationTypes.ON_GROUND,
+                                    Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,(type, world, reason, pos, random) -> false))
+            .dimensions(1.5F, 1.2F)
+            .maxTrackingRange(16)
+            .build(sugar_man_scorpion);
 
     public static void init() {
         Registry.register(Registries.ENTITY_TYPE, warrior_villager, WARRIOR_VILLAGER);
@@ -111,6 +137,9 @@ public class ModEntities {
         Registry.register(Registries.ENTITY_TYPE, highbird_teenage, HIGHBIRD_TEENAGE);
         Registry.register(Registries.ENTITY_TYPE, highbird_adulthood, HIGHBIRD_ADULTHOOD);
         Registry.register(Registries.ENTITY_TYPE, bigfireball, BIG_CUSTOM_FIREBALL);
+        Registry.register(Registries.ENTITY_TYPE, firewall, FIRE_WALL);
+        Registry.register(Registries.ENTITY_TYPE, blue_iron_golem, BLUE_IRON_GOLEM);
+        Registry.register(Registries.ENTITY_TYPE, sugar_man_scorpion, SUGAR_MAN_SCORPION);
     }
 }
 

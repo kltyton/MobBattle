@@ -23,6 +23,7 @@
     "leashable.MobEntityMixin"
   ],
   "client": [
+    "client.render.AbstractClientPlayerEntityMixin",
     "client.render.EntityRendererMixin"
   ],
   "injectors": {

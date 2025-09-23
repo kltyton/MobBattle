@@ -4,6 +4,12 @@
   "item.mob_battle.universal_lead": "万能拴绳",
   "item.mob_battle.fireball_scroll": "火球卷轴",
   "item.mob_battle.big_fireball_scroll": "豪火球卷轴",
+  "item.mob_battle.super_big_fireball_scroll": "大豪火球卷轴",
+  "item.mob_battle.fire_wall_scroll": "火墙卷轴",
+  "item.mob_battle.slowness_scroll": "迟缓卷轴",
+  "item.mob_battle.meteoricore_sword": "陨石剑",
+  "item.mob_battle.meteoricore_axe": "陨石斧",
+  "item.mob_battle.meteoricore_bow": "陨石弓",
   "item.mob_battle.heart_stone": "心石",
   "item.mob_battle.incubation_egg": "待孵化的高脚鸟蛋",
   "item.mob_battle.highbird_egg_spawn_egg": "高脚鸟蛋刷怪蛋",
@@ -13,6 +19,8 @@
   "item.mob_battle.xun_sheng_spawn_egg": "循声者刷怪蛋",
   "item.mob_battle.warrior_villager_spawn_egg": "战士村民刷怪蛋",
   "item.mob_battle.archer_villager_spawn_egg": "射手村民刷怪蛋",
+  "item.mob_battle.blue_iron_golem_spawn_egg": "蓝傀儡刷怪蛋",
+  "item.mob_battle.sugar_man_scorpion_spawn_egg": "糖人蝎刷怪蛋",
   "effect.mob_battle.insect_bite": "虫噬",
   "item.mob_battle.fireman_scroll": "烈焰人火球卷轴",
   "entity.mob_battle.archer_villager": "射手村民",
@@ -21,5 +29,8 @@
   "entity.mob_battle.highbird_egg": "高脚鸟蛋",
   "entity.mob_battle.highbird_baby": "小高脚鸟",
   "entity.mob_battle.highbird_teenage": "青年高脚鸟",
-  "entity.mob_battle.highbird_adulthood": "成年高脚鸟"
+  "entity.mob_battle.highbird_adulthood": "成年高脚鸟",
+  "entity.mob_battle.blue_iron_golem": "蓝傀儡",
+  "entity.mob_battle.sugar_man_scorpion": "糖人蝎",
+  "enchantment.mob_battle.magic_protection": "魔法保护"
 }

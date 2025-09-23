@@ -28,7 +28,10 @@ public class ModItemGroups {
                 entries.add(ModItems.UNIVERSAL_LEAD);
                 entries.add(ModItems.FIREBALL_SCROLL);
                 entries.add(ModItems.BIG_FIREBALL_SCROLL);
+                entries.add(ModItems.SUPER_BIG_FIREBALL_SCROLL);
                 entries.add(ModItems.FIREMAN_SCROLL);
+                entries.add(ModItems.SLOWNESS_SCROLL);
+                entries.add(ModItems.FIRE_WALL_SCROLL);
                 entries.add(ModItems.HEART_STONE);
                 // 添加刷怪蛋
                 entries.add(ModItems.HIGHBIRD_BABY_SPAWN_EGG);
@@ -38,6 +41,9 @@ public class ModItemGroups {
                 entries.add(ModItems.XU_SHENG_SPAWN_EGG);
                 entries.add(ModItems.ARCHER_VILLAGER_SPAWN_EGG);
                 entries.add(ModItems.WARRIOR_VILLAGER_SPAWN_EGG);
+                entries.add(ModItems.BLUE_IRON_GOLEM_SPAWN_EGG);
+                entries.add(ModItems.SUGAR_MAN_SCORPION_SPAWN_EGG);
+                //添加孵化蛋
                 entries.add(ModItems.INCUBATION_EGG);
                 //添加盔甲
                 entries.add(ModItems.HELL_HELMET_1);

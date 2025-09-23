@@ -13,7 +13,7 @@ import net.minecraft.world.World;
 
 public class CustomSuperBigFireballEntity extends CustomFireballEntity {
     public final Vec3d speedV3d;
-    private Vec3d attackedEntityPos;
+    private Vec3d ownerEntityPos;
     private float lastOwnerHealth;
     private float frozenYaw;
     private float frozenPitch;
@@ -23,7 +23,7 @@ public class CustomSuperBigFireballEntity extends CustomFireballEntity {
         this.lastOwnerHealth = owner.getHealth();
         this.frozenYaw = owner.getYaw();
         this.frozenPitch = owner.getPitch();
-        this.attackedEntityPos = owner.getPos();
+        this.ownerEntityPos = owner.getPos();
     }
     public CustomSuperBigFireballEntity(EntityType<? extends CustomSuperBigFireballEntity> entityType, World world) {
         super(entityType, world);
@@ -57,18 +57,18 @@ public class CustomSuperBigFireballEntity extends CustomFireballEntity {
         int growTime = 40; // 40 tick 内完成放大
         Entity falseOwner = this.getOwner();
         // ---- 2. 冻结主人 ----
-        if (this.age <= growTime) {
+        if (this.age < growTime) {
             if (falseOwner instanceof LivingEntity trueOwner) {
                 trueOwner.setVelocity(Vec3d.ZERO); // 禁止移动
                 trueOwner.setYaw(frozenYaw);       // 锁定朝向
                 trueOwner.setPitch(frozenPitch);
-                trueOwner.setPos(attackedEntityPos.x, attackedEntityPos.y, attackedEntityPos.z);
+                if (ownerEntityPos != null) trueOwner.setPos(ownerEntityPos.x, ownerEntityPos.y, ownerEntityPos.z);
                 if (trueOwner.isPlayer())
                     trueOwner.teleportTo(
-                            new TeleportTarget((ServerWorld) this.getWorld(), attackedEntityPos, Vec3d.ZERO, trueOwner.getYaw(), trueOwner.getPitch(), TeleportTarget.NO_OP));
+                            new TeleportTarget((ServerWorld) this.getWorld(), ownerEntityPos, Vec3d.ZERO, trueOwner.getYaw(), trueOwner.getPitch(), TeleportTarget.NO_OP));
                 trueOwner.velocityModified = true; // 强制客户端同步
             }
-        } else {
+        } else if (this.age == growTime) {
             this.setVelocity(speedV3d);
         }
 

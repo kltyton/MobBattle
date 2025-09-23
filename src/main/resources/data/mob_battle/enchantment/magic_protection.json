@@ -1,0 +1,46 @@
+{
+  "anvil_cost": 2,
+  "description": {
+    "translate": "enchantment.mob_battle.magic_protection"
+  },
+  "effects": {
+    "minecraft:damage_protection": [
+      {
+        "effect": {
+          "type": "minecraft:add",
+          "value": {
+            "type": "minecraft:linear",
+            "base": 2.0,
+            "per_level_above_first": 2.0
+          }
+        },
+        "requirements": {
+          "condition": "minecraft:damage_source_properties",
+          "predicate": {
+            "tags": [
+              {
+                "expected": true,
+                "id": "minecraft:witch_resistant_to"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  "exclusive_set": "#minecraft:exclusive_set/armor",
+  "slots": ["armor"],
+  "supported_items": "#mob_battle:enchantable/armor",
+  "primary_items": "minecraft:air",
+  "min_cost": {
+    "base": 3,
+    "per_level_above_first": 6
+  },
+  "max_cost": {
+    "base": 9,
+    "per_level_above_first": 6
+  },
+
+  "max_level": 4,
+  "weight": 1
+}

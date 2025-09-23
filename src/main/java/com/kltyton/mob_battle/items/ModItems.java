@@ -3,9 +3,7 @@ package com.kltyton.mob_battle.items;
 import com.kltyton.mob_battle.Mob_battle;
 import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.items.misc.*;
-import com.kltyton.mob_battle.items.scroll.BigFireballScrollItem;
-import com.kltyton.mob_battle.items.scroll.FireballScrollItem;
-import com.kltyton.mob_battle.items.scroll.FiremanScrollItem;
+import com.kltyton.mob_battle.items.scroll.*;
 import com.kltyton.mob_battle.items.tool.BaseAxe;
 import com.kltyton.mob_battle.items.tool.BaseBow;
 import com.kltyton.mob_battle.items.tool.BaseSword;
@@ -24,7 +22,10 @@ public class ModItems {
     public static UniversalLeadItem UNIVERSAL_LEAD;
     public static FireballScrollItem FIREBALL_SCROLL;
     public static BigFireballScrollItem BIG_FIREBALL_SCROLL;
+    public static SuperBigFireballScrollItem SUPER_BIG_FIREBALL_SCROLL;
     public static FiremanScrollItem FIREMAN_SCROLL;
+    public static SlownessScrollItem SLOWNESS_SCROLL;
+    public static FireWallScrollItem FIRE_WALL_SCROLL;
     public static HeartStoneItem HEART_STONE;
     // 刷怪蛋声明
     public static SpawnEggItem HIGHBIRD_BABY_SPAWN_EGG;
@@ -34,6 +35,8 @@ public class ModItems {
     public static SpawnEggItem XU_SHENG_SPAWN_EGG;
     public static SpawnEggItem ARCHER_VILLAGER_SPAWN_EGG;
     public static SpawnEggItem WARRIOR_VILLAGER_SPAWN_EGG;
+    public static SpawnEggItem BLUE_IRON_GOLEM_SPAWN_EGG;
+    public static SpawnEggItem SUGAR_MAN_SCORPION_SPAWN_EGG;
     public static IncubationEggItem INCUBATION_EGG;
     //盔甲
     public static Item HELL_HELMET_1;
@@ -66,13 +69,26 @@ public class ModItems {
                         .registryKey(RegistryKey.of(
                                 RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "fireball_scroll")))));
         BIG_FIREBALL_SCROLL = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "big_fireball_scroll"),
-                new BigFireballScrollItem(new Item.Settings().useCooldown(7)
+                new BigFireballScrollItem(new Item.Settings()
                         .registryKey(RegistryKey.of(
                                 RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "big_fireball_scroll")))));
+        SUPER_BIG_FIREBALL_SCROLL = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "super_big_fireball_scroll"),
+                new SuperBigFireballScrollItem(new Item.Settings().useCooldown(7)
+                        .registryKey(RegistryKey.of(
+                                RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "super_big_fireball_scroll")))));
+
         FIREMAN_SCROLL = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "fireman_scroll"),
                 new FiremanScrollItem(new Item.Settings()
                         .registryKey(RegistryKey.of(
                                 RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "fireman_scroll")))));
+        SLOWNESS_SCROLL = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "slowness_scroll"),
+                new SlownessScrollItem(new Item.Settings().useCooldown(20)
+                        .registryKey(RegistryKey.of(
+                                RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "slowness_scroll")))));
+        FIRE_WALL_SCROLL = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "fire_wall_scroll"),
+                new FireWallScrollItem(new Item.Settings().useCooldown(35)
+                        .registryKey(RegistryKey.of(
+                                RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "fire_wall_scroll")))));
 
         HEART_STONE = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "heart_stone"),
                 new HeartStoneItem(new Item.Settings().maxCount(3)
@@ -238,6 +254,26 @@ public class ModItems {
                         new Item.Settings()
                                 .registryKey(RegistryKey.of(
                                         RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "warrior_villager_spawn_egg")
+                                ))
+                )
+        );
+        BLUE_IRON_GOLEM_SPAWN_EGG = Registry.register(Registries.ITEM,
+                Identifier.of(Mob_battle.MOD_ID, "blue_iron_golem_spawn_egg"),
+                new SpawnEggItem(
+                        ModEntities.BLUE_IRON_GOLEM,
+                        new Item.Settings()
+                                .registryKey(RegistryKey.of(
+                                        RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "blue_iron_golem_spawn_egg")
+                                ))
+                )
+        );
+        SUGAR_MAN_SCORPION_SPAWN_EGG = Registry.register(Registries.ITEM,
+                Identifier.of(Mob_battle.MOD_ID, "sugar_man_scorpion_spawn_egg"),
+                new SpawnEggItem(
+                        ModEntities.SUGAR_MAN_SCORPION,
+                        new Item.Settings()
+                                .registryKey(RegistryKey.of(
+                                        RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "sugar_man_scorpion_spawn_egg")
                                 ))
                 )
         );
