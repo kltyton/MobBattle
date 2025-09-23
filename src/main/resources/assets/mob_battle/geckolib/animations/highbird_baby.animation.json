@@ -769,6 +769,9 @@
 						}
 					}
 				}
+			},
+			"timeline": {
+				"0.5417": "runAttack;"
 			}
 		},
 		"death": {

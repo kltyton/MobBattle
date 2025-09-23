@@ -1,11 +1,25 @@
 {
+  "itemGroup.mob_battle.main": "Mob Battle",
   "item.mob_battle.mutual_attack_stick": "Mutual Attack Stick",
   "item.mob_battle.universal_lead": "Univaersal Lead",
   "item.mob_battle.fireball_scroll": "Fireball Scroll",
   "item.mob_battle.big_fireball_scroll": "Big Fireball Scroll",
+  "item.mob_battle.heart_stone": "Heart Stone",
+  "item.mob_battle.incubation_egg": "Incubation egg",
+  "item.mob_battle.highbird_egg_spawn_egg": "Highbird Egg",
+  "item.mob_battle.highbird_baby_spawn_egg": "Highbird Baby",
+  "item.mob_battle.highbird_teenage_spawn_egg": "Highbird Teenage",
+  "item.mob_battle.highbird_adulthood_spawn_egg": "Highbird Adulthood",
+  "item.mob_battle.xun_sheng_spawn_egg": "Xun Sheng",
+  "item.mob_battle.archer_villager_spawn_egg": "Archer Villager",
+  "item.mob_battle.warrior_villager_spawn_egg": "Warrior Villager",
   "effect.mob_battle.insect_bite": "Insect Bite",
   "item.mob_battle.fireman_scroll": "Fireman Scroll",
   "entity.mob_battle.archer_villager": "Archer Villager",
   "entity.mob_battle.warrior_villager": "Warrior Villager",
-  "entity.mob_battle.xun_sheng": "Follow Man"
+  "entity.mob_battle.xun_sheng": "Follow Man",
+  "entity.mob_battle.highbird_egg": "Highbird Egg",
+  "entity.mob_battle.highbird_baby": "Highbird Baby",
+  "entity.mob_battle.highbird_teenage": "Highbird Teenage",
+  "entity.mob_battle.highbird_adulthood": "Highbird Adulthood"
 }

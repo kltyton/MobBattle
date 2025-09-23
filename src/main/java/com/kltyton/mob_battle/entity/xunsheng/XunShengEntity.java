@@ -80,6 +80,7 @@ public class XunShengEntity extends HostileEntity implements GeoEntity {
     // 该方法将动画控制器添加到实体的动画管理系统中
     @Override
     public void registerControllers(final AnimatableManager.ControllerRegistrar controllers) {
+
         // 添加一个名为 "Flying" 的动画控制器
         // 动画控制器负责决定何时播放特定的动画
         controllers.add(new AnimationController<>("main_controller", 5 ,this::animationController));

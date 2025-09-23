@@ -1,6 +1,6 @@
 package com.kltyton.mob_battle.mixin;
 
-import com.kltyton.mob_battle.entity.WarriorVillager;
+import com.kltyton.mob_battle.entity.villager.warriorvillager.WarriorVillager;
 import net.minecraft.entity.passive.IronGolemEntity;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;

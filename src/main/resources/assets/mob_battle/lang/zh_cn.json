@@ -1,11 +1,25 @@
 {
+  "itemGroup.mob_battle.main": "Mob Battle",
   "item.mob_battle.mutual_attack_stick": "仇恨棒",
   "item.mob_battle.universal_lead": "万能拴绳",
   "item.mob_battle.fireball_scroll": "火球卷轴",
   "item.mob_battle.big_fireball_scroll": "豪火球卷轴",
-  "item.mob_battle.fireman_scroll": "烈焰人火球卷轴",
+  "item.mob_battle.heart_stone": "心石",
+  "item.mob_battle.incubation_egg": "待孵化的高脚鸟蛋",
+  "item.mob_battle.highbird_egg_spawn_egg": "高脚鸟蛋刷怪蛋",
+  "item.mob_battle.highbird_baby_spawn_egg": "小高脚鸟刷怪蛋",
+  "item.mob_battle.highbird_teenage_spawn_egg": "青年高脚鸟刷怪蛋",
+  "item.mob_battle.highbird_adulthood_spawn_egg": "成年高脚鸟刷怪蛋",
+  "item.mob_battle.xun_sheng_spawn_egg": "循声者刷怪蛋",
+  "item.mob_battle.warrior_villager_spawn_egg": "战士村民刷怪蛋",
+  "item.mob_battle.archer_villager_spawn_egg": "射手村民刷怪蛋",
   "effect.mob_battle.insect_bite": "虫噬",
+  "item.mob_battle.fireman_scroll": "烈焰人火球卷轴",
   "entity.mob_battle.archer_villager": "射手村民",
   "entity.mob_battle.warrior_villager": "战士村民",
-  "entity.mob_battle.xun_sheng": "循声者"
+  "entity.mob_battle.xun_sheng": "循声者",
+  "entity.mob_battle.highbird_egg": "高脚鸟蛋",
+  "entity.mob_battle.highbird_baby": "小高脚鸟",
+  "entity.mob_battle.highbird_teenage": "青年高脚鸟",
+  "entity.mob_battle.highbird_adulthood": "成年高脚鸟"
 }

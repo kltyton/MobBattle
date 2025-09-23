@@ -1,6 +1,7 @@
 package com.kltyton.mob_battle.event;
 
 import com.kltyton.mob_battle.Mob_battle;
+import com.kltyton.mob_battle.items.ModItems;
 import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.minecraft.entity.Entity;
@@ -25,7 +26,7 @@ public class EntitySelectionHandlerYH {
     private static final Map<PlayerEntity, UUID> selectedEntityA = new WeakHashMap<>();
     private static final Map<PlayerEntity, UUID> selectedEntityB = new WeakHashMap<>();
 
-    public static void registerEvents() {
+    public static void register() {
         AttackEntityCallback.EVENT.register((player, world, hand, entity, hitResult) -> {
             if (world.isClient) return ActionResult.PASS; // 添加客户端校验
             if (isHoldingStick(player)) {
@@ -45,7 +46,7 @@ public class EntitySelectionHandlerYH {
     }
 
     private static boolean isHoldingStick(PlayerEntity player) {
-        return player.getMainHandStack().getItem() == Mob_battle.MUTUAL_ATTACK_STICK;
+        return player.getMainHandStack().getItem() == ModItems.MUTUAL_ATTACK_STICK;
     }
 
     private static void handleLeftClick(PlayerEntity player, Entity entity) {

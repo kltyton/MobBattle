@@ -1,6 +1,7 @@
 package com.kltyton.mob_battle.event;
 
 import com.kltyton.mob_battle.Mob_battle;
+import com.kltyton.mob_battle.items.ModItems;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;
@@ -92,7 +93,7 @@ public class EntitySelectionHandler {
     }
 
     private static boolean isHoldingStick(PlayerEntity player) {
-        return player.getMainHandStack().getItem() == Mob_battle.MUTUAL_ATTACK_STICK;
+        return player.getMainHandStack().getItem() == ModItems.MUTUAL_ATTACK_STICK;
     }
 
     private static void handleLeftClick(PlayerEntity player, Entity entity) {

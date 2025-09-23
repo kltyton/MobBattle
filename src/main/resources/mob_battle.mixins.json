@@ -4,13 +4,23 @@
   "package": "com.kltyton.mob_battle.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "ActiveTargetGoalMixin",
     "ArrowEntityMixin",
     "ClampedEntityAttributeAccessor",
-    "EntityMixin",
     "IronGolemEntityMixin",
-    "MobEntityMixin",
     "SnowGolemEntityMixin",
-    "WardenEntityMixin"
+    "WardenEntityMixin",
+    "heardstone.PlayerEntityMixin",
+    "heardstone.ServerPlayerEntityMixin",
+    "initgoals.AbstractPiglinEntityMixin",
+    "initgoals.PiglinBrainMixin",
+    "initgoals.PiglinBruteBrainMixin",
+    "initgoals.PiglinBruteEntityMixin",
+    "initgoals.RaiderEntityMixin",
+    "initgoals.WitherSkeletonEntityMixin",
+    "leashable.EntityMixin",
+    "leashable.LeashableMixin",
+    "leashable.MobEntityMixin"
   ],
   "client": [
     "client.render.EntityRendererMixin"

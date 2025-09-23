@@ -5,4 +5,7 @@ accessible field net/minecraft/entity/passive/IronGolemEntity ANGER_TIME_RANGE L
 accessible method net/minecraft/entity/projectile/ProjectileEntity canHit (Lnet/minecraft/entity/Entity;)Z
 accessible method net/minecraft/entity/mob/WardenEntity updateAnger ()V
 accessible field net/minecraft/entity/Entity dataTracker Lnet/minecraft/entity/data/DataTracker;
-accessible field net/minecraft/entity/ai/goal/MeleeAttackGoal cooldown I
+accessible field net/minecraft/entity/ai/goal/TrackTargetGoal timeWithoutVisibility I
+accessible field net/minecraft/client/render/entity/FlyingItemEntityRenderer scale F
+accessible field net/minecraft/entity/Entity type Lnet/minecraft/entity/EntityType;
+accessible field net/minecraft/entity/projectile/FireballEntity explosionPower I

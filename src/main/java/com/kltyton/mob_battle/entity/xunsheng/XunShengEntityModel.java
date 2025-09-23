@@ -2,6 +2,10 @@ package com.kltyton.mob_battle.entity.xunsheng;
 
 import com.kltyton.mob_battle.Mob_battle;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.MathHelper;
+import software.bernie.geckolib.animatable.processing.AnimationState;
+import software.bernie.geckolib.cache.object.GeoBone;
+import software.bernie.geckolib.constant.DataTickets;
 import software.bernie.geckolib.model.GeoModel;
 import software.bernie.geckolib.renderer.base.GeoRenderState;
 
@@ -23,5 +27,18 @@ public class XunShengEntityModel extends GeoModel<XunShengEntity> {
     @Override
     public Identifier getAnimationResource(XunShengEntity animatable) {
         return this.animations;
+    }
+    @Override
+    public void setCustomAnimations(AnimationState<XunShengEntity> animationState) {
+        super.setCustomAnimations(animationState);
+        GeoBone head = getAnimationProcessor().getBone("1");
+
+        if (head != null) {
+            float pitch = animationState.getData(DataTickets.ENTITY_PITCH);
+            float yaw = animationState.getData(DataTickets.ENTITY_YAW);
+
+            head.setRotX(-pitch * MathHelper.RADIANS_PER_DEGREE);
+            head.setRotY(-yaw * MathHelper.RADIANS_PER_DEGREE);
+        }
     }
 }
