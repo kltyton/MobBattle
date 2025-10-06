@@ -22,16 +22,22 @@ public class ModMaterial {
     public static final ArmorMaterial HELL_ARMOR_INSTANCE_1 = new ArmorMaterial(
             Integer.MAX_VALUE,
             Map.of(
-                    EquipmentType.HELMET, 0,
-                    EquipmentType.CHESTPLATE, 0,
-                    EquipmentType.LEGGINGS, 0,
-                    EquipmentType.BOOTS, 0
+                    EquipmentType.BOOTS,
+                    1,
+                    EquipmentType.LEGGINGS,
+                    2,
+                    EquipmentType.CHESTPLATE,
+                    3,
+                    EquipmentType.HELMET,
+                    1,
+                    EquipmentType.BODY,
+                    2
             ),
-            5,
+            15,
             SoundEvents.ITEM_ARMOR_EQUIP_IRON,
             0.0F,
             0.0F,
-            null,
+            ItemTags.REPAIRS_LEATHER_ARMOR,
             HELL_ARMOR_MATERIAL_KEY_1
     );
     public static final ArmorMaterial HELL_ARMOR_INSTANCE_2 = new ArmorMaterial(

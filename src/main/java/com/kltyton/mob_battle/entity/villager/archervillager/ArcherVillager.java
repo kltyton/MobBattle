@@ -6,7 +6,10 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.ai.goal.ActiveTargetGoal;
 import net.minecraft.entity.ai.goal.RevengeGoal;
+import net.minecraft.entity.ai.goal.SwimGoal;
 import net.minecraft.entity.ai.goal.UniversalAngerGoal;
+import net.minecraft.entity.ai.pathing.EntityNavigation;
+import net.minecraft.entity.ai.pathing.MobNavigation;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.mob.Angerable;
@@ -54,6 +57,7 @@ public class ArcherVillager extends SnowGolemEntity implements Angerable, GeoEnt
     @Override
     protected void initGoals() {
         super.initGoals();
+        this.goalSelector.add(0, new SwimGoal(this)); // 添加游泳AI
         this.targetSelector.add(2, new RevengeGoal(this, new Class[0]));
         this.targetSelector.add(2, new ActiveTargetGoal(this, PlayerEntity.class, 10, true, false, this::shouldAngerAt));
         this.targetSelector.add(2, new UniversalAngerGoal(this, false));
@@ -199,6 +203,10 @@ public class ArcherVillager extends SnowGolemEntity implements Angerable, GeoEnt
             // 空闲状态时播放待机动画
             return state.setAndContinue(IDEA_ANIM);
         }
+    }
+    @Override
+    protected EntityNavigation createNavigation(World world) {
+        return new MobNavigation(this, world); // 允许基础游泳
     }
     @Override
     public AnimatableInstanceCache getAnimatableInstanceCache() {

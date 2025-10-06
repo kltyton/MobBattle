@@ -4,6 +4,9 @@ import com.kltyton.mob_battle.entity.xunsheng.XunShengEntity;
 import net.minecraft.block.BlockState;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.*;
+import net.minecraft.entity.ai.goal.SwimGoal;
+import net.minecraft.entity.ai.pathing.EntityNavigation;
+import net.minecraft.entity.ai.pathing.MobNavigation;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.passive.GolemEntity;
@@ -131,4 +134,14 @@ public class WarriorVillager extends IronGolemEntity implements GeoEntity {
     public AnimatableInstanceCache getAnimatableInstanceCache() {
         return this.geoCache;
     }
+    @Override
+    protected void initGoals() {
+        super.initGoals();
+        this.goalSelector.add(0, new SwimGoal(this)); // 添加游泳AI
+    }
+    @Override
+    protected EntityNavigation createNavigation(World world) {
+        return new MobNavigation(this, world); // 允许基础游泳
+    }
+
 }

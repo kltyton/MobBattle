@@ -10,6 +10,8 @@
     "IronGolemEntityMixin",
     "SnowGolemEntityMixin",
     "WardenEntityMixin",
+    "basebow.ArrowEntityMixin",
+    "damage.DamageUtilMixin",
     "heardstone.PlayerEntityMixin",
     "heardstone.ServerPlayerEntityMixin",
     "initgoals.AbstractPiglinEntityMixin",
@@ -20,7 +22,9 @@
     "initgoals.WitherSkeletonEntityMixin",
     "leashable.EntityMixin",
     "leashable.LeashableMixin",
-    "leashable.MobEntityMixin"
+    "leashable.MobEntityMixin",
+    "undead.InstantHealthOrDamageStatusEffectMixin",
+    "undead.LivingEntityMixin"
   ],
   "client": [
     "client.render.AbstractClientPlayerEntityMixin",

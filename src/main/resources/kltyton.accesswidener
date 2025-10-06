@@ -9,3 +9,4 @@ accessible field net/minecraft/entity/ai/goal/TrackTargetGoal timeWithoutVisibil
 accessible field net/minecraft/client/render/entity/FlyingItemEntityRenderer scale F
 accessible field net/minecraft/entity/Entity type Lnet/minecraft/entity/EntityType;
 accessible field net/minecraft/entity/projectile/FireballEntity explosionPower I
+accessible class net/minecraft/entity/effect/InstantHealthOrDamageStatusEffect

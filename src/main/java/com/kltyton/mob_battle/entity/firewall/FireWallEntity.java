@@ -53,8 +53,8 @@ public class FireWallEntity extends Entity {
         double sin = Math.sin(rad);
 
         // 火墙长度 5（-2..2），高度 3
-        for (double i = -2; i <= 2; i += 0.3) {
-            for (double j = 0; j < 3; j += 0.3) {
+        for (double i = -2; i <= 2; i += 1.2) {
+            for (double j = 0; j < 3; j += 1.2) {
                 // 沿着 yaw 的垂直方向偏移
                 double px = originX + cos * i;
                 double pz = originZ + sin * i;
@@ -72,7 +72,7 @@ public class FireWallEntity extends Entity {
                     ((ServerWorld)this.getWorld()).spawnParticles(
                             ParticleTypes.FLAME,
                             px, py, pz,
-                            2,
+                            1,
                             0.1, 0.1, 0.1,
                             0.01
                     );
