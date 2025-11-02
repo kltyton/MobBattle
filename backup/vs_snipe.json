@@ -1,0 +1,9 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "mob_battle:item/vs_snipe",
+    "model": {
+      "type": "geckolib:geckolib"
+    }
+  }
+}
