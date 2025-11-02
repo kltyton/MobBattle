@@ -36,10 +36,13 @@ public class ServerBgmManager {
 
                 if (!Objects.equals(currentZone, lastZone)) {
                     LAST_ZONE.put(player.getUuid(), currentZone);
+
                     if (zone == null) {
-                        // 离开区域 -> 停止播放
-                        ServerPlayNetworking.send(player, new SoundPayload("", 0f));
+                        // 离开区域 -> 发送淡出指令而不是立即停止
+                        // 这里发送一个特殊的指令告诉客户端开始淡出
+                        ServerPlayNetworking.send(player, new SoundPayload("fade_out", 0f));
                     } else {
+                        // 进入新区域 -> 发送正常播放指令
                         ServerPlayNetworking.send(player, new SoundPayload(zone.musicId().toString(), zone.volume()));
                     }
                 }

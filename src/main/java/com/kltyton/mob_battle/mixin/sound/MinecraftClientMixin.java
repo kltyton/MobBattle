@@ -15,7 +15,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class MinecraftClientMixin {
     @Inject(method = "getMusicInstance", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/ClientPlayerEntity;getWorld()Lnet/minecraft/world/World;"), cancellable = true)
     private void getMusicInstance(CallbackInfoReturnable<MusicInstance> cir) {
-        if (ClientBgmManager.forcedMusicId != null) {
+        // 如果正在淡出但还有时间，继续播放（音量会逐渐降低）
+        if (ClientBgmManager.isFadingOut && ClientBgmManager.fadeOutTicks > 0) {
+            MusicSound sound = new MusicSound(RegistryEntry.of(SoundEvent.of(ClientBgmManager.fadingOutMusicId)), 40, 40, true);
+            cir.setReturnValue(new MusicInstance(sound, ClientBgmManager.fadingOutVolume));
+            cir.cancel();
+        }
+        // 如果有强制播放的音乐
+        else if (ClientBgmManager.forcedMusicId != null) {
             MusicSound sound = new MusicSound(RegistryEntry.of(SoundEvent.of(ClientBgmManager.forcedMusicId)), 40, 40, true);
             cir.setReturnValue(new MusicInstance(sound, ClientBgmManager.forcedVolume));
             cir.cancel();

@@ -14,12 +14,31 @@ public class ClientPlayNetwork {
                 SoundPayload.CODEC
         );
         ClientPlayNetworking.registerGlobalReceiver(SoundPayload.ID, (payload, context)  -> {
-            Identifier id = Identifier.of(payload.soundNmae());
+            String soundName = payload.soundNmae();
             float volume = payload.volume();
             MinecraftClient client = context.client();
             client.execute(() -> {
-                ClientBgmManager.forcedMusicId = id;
-                ClientBgmManager.forcedVolume = volume;
+                if ("fade_out".equals(soundName)) {
+                    // 收到淡出指令
+                    if (ClientBgmManager.forcedMusicId != null) {
+                        ClientBgmManager.startFadeOut(ClientBgmManager.forcedMusicId, ClientBgmManager.forcedVolume);
+                    }
+                    ClientBgmManager.forcedMusicId = null;
+                    ClientBgmManager.forcedVolume = 0f;
+                } else {
+                    // 收到正常播放指令
+                    Identifier id = Identifier.of(soundName);
+
+                    // 如果正在淡出且是同一首音乐，则取消淡出
+                    if (ClientBgmManager.isFadingOut &&
+                            ClientBgmManager.fadingOutMusicId != null &&
+                            ClientBgmManager.fadingOutMusicId.equals(id)) {
+                        ClientBgmManager.resetFadeOut();
+                    }
+
+                    ClientBgmManager.forcedMusicId = id;
+                    ClientBgmManager.forcedVolume = volume;
+                }
             });
         });
     }
