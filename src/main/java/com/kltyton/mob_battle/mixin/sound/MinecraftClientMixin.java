@@ -15,13 +15,20 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class MinecraftClientMixin {
     @Inject(method = "getMusicInstance", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/ClientPlayerEntity;getWorld()Lnet/minecraft/world/World;"), cancellable = true)
     private void getMusicInstance(CallbackInfoReturnable<MusicInstance> cir) {
-        // 如果正在淡出但还有时间，继续播放（音量会逐渐降低）
-        if (ClientBgmManager.isFadingOut && ClientBgmManager.fadeOutTicks > 0) {
-            MusicSound sound = new MusicSound(RegistryEntry.of(SoundEvent.of(ClientBgmManager.fadingOutMusicId)), 40, 40, true);
-            cir.setReturnValue(new MusicInstance(sound, ClientBgmManager.fadingOutVolume));
+        // 优先处理淡入状态
+        if (ClientBgmManager.isFadingIn && ClientBgmManager.forcedMusicId != null) {
+            MusicSound sound = new MusicSound(RegistryEntry.of(SoundEvent.of(ClientBgmManager.forcedMusicId)), 40, 40, true);
+            cir.setReturnValue(new MusicInstance(sound, ClientBgmManager.forcedVolume));
             cir.cancel();
         }
-        // 如果有强制播放的音乐
+        // 处理淡出状态
+        else if (ClientBgmManager.isFadingOut && ClientBgmManager.fadeOutTicks > 0 && ClientBgmManager.fadingOutMusicId != null) {
+            MusicSound sound = new MusicSound(RegistryEntry.of(SoundEvent.of(ClientBgmManager.fadingOutMusicId)), 40, 40, true);
+            float currentVolume = ClientBgmManager.fadingOutVolume * ((float)ClientBgmManager.fadeOutTicks / ClientBgmManager.MAX_FADE_OUT_TICKS);
+            cir.setReturnValue(new MusicInstance(sound, currentVolume));
+            cir.cancel();
+        }
+        // 处理正常强制播放
         else if (ClientBgmManager.forcedMusicId != null) {
             MusicSound sound = new MusicSound(RegistryEntry.of(SoundEvent.of(ClientBgmManager.forcedMusicId)), 40, 40, true);
             cir.setReturnValue(new MusicInstance(sound, ClientBgmManager.forcedVolume));
