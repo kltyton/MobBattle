@@ -1,6 +1,6 @@
 package com.kltyton.mob_battle.mixin;
 
-import com.kltyton.mob_battle.event.DataTrackers;
+import com.kltyton.mob_battle.event.DataTrackersEvent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -23,7 +23,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class WardenEntityMixin extends HostileEntity implements Vibrations {
     static {
         // 触发DataTrackers静态初始化
-        boolean dummy = DataTrackers.FORCED_ATTACK_FLAG != null;
+        boolean dummy = DataTrackersEvent.FORCED_ATTACK_FLAG != null;
     }
     @Shadow public abstract void updateAttackTarget(LivingEntity target);
 
@@ -40,7 +40,7 @@ public abstract class WardenEntityMixin extends HostileEntity implements Vibrati
     private void forceValidTarget(Entity entity, CallbackInfoReturnable<Boolean> cir) {
         if (!(entity instanceof PlayerEntity player && player.isCreative())) {
             // 检查是否有强制攻击标志
-            if (this.dataTracker.get(DataTrackers.FORCED_ATTACK_FLAG)) {
+            if (this.dataTracker.get(DataTrackersEvent.FORCED_ATTACK_FLAG)) {
                 cir.setReturnValue(entity instanceof LivingEntity living &&
                         living.isAlive() &&
                         !living.isSpectator());
@@ -49,7 +49,7 @@ public abstract class WardenEntityMixin extends HostileEntity implements Vibrati
     }
     @Inject(method = "initDataTracker", at = @At("TAIL"))
     private void addCustomDataTracker(DataTracker.Builder builder, CallbackInfo ci) {
-        builder.add(DataTrackers.FORCED_ATTACK_FLAG, false);
+        builder.add(DataTrackersEvent.FORCED_ATTACK_FLAG, false);
     }
 
 }

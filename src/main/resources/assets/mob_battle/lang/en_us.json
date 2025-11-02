@@ -2,6 +2,7 @@
   "itemGroup.mob_battle.main": "Mob Battle",
   "item.mob_battle.mutual_attack_stick": "Mutual Attack Stick",
   "item.mob_battle.universal_lead": "Univaersal Lead",
+  "item.mob_battle.invisible_universal_lead": "Invisible Universal Lead",
   "item.mob_battle.fireball_scroll": "Fireball Scroll",
   "item.mob_battle.big_fireball_scroll": "Big Fireball Scroll",
   "item.mob_battle.super_big_fireball_scroll": "Super Big Fire Scroll",
@@ -21,6 +22,8 @@
   "item.mob_battle.warrior_villager_spawn_egg": "Warrior Villager",
   "item.mob_battle.blue_iron_golem_spawn_egg": "Blue Iron Golem",
   "item.mob_battle.sugar_man_scorpion_spawn_egg": "Sugar Man Scorpion",
+  "item.mob_battle.deep_creature_spawn_egg": "Deep Creature",
+  "item.mob_battle.wither_skeleton_king_spawn_egg": "Wither Skeleton King",
   "item.mob_battle.fireman_scroll": "Fireman Scroll",
   "item.mob_battle.hell_helmet_1": "Hell Helmet 1",
   "item.mob_battle.hell_chestplate_1": "Hell Chestplate 1",
@@ -30,6 +33,7 @@
   "item.mob_battle.hell_chestplate_2": "Hell Chestplate 2",
   "item.mob_battle.hell_leggings_2": "Hell Leggings 2",
   "item.mob_battle.hell_boots_2": "Hell Boots 2",
+  "item.mob_battle.vs_snipe": "Snipe",
   "effect.mob_battle.insect_bite": "Insect Bite",
   "entity.mob_battle.archer_villager": "Archer Villager",
   "entity.mob_battle.warrior_villager": "Warrior Villager",
@@ -40,5 +44,7 @@
   "entity.mob_battle.highbird_adulthood": "Highbird Adulthood",
   "entity.mob_battle.blue_iron_golem": "Blue Iron Golem",
   "entity.mob_battle.sugar_man_scorpion": "Sugar Man Scorpion",
+  "entity.mob_battle.deep_creature": "Deep Creature",
+  "entity.mob_battle.wither_skeleton_king": "Wither Skeleton King",
   "enchantment.mob_battle.magic_protection": "Magic Protection"
 }

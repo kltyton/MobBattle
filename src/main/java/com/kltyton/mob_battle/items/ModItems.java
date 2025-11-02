@@ -7,6 +7,9 @@ import com.kltyton.mob_battle.items.scroll.*;
 import com.kltyton.mob_battle.items.tool.BaseAxe;
 import com.kltyton.mob_battle.items.tool.BaseBow;
 import com.kltyton.mob_battle.items.tool.BaseSword;
+import com.kltyton.mob_battle.items.tool.snipe.VsSnipe;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.ChargedProjectilesComponent;
 import net.minecraft.item.Item;
 import net.minecraft.item.SpawnEggItem;
 import net.minecraft.item.equipment.EquipmentType;
@@ -17,9 +20,10 @@ import net.minecraft.registry.RegistryKeys;
 import net.minecraft.util.Identifier;
 
 public class ModItems {
-    // 直接声明物品
+    // 杂项物品
     public static MutualAttackStickItem MUTUAL_ATTACK_STICK;
     public static UniversalLeadItem UNIVERSAL_LEAD;
+    public static InvisibleUniversalLeadItem INVISIBLE_UNIVERSAL_LEAD;
     public static FireballScrollItem FIREBALL_SCROLL;
     public static BigFireballScrollItem BIG_FIREBALL_SCROLL;
     public static SuperBigFireballScrollItem SUPER_BIG_FIREBALL_SCROLL;
@@ -27,12 +31,14 @@ public class ModItems {
     public static SlownessScrollItem SLOWNESS_SCROLL;
     public static FireWallScrollItem FIRE_WALL_SCROLL;
     public static HeartStoneItem HEART_STONE;
-    // 刷怪蛋声明
+    // 刷怪蛋
     public static SpawnEggItem HIGHBIRD_BABY_SPAWN_EGG;
     public static SpawnEggItem HIGHBIRD_TEENAGE_SPAWN_EGG;
     public static SpawnEggItem HIGHBIRD_EGG_SPAWN_EGG;
     public static SpawnEggItem HIGHBIRD_ADULT_SPAWN_EGG;
     public static SpawnEggItem XU_SHENG_SPAWN_EGG;
+    public static SpawnEggItem DEEP_CREATURE_SPAWN_EGG;
+    public static SpawnEggItem WITHER_SKELETON_KING_SPAWN_EGG;
     public static SpawnEggItem ARCHER_VILLAGER_SPAWN_EGG;
     public static SpawnEggItem WARRIOR_VILLAGER_SPAWN_EGG;
     public static SpawnEggItem BLUE_IRON_GOLEM_SPAWN_EGG;
@@ -51,6 +57,7 @@ public class ModItems {
     public static Item METEORICORE_AXE;
     public static Item METEORICORE_BOW;
     public static Item METEORICORE_SWORD;
+    public static VsSnipe VS_SNIPE;
 
     public static void init() {
         BaseItems.init();
@@ -64,6 +71,10 @@ public class ModItems {
                 new UniversalLeadItem(new Item.Settings()
                         .registryKey(RegistryKey.of(
                                 RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "universal_lead")))));
+        INVISIBLE_UNIVERSAL_LEAD = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "invisible_universal_lead"),
+                new InvisibleUniversalLeadItem(new Item.Settings()
+                        .registryKey(RegistryKey.of(
+                                RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "invisible_universal_lead")))));
         FIREBALL_SCROLL = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "fireball_scroll"),
                 new FireballScrollItem(new Item.Settings()
                         .registryKey(RegistryKey.of(
@@ -183,6 +194,15 @@ public class ModItems {
                         ))
                 )
         );
+
+        VS_SNIPE = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "vs_snipe"),
+                new VsSnipe(new Item.Settings()
+                        .maxCount(1).maxDamage(465).component(DataComponentTypes.CHARGED_PROJECTILES, ChargedProjectilesComponent.DEFAULT).enchantable(1)
+                        .registryKey(RegistryKey.of(
+                                RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "vs_snipe")
+                        ))
+                )
+        );
         // 注册高脚鸟刷怪蛋
         HIGHBIRD_BABY_SPAWN_EGG = Registry.register(Registries.ITEM,
                 Identifier.of(Mob_battle.MOD_ID, "highbird_baby_spawn_egg"),
@@ -234,6 +254,26 @@ public class ModItems {
                         new Item.Settings()
                                 .registryKey(RegistryKey.of(
                                         RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "xun_sheng_spawn_egg")
+                                ))
+                )
+        );
+        DEEP_CREATURE_SPAWN_EGG = Registry.register(Registries.ITEM,
+                Identifier.of(Mob_battle.MOD_ID, "deep_creature_spawn_egg"),
+                new SpawnEggItem(
+                        ModEntities.DEEP_CREATURE,
+                        new Item.Settings()
+                                .registryKey(RegistryKey.of(
+                                        RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "deep_creature_spawn_egg")
+                                ))
+                )
+        );
+        WITHER_SKELETON_KING_SPAWN_EGG = Registry.register(Registries.ITEM,
+                Identifier.of(Mob_battle.MOD_ID, "wither_skeleton_king_spawn_egg"),
+                new SpawnEggItem(
+                        ModEntities.WITHER_SKELETON_KING,
+                        new Item.Settings()
+                                .registryKey(RegistryKey.of(
+                                        RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "wither_skeleton_king_spawn_egg")
                                 ))
                 )
         );

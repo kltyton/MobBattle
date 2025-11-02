@@ -21,9 +21,8 @@ public class DamageUtilMixin {
     @Overwrite
     public static float getDamageLeft(LivingEntity armorWearer, float damageAmount, DamageSource damageSource, float armor, float armorToughness) {
         float f = 2.0F + armorToughness / 4.0F;
-        float g = MathHelper.clamp(armor - damageAmount / f, armor * 0.2F, 20.0F);
-        // 原版：h = g / 25.0F;  // 最大 0.8（20护甲时）
-        float h = g / 20.8333F;   // 改成最大约 0.96（20护甲时）
+        float g = MathHelper.clamp(armor - damageAmount / f, armor * 0.2F, 24.0F);
+        float h = g / 25.0F;
 
         ItemStack itemStack = damageSource.getWeaponStack();
         float i;
@@ -35,6 +34,15 @@ public class DamageUtilMixin {
 
         float j = 1.0F - i;
         return damageAmount * j;
+    }
+    /**
+     * @author KLTYTON
+     * @reason 修改护甲伤害减免上限
+     */
+    @Overwrite
+    public static float getInflictedDamage(float damageDealt, float protection) {
+        float f = MathHelper.clamp(protection, 0.0F, 24.0F);
+        return damageDealt * (1.0F - f / 25.0F);
     }
 }
 

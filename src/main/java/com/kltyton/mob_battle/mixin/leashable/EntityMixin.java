@@ -26,6 +26,12 @@ public abstract class EntityMixin implements ILead {
     @Unique
     private boolean isUniversalLeadEnyity = false;
     @Unique
+    private boolean isInvisibleUniversalLeadEnyity = false;
+    @Unique
+    public boolean custom$getIsInvisibleUniversalLeadEnyity() {
+        return this.isInvisibleUniversalLeadEnyity;
+    }
+    @Unique
     public boolean custom$getIsUniversalLeadEnyity() {
         return this.isUniversalLeadEnyity;
     }
@@ -34,14 +40,23 @@ public abstract class EntityMixin implements ILead {
     public void custom$setIsUniversalLeadEnyity(boolean isUniversalLeadEnyity) {
         this.isUniversalLeadEnyity = isUniversalLeadEnyity;
     }
+    @Unique
+    public void custom$setIsInvisibleUniversalLeadEnyity(boolean isInvisibleUniversalLeadEnyity) {
+        this.isInvisibleUniversalLeadEnyity = isInvisibleUniversalLeadEnyity;
+    }
     @Redirect(method = "interact", at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;isOf(Lnet/minecraft/item/Item;)Z", ordinal = 2))
     private boolean isUniversalLead(ItemStack instance, Item item) {
         if (instance.isOf(ModItems.UNIVERSAL_LEAD)) {
             custom$setIsUniversalLeadEnyity(true);
+            custom$setIsInvisibleUniversalLeadEnyity(false);
+        } else if (instance.isOf(ModItems.INVISIBLE_UNIVERSAL_LEAD)){
+            custom$setIsUniversalLeadEnyity(true);
+            custom$setIsInvisibleUniversalLeadEnyity(true);
         } else if (instance.isOf(Items.LEAD)) {
             custom$setIsUniversalLeadEnyity(false);
+            custom$setIsInvisibleUniversalLeadEnyity(false);
         }
-        return (instance.isOf(Items.LEAD) || instance.isOf(ModItems.UNIVERSAL_LEAD));
+        return (instance.isOf(Items.LEAD) || instance.isOf(ModItems.UNIVERSAL_LEAD) || instance.isOf(ModItems.INVISIBLE_UNIVERSAL_LEAD));
     }
     @Redirect(method = "interact", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Leashable;canBeLeashed()Z"))
     private static boolean canBeLeashed(Leashable leashable) {
@@ -55,6 +70,7 @@ public abstract class EntityMixin implements ILead {
     public ItemConvertible dropItem(ItemConvertible item) {
         if (item == Items.LEAD && isUniversalLeadEnyity) {
             custom$setIsUniversalLeadEnyity(false);
+            custom$setIsInvisibleUniversalLeadEnyity(false);
             return Items.AIR;
         }
         return item;
@@ -63,9 +79,11 @@ public abstract class EntityMixin implements ILead {
     @Inject(method = "writeData", at = @At("TAIL"))
     private void saveCustomData(WriteView view, CallbackInfo ci) {
         view.putBoolean("IsUniversalLeadEnyity", custom$getIsUniversalLeadEnyity());
+        view.putBoolean("IsInvisibleUniversalLeadEnyity", custom$getIsInvisibleUniversalLeadEnyity());
     }
     @Inject(method = "readData", at = @At("TAIL"))
     private void loadCustomData(ReadView view, CallbackInfo ci) {
         custom$setIsUniversalLeadEnyity(view.getBoolean("IsUniversalLeadEnyity", false));
+        custom$setIsInvisibleUniversalLeadEnyity(view.getBoolean("IsInvisibleUniversalLeadEnyity", false));
     }
 }

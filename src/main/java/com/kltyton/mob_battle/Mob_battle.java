@@ -9,6 +9,7 @@ import com.kltyton.mob_battle.items.ModItemGroups;
 import com.kltyton.mob_battle.items.ModItems;
 import com.kltyton.mob_battle.network.ServerPlayNetwork;
 import com.kltyton.mob_battle.sounds.ModSounds;
+import com.kltyton.mob_battle.sounds.bgm.ServerBgmManager;
 import net.fabricmc.api.ModInitializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,5 +31,6 @@ public class Mob_battle implements ModInitializer {
         ServerPlayNetwork.init();
         ModItemGroups.init();
         ModSounds.init();
+        ServerBgmManager.init();
     }
 }

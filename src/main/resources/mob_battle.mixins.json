@@ -28,7 +28,13 @@
   ],
   "client": [
     "client.render.AbstractClientPlayerEntityMixin",
-    "client.render.EntityRendererMixin"
+    "client.render.EntityRendererMixin",
+    "client.render.EntityRenderStateMixin",
+    "crossbow.HeldItemRendererMixin",
+    "crossbow.PlayerEntityRendererMixin",
+    "sound.IMixinMusicTracker",
+    "sound.MinecraftClientMixin",
+    "sound.MixinMusicTracker"
   ],
   "injectors": {
     "defaultRequire": 1

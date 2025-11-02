@@ -12,6 +12,7 @@ import net.minecraft.entity.mob.AbstractPiglinEntity;
 import net.minecraft.entity.mob.PiglinBruteBrain;
 import net.minecraft.entity.mob.PiglinBruteEntity;
 import net.minecraft.item.Items;
+import net.minecraft.scoreboard.Team;
 import net.minecraft.server.world.ServerWorld;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
@@ -31,30 +32,52 @@ public abstract class PiglinBruteBrainMixin {
         return false;
     }
 
+    // PiglinBruteBrainMixin.java
     @Inject(method = "getTarget", at = @At("RETURN"), cancellable = true)
-    private static void getPreferredTarget(ServerWorld world, AbstractPiglinEntity piglin, CallbackInfoReturnable<Optional<? extends LivingEntity>> cir) {
-        Brain<?> brain = piglin.getBrain();
-        LivingEntity livingEntity = ((IPiglinEntity)piglin).getTargetEntity();
-        if (livingEntity == null) {
-            Iterable<LivingEntity> visible = brain.getOptionalRegisteredMemory(MemoryModuleType.VISIBLE_MOBS)
-                    .orElse(LivingTargetCache.empty())
-                    .iterate(e -> true);
+    private static void getPreferredTarget(ServerWorld world,
+                                           AbstractPiglinEntity piglin,
+                                           CallbackInfoReturnable<Optional<? extends LivingEntity>> cir) {
 
-            // 主动攻击非 AbstractPiglinEntity 的实体
-            for (LivingEntity target : visible) {
-                if (!(target instanceof AbstractPiglinEntity) && piglin.canTarget(target)) {
-                    cir.setReturnValue(Optional.of(target));
-                    ((IPiglinEntity)piglin).setTargetEntity(target);
-                    break;
+        Optional<? extends LivingEntity> opt = cir.getReturnValue();
+        if (opt.isPresent() && areInSameTeam(piglin, opt.get())) {
+            ((IPiglinEntity) piglin).setTargetEntity(null);
+            cir.setReturnValue(Optional.empty());
+            return;
+        }
+
+        if (!cir.getReturnValue().isPresent()) {
+            Brain<?> brain = piglin.getBrain();
+            LivingEntity livingEntity = ((IPiglinEntity) piglin).getTargetEntity();
+            if (livingEntity == null) {
+                Iterable<LivingEntity> visible =
+                        brain.getOptionalRegisteredMemory(MemoryModuleType.VISIBLE_MOBS)
+                                .orElse(LivingTargetCache.empty())
+                                .iterate(e -> true);
+
+                for (LivingEntity target : visible) {
+                    if (areInSameTeam(piglin, target)) continue;   // 同队跳过
+                    if (!(target instanceof AbstractPiglinEntity) && piglin.canTarget(target)) {
+                        cir.setReturnValue(Optional.of(target));
+                        ((IPiglinEntity) piglin).setTargetEntity(target);
+                        break;
+                    }
+                }
+            } else {
+                if (!livingEntity.isAlive() || areInSameTeam(piglin, livingEntity)) {
+                    ((IPiglinEntity) piglin).setTargetEntity(null);
+                } else {
+                    cir.setReturnValue(Optional.of(livingEntity));
                 }
             }
-        } else {
-            if (!livingEntity.isAlive()) {
-                ((IPiglinEntity)piglin).setTargetEntity(null);
-            } else {
-                cir.setReturnValue(Optional.of(livingEntity));
-            }
         }
+    }
+
+    /* 同样加一个工具方法 */
+    private static boolean areInSameTeam(LivingEntity a, LivingEntity b) {
+        if (a == null || b == null) return false;
+        Team teamA = a.getScoreboardTeam();
+        Team teamB = b.getScoreboardTeam();
+        return teamA != null && teamA.isEqual(teamB);
     }
     /**
      * @author Use CROSSBOW

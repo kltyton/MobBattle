@@ -1,7 +1,12 @@
 {
   "dog_jiao": {
     "sounds": [
-      "kltyton:dog_jiao"
+      "mob_battle:dog_jiao"
+    ]
+  },
+  "engineers_sanctum": {
+    "sounds": [
+      "mob_battle:engineers_sanctum"
     ]
   }
 }

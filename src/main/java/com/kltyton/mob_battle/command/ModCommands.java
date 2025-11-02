@@ -6,6 +6,7 @@ public class ModCommands {
     public static void init() {
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
             TeamFightCommand.register(dispatcher);
+            BgmCommand.register(dispatcher, registryAccess);
         });
         FriendlyProjectileDamageCommand.register();
     }

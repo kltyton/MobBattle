@@ -23,6 +23,7 @@ public class BaseBow extends BowItem {
             arrowEntity.addEffect(new StatusEffectInstance(StatusEffects.WITHER, 100, 2));
         }
     }
+    @Override
     protected ProjectileEntity createArrowEntity(World world, LivingEntity shooter, ItemStack weaponStack, ItemStack projectileStack, boolean critical) {
         ProjectileEntity persistentProjectileEntity = super.createArrowEntity(world, shooter, weaponStack, projectileStack, critical);
         persistentProjectileEntity.setNoGravity(true);

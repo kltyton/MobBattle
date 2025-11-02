@@ -26,6 +26,7 @@ public class ModItemGroups {
             .entries((context, entries) -> {
                 entries.add(ModItems.MUTUAL_ATTACK_STICK);
                 entries.add(ModItems.UNIVERSAL_LEAD);
+                entries.add(ModItems.INVISIBLE_UNIVERSAL_LEAD);
                 entries.add(ModItems.FIREBALL_SCROLL);
                 entries.add(ModItems.BIG_FIREBALL_SCROLL);
                 entries.add(ModItems.SUPER_BIG_FIREBALL_SCROLL);
@@ -39,6 +40,8 @@ public class ModItemGroups {
                 entries.add(ModItems.HIGHBIRD_EGG_SPAWN_EGG);
                 entries.add(ModItems.HIGHBIRD_ADULT_SPAWN_EGG);
                 entries.add(ModItems.XU_SHENG_SPAWN_EGG);
+                entries.add(ModItems.DEEP_CREATURE_SPAWN_EGG);
+                entries.add(ModItems.WITHER_SKELETON_KING_SPAWN_EGG);
                 entries.add(ModItems.ARCHER_VILLAGER_SPAWN_EGG);
                 entries.add(ModItems.WARRIOR_VILLAGER_SPAWN_EGG);
                 entries.add(ModItems.BLUE_IRON_GOLEM_SPAWN_EGG);
@@ -58,6 +61,7 @@ public class ModItemGroups {
                 entries.add(ModItems.METEORICORE_AXE);
                 entries.add(ModItems.METEORICORE_BOW);
                 entries.add(ModItems.METEORICORE_SWORD);
+                entries.add(ModItems.VS_SNIPE);
                 //添加基础物品
                 for (Item item : BaseItems.ITEMS.values()) {
                     entries.add(item);

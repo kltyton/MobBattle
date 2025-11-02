@@ -1,7 +1,7 @@
 package com.kltyton.mob_battle.event.team;
 
 import com.kltyton.mob_battle.Mob_battle;
-import com.kltyton.mob_battle.event.EntitySelectionHandlerYH;
+import com.kltyton.mob_battle.event.EntitySelectionEvent;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 
 import net.minecraft.entity.LivingEntity;
@@ -16,7 +16,7 @@ public class TeamFightHandler {
     private static final int TARGET_UPDATE_INTERVAL = 20; // 每20 tick（1秒）更新一次
     private static int tickCounter = 0;
 
-    public static void register() {
+    public static void init() {
         ServerTickEvents.START_SERVER_TICK.register(server -> {
             try {
                 if (++tickCounter >= TARGET_UPDATE_INTERVAL) {
@@ -94,7 +94,7 @@ public class TeamFightHandler {
                 if (nearest != null && mob1.getTarget() != nearest) {
                     // 特殊处理坚守者
                     if (mob instanceof WardenEntity warden) {
-                        EntitySelectionHandlerYH.forceWardenTarget(warden, nearest, warden.getWorld());
+                        EntitySelectionEvent.forceWardenTarget(warden, nearest, warden.getWorld());
                     } else {
                         mob1.setTarget(nearest);
                     }
