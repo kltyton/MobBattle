@@ -1,0 +1,37 @@
+package com.kltyton.mob_battle.network;
+
+import com.kltyton.mob_battle.network.packet.*;
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
+
+public class ModPackets {
+    public static void init() {
+        PayloadTypeRegistry.playC2S().register(
+                HighbirdAttackPayload.ID,
+                HighbirdAttackPayload.CODEC
+        );
+        PayloadTypeRegistry.playC2S().register(
+                HighbirdAngerPayload.ID,
+                HighbirdAngerPayload.CODEC
+        );
+        PayloadTypeRegistry.playC2S().register(
+                KeepInventoryPayload.ID,
+                KeepInventoryPayload.CODEC
+        );
+        PayloadTypeRegistry.playC2S().register(
+                SkillPayload.ID,
+                SkillPayload.CODEC
+        );
+        PayloadTypeRegistry.playC2S().register(
+                LeftClickPacket.ID,
+                LeftClickPacket.CODEC
+        );
+        PayloadTypeRegistry.playS2C().register(
+                SoundPayload.ID,
+                SoundPayload.CODEC
+        );
+        PayloadTypeRegistry.playS2C().register(
+                EntityUniversalPayload.ID,
+                EntityUniversalPayload.CODEC
+        );
+    }
+}

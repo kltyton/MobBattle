@@ -19,6 +19,7 @@ public class KingSkill {
             Box damageBox = witherSkeletonKingEntity.getBoundingBox().expand(range, range, range);
             world.getOtherEntities(witherSkeletonKingEntity, damageBox).stream()
                     .filter(entity -> entity instanceof LivingEntity)
+                    .filter(entity -> entity.getScoreboardTeam() != witherSkeletonKingEntity.getScoreboardTeam())
                     .filter(entity -> !entity.isSpectator() && entity.isAlive())
                     .filter(entity -> entity.squaredDistanceTo(witherSkeletonKingEntity) <= range * range)
                     .forEach(entity -> {
@@ -34,6 +35,7 @@ public class KingSkill {
         Box damageBox = witherSkeletonKingEntity.getBoundingBox().expand(range, range, range);
         world.getOtherEntities(witherSkeletonKingEntity, damageBox).stream()
                 .filter(entity -> entity instanceof LivingEntity)
+                .filter(entity -> entity.getScoreboardTeam() != witherSkeletonKingEntity.getScoreboardTeam())
                 .filter(entity -> !entity.isSpectator() && entity.isAlive())
                 .filter(entity -> entity.squaredDistanceTo(witherSkeletonKingEntity) <= range * range)
                 .forEach(entity -> {
@@ -86,8 +88,13 @@ public class KingSkill {
                 .forEach(ally -> {
                     ally.addStatusEffect(new StatusEffectInstance(
                             StatusEffects.STRENGTH,
-                            120,
+                            200,
                             5,
+                            true, true, true));
+                    ally.addStatusEffect(new StatusEffectInstance(
+                            StatusEffects.FIRE_RESISTANCE,
+                            -1,
+                            0,
                             true, true, true));
                 });
     }
@@ -101,7 +108,7 @@ public class KingSkill {
                 3.0F, 1.0F);
 
         // ====== 向随机方向发射多个凋零之首 ======
-        int skullCount = 6; // 发射数量，可自行调整
+        int skullCount = 18; // 发射数量，可自行调整
         double speed = 1.6;  // 初始速度
 
         for (int i = 0; i < skullCount; i++) {
@@ -144,8 +151,13 @@ public class KingSkill {
                 .forEach(ally -> {
                     ally.addStatusEffect(new StatusEffectInstance(
                             StatusEffects.STRENGTH,
-                            120,
-                            12,
+                            200,
+                            5,
+                            true, true, true));
+                    ally.addStatusEffect(new StatusEffectInstance(
+                            StatusEffects.FIRE_RESISTANCE,
+                            -1,
+                            0,
                             true, true, true));
                 });
     }

@@ -1,6 +1,7 @@
 package com.kltyton.mob_battle.entity.deepcreature.skill;
 
 import com.kltyton.mob_battle.entity.deepcreature.DeepCreatureEntity;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.EvokerFangsEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.particle.ParticleTypes;
@@ -16,9 +17,9 @@ public class SkillUtils {
      */
 
     /** 获取半径范围内存活的玩家 */
-    public static List<PlayerEntity> getNearbyPlayers(DeepCreatureEntity entity, double radius) {
+    public static List<LivingEntity> getNearbyPlayers(DeepCreatureEntity entity, double radius) {
         return entity.getWorld().getEntitiesByClass(
-                PlayerEntity.class,
+                LivingEntity.class,
                 entity.getBoundingBox().expand(radius),
                 p -> p.isAlive() && entity.distanceTo(p) <= radius
         );
@@ -26,11 +27,13 @@ public class SkillUtils {
 
     /** 对玩家施加击退力 */
     public static void knockbackPlayer(DeepCreatureEntity entity,
-                                        PlayerEntity player,
+                                       LivingEntity player,
                                         double horizPower,
                                         double vertBase,
                                         double vertRand) {
-        if (player.isSpectator() || player.isCreative()) return;
+        if (player instanceof PlayerEntity p) {
+            if (p.isSpectator() || p.isCreative()) return;
+        }
 
         double dx = player.getX() - entity.getX();
         double dz = player.getZ() - entity.getZ();

@@ -10,6 +10,7 @@ import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.Identifier;
 
 public class ModAttributer {
+
     public static void init() {
         overrideAttribute(EntityAttributes.MAX_HEALTH, 0.0, Double.MAX_VALUE);
         overrideAttribute(EntityAttributes.ARMOR, 0.0, Double.MAX_VALUE);

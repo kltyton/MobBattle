@@ -68,7 +68,7 @@ public abstract class EntityMixin implements ILead {
 
     @ModifyArg(method = "dropItem(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/item/ItemConvertible;)Lnet/minecraft/entity/ItemEntity;", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;dropItem(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/item/ItemConvertible;I)Lnet/minecraft/entity/ItemEntity;"), index = 1)
     public ItemConvertible dropItem(ItemConvertible item) {
-        if (item == Items.LEAD && isUniversalLeadEnyity) {
+        if (item == Items.LEAD && custom$getIsUniversalLeadEnyity()) {
             custom$setIsUniversalLeadEnyity(false);
             custom$setIsInvisibleUniversalLeadEnyity(false);
             return Items.AIR;

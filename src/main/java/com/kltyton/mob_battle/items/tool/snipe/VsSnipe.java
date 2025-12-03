@@ -1,6 +1,6 @@
 package com.kltyton.mob_battle.items.tool.snipe;
 
-import com.kltyton.mob_battle.buff.ModBuffs;
+import com.kltyton.mob_battle.entity.bullet.BulletEntity;
 import com.kltyton.mob_battle.items.FabricItem;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -10,10 +10,7 @@ import net.minecraft.component.EnchantmentEffectComponentTypes;
 import net.minecraft.component.type.ChargedProjectilesComponent;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.projectile.ArrowEntity;
-import net.minecraft.entity.projectile.FireworkRocketEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.item.*;
@@ -55,12 +52,12 @@ public class VsSnipe extends RangedWeaponItem implements FabricItem {
 
     @Override
     public Predicate<ItemStack> getHeldProjectiles() {
-        return CROSSBOW_HELD_PROJECTILES;
+        return stack -> stack.isOf(Items.IRON_BLOCK);
     }
 
     @Override
     public Predicate<ItemStack> getProjectiles() {
-        return BOW_PROJECTILES;
+        return stack -> stack.isOf(Items.IRON_BLOCK);
     }
 
     @Override
@@ -120,10 +117,6 @@ public class VsSnipe extends RangedWeaponItem implements FabricItem {
             Vec3d vec3d2 = shooter.getRotationVec(1.0F);
             vector3f = vec3d2.toVector3f().rotate(quaternionf);
         }
-        if (projectile instanceof ArrowEntity arrowEntity) {
-            arrowEntity.setDamage(50D);
-            arrowEntity.addEffect(new StatusEffectInstance(ModBuffs.STUN_ENTRY, 60, 0));
-        }
         projectile.setVelocity(vector3f.x(), vector3f.y(), vector3f.z(), speed, divergence);
         float h = getSoundPitch(shooter.getRandom(), index);
         shooter.getWorld().playSound(null, shooter.getX(), shooter.getY(), shooter.getZ(), SoundEvents.ITEM_CROSSBOW_SHOOT, shooter.getSoundCategory(), 1.0F, h);
@@ -140,28 +133,29 @@ public class VsSnipe extends RangedWeaponItem implements FabricItem {
         Vector3f vector3f3 = new Vector3f(vector3f).rotateAxis((float) (Math.PI / 2), vector3f2.x, vector3f2.y, vector3f2.z);
         return new Vector3f(vector3f).rotateAxis(yaw * (float) (Math.PI / 180.0), vector3f3.x, vector3f3.y, vector3f3.z);
     }
+    protected ProjectileEntity createArrowEntityBase(World world, LivingEntity shooter, ItemStack weaponStack, ItemStack projectileStack, boolean critical) {
+        PersistentProjectileEntity persistentProjectileEntity =  new BulletEntity(world, shooter, projectileStack.copyWithCount(1), weaponStack);
+        if (critical) {
+            persistentProjectileEntity.setCritical(true);
+        }
 
+        return persistentProjectileEntity;
+    }
     @Override
     protected ProjectileEntity createArrowEntity(World world, LivingEntity shooter, ItemStack weaponStack, ItemStack projectileStack, boolean critical) {
-        if (projectileStack.isOf(Items.FIREWORK_ROCKET)) {
-            return new FireworkRocketEntity(world, projectileStack, shooter, shooter.getX(), shooter.getEyeY() - 0.15F, shooter.getZ(), true);
-        } else {
-            ProjectileEntity projectileEntity = super.createArrowEntity(world, shooter, weaponStack, projectileStack, critical);
-            if (projectileEntity instanceof PersistentProjectileEntity persistentProjectileEntity) {
-                persistentProjectileEntity.setSound(SoundEvents.ITEM_CROSSBOW_HIT);
-            }
-            if (projectileEntity instanceof ArrowEntity arrowEntity) {
-                arrowEntity.setDamage(50D);
-                arrowEntity.addEffect(new StatusEffectInstance(ModBuffs.STUN_ENTRY, 60, 0));
-            }
-            return projectileEntity;
+        ProjectileEntity projectileEntity = createArrowEntityBase(world, shooter, weaponStack, projectileStack, critical);
+        if (projectileEntity instanceof PersistentProjectileEntity persistentProjectileEntity) {
+            persistentProjectileEntity.setSound(SoundEvents.ITEM_CROSSBOW_HIT);
+            persistentProjectileEntity.setDamage(50D);
         }
+        return projectileEntity;
     }
 
     @Override
     protected int getWeaponStackDamage(ItemStack projectile) {
-        return projectile.isOf(Items.FIREWORK_ROCKET) ? 3 : 1;
+        return 1; // 固定耐久消耗
     }
+
 
     public void shootAll(World world, LivingEntity shooter, Hand hand, ItemStack stack, float speed, float divergence, @Nullable LivingEntity target) {
         if (world instanceof ServerWorld serverWorld) {

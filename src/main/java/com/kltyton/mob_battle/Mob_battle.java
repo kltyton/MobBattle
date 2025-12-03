@@ -8,6 +8,7 @@ import com.kltyton.mob_battle.event.ModEvents;
 import com.kltyton.mob_battle.items.ModItemGroups;
 import com.kltyton.mob_battle.items.ModItems;
 import com.kltyton.mob_battle.network.ServerPlayNetwork;
+import com.kltyton.mob_battle.network.ModPackets;
 import com.kltyton.mob_battle.sounds.ModSounds;
 import com.kltyton.mob_battle.sounds.bgm.ServerBgmManager;
 import net.fabricmc.api.ModInitializer;
@@ -28,6 +29,7 @@ public class Mob_battle implements ModInitializer {
         //注册实体
         ModEntities.init();
         ModAttributer.init();
+        ModPackets.init();
         ServerPlayNetwork.init();
         ModItemGroups.init();
         ModSounds.init();

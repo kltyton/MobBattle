@@ -11,6 +11,7 @@
     "SnowGolemEntityMixin",
     "WardenEntityMixin",
     "basebow.ArrowEntityMixin",
+    "boss.EvokerFangsEntityMixin",
     "damage.DamageUtilMixin",
     "heardstone.PlayerEntityMixin",
     "heardstone.ServerPlayerEntityMixin",

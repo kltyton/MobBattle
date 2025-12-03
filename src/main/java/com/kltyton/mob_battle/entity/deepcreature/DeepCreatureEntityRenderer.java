@@ -57,6 +57,7 @@ public class DeepCreatureEntityRenderer<R extends LivingEntityRenderState & GeoR
     @Override
     public void renderFinal(R renderState, MatrixStack poseStack, BakedGeoModel model, VertexConsumerProvider bufferSource, @Nullable VertexConsumer buffer,
                             int packedLight, int packedOverlay, int renderColor) {
+        poseStack.pop();
         super.renderFinal(renderState, poseStack, model, bufferSource, buffer, packedLight, packedOverlay, renderColor);
         World world = ClientUtil.getLevel();
         PlayerEntity player = ClientUtil.getClientPlayer();

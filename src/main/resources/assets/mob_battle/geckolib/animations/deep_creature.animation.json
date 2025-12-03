@@ -22733,6 +22733,8 @@
 				}
 			},
 			"timeline": {
+                "3.0": "runCatchDamage",
+                "4.0": "runCatchDamage",
 				"4.65": "runCatch_End"
 			}
 		},

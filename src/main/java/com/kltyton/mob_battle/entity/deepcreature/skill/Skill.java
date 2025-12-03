@@ -2,6 +2,7 @@ package com.kltyton.mob_battle.entity.deepcreature.skill;
 
 import com.kltyton.mob_battle.entity.deepcreature.DeepCreatureEntity;
 import com.kltyton.mob_battle.utils.TaskSchedulerUtil;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.world.ServerWorld;
@@ -13,11 +14,11 @@ import java.util.List;
 public class Skill {
     public static void runRoarSkill(DeepCreatureEntity entity) {
         double radius = 10.0D;
-        List<PlayerEntity> players = SkillUtils.getNearbyPlayers(entity, radius);
+        List<LivingEntity> players = SkillUtils.getNearbyPlayers(entity, radius);
         if (players.isEmpty()) return;
 
         ServerWorld sw = (ServerWorld) entity.getWorld();
-        for (PlayerEntity player : players) {
+        for (LivingEntity player : players) {
             SkillUtils.knockbackPlayer(entity, player, 1.5, 0.95, 0.2);
         }
         SkillUtils.spawnParticles(sw, entity, 40, 24);
@@ -32,6 +33,15 @@ public class Skill {
             return;
         }
         entity.setGrabTargetId(entity.getTarget().getId());
+    }
+    public static void runCatchDamage(DeepCreatureEntity entity) {
+        if (entity.getGrabTargetId() != -1) {
+            ServerWorld sw = (ServerWorld) entity.getWorld();
+            LivingEntity player = (LivingEntity) entity.getWorld().getEntityById(entity.getGrabTargetId());
+            if (player != null) {
+                player.damage(sw, player.getDamageSources().magic(), 150);
+            }
+        }
     }
     public static void stopRunCatch(DeepCreatureEntity entity) {
         if (entity.getGrabTargetId() == -1) {
@@ -53,10 +63,10 @@ public class Skill {
         entity.setGrabTargetId(-1);
     }
     public static void runSmashGround(DeepCreatureEntity entity, double radius, double horizPower, double vertPowerBase, double vertPowerRand, double spacing, double delayPerRing) {
-        List<PlayerEntity> players = SkillUtils.getNearbyPlayers(entity, radius);
+        List<LivingEntity> players = SkillUtils.getNearbyPlayers(entity, radius);
         if (players.isEmpty()) return;
         ServerWorld sw = (ServerWorld) entity.getWorld();
-        for (PlayerEntity player : players) {
+        for (LivingEntity player : players) {
             SkillUtils.knockbackPlayer(entity, player, horizPower, vertPowerBase, vertPowerRand);
         }
         SkillUtils.spawnParticles(sw, entity, 60, radius);
@@ -65,9 +75,9 @@ public class Skill {
     public static void runSmash(DeepCreatureEntity entity) {
         double radius = 8.0D;
         if (entity.getTarget() == null || entity.distanceTo(entity.getTarget()) > radius) return;
-
         ServerWorld sw = (ServerWorld) entity.getWorld();
-        sw.createExplosion(
+        entity.getTarget().damage(sw, entity.getTarget().getDamageSources().mobAttack(entity), 85F);
+/*        sw.createExplosion(
                 entity,
                 entity.getDamageSources().mobAttack(entity),
                 null,
@@ -77,18 +87,18 @@ public class Skill {
                 1.0F,
                 false,
                 ServerWorld.ExplosionSourceType.NONE
-        );
+        );*/
     }
 
     public static void runSideSkill(DeepCreatureEntity entity) {
         double radius = 12.0D;
-        List<PlayerEntity> players = SkillUtils.getNearbyPlayers(entity, radius);
+        List<LivingEntity> players = SkillUtils.getNearbyPlayers(entity, radius);
         if (players.isEmpty()) return;
 
         ServerWorld sw = (ServerWorld) entity.getWorld();
-        for (PlayerEntity player : players) {
+        for (LivingEntity player : players) {
             SkillUtils.knockbackPlayer(entity, player, 0.8, 0.2, 0.05);
-            player.damage(sw, player.getDamageSources().mobAttack(entity), 15F);
+            player.damage(sw, player.getDamageSources().mobAttack(entity), 90F);
         }
     }
     public static void runSonicBoom(DeepCreatureEntity entity) {
@@ -98,7 +108,7 @@ public class Skill {
         var target = entity.getTarget();
 
         // === 参数 ===
-        double damage = 10.0;
+        double damage = 120.0;
         double knockbackH = 2.5;
         double knockbackV = 0.5;
         double hitRadius = 2.0; // 声波宽度
@@ -142,11 +152,16 @@ public class Skill {
         }
 
         // === 命中检测 ===
-        List<PlayerEntity> players = world.getEntitiesByClass(PlayerEntity.class,
+        List<LivingEntity> players = world.getEntitiesByClass(LivingEntity.class,
                 entity.getBoundingBox().expand(distance + 4),
-                p -> p.isAlive() && !p.isSpectator() && !p.isCreative());
+                p -> {
+            if (p instanceof PlayerEntity player) {
+                if (!player.isCreative()) return false;
+            }
+            return p.isAlive() && !p.isSpectator();
+        });
 
-        for (PlayerEntity player : players) {
+        for (LivingEntity player : players) {
             Vec3d playerPos = player.getPos().add(0, player.getStandingEyeHeight() * 0.5, 0);
             Vec3d toPlayer = playerPos.subtract(start);
 
@@ -157,7 +172,7 @@ public class Skill {
             double distFromLine = playerPos.distanceTo(closestPoint);
 
             if (distFromLine <= hitRadius) {
-                if (player.damage(world, world.getDamageSources().sonicBoom(entity), (float) damage)) {
+                if (player.damage(world, world.getDamageSources().magic(), (float) damage)) {
                     player.addVelocity(direction.x * knockbackH,
                             direction.y * knockbackV,
                             direction.z * knockbackH);

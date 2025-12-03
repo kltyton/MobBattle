@@ -2,6 +2,7 @@ package com.kltyton.mob_battle.entity;
 
 import com.kltyton.mob_battle.Mob_battle;
 import com.kltyton.mob_battle.entity.blueirongolem.BlueIronGolemEntity;
+import com.kltyton.mob_battle.entity.bullet.BulletEntity;
 import com.kltyton.mob_battle.entity.customfireball.CustomSuperBigFireballEntity;
 import com.kltyton.mob_battle.entity.deepcreature.DeepCreatureEntity;
 import com.kltyton.mob_battle.entity.firewall.FireWallEntity;
@@ -9,9 +10,11 @@ import com.kltyton.mob_battle.entity.highbird.adulthood.HighbirdAdulthoodEntity;
 import com.kltyton.mob_battle.entity.highbird.baby.HighbirdBabyEntity;
 import com.kltyton.mob_battle.entity.highbird.egg.HighbirdEggEntity;
 import com.kltyton.mob_battle.entity.highbird.teenage.HighbirdTeenageEntity;
+import com.kltyton.mob_battle.entity.irongolem.VillagerIronGolemEntity;
 import com.kltyton.mob_battle.entity.sugarmanscorpion.SugarManScorpion;
 import com.kltyton.mob_battle.entity.villager.archervillager.ArcherVillager;
 import com.kltyton.mob_battle.entity.villager.warriorvillager.WarriorVillager;
+import com.kltyton.mob_battle.entity.villager.villagerking.VillagerKingEntity;
 import com.kltyton.mob_battle.entity.witherskeletonking.WitherSkeletonKingEntity;
 import com.kltyton.mob_battle.entity.xunsheng.XunShengEntity;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityType;
@@ -41,6 +44,9 @@ public class ModEntities {
     public static final RegistryKey<EntityType<?>> blue_iron_golem = RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(Mob_battle.MOD_ID,"blue_iron_golem"));
     public static final RegistryKey<EntityType<?>> sugar_man_scorpion = RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(Mob_battle.MOD_ID,"sugar_man_scorpion"));
     public static final RegistryKey<EntityType<?>> wither_skeleton_king = RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(Mob_battle.MOD_ID,"wither_skeleton_king"));
+    public static final RegistryKey<EntityType<?>> bullet = RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(Mob_battle.MOD_ID,"bullet"));
+    public static final RegistryKey<EntityType<?>> villgaer_iron_golem = RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(Mob_battle.MOD_ID,"iron_golem"));
+    public static final RegistryKey<EntityType<?>> villager_king = RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(Mob_battle.MOD_ID,"villager_king"));
     public static final EntityType<WarriorVillager> WARRIOR_VILLAGER = FabricEntityType.Builder.createMob(WarriorVillager::new, SpawnGroup.CREATURE,
                     (mob) -> mob.defaultAttributes(() -> VillagerEntity.createVillagerAttributes()
                             .add(EntityAttributes.ATTACK_DAMAGE, 5.0D)
@@ -114,7 +120,27 @@ public class ModEntities {
             .dimensions(1.5F, 4.5F)
             .maxTrackingRange(24)
             .build(highbird_adulthood);
-    /* ↓↓↓ 在 ModEntities 类里新增 ↓↓↓ */
+    public static final EntityType<VillagerIronGolemEntity> VILLAGER_IRON_GOLEM_ENTITY = FabricEntityType.Builder.createMob(VillagerIronGolemEntity::new, SpawnGroup.MISC,
+                    (mob) -> mob.defaultAttributes(VillagerIronGolemEntity::createIronGolemAttributes)
+                            .spawnRestriction(SpawnLocationTypes.ON_GROUND,
+                                    Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,(type, world, reason, pos, random) -> false))
+            .dimensions(1.4F, 2.7F)
+            .maxTrackingRange(10)
+            .build(villgaer_iron_golem);
+    public static final EntityType<VillagerKingEntity> VILLAGER_KING_ENTITY = FabricEntityType.Builder.createMob(VillagerKingEntity::new, SpawnGroup.MISC,
+                    (mob) -> mob.defaultAttributes(VillagerKingEntity::createVillagerKingAttributes)
+                            .spawnRestriction(SpawnLocationTypes.ON_GROUND,
+                                    Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,(type, world, reason, pos, random) -> false))
+            .dimensions(0.6F, 1.95F)
+            .build(villager_king);
+    public static final EntityType<BulletEntity> BULLET_ENTITY =
+            EntityType.Builder.<BulletEntity>create(BulletEntity::new, SpawnGroup.MISC)
+                    .dropsNothing()
+                    .dimensions(0.3125F, 0.3125F)
+                    .eyeHeight(0.13F)
+                    .maxTrackingRange(4)
+                    .trackingTickInterval(20)
+                    .build(bullet);
     public static final EntityType<CustomSuperBigFireballEntity> BIG_CUSTOM_FIREBALL =
             EntityType.Builder.<CustomSuperBigFireballEntity>create(CustomSuperBigFireballEntity::new, SpawnGroup.MISC)
                     .dropsNothing()
@@ -159,6 +185,9 @@ public class ModEntities {
         Registry.register(Registries.ENTITY_TYPE, firewall, FIRE_WALL);
         Registry.register(Registries.ENTITY_TYPE, blue_iron_golem, BLUE_IRON_GOLEM);
         Registry.register(Registries.ENTITY_TYPE, sugar_man_scorpion, SUGAR_MAN_SCORPION);
+        Registry.register(Registries.ENTITY_TYPE, bullet, BULLET_ENTITY);
+        Registry.register(Registries.ENTITY_TYPE, villgaer_iron_golem, VILLAGER_IRON_GOLEM_ENTITY);
+        Registry.register(Registries.ENTITY_TYPE, villager_king, VILLAGER_KING_ENTITY);
     }
 }
 

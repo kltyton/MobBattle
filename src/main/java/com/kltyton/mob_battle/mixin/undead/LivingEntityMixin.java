@@ -1,8 +1,11 @@
 package com.kltyton.mob_battle.mixin.undead;
 
+import com.kltyton.mob_battle.entity.witherskeletonking.skill.WitherSkullEntityKing;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.damage.DamageType;
 import net.minecraft.registry.tag.EntityTypeTags;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.server.world.ServerWorld;
@@ -25,4 +28,24 @@ public class LivingEntityMixin {
             return instance.damage(world, source, amount);
         }
     }
+    @Redirect(method = "damage", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/damage/DamageSource;isIn(Lnet/minecraft/registry/tag/TagKey;)Z", ordinal = 3))
+    private boolean cancelDamage(DamageSource instance, TagKey<DamageType> tag) {
+        Entity sourcer = instance.getSource();
+        Entity attacker = instance.getAttacker();
+        if (sourcer instanceof WitherSkullEntityKing && attacker instanceof WitherSkullEntityKing) {
+            return true;
+        }
+        return instance.isIn(tag);
+    }
+    @Redirect(method = "applyDamage", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;isInvulnerableTo(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/entity/damage/DamageSource;)Z"))
+    public boolean isInvulnerableTo(LivingEntity instance, ServerWorld world, DamageSource source) {
+        Entity sourcer = source.getSource();
+        Entity attacker = source.getAttacker();
+        if (sourcer instanceof WitherSkullEntityKing && attacker instanceof WitherSkullEntityKing) {
+            instance.timeUntilRegen = 0;
+            return false;
+        }
+        return instance.isInvulnerableTo(world, source);
+    }
+
 }

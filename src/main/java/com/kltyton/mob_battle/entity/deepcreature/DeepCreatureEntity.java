@@ -261,6 +261,11 @@ public class DeepCreatureEntity extends HostileEntity implements GeoEntity {
                         "stop_run_catch", this.getId()
                 ));
             }
+            if ("runCatchDamage".equals(s.keyframeData().getInstructions())) {
+                ClientPlayNetworking.send(new SkillPayload(
+                        "catch_damage", this.getId()
+                ));
+            }
             if ("runCatch_End".equals(s.keyframeData().getInstructions())) {
                 ClientPlayNetworking.send(new SkillPayload(
                         "catch_end", this.getId()
@@ -334,14 +339,37 @@ public class DeepCreatureEntity extends HostileEntity implements GeoEntity {
     public Vec3d chargeDir = null;
     // 剩余冲刺 tick
     public int chargeTicksLeft = 0;
+    public int stuckCooldown = 200;
+    public int catchCooldown = 0;
     @Override
     public void tick() {
         super.tick();
         if (!this.getWorld().isClient()) {
+            if (getGrabTargetId() != -1 && this.age % 20 == 0) {
+                this.getTarget().damage((ServerWorld) this.getWorld(), this.getTarget().getDamageSources().magic(), 150F);
+            }
+            if (isAiDisabled()) {
+                this.setInvulnerable(true);
+                if (stuckCooldown > 0) {
+                    stuckCooldown--;
+                } else {
+                    this.setAiDisabled(false);
+                    stuckCooldown = 200;
+                }
+            } else {
+                this.setInvulnerable(false);
+                stuckCooldown = 200;
+            }
+            if (catchCooldown > 0) {
+                catchCooldown--;
+            }
+            if (catchCooldown == 0 && this.isSpawnAnimEnd() && hasSkill()) {
+                performCatchSkill();
+                catchCooldown = 400;
+            }
             if (chargeTicksLeft > 0 && this.isSpawnAnimEnd() && hasSkill()) {
                 // 1. 倒计时
                 chargeTicksLeft--;
-
                 // 2. 保持朝向
                 float yaw = (float) Math.toDegrees(Math.atan2(-chargeDir.x, chargeDir.z));
                 this.setYaw(yaw);
@@ -401,10 +429,12 @@ public class DeepCreatureEntity extends HostileEntity implements GeoEntity {
 
             if (!this.isSpawnAnimEnd()) {
                 this.setAiDisabled(true);
+                this.setInvulnerable(true);
             }
             if (this.age > 220 && !this.isSpawnAnimEnd()) {
                 this.setSpawnAnim(true);
                 this.setAiDisabled(false);
+                this.setInvulnerable(false);
             }
             if (this.isSpawnAnimEnd() && !hasSkill()) {
                 // 冷却递减
@@ -416,6 +446,7 @@ public class DeepCreatureEntity extends HostileEntity implements GeoEntity {
 
     @Override
     public void takeKnockback(double strength, double x, double z) {
+        super.takeKnockback(strength, x, z);
     }
     @Override
     public boolean tryAttack(ServerWorld world, Entity target) {
@@ -431,8 +462,10 @@ public class DeepCreatureEntity extends HostileEntity implements GeoEntity {
                 .add(EntityAttributes.FOLLOW_RANGE, 64.0)
                 .add(EntityAttributes.MOVEMENT_SPEED, 0.4F)
                 .add(EntityAttributes.ATTACK_DAMAGE, 0.0)
-                .add(EntityAttributes.ARMOR, 2.0)
-                .add(EntityAttributes.MAX_HEALTH, 1000.0) // 确保添加最大生命值属性
+                .add(EntityAttributes.ARMOR, 5.0)
+                .add(EntityAttributes.KNOCKBACK_RESISTANCE, 1)
+                .add(EntityAttributes.ARMOR_TOUGHNESS, 5.0)
+                .add(EntityAttributes.MAX_HEALTH, 13000.0) // 确保添加最大生命值属性
                 .add(EntityAttributes.SPAWN_REINFORCEMENTS);
     }
     private final List<Runnable> skills = List.of(
@@ -444,8 +477,7 @@ public class DeepCreatureEntity extends HostileEntity implements GeoEntity {
             this::performRightSideStrikeSkill,
             this::performSonicBoomSkill,
             this::performChargeSkill,
-            this::performJumpSkill,
-            this::performCatchSkill
+            this::performJumpSkill
     );
     private void performRoarSkill() {
         setSkillCooldown(20);

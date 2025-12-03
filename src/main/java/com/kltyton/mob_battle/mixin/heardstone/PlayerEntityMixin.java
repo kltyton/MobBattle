@@ -1,10 +1,14 @@
 package com.kltyton.mob_battle.mixin.heardstone;
 
+import com.kltyton.mob_battle.entity.witherskeletonking.skill.WitherSkullEntityKing;
 import com.kltyton.mob_battle.items.tool.snipe.VsSnipe;
 import com.kltyton.mob_battle.utils.HeadStoneUtil;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
@@ -40,4 +44,15 @@ public abstract class PlayerEntityMixin extends LivingEntity {
             cir.setReturnValue(true);
         }
     }
+    @Redirect(method = "applyDamage", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerEntity;isInvulnerableTo(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/entity/damage/DamageSource;)Z"))
+    public boolean isInvulnerableTo(PlayerEntity instance, ServerWorld world, DamageSource source) {
+        Entity sourcer = source.getSource();
+        Entity attacker = source.getAttacker();
+        if (sourcer instanceof WitherSkullEntityKing && attacker instanceof WitherSkullEntityKing) {
+            instance.timeUntilRegen = 0;
+            return false;
+        }
+        return instance.isInvulnerableTo(world, source);
+    }
+
 }

@@ -46,6 +46,7 @@ public class ModItemGroups {
                 entries.add(ModItems.WARRIOR_VILLAGER_SPAWN_EGG);
                 entries.add(ModItems.BLUE_IRON_GOLEM_SPAWN_EGG);
                 entries.add(ModItems.SUGAR_MAN_SCORPION_SPAWN_EGG);
+                entries.add(ModItems.IRON_GOLEM_SPAWN_EGG);
                 //添加孵化蛋
                 entries.add(ModItems.INCUBATION_EGG);
                 //添加盔甲

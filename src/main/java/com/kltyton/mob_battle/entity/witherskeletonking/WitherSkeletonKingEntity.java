@@ -24,6 +24,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.storage.ReadView;
 import net.minecraft.storage.WriteView;
@@ -78,6 +79,7 @@ public class WitherSkeletonKingEntity extends WitherSkeletonEntity  implements G
                 this.setAiDisabled(false);
                 if (canShotWitherSkull()) performShotWitherSkull();
                 if (canShotAllWitherSkull()) performShotAllWitherSkull();
+
                 // 冷却递减
                 int cd = getSkillCooldown();
                 if (cd > 0) setSkillCooldown(cd - 1);
@@ -177,6 +179,11 @@ public class WitherSkeletonKingEntity extends WitherSkeletonEntity  implements G
         this.setHasSkill(false);
         this.setAiDisabled(false);
         this.setSkillCooldown(0);
+        addStatusEffect(new StatusEffectInstance(
+                StatusEffects.FIRE_RESISTANCE,
+                -1,
+                0,
+                true, true, true));
     }
     @Override
     public boolean canPickupItem(ItemStack stack) {
@@ -191,6 +198,7 @@ public class WitherSkeletonKingEntity extends WitherSkeletonEntity  implements G
         DamageSource damageSource = Optional.ofNullable(itemStack.getItem().getDamageSource(this)).orElse(this.getDamageSources().mobAttack(this));
         f = EnchantmentHelper.getDamage(world, itemStack, target, damageSource, f);
         f += itemStack.getItem().getBonusAttackDamage(target, f, damageSource);
+        if (this.getScoreboardTeam() == target.getScoreboardTeam()) return false;
         boolean bl = target.damage(world, damageSource, f);
         if (bl) {
             float g = this.getAttackKnockbackAgainst(target, damageSource);
@@ -207,15 +215,18 @@ public class WitherSkeletonKingEntity extends WitherSkeletonEntity  implements G
             this.onAttacking(target);
             this.playAttackSound();
         }
-
         return bl;
     }
     public boolean tryAttackBase2(ServerWorld world, Entity target) {
         if (!this.tryAttackBase(world, target)) {
             return false;
         } else {
-            if (target instanceof LivingEntity) {
-                ((LivingEntity)target).addStatusEffect(new StatusEffectInstance(StatusEffects.WITHER, 200), this);
+            if (target instanceof LivingEntity livingEntity) {
+                livingEntity.addStatusEffect(new StatusEffectInstance(StatusEffects.WITHER, 200), this);
+                if (livingEntity.isDead()) this.heal(20.0F);
+                if (!(target instanceof PlayerEntity)) {
+                    livingEntity.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 100, 1), this);
+                }
             }
             return true;
         }
@@ -322,10 +333,6 @@ public class WitherSkeletonKingEntity extends WitherSkeletonEntity  implements G
         return this.geoCache;
     }
     private PlayState animationController(final AnimationTest<XunShengEntity> state) {
-        if (this.getHealth() == this.getMaxHealth() * 0.35) {
-            PlayerEntity player = ClientUtil.getClientPlayer();
-            player.playSound(SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, 1.0F, 1.0F);
-        }
         if (state.isMoving()) {
             return state.setAndContinue(WALK_ANIM);
         }
@@ -342,9 +349,14 @@ public class WitherSkeletonKingEntity extends WitherSkeletonEntity  implements G
                 .add(EntityAttributes.ARMOR, 25.0D)
                 .add(EntityAttributes.ARMOR_TOUGHNESS, 20.0D);
     }
+    boolean isPlaySound = false;
     @Override
     public void setHealth(float health) {
         super.setHealth(health);
+        if (!this.getWorld().isClient() && this.getHealth() == this.getMaxHealth() * 0.35 && !isPlaySound) {
+            this.getWorld().playSound(this, this.getX(), this.getY(), this.getZ(), SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundCategory.HOSTILE, 3.0F, 1.0F);
+            isPlaySound = true;
+        }
         if (this.bossBar != null) {
             this.bossBar.setPercent(health / this.getMaxHealth());
             this.bossBar.setName(Objects.requireNonNull(this.getDisplayName()).copy().append(" | " + (int)this.getHealth() + "/" + (int)this.getMaxHealth()));

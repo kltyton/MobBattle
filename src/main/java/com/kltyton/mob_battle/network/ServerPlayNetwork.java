@@ -5,12 +5,13 @@ import com.kltyton.mob_battle.entity.deepcreature.DeepCreatureEntity;
 import com.kltyton.mob_battle.entity.deepcreature.skill.Skill;
 import com.kltyton.mob_battle.entity.highbird.HighbirdBaseEntity;
 import com.kltyton.mob_battle.entity.highbird.adulthood.HighbirdAdulthoodEntity;
+import com.kltyton.mob_battle.entity.irongolem.VillagerIronGolemEntity;
+import com.kltyton.mob_battle.entity.irongolem.skill.IronGolemSkill;
 import com.kltyton.mob_battle.entity.witherskeletonking.WitherSkeletonKingEntity;
 import com.kltyton.mob_battle.entity.witherskeletonking.skill.KingSkill;
 import com.kltyton.mob_battle.network.packet.*;
 import com.kltyton.mob_battle.utils.HeadStoneUtil;
 import com.kltyton.mob_battle.utils.LeftClickUtil;
-import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.Entity;
 import net.minecraft.server.MinecraftServer;
@@ -19,26 +20,6 @@ import net.minecraft.server.world.ServerWorld;
 
 public class ServerPlayNetwork {
     public static void init() {
-        PayloadTypeRegistry.playC2S().register(
-                HighbirdAttackPayload.ID,
-                HighbirdAttackPayload.CODEC
-        );
-        PayloadTypeRegistry.playC2S().register(
-                HighbirdAngerPayload.ID,
-                HighbirdAngerPayload.CODEC
-        );
-        PayloadTypeRegistry.playC2S().register(
-                KeepInventoryPayload.ID,
-                KeepInventoryPayload.CODEC
-        );
-        PayloadTypeRegistry.playC2S().register(
-                SkillPayload.ID,
-                SkillPayload.CODEC
-        );
-        PayloadTypeRegistry.playC2S().register(
-                LeftClickPacket.ID,
-                LeftClickPacket.CODEC
-        );
         // 注册服务器端接收器
         ServerPlayNetworking.registerGlobalReceiver(HighbirdAttackPayload.ID,
                 (payload, context) -> {
@@ -117,6 +98,18 @@ public class ServerPlayNetwork {
                                 case "stop" -> {
                                     kingSkeletonKing.setHasSkill(false);
                                     kingSkeletonKing.setAiDisabled(false);
+                                }
+                                default -> Mob_battle.LOGGER.warn("没有找到技能： " + payload.skillName());
+                            }
+                        } else if (entity instanceof VillagerIronGolemEntity villagerIronGolemEntity) {
+                            switch (payload.skillName()) {
+                                case "damage_1_5" -> IronGolemSkill.runSkill_1_5(villagerIronGolemEntity);
+                                case "damage_2" -> IronGolemSkill.runSkill_2(villagerIronGolemEntity);
+                                case "stop_ai" -> villagerIronGolemEntity.setAiDisabled(true);
+                                case "start_ai" -> villagerIronGolemEntity.setAiDisabled(false);
+                                case "stop" -> {
+                                    villagerIronGolemEntity.setHasSkill(false);
+                                    villagerIronGolemEntity.setAiDisabled(false);
                                 }
                                 default -> Mob_battle.LOGGER.warn("没有找到技能： " + payload.skillName());
                             }

@@ -11,7 +11,7 @@ public record SkillPayload(String skillName, int entityId) implements CustomPayl
     public static final Id<SkillPayload> ID = new Id<>(Identifier.of(Mob_battle.MOD_ID, "skill"));
     public static final PacketCodec<RegistryByteBuf, SkillPayload> CODEC = PacketCodec.tuple(
             PacketCodecs.STRING, SkillPayload::skillName,
-            PacketCodecs.INTEGER, SkillPayload::entityId,
+            PacketCodecs.VAR_INT, SkillPayload::entityId,
             SkillPayload::new
     );
     @Override public Id<? extends CustomPayload> getId() { return ID; }

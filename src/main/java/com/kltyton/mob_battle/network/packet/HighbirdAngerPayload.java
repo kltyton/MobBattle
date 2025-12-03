@@ -10,7 +10,7 @@ import net.minecraft.util.Identifier;
 public record HighbirdAngerPayload(int angerId) implements CustomPayload {
     public static final CustomPayload.Id<HighbirdAngerPayload> ID = new CustomPayload.Id<>(Identifier.of(Mob_battle.MOD_ID, "highbird_anger"));
     public static final PacketCodec<RegistryByteBuf, HighbirdAngerPayload> CODEC = PacketCodec.tuple(
-            PacketCodecs.INTEGER, HighbirdAngerPayload::angerId,
+            PacketCodecs.VAR_INT, HighbirdAngerPayload::angerId,
             HighbirdAngerPayload::new
     );
 

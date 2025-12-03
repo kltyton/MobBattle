@@ -99,8 +99,7 @@ public abstract class EntityRendererMixin {
         // 仅创造模式可见检查
         if (player == null || !(player.isCreative() || player.isSpectator()) || targetEntity == player) return;
         if (targetEntity == null) return;
-        if (targetEntity.isInvisibleTo(player)) return;
-
+        //if (targetEntity.isInvisibleTo(player)) return;
         // 计算血条位置（基于实体碰撞箱）
         float yOffset = targetEntity.getHeight() + 0.65F;
         Camera camera = MinecraftClient.getInstance().gameRenderer.getCamera();
