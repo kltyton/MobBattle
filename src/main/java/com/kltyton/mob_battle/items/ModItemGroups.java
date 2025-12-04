@@ -5,12 +5,17 @@ import com.kltyton.mob_battle.items.misc.BaseItems;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroupEntries;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
+import net.minecraft.enchantment.Enchantment;
+import net.minecraft.enchantment.EnchantmentLevelEntry;
+import net.minecraft.enchantment.Enchantments;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemGroups;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
@@ -49,6 +54,7 @@ public class ModItemGroups {
                 entries.add(ModItems.IRON_GOLEM_SPAWN_EGG);
                 //添加孵化蛋
                 entries.add(ModItems.INCUBATION_EGG);
+
                 //添加盔甲
                 entries.add(ModItems.HELL_HELMET_1);
                 entries.add(ModItems.HELL_CHESTPLATE_1);
@@ -58,10 +64,23 @@ public class ModItemGroups {
                 entries.add(ModItems.HELL_CHESTPLATE_2);
                 entries.add(ModItems.HELL_LEGGINGS_2);
                 entries.add(ModItems.HELL_BOOTS_2);
+                entries.add(ModItems.IRON_GOLD_HELMET);
+                entries.add(ModItems.IRON_GOLD_CHESTPLATE);
+                entries.add(ModItems.IRON_GOLD_LEGGINGS);
+                entries.add(ModItems.IRON_GOLD_BOOTS);
+
                 //添加基础武器
                 entries.add(ModItems.METEORICORE_AXE);
                 entries.add(ModItems.METEORICORE_BOW);
                 entries.add(ModItems.METEORICORE_SWORD);
+
+                ItemStack enchantedSword = new ItemStack(ModItems.IRON_GOLD_SWORD);
+
+                RegistryWrapper.Impl<Enchantment> lookup = context.lookup().getOrThrow(RegistryKeys.ENCHANTMENT);
+                enchantedSword.addEnchantment(new EnchantmentLevelEntry(lookup.getOrThrow(Enchantments.SWEEPING_EDGE), 1).enchantment(), 1);
+
+                entries.add(enchantedSword);
+
                 entries.add(ModItems.VS_SNIPE);
                 //添加基础物品
                 for (Item item : BaseItems.ITEMS.values()) {

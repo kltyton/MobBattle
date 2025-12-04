@@ -31,4 +31,7 @@ public class VillagerKingEntity extends MobEntity implements GeoItem {
     public static DefaultAttributeContainer.Builder createVillagerKingAttributes() {
         return MobEntity.createMobAttributes().add(EntityAttributes.MAX_HEALTH, 9999);
     }
+    @Override
+    public void takeKnockback(double strength, double x, double z) {
+    }
 }

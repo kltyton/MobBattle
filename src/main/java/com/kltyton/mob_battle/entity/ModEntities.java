@@ -5,6 +5,8 @@ import com.kltyton.mob_battle.entity.blueirongolem.BlueIronGolemEntity;
 import com.kltyton.mob_battle.entity.bullet.BulletEntity;
 import com.kltyton.mob_battle.entity.customfireball.CustomSuperBigFireballEntity;
 import com.kltyton.mob_battle.entity.deepcreature.DeepCreatureEntity;
+import com.kltyton.mob_battle.entity.drone.attackdrone.AttackDroneEntity;
+import com.kltyton.mob_battle.entity.drone.treatmentdrone.TreatmentDroneEntity;
 import com.kltyton.mob_battle.entity.firewall.FireWallEntity;
 import com.kltyton.mob_battle.entity.highbird.adulthood.HighbirdAdulthoodEntity;
 import com.kltyton.mob_battle.entity.highbird.baby.HighbirdBabyEntity;
@@ -47,6 +49,8 @@ public class ModEntities {
     public static final RegistryKey<EntityType<?>> bullet = RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(Mob_battle.MOD_ID,"bullet"));
     public static final RegistryKey<EntityType<?>> villgaer_iron_golem = RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(Mob_battle.MOD_ID,"iron_golem"));
     public static final RegistryKey<EntityType<?>> villager_king = RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(Mob_battle.MOD_ID,"villager_king"));
+    public static final RegistryKey<EntityType<?>> attack_drone =  RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(Mob_battle.MOD_ID,"attack_drone"));
+    public static final RegistryKey<EntityType<?>> treatment_drone = RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(Mob_battle.MOD_ID,"treatment_drone"));
     public static final EntityType<WarriorVillager> WARRIOR_VILLAGER = FabricEntityType.Builder.createMob(WarriorVillager::new, SpawnGroup.CREATURE,
                     (mob) -> mob.defaultAttributes(() -> VillagerEntity.createVillagerAttributes()
                             .add(EntityAttributes.ATTACK_DAMAGE, 5.0D)
@@ -131,7 +135,7 @@ public class ModEntities {
                     (mob) -> mob.defaultAttributes(VillagerKingEntity::createVillagerKingAttributes)
                             .spawnRestriction(SpawnLocationTypes.ON_GROUND,
                                     Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,(type, world, reason, pos, random) -> false))
-            .dimensions(0.6F, 1.95F)
+            .dimensions(1.4F, 3.25F)
             .build(villager_king);
     public static final EntityType<BulletEntity> BULLET_ENTITY =
             EntityType.Builder.<BulletEntity>create(BulletEntity::new, SpawnGroup.MISC)
@@ -171,6 +175,23 @@ public class ModEntities {
             .maxTrackingRange(16)
             .build(sugar_man_scorpion);
 
+    public static final EntityType<AttackDroneEntity> ATTACK_DRONE =
+            FabricEntityType.Builder.createMob(AttackDroneEntity::new, SpawnGroup.MISC,
+                    (mob) -> mob.defaultAttributes(AttackDroneEntity::createDroneAttributes)
+                            .spawnRestriction(SpawnLocationTypes.ON_GROUND,
+                                    Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,(type, world, reason, pos, random) -> false))
+            .dimensions(0.7F, 0.3F)
+            .maxTrackingRange(5)
+            .build(attack_drone);
+    public static final EntityType<TreatmentDroneEntity> TREATMENT_DRONE =
+            FabricEntityType.Builder.createMob(TreatmentDroneEntity::new, SpawnGroup.MISC,
+                    (mob) -> mob.defaultAttributes(TreatmentDroneEntity::createDroneAttributes)
+                            .spawnRestriction(SpawnLocationTypes.ON_GROUND,
+                                    Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,(type, world, reason, pos, random) -> false))
+            .dimensions(0.7F, 0.3F)
+            .maxTrackingRange(5)
+            .build(treatment_drone);
+
     public static void init() {
         Registry.register(Registries.ENTITY_TYPE, warrior_villager, WARRIOR_VILLAGER);
         Registry.register(Registries.ENTITY_TYPE, archer_villager, ARCHER_VILLAGER);
@@ -188,6 +209,8 @@ public class ModEntities {
         Registry.register(Registries.ENTITY_TYPE, bullet, BULLET_ENTITY);
         Registry.register(Registries.ENTITY_TYPE, villgaer_iron_golem, VILLAGER_IRON_GOLEM_ENTITY);
         Registry.register(Registries.ENTITY_TYPE, villager_king, VILLAGER_KING_ENTITY);
+        Registry.register(Registries.ENTITY_TYPE, attack_drone, ATTACK_DRONE);
+        Registry.register(Registries.ENTITY_TYPE, treatment_drone, TREATMENT_DRONE);
     }
 }
 

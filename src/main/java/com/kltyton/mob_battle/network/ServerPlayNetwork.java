@@ -3,6 +3,7 @@ package com.kltyton.mob_battle.network;
 import com.kltyton.mob_battle.Mob_battle;
 import com.kltyton.mob_battle.entity.deepcreature.DeepCreatureEntity;
 import com.kltyton.mob_battle.entity.deepcreature.skill.Skill;
+import com.kltyton.mob_battle.entity.drone.DroneManager;
 import com.kltyton.mob_battle.entity.highbird.HighbirdBaseEntity;
 import com.kltyton.mob_battle.entity.highbird.adulthood.HighbirdAdulthoodEntity;
 import com.kltyton.mob_battle.entity.irongolem.VillagerIronGolemEntity;
@@ -10,13 +11,20 @@ import com.kltyton.mob_battle.entity.irongolem.skill.IronGolemSkill;
 import com.kltyton.mob_battle.entity.witherskeletonking.WitherSkeletonKingEntity;
 import com.kltyton.mob_battle.entity.witherskeletonking.skill.KingSkill;
 import com.kltyton.mob_battle.network.packet.*;
+import com.kltyton.mob_battle.utils.EnchantmentUtil;
 import com.kltyton.mob_battle.utils.HeadStoneUtil;
+import com.kltyton.mob_battle.utils.IronGoldArmorUtil;
 import com.kltyton.mob_battle.utils.LeftClickUtil;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.enchantment.Enchantment;
 import net.minecraft.entity.Entity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 
 public class ServerPlayNetwork {
     public static void init() {
@@ -123,5 +131,28 @@ public class ServerPlayNetwork {
                     LeftClickUtil.leftClick(player, payload.pressing(), true);
                 }
         );
+        ServerPlayNetworking.registerGlobalReceiver(EnchantmentPayload.ID,
+                (payload, context) -> {
+                    ItemStack stack = payload.itemStack();
+                    RegistryKey<Enchantment> enchantment = payload.enchantment();
+                    int level = payload.level();
+
+                    ServerPlayerEntity player = context.player();
+                    EnchantmentUtil.addEnchantment(player, stack, enchantment, level);
+                }
+        );
+        ServerPlayNetworking.registerGlobalReceiver(SummonDronePayload.ID, (payload, context) -> {
+            ServerPlayerEntity player = context.player();
+            context.server().execute(() -> {
+                int type = payload.type();
+                if (!IronGoldArmorUtil.hasFullDiamondArmor(player)) {
+                    player.sendMessage(Text.literal("您没有装备全套铁合金盔甲，无法召唤或管理无人机").formatted(Formatting.RED), true);
+                    return;
+                }
+                if (type == 1) DroneManager.handleSummonRequest(player);
+                if (type == 2) DroneManager.handleAttackDroneMode(player);
+                if (type == 3) DroneManager.handleTreatmentDroneMode(player);
+            });
+        });
     }
 }

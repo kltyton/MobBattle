@@ -8,5 +8,10 @@
     "sounds": [
       "mob_battle:engineers_sanctum"
     ]
+  },
+  "shoreline": {
+    "sounds": [
+      "mob_battle:shoreline"
+    ]
   }
 }

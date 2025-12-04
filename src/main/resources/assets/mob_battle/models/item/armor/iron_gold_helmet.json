@@ -1,0 +1,7 @@
+{
+  "parent":"item/generated",
+  "textures":{
+    "layer0":"mob_battle:item/armor/iron_gold_helmet",
+    "layer1":"mob_battle:item/armor/iron_gold_helmet"
+  }
+}

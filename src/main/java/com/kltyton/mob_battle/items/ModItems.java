@@ -6,7 +6,8 @@ import com.kltyton.mob_battle.items.misc.*;
 import com.kltyton.mob_battle.items.scroll.*;
 import com.kltyton.mob_battle.items.tool.BaseAxe;
 import com.kltyton.mob_battle.items.tool.BaseBow;
-import com.kltyton.mob_battle.items.tool.BaseSword;
+import com.kltyton.mob_battle.items.tool.irongold.IronGoldSword;
+import com.kltyton.mob_battle.items.tool.meteorite.MeteoriteSword;
 import com.kltyton.mob_battle.items.tool.snipe.VsSnipe;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.ChargedProjectilesComponent;
@@ -18,6 +19,7 @@ import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Unit;
 
 public class ModItems {
     // 杂项物品
@@ -54,10 +56,16 @@ public class ModItems {
     public static Item HELL_CHESTPLATE_2;
     public static Item HELL_LEGGINGS_2;
     public static Item HELL_BOOTS_2;
+    public static Item IRON_GOLD_HELMET;
+    public static Item IRON_GOLD_CHESTPLATE;
+    public static Item IRON_GOLD_LEGGINGS;
+    public static Item IRON_GOLD_BOOTS;
+
     //工具以及武器
     public static Item METEORICORE_AXE;
     public static Item METEORICORE_BOW;
     public static Item METEORICORE_SWORD;
+    public static Item IRON_GOLD_SWORD;
     public static VsSnipe VS_SNIPE;
 
     public static void init() {
@@ -171,6 +179,40 @@ public class ModItems {
                                 ))
                 )
         );
+
+        IRON_GOLD_HELMET = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "iron_gold_helmet"),
+                new Item(new Item.Settings().armor(ModMaterial.IRON_GOLD_INSTANCE, EquipmentType.HELMET)
+                                .maxDamage(512).maxCount(1).component(DataComponentTypes.UNBREAKABLE, Unit.INSTANCE)
+                                .registryKey(RegistryKey.of(
+                                        RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "iron_gold_helmet")
+                                ))
+                )
+        );
+        IRON_GOLD_CHESTPLATE = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "iron_gold_chestplate"),
+                new Item(new Item.Settings().armor(ModMaterial.IRON_GOLD_INSTANCE, EquipmentType.CHESTPLATE)
+                                .maxDamage(512).maxCount(1).component(DataComponentTypes.UNBREAKABLE, Unit.INSTANCE)
+                                .registryKey(RegistryKey.of(
+                                        RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "iron_gold_chestplate")
+                                ))
+                )
+        );
+        IRON_GOLD_LEGGINGS = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "iron_gold_leggings"),
+                new Item(new Item.Settings().armor(ModMaterial.IRON_GOLD_INSTANCE, EquipmentType.LEGGINGS)
+                                .maxDamage(512).maxCount(1).component(DataComponentTypes.UNBREAKABLE, Unit.INSTANCE)
+                                .registryKey(RegistryKey.of(
+                                        RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "iron_gold_leggings")
+                                ))
+                )
+        );
+        IRON_GOLD_BOOTS = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "iron_gold_boots"),
+                new Item(new Item.Settings().armor(ModMaterial.IRON_GOLD_INSTANCE, EquipmentType.BOOTS)
+                                .maxDamage(512).maxCount(1).component(DataComponentTypes.UNBREAKABLE, Unit.INSTANCE)
+                                .registryKey(RegistryKey.of(
+                                        RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "iron_gold_boots")
+                                ))
+                )
+        );
+
         // 注册工具和武器
         METEORICORE_AXE = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "meteoricore_axe"),
                 new BaseAxe(new Item.Settings()
@@ -189,9 +231,16 @@ public class ModItems {
         );
 
         METEORICORE_SWORD = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "meteoricore_sword"),
-                new BaseSword(new Item.Settings()
+                new MeteoriteSword(new Item.Settings()
                         .registryKey(RegistryKey.of(
                                 RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "meteoricore_sword")
+                        ))
+                )
+        );
+        IRON_GOLD_SWORD = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "iron_gold_sword"),
+                new IronGoldSword(new Item.Settings()
+                        .registryKey(RegistryKey.of(
+                                RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "iron_gold_sword")
                         ))
                 )
         );

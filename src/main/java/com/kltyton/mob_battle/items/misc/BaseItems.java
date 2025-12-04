@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class BaseItems {
-    // 使用Map存储所有注册的物品，键为物品ID
+    // 存储所有注册的物品
     public static final Map<String, Item> ITEMS = new HashMap<>();
 
     // 物品标识符数组
@@ -48,7 +48,8 @@ public class BaseItems {
         ITEMS.put(id, item);
     }
 
-    // 提供静态引用
+    // 静态引用
     public static final Item BLUE_ICE = ITEMS.get("blue_ice");
     public static final Item ENERGY = ITEMS.get("energy");
+    public static final Item IRON_GOLD = ITEMS.get("iron_gold");
 }

@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/handheld",
+  "textures": {
+    "layer0": "mob_battle:item/iron_gold/iron_gold_sword"
+  }
+}

@@ -19,7 +19,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class BulletEntity extends PersistentProjectileEntity {
     private static final TrackedData<Integer> COLOR = DataTracker.registerData(BulletEntity.class, TrackedDataHandlerRegistry.INTEGER);
-
+    public boolean Fixed_damage = false;
     public BulletEntity(EntityType<BulletEntity> entityType, World world) {
         super(entityType, world);
         this.pickupType = PickupPermission.DISALLOWED;

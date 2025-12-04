@@ -1,5 +1,10 @@
 {
   "itemGroup.mob_battle.main": "Mob Battle",
+  "category.mob_battle.general": "Mob Battle",
+  "key.mob_battle.summon_drone": "Summon Drone",
+  "key.mob_battle.treatment_drone_mode": "Treatment Drone Mode",
+  "key.mob_battle.attack_drone_mode": "Attack Drone Mode",
+
   "item.mob_battle.mutual_attack_stick": "Mutual Attack Stick",
   "item.mob_battle.universal_lead": "Univaersal Lead",
   "item.mob_battle.invisible_universal_lead": "Invisible Universal Lead",
@@ -24,6 +29,9 @@
   "item.mob_battle.sugar_man_scorpion_spawn_egg": "Sugar Man Scorpion",
   "item.mob_battle.deep_creature_spawn_egg": "Deep Creature",
   "item.mob_battle.wither_skeleton_king_spawn_egg": "Wither Skeleton King",
+  "item.mob_battle.villager_king_spawn_egg": "Villager King",
+  "item.mob_battle.iron_golem_spawn_egg": "Iron Golem",
+
   "item.mob_battle.fireman_scroll": "Fireman Scroll",
   "item.mob_battle.hell_helmet_1": "Hell Helmet 1",
   "item.mob_battle.hell_chestplate_1": "Hell Chestplate 1",
@@ -41,10 +49,18 @@
   "item.mob_battle.lj": "Lj",
   "item.mob_battle.sorcerer_stone": "Sorcerer Stone",
   "item.mob_battle.emerald_diamond": "Emerald Diamond",
+
   "item.mob_battle.iron_gold": "Iron Gold",
+  "item.mob_battle.iron_gold_sword": "Iron Gold Sword",
+  "item.mob_battle.iron_gold_boots": "Iron Gold Boots",
+  "item.mob_battle.iron_gold_leggings": "Iron Gold Leggings",
+  "item.mob_battle.iron_gold_chestplate": "Iron Gold Chestplate",
+  "item.mob_battle.iron_gold_helmet": "Iron Gold Helmet",
+
   "item.mob_battle.strong_obsidian": "Strong Obsidian",
   "item.mob_battle.fire_red": "Fire Red",
   "item.mob_battle.desert_crystal": "Desert Crystal",
+
   "effect.mob_battle.insect_bite": "Insect Bite",
   "entity.mob_battle.archer_villager": "Archer Villager",
   "entity.mob_battle.warrior_villager": "Warrior Villager",
@@ -57,5 +73,10 @@
   "entity.mob_battle.sugar_man_scorpion": "Sugar Man Scorpion",
   "entity.mob_battle.deep_creature": "Deep Creature",
   "entity.mob_battle.wither_skeleton_king": "Wither Skeleton King",
+  "entity.mob_battle.iron_golem": "Iron Golem",
+  "entity.mob_battle.villager_king": "Villager King",
+  "entity.mob_battle.attack_drone": "Attack Drone",
+  "entity.mob_battle.treatment_drone": "Treatment Drone",
+
   "enchantment.mob_battle.magic_protection": "Magic Protection"
 }

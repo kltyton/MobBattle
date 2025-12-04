@@ -21,6 +21,7 @@
     "initgoals.PiglinBruteEntityMixin",
     "initgoals.RaiderEntityMixin",
     "initgoals.WitherSkeletonEntityMixin",
+    "irongold.AnvilScreenHandlerMixin",
     "leashable.EntityMixin",
     "leashable.LeashableMixin",
     "leashable.MobEntityMixin",

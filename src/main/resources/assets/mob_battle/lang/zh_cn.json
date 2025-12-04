@@ -1,5 +1,10 @@
 {
   "itemGroup.mob_battle.main": "Mob Battle",
+  "category.mob_battle.general": "Mob Battle",
+  "key.mob_battle.summon_drone": "召唤无人机",
+  "key.mob_battle.treatment_drone_mode": "治疗无人机模式切换",
+  "key.mob_battle.attack_drone_mode": "攻击无人机模式切换",
+
   "item.mob_battle.mutual_attack_stick": "仇恨棒",
   "item.mob_battle.universal_lead": "万能拴绳",
   "item.mob_battle.invisible_universal_lead": "隐形万能拴绳",
@@ -24,6 +29,9 @@
   "item.mob_battle.sugar_man_scorpion_spawn_egg": "糖人蝎刷怪蛋",
   "item.mob_battle.deep_creature_spawn_egg": "深渊实体刷怪蛋",
   "item.mob_battle.wither_skeleton_king_spawn_egg": "凋零骷髅王刷怪蛋",
+  "item.mob_battle.iron_golem_spawn_egg": "新·铁傀儡刷怪蛋",
+  "item.mob_battle.villager_king_spawn_egg": "村民之王刷怪蛋",
+
   "item.mob_battle.fireman_scroll": "烈焰人火球卷轴",
   "item.mob_battle.hell_helmet_1": "地狱头盔",
   "item.mob_battle.hell_chestplate_1": "地狱胸甲",
@@ -41,10 +49,18 @@
   "item.mob_battle.lj": "神灯",
   "item.mob_battle.sorcerer_stone": "魔法锭",
   "item.mob_battle.emerald_diamond": "翠钻锭",
+
   "item.mob_battle.iron_gold": "铁金合金",
+  "item.mob_battle.iron_gold_sword": "铁合金剑",
+  "item.mob_battle.iron_gold_boots": "铁合金靴",
+  "item.mob_battle.iron_gold_helmet": "铁合金头盔",
+  "item.mob_battle.iron_gold_chestplate": "铁合金胸甲",
+  "item.mob_battle.iron_gold_leggings": "铁合金护腿",
+
   "item.mob_battle.strong_obsidian": "强化黑曜石锭",
   "item.mob_battle.fire_red": "熔渣矿",
   "item.mob_battle.desert_crystal": "流沙结晶",
+
   "effect.mob_battle.insect_bite": "虫噬",
   "entity.mob_battle.archer_villager": "射手村民",
   "entity.mob_battle.warrior_villager": "战士村民",
@@ -57,5 +73,10 @@
   "entity.mob_battle.sugar_man_scorpion": "糖人蝎",
   "entity.mob_battle.deep_creature": "深渊实体",
   "entity.mob_battle.wither_skeleton_king": "凋零骷髅王",
+  "entity.mob_battle.iron_golem": "新·铁傀儡",
+  "entity.mob_battle.villager_king": "村民之王",
+  "entity.mob_battle.attack_drone": "攻击无人机",
+  "entity.mob_battle.treatment_drone": "治疗无人机",
+
   "enchantment.mob_battle.magic_protection": "魔法保护"
 }

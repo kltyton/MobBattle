@@ -33,5 +33,13 @@ public class ModPackets {
                 EntityUniversalPayload.ID,
                 EntityUniversalPayload.CODEC
         );
+        PayloadTypeRegistry.playC2S().register(
+                EnchantmentPayload.ID,
+                EnchantmentPayload.CODEC
+        );
+        PayloadTypeRegistry.playC2S().register(
+                SummonDronePayload.ID,
+                SummonDronePayload.CODEC
+        );
     }
 }

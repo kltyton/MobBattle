@@ -5,15 +5,17 @@ import com.kltyton.mob_battle.entity.blueirongolem.BlueIronGolemEntityRenderer;
 import com.kltyton.mob_battle.entity.bullet.BulletEntityRenderer;
 import com.kltyton.mob_battle.entity.customfireball.render.CustomSuperBigFireballEntityRenderer;
 import com.kltyton.mob_battle.entity.deepcreature.DeepCreatureEntityRenderer;
+import com.kltyton.mob_battle.entity.drone.attackdrone.AttackDroneEntityRenderer;
+import com.kltyton.mob_battle.entity.drone.treatmentdrone.TreatmentDroneEntityRenderer;
 import com.kltyton.mob_battle.entity.firewall.FireWallEntityRenderer;
 import com.kltyton.mob_battle.entity.highbird.adulthood.HighbirdAdulthoodEntityRenderer;
 import com.kltyton.mob_battle.entity.highbird.baby.HighbirdBabyEntityRenderer;
 import com.kltyton.mob_battle.entity.highbird.egg.HighbirdEggEntityRenderer;
 import com.kltyton.mob_battle.entity.highbird.teenage.HighbirdTeenageEntityRenderer;
-import com.kltyton.mob_battle.entity.irongolem.VillagerIronGolemEntityRender;
+import com.kltyton.mob_battle.entity.irongolem.VillagerIronGolemEntityRenderer;
 import com.kltyton.mob_battle.entity.sugarmanscorpion.SugarManScorpionRenderer;
 import com.kltyton.mob_battle.entity.villager.archervillager.ArcherVillagerRenderer;
-import com.kltyton.mob_battle.entity.villager.villagerking.VillagerKingEntityRender;
+import com.kltyton.mob_battle.entity.villager.villagerking.VillagerKingEntityRenderer;
 import com.kltyton.mob_battle.entity.villager.warriorvillager.WarriorVillagerRenderer;
 import com.kltyton.mob_battle.entity.witherskeletonking.WitherSkeletonKingRender;
 import com.kltyton.mob_battle.entity.xunsheng.XunShengEntityRenderer;
@@ -35,7 +37,9 @@ public class ModEntityRenderInit {
         EntityRendererRegistry.register(ModEntities.BLUE_IRON_GOLEM, BlueIronGolemEntityRenderer::new);
         EntityRendererRegistry.register(ModEntities.SUGAR_MAN_SCORPION, SugarManScorpionRenderer::new);
         EntityRendererRegistry.register(ModEntities.BULLET_ENTITY, BulletEntityRenderer::new);
-        EntityRendererRegistry.register(ModEntities.VILLAGER_IRON_GOLEM_ENTITY, VillagerIronGolemEntityRender::new);
-        EntityRendererRegistry.register(ModEntities.VILLAGER_KING_ENTITY, VillagerKingEntityRender::new);
+        EntityRendererRegistry.register(ModEntities.VILLAGER_IRON_GOLEM_ENTITY, VillagerIronGolemEntityRenderer::new);
+        EntityRendererRegistry.register(ModEntities.VILLAGER_KING_ENTITY, VillagerKingEntityRenderer::new);
+        EntityRendererRegistry.register(ModEntities.ATTACK_DRONE, AttackDroneEntityRenderer::new);
+        EntityRendererRegistry.register(ModEntities.TREATMENT_DRONE, TreatmentDroneEntityRenderer::new);
     }
 }
