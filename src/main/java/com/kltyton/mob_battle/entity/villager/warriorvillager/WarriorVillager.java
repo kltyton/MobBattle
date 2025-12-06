@@ -1,6 +1,5 @@
 package com.kltyton.mob_battle.entity.villager.warriorvillager;
 
-import com.kltyton.mob_battle.entity.xunsheng.XunShengEntity;
 import net.minecraft.block.BlockState;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.*;
@@ -121,7 +120,7 @@ public class WarriorVillager extends IronGolemEntity implements GeoEntity {
         controllerRegistrar.add(new AnimationController<>( "attack_controller",animTest -> PlayState.STOP)
                 .triggerableAnim("attack", ATTACK_ANIM));
     }
-    private PlayState animationController(final AnimationTest<XunShengEntity> state) {
+    private PlayState animationController(final AnimationTest<WarriorVillager> state) {
         if (state.isMoving()) {
             // 移动状态时播放行走动画
             return state.setAndContinue(WALK_ANIM);

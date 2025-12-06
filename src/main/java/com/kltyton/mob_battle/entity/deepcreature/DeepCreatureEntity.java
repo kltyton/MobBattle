@@ -1,7 +1,6 @@
 package com.kltyton.mob_battle.entity.deepcreature;
 
 import com.kltyton.mob_battle.entity.deepcreature.goal.DeepCreatureEntityNavigation;
-import com.kltyton.mob_battle.entity.xunsheng.XunShengEntity;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.entity.Entity;
@@ -307,7 +306,7 @@ public class DeepCreatureEntity extends HostileEntity implements GeoEntity {
         return new DeepCreatureEntityNavigation(this, world);
     }
 
-    private PlayState animationController(final AnimationTest<XunShengEntity> state) {
+    private PlayState animationController(final AnimationTest<DeepCreatureEntity> state) {
         if (state.isCurrentAnimation(DEAD_ANIM)) {
             ClientPlayNetworking.send(new SkillPayload(
                     "stop_ai", this.getId()

@@ -8,6 +8,8 @@ import com.kltyton.mob_battle.entity.highbird.HighbirdBaseEntity;
 import com.kltyton.mob_battle.entity.highbird.adulthood.HighbirdAdulthoodEntity;
 import com.kltyton.mob_battle.entity.irongolem.VillagerIronGolemEntity;
 import com.kltyton.mob_battle.entity.irongolem.skill.IronGolemSkill;
+import com.kltyton.mob_battle.entity.littleperson.giant.LittlePersonGiantEntity;
+import com.kltyton.mob_battle.entity.littleperson.giant.skill.LittlePersonGiantSkill;
 import com.kltyton.mob_battle.entity.witherskeletonking.WitherSkeletonKingEntity;
 import com.kltyton.mob_battle.entity.witherskeletonking.skill.KingSkill;
 import com.kltyton.mob_battle.network.packet.*;
@@ -118,6 +120,19 @@ public class ServerPlayNetwork {
                                 case "stop" -> {
                                     villagerIronGolemEntity.setHasSkill(false);
                                     villagerIronGolemEntity.setAiDisabled(false);
+                                }
+                                default -> Mob_battle.LOGGER.warn("没有找到技能： " + payload.skillName());
+                            }
+                        } else if (entity instanceof LittlePersonGiantEntity littlePersonGiant) {
+                            switch (payload.skillName()) {
+                                case "attack2" -> LittlePersonGiantSkill.runSkill_2(littlePersonGiant);
+                                case "attack3" -> LittlePersonGiantSkill.runSkill_3(littlePersonGiant);
+                                case "attack4" -> LittlePersonGiantSkill.runSkill_4(littlePersonGiant);
+                                case "stop_ai" -> littlePersonGiant.setAiDisabled(true);
+                                case "start_ai" -> littlePersonGiant.setAiDisabled(false);
+                                case "stop" -> {
+                                    littlePersonGiant.setHasSkill(false);
+                                    littlePersonGiant.setAiDisabled(false);
                                 }
                                 default -> Mob_battle.LOGGER.warn("没有找到技能： " + payload.skillName());
                             }

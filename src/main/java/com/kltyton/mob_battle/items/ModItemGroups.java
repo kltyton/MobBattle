@@ -52,6 +52,10 @@ public class ModItemGroups {
                 entries.add(ModItems.BLUE_IRON_GOLEM_SPAWN_EGG);
                 entries.add(ModItems.SUGAR_MAN_SCORPION_SPAWN_EGG);
                 entries.add(ModItems.IRON_GOLEM_SPAWN_EGG);
+                entries.add(ModItems.LITTLE_PERSON_CIVILIAN_SPAWN_EGG);
+                entries.add(ModItems.LITTLE_PERSON_MILITIA_SPAWN_EGG);
+                entries.add(ModItems.LITTLE_PERSON_ARCHER_SPAWN_EGG);
+                entries.add(ModItems.LITTLE_PERSON_GIANT_SPAWN_EGG);
                 //添加孵化蛋
                 entries.add(ModItems.INCUBATION_EGG);
 

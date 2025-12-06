@@ -1,6 +1,5 @@
 package com.kltyton.mob_battle.entity.witherskeletonking;
 
-import com.kltyton.mob_battle.entity.xunsheng.XunShengEntity;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.block.Blocks;
@@ -332,7 +331,7 @@ public class WitherSkeletonKingEntity extends WitherSkeletonEntity  implements G
     public AnimatableInstanceCache getAnimatableInstanceCache() {
         return this.geoCache;
     }
-    private PlayState animationController(final AnimationTest<XunShengEntity> state) {
+    private PlayState animationController(final AnimationTest<WitherSkeletonKingEntity> state) {
         if (state.isMoving()) {
             return state.setAndContinue(WALK_ANIM);
         }

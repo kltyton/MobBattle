@@ -13,6 +13,11 @@ import com.kltyton.mob_battle.entity.highbird.baby.HighbirdBabyEntityRenderer;
 import com.kltyton.mob_battle.entity.highbird.egg.HighbirdEggEntityRenderer;
 import com.kltyton.mob_battle.entity.highbird.teenage.HighbirdTeenageEntityRenderer;
 import com.kltyton.mob_battle.entity.irongolem.VillagerIronGolemEntityRenderer;
+import com.kltyton.mob_battle.entity.littleperson.archer.LittlePersonArcherEntityRenderer;
+import com.kltyton.mob_battle.entity.littleperson.archer.littlearrow.LittleArrowEntityRender;
+import com.kltyton.mob_battle.entity.littleperson.civilian.LittlePersonCivilianEntityRenderer;
+import com.kltyton.mob_battle.entity.littleperson.giant.LittlePersonGiantEntityRenderer;
+import com.kltyton.mob_battle.entity.littleperson.militia.LittlePersonMilitiaEntityRenderer;
 import com.kltyton.mob_battle.entity.sugarmanscorpion.SugarManScorpionRenderer;
 import com.kltyton.mob_battle.entity.villager.archervillager.ArcherVillagerRenderer;
 import com.kltyton.mob_battle.entity.villager.villagerking.VillagerKingEntityRenderer;
@@ -21,7 +26,7 @@ import com.kltyton.mob_battle.entity.witherskeletonking.WitherSkeletonKingRender
 import com.kltyton.mob_battle.entity.xunsheng.XunShengEntityRenderer;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 
-public class ModEntityRenderInit {
+public class ModEntityRenderer {
     public static void init() {
         EntityRendererRegistry.register(ModEntities.WARRIOR_VILLAGER, WarriorVillagerRenderer::new);
         EntityRendererRegistry.register(ModEntities.ARCHER_VILLAGER, ArcherVillagerRenderer::new);
@@ -41,5 +46,10 @@ public class ModEntityRenderInit {
         EntityRendererRegistry.register(ModEntities.VILLAGER_KING_ENTITY, VillagerKingEntityRenderer::new);
         EntityRendererRegistry.register(ModEntities.ATTACK_DRONE, AttackDroneEntityRenderer::new);
         EntityRendererRegistry.register(ModEntities.TREATMENT_DRONE, TreatmentDroneEntityRenderer::new);
+        EntityRendererRegistry.register(ModEntities.LITTLE_PERSON_CIVILIAN, LittlePersonCivilianEntityRenderer::new);
+        EntityRendererRegistry.register(ModEntities.LITTLE_PERSON_MILITIA, LittlePersonMilitiaEntityRenderer::new);
+        EntityRendererRegistry.register(ModEntities.LITTLE_PERSON_ARCHER, LittlePersonArcherEntityRenderer::new);
+        EntityRendererRegistry.register(ModEntities.LITTLE_PERSON_GIANT, LittlePersonGiantEntityRenderer::new);
+        EntityRendererRegistry.register(ModEntities.LITTLE_ARROW, LittleArrowEntityRender::new);
     }
 }

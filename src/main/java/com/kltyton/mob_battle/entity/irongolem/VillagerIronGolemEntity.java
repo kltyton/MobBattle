@@ -1,6 +1,5 @@
 package com.kltyton.mob_battle.entity.irongolem;
 
-import com.kltyton.mob_battle.entity.xunsheng.XunShengEntity;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -167,7 +166,7 @@ public class VillagerIronGolemEntity extends IronGolemEntity implements GeoEntit
                         })
         );
     }
-    private PlayState animationController(final AnimationTest<XunShengEntity> state) {
+    private PlayState animationController(final AnimationTest<VillagerIronGolemEntity> state) {
         if (state.isMoving()) {
             // 移动状态时播放行走动画
             return state.setAndContinue(WALK_ANIM);

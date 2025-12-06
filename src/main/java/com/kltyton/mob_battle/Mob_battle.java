@@ -5,6 +5,7 @@ import com.kltyton.mob_battle.buff.ModBuffs;
 import com.kltyton.mob_battle.command.ModCommands;
 import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.entity.drone.DroneManager;
+import com.kltyton.mob_battle.entity.sensor.ModSensorTypes;
 import com.kltyton.mob_battle.event.ModEvents;
 import com.kltyton.mob_battle.items.ModItemGroups;
 import com.kltyton.mob_battle.items.ModItems;
@@ -22,12 +23,11 @@ public class Mob_battle implements ModInitializer {
 
     @Override
     public void onInitialize() {
+        ModSensorTypes.init();
         ModItems.init();
         ModBuffs.init();
-        // 注册命令
         ModCommands.init();
         ModEvents.init();
-        //注册实体
         ModEntities.init();
         ModAttributer.init();
         ModPackets.init();

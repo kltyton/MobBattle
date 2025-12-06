@@ -11,7 +11,8 @@ public class Mob_battleClient implements ClientModInitializer {
     public void onInitializeClient() {
         ClientPlayNetwork.init();
         ModClientEvents.clientInit();
-        ModEntityRenderInit.init();
+        ModModel.init();
+        ModEntityRenderer.init();
         ModKeyBinding.init();
     }
 }

@@ -31,6 +31,10 @@
   "item.mob_battle.wither_skeleton_king_spawn_egg": "凋零骷髅王刷怪蛋",
   "item.mob_battle.iron_golem_spawn_egg": "新·铁傀儡刷怪蛋",
   "item.mob_battle.villager_king_spawn_egg": "村民之王刷怪蛋",
+  "item.mob_battle.little_person_civilian_spawn_egg": "小人平民刷怪蛋",
+  "item.mob_battle.little_person_militia_spawn_egg": "小人民兵刷怪蛋",
+  "item.mob_battle.little_person_archer_spawn_egg": "小人射手刷怪蛋",
+  "item.mob_battle.little_person_giant_spawn_egg": "小人巨人刷怪蛋",
 
   "item.mob_battle.fireman_scroll": "烈焰人火球卷轴",
   "item.mob_battle.hell_helmet_1": "地狱头盔",
@@ -77,6 +81,10 @@
   "entity.mob_battle.villager_king": "村民之王",
   "entity.mob_battle.attack_drone": "攻击无人机",
   "entity.mob_battle.treatment_drone": "治疗无人机",
+  "entity.mob_battle.little_person_civilian": "小人平民",
+  "entity.mob_battle.little_person_militia": "小人民兵",
+  "entity.mob_battle.little_person_archer": "小人射手",
+  "entity.mob_battle.little_person_giant": "小人巨人",
 
   "enchantment.mob_battle.magic_protection": "魔法保护"
 }

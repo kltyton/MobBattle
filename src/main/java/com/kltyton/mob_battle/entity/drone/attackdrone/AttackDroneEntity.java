@@ -137,7 +137,7 @@ public class AttackDroneEntity extends DroneEntity {
                 dy / distance * speed,
                 dz / distance * speed
         );
-        bullet.Fixed_damage = true;
+        bullet.setTrueDamage(true);
         bullet.setDamage(300.0D);
         this.getWorld().spawnEntity(bullet);
         this.triggerAnim("attack_controller", "attack");

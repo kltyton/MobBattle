@@ -46,7 +46,13 @@ public class ModItems {
     public static SpawnEggItem BLUE_IRON_GOLEM_SPAWN_EGG;
     public static SpawnEggItem SUGAR_MAN_SCORPION_SPAWN_EGG;
     public static SpawnEggItem IRON_GOLEM_SPAWN_EGG;
+    public static SpawnEggItem LITTLE_PERSON_CIVILIAN_SPAWN_EGG;
+    public static SpawnEggItem LITTLE_PERSON_MILITIA_SPAWN_EGG;
+    public static SpawnEggItem LITTLE_PERSON_ARCHER_SPAWN_EGG;
+    public static SpawnEggItem LITTLE_PERSON_GIANT_SPAWN_EGG;
+
     public static IncubationEggItem INCUBATION_EGG;
+
     //盔甲
     public static Item HELL_HELMET_1;
     public static Item HELL_CHESTPLATE_1;
@@ -385,6 +391,46 @@ public class ModItems {
                         new Item.Settings()
                                 .registryKey(RegistryKey.of(
                                         RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "iron_golem_spawn_egg")
+                                ))
+                )
+        );
+        LITTLE_PERSON_CIVILIAN_SPAWN_EGG = Registry.register(Registries.ITEM,
+                Identifier.of(Mob_battle.MOD_ID, "little_person_civilian_spawn_egg"),
+                new SpawnEggItem(
+                        ModEntities.LITTLE_PERSON_CIVILIAN,
+                        new Item.Settings()
+                                .registryKey(RegistryKey.of(
+                                        RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "little_person_civilian_spawn_egg")
+                                ))
+                )
+        );
+        LITTLE_PERSON_MILITIA_SPAWN_EGG = Registry.register(Registries.ITEM,
+                Identifier.of(Mob_battle.MOD_ID, "little_person_militia_spawn_egg"),
+                new SpawnEggItem(
+                        ModEntities.LITTLE_PERSON_MILITIA,
+                        new Item.Settings()
+                                .registryKey(RegistryKey.of(
+                                        RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "little_person_militia_spawn_egg")
+                                ))
+                )
+        );
+        LITTLE_PERSON_ARCHER_SPAWN_EGG = Registry.register(Registries.ITEM,
+                Identifier.of(Mob_battle.MOD_ID, "little_person_archer_spawn_egg"),
+                new SpawnEggItem(
+                        ModEntities.LITTLE_PERSON_ARCHER,
+                        new Item.Settings()
+                                .registryKey(RegistryKey.of(
+                                        RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "little_person_archer_spawn_egg")
+                                ))
+                )
+        );
+        LITTLE_PERSON_GIANT_SPAWN_EGG = Registry.register(Registries.ITEM,
+                Identifier.of(Mob_battle.MOD_ID, "little_person_giant_spawn_egg"),
+                new SpawnEggItem(
+                        ModEntities.LITTLE_PERSON_GIANT,
+                        new Item.Settings()
+                                .registryKey(RegistryKey.of(
+                                        RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "little_person_giant_spawn_egg")
                                 ))
                 )
         );

@@ -1,6 +1,5 @@
 package com.kltyton.mob_battle.entity.villager.archervillager;
 
-import com.kltyton.mob_battle.entity.xunsheng.XunShengEntity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.SpawnReason;
@@ -195,7 +194,7 @@ public class ArcherVillager extends SnowGolemEntity implements Angerable, GeoEnt
         controllerRegistrar.add(new AnimationController<>( "attack_controller",animTest -> PlayState.STOP)
                 .triggerableAnim("attack", ATTACK_ANIM));
     }
-    private PlayState animationController(final AnimationTest<XunShengEntity> state) {
+    private PlayState animationController(final AnimationTest<ArcherVillager> state) {
         if (state.isMoving()) {
             // 移动状态时播放行走动画
             return state.setAndContinue(WALK_ANIM);

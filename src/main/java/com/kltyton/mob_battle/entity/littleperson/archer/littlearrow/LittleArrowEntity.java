@@ -1,6 +1,8 @@
-package com.kltyton.mob_battle.entity.bullet;
+package com.kltyton.mob_battle.entity.littleperson.archer.littlearrow;
 
 import com.kltyton.mob_battle.entity.ModEntities;
+import com.kltyton.mob_battle.entity.bullet.TrueDamageProjectile;
+import com.kltyton.mob_battle.entity.littleperson.giant.LittlePersonGiantEntity;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.PotionContentsComponent;
 import net.minecraft.entity.Entity;
@@ -9,27 +11,31 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
+import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.particle.TintedParticleEffect;
+import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
-public class BulletEntity extends TrueDamageProjectile {
-    private static final TrackedData<Integer> COLOR = DataTracker.registerData(BulletEntity.class, TrackedDataHandlerRegistry.INTEGER);
+public class LittleArrowEntity extends TrueDamageProjectile {
+    private static final TrackedData<Integer> COLOR = DataTracker.registerData(LittleArrowEntity.class, TrackedDataHandlerRegistry.INTEGER);
 
-    public BulletEntity(EntityType<BulletEntity> entityType, World world) {
+    public LittleArrowEntity(EntityType<? extends LittleArrowEntity> entityType, World world) {
         super(entityType, world);
-        this.pickupType = PickupPermission.DISALLOWED;
     }
 
-    public BulletEntity(World world, LivingEntity owner, ItemStack stack, @Nullable ItemStack shotFrom) {
-        super(ModEntities.BULLET_ENTITY, owner, world, stack, shotFrom);
+    public LittleArrowEntity(World world, double x, double y, double z, ItemStack stack, @Nullable ItemStack shotFrom) {
+        super(ModEntities.LITTLE_ARROW, x, y, z, world, stack, shotFrom);
         this.initColor();
-        this.pickupType = PickupPermission.DISALLOWED;
     }
 
+    public LittleArrowEntity(World world, LivingEntity owner, ItemStack stack, @Nullable ItemStack shotFrom) {
+        super(ModEntities.LITTLE_ARROW, owner, world, stack, shotFrom);
+        this.initColor();
+    }
 
     private PotionContentsComponent getPotionContents() {
         return this.getItemStack().getOrDefault(DataComponentTypes.POTION_CONTENTS, PotionContentsComponent.DEFAULT);
@@ -55,6 +61,10 @@ public class BulletEntity extends TrueDamageProjectile {
         this.dataTracker.set(COLOR, potionContentsComponent.equals(PotionContentsComponent.DEFAULT) ? -1 : potionContentsComponent.getColor());
     }
 
+    public void addEffect(StatusEffectInstance effect) {
+        this.setPotionContents(this.getPotionContents().with(effect));
+    }
+
     @Override
     protected void initDataTracker(DataTracker.Builder builder) {
         super.initDataTracker(builder);
@@ -65,7 +75,6 @@ public class BulletEntity extends TrueDamageProjectile {
     public void tick() {
         super.tick();
         if (this.getWorld().isClient) {
-            this.pickupType = PickupPermission.DISALLOWED;
             if (this.isInGround()) {
                 if (this.inGroundTime % 5 == 0) {
                     this.spawnParticles(1);
@@ -75,7 +84,7 @@ public class BulletEntity extends TrueDamageProjectile {
             }
         } else if (this.isInGround() && this.inGroundTime != 0 && !this.getPotionContents().equals(PotionContentsComponent.DEFAULT) && this.inGroundTime >= 600) {
             this.getWorld().sendEntityStatus(this, (byte)0);
-            this.setStack(new ItemStack(Items.IRON_BLOCK));
+            this.setStack(new ItemStack(Items.ARROW));
         }
     }
 
@@ -104,8 +113,13 @@ public class BulletEntity extends TrueDamageProjectile {
         potionContentsComponent.forEachEffect(effect -> target.addStatusEffect(effect, entity), f);
     }
     @Override
+    protected void onBlockHit(BlockHitResult blockHitResult) {
+        super.onBlockHit(blockHitResult);
+        if (this.getOwner() instanceof LittlePersonGiantEntity) this.discard();
+    }
+    @Override
     protected ItemStack getDefaultItemStack() {
-        return new ItemStack(Items.IRON_BLOCK);
+        return new ItemStack(Items.ARROW);
     }
 
     @Override

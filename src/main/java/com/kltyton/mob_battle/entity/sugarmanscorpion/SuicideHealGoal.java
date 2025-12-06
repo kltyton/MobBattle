@@ -16,7 +16,7 @@ public class SuicideHealGoal extends Goal {
     private final double speed;
     private final double searchRadius;
 
-    public SuicideHealGoal(MobEntity host, double speed, double searchRadius) {
+    public SuicideHealGoal(SugarManScorpion host, double speed, double searchRadius) {
         this.host = host;
         this.speed = speed;
         this.searchRadius = searchRadius;

@@ -1,7 +1,7 @@
 package com.kltyton.mob_battle.mixin;
 
 import com.kltyton.mob_battle.command.FriendlyProjectileDamageCommand;
-import com.kltyton.mob_battle.entity.bullet.BulletEntity;
+import com.kltyton.mob_battle.entity.bullet.TrueDamageProjectile;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.damage.DamageSource;
@@ -35,7 +35,7 @@ public abstract class ArrowEntityMixin extends ProjectileEntity{
             at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;sidedDamage(Lnet/minecraft/entity/damage/DamageSource;F)Z")
     )
     private boolean cancelDamage(Entity instance, DamageSource source, float amount) {
-        if ((PersistentProjectileEntity) (Object) this instanceof BulletEntity bulletEntity && bulletEntity.Fixed_damage) {
+        if ((PersistentProjectileEntity) (Object) this instanceof TrueDamageProjectile trueDamageProjectile && trueDamageProjectile.isTrueDamage()) {
             return instance.sidedDamage(source, (float) this.damage);
         } else {
             return instance.sidedDamage(source, amount);
