@@ -15,7 +15,7 @@ public class TreatmentDroneEntity extends DroneEntity {
     public int healTickTimer = 0;
     public static final int HEAL_INTERVAL = 20;   // 每20tick治疗一次`
     public static final float HEAL_AMOUNT = 30.0F; // 每次恢复30血（15颗心）
-    public static final float PLAYER_HEAL_AMOUNT = 7f;
+    public static final float PLAYER_HEAL_AMOUNT = 7F;
     public static final TrackedData<Boolean> ONLY_PLAYER = DataTracker.registerData(TreatmentDroneEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
     public void setOnlyPlayer(boolean onlyPlayer) {
         this.getDataTracker().set(ONLY_PLAYER, onlyPlayer);

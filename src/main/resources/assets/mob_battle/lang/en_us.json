@@ -35,6 +35,8 @@
   "item.mob_battle.little_person_militia_spawn_egg": "Little Person Militia",
   "item.mob_battle.little_person_archer_spawn_egg": "Little Person Archer",
   "item.mob_battle.little_person_giant_spawn_egg": "Little Person Giant",
+  "item.mob_battle.little_person_guard_spawn_egg": "Little Person Guard",
+  "item.mob_battle.little_person_king_spawn_egg": "Little Person King",
 
   "item.mob_battle.fireman_scroll": "Fireman Scroll",
   "item.mob_battle.hell_helmet_1": "Hell Helmet 1",
@@ -85,6 +87,8 @@
   "entity.mob_battle.little_person_militia": "Little Person Militia",
   "entity.mob_battle.little_person_archer": "Little Person Archer",
   "entity.mob_battle.little_person_giant": "Little Person Giant",
+  "entity.mob_battle.little_person_guard": "Little Person Guard",
+  "entity.mob_battle.little_person_king": "Little Person King",
 
   "enchantment.mob_battle.magic_protection": "Magic Protection"
 }

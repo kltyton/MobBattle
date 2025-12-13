@@ -18,7 +18,6 @@ import net.minecraft.entity.passive.IronGolemEntity;
 import net.minecraft.entity.passive.MerchantEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
@@ -129,9 +128,9 @@ public class XunShengEntity extends HostileEntity implements GeoEntity {
         this.goalSelector.add(2, new XunShengAttackGoal(this, 1.0, false)); // 添加僵尸攻击目标
         this.goalSelector.add(7, new WanderAroundFarGoal(this, 1.0)); // 添加远距离游荡目标
         this.targetSelector.add(1, new RevengeGoal(this).setGroupRevenge(ZombifiedPiglinEntity.class)); // 添加复仇目标
-        this.targetSelector.add(2, new ActiveTargetGoal(this, PlayerEntity.class, true)); // 添加主动攻击玩家目标
-        this.targetSelector.add(3, new ActiveTargetGoal(this, MerchantEntity.class, false)); // 添加攻击村民目标
-        this.targetSelector.add(3, new ActiveTargetGoal(this, IronGolemEntity.class, true)); // 添加攻击铁傀儡目标
+        this.targetSelector.add(2, new ActiveTargetGoal<>(this, PlayerEntity.class, true)); // 添加主动攻击玩家目标
+        this.targetSelector.add(3, new ActiveTargetGoal<>(this, MerchantEntity.class, false)); // 添加攻击村民目标
+        this.targetSelector.add(3, new ActiveTargetGoal<>(this, IronGolemEntity.class, true)); // 添加攻击铁傀儡目标
     }
     // 初始化数据追踪器
     @Override

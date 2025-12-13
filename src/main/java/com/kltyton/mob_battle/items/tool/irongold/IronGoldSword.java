@@ -1,12 +1,7 @@
 package com.kltyton.mob_battle.items.tool.irongold;
 
 import com.kltyton.mob_battle.items.FabricItem;
-import com.kltyton.mob_battle.items.ModMaterial;
 import com.kltyton.mob_battle.items.tool.BaseSword;
-import com.kltyton.mob_battle.utils.EnchantmentUtil;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.DeathProtectionComponent;
-import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
@@ -19,15 +14,28 @@ import org.jetbrains.annotations.Nullable;
 
 public class IronGoldSword extends BaseSword implements FabricItem {
     public IronGoldSword(Settings settings) {
-        super(settings.sword(ModMaterial.IRON_GOLD_TOOL_MATERIAL, 0f,-2.2f).maxCount(1).component(DataComponentTypes.DEATH_PROTECTION, DeathProtectionComponent.TOTEM_OF_UNDYING));
+        super(settings);
     }
+
     @Override
     public void inventoryTick(ItemStack stack, ServerWorld world, Entity entity, @Nullable EquipmentSlot slot) {
         super.inventoryTick(stack, world, entity, slot);
-        if (EnchantmentUtil.getEnchantmentLevel(world, stack, Enchantments.SWEEPING_EDGE) < 1) {
+/*        if (EnchantmentUtil.getEnchantmentLevel(world, stack, Enchantments.SWEEPING_EDGE) < 1) {
             EnchantmentUtil.addEnchantment(world, stack, Enchantments.SWEEPING_EDGE, 1);
-        }
+        }*/
     }
+/*    @Override
+    public Text getName(ItemStack stack) {
+        Text originalName = super.getName(stack);
+        if (stack.getDamage() >= stack.getMaxDamage() - 1) {
+            MutableText damagedName = originalName.copy();
+            damagedName.append(Text.literal("（已损坏）").styled(style -> style.withColor(0xFF5555)));
+            return damagedName;
+        }
+
+        // 未损坏时返回原名
+        return originalName;
+    }*/
     @Override
     public void addStatusEffect(LivingEntity target, LivingEntity attacker) {
         target.addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS, 100, 1, false, true, true), attacker);

@@ -32,7 +32,7 @@ public class VillagerIronGolemEntity extends IronGolemEntity implements GeoEntit
         super(entityType, world);
         this.setAiDisabled(false);
         this.setHasSkill(false);
-        this.setSkillCooldown(400);
+        this.setSkillCooldown(200);
     }
 
     //skill
@@ -65,7 +65,7 @@ public class VillagerIronGolemEntity extends IronGolemEntity implements GeoEntit
     public void performSkill() {
         this.setHasSkill(true);
         this.setAiDisabled(true);
-        this.setSkillCooldown(400);
+        this.setSkillCooldown(200);
         this.triggerAnim("attack_controller", "attack2");
     }
     @Override
@@ -104,11 +104,11 @@ public class VillagerIronGolemEntity extends IronGolemEntity implements GeoEntit
         float g = (int)f > 0 ? f / 2.0F + this.random.nextInt((int)f) : f;
         DamageSource damageSource = this.getDamageSources().mobAttack(this);
         boolean bl = target.damage(world, damageSource, g);
+        if (!this.hasSkill()) {
+            this.triggerAnim("attack_controller", "attack");
+            this.setHasSkill(true);
+        }
         if (bl) {
-            if (!this.hasSkill()) {
-                this.triggerAnim("attack_controller", "attack");
-                this.setHasSkill(true);
-            }
             double d = target instanceof LivingEntity livingEntity ? livingEntity.getAttributeValue(EntityAttributes.KNOCKBACK_RESISTANCE) : 0.0;
             double e = Math.max(0.0, 1.0 - d);
             target.setVelocity(target.getVelocity().add(0.0, 0.4F * e, 0.0));

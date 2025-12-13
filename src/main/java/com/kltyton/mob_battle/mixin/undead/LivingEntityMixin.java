@@ -63,14 +63,14 @@ public abstract class LivingEntityMixin {
     @Redirect(method = "tryUseDeathProtector", at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;decrement(I)V"))
     public void decrement(ItemStack instance, int amount) {
         if (instance.isOf(ModItems.IRON_GOLD_SWORD) && ((LivingEntity) (Object) this) instanceof PlayerEntity player) {
-            instance.damage(500, player);
+            instance.damage(5000, player);
         } else {
             instance.decrement(amount);
         }
     }
     @Inject(method = "tryUseDeathProtector", at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;copy()Lnet/minecraft/item/ItemStack;"), locals = LocalCapture.CAPTURE_FAILSOFT, cancellable = true)
     public void tryUseDeathProtector(DamageSource source, CallbackInfoReturnable<Boolean> cir, DeathProtectionComponent deathProtectionComponent, ItemStack itemStack2, Hand[] var5, int var6, int var7, Hand hand) {
-        if (itemStack2.isOf(ModItems.IRON_GOLD_SWORD) && !IronGoldArmorUtil.hasFullDiamondArmor((LivingEntity) (Object) this)) {
+        if (itemStack2.isOf(ModItems.IRON_GOLD_SWORD) && (!IronGoldArmorUtil.hasFullDiamondArmor((LivingEntity) (Object) this) || itemStack2.getDamage() >= itemStack2.getMaxDamage() - 1)) {
             cir.cancel();
             cir.setReturnValue(false);
         }

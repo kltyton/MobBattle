@@ -51,6 +51,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 public class WitherSkeletonKingEntity extends WitherSkeletonEntity  implements GeoEntity {
+
     private final ServerBossBar bossBar = new ServerBossBar(
             this.getDisplayName(),
             BossBar.Color.PURPLE,

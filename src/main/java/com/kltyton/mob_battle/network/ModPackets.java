@@ -41,5 +41,17 @@ public class ModPackets {
                 SummonDronePayload.ID,
                 SummonDronePayload.CODEC
         );
+        PayloadTypeRegistry.playC2S().register(
+                ItemGroupPayload.ID,
+                ItemGroupPayload.CODEC
+        );
+        PayloadTypeRegistry.playS2C().register(
+                ItemGroupPayload.ID,
+                ItemGroupPayload.CODEC
+        );
+        PayloadTypeRegistry.playS2C().register(
+                ILeadUpdatePayload.ID,
+                ILeadUpdatePayload.CODEC
+        );
     }
 }

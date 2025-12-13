@@ -17,6 +17,7 @@ import net.minecraft.util.math.Vec3d;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 public class DroneManager {
@@ -299,5 +300,15 @@ public class DroneManager {
             }
             return null;
         }
+    }
+    public static boolean isPlayersDrone(DroneEntity drone, ServerPlayerEntity player) {
+        if (drone == null || player == null) return false;
+
+        UUID droneId = drone.getUuid();
+        DroneData data = INSTANCE.getOrCreate(player);   // 拿到玩家的 DroneData
+
+        return Objects.equals(droneId, data.attack1)
+                || Objects.equals(droneId, data.attack2)
+                || Objects.equals(droneId, data.treatment);
     }
 }

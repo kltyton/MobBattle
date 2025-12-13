@@ -17,6 +17,8 @@ import com.kltyton.mob_battle.entity.littleperson.archer.LittlePersonArcherEntit
 import com.kltyton.mob_battle.entity.littleperson.archer.littlearrow.LittleArrowEntity;
 import com.kltyton.mob_battle.entity.littleperson.civilian.LittlePersonCivilianEntity;
 import com.kltyton.mob_battle.entity.littleperson.giant.LittlePersonGiantEntity;
+import com.kltyton.mob_battle.entity.littleperson.guard.LittlePersonGuardEntity;
+import com.kltyton.mob_battle.entity.littleperson.king.LittlePersonKingEntity;
 import com.kltyton.mob_battle.entity.littleperson.militia.LittlePersonMilitiaEntity;
 import com.kltyton.mob_battle.entity.sugarmanscorpion.SugarManScorpion;
 import com.kltyton.mob_battle.entity.villager.archervillager.ArcherVillager;
@@ -61,6 +63,8 @@ public class ModEntities {
     public static final RegistryKey<EntityType<?>> little_person_militia = RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(Mob_battle.MOD_ID,"little_person_militia"));
     public static final RegistryKey<EntityType<?>> little_person_archer = RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(Mob_battle.MOD_ID,"little_person_archer"));
     public static final RegistryKey<EntityType<?>> little_person_giant = RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(Mob_battle.MOD_ID,"little_person_giant"));
+    public static final RegistryKey<EntityType<?>> little_person_guard = RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(Mob_battle.MOD_ID,"little_person_guard"));
+    public static final RegistryKey<EntityType<?>> little_person_king = RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(Mob_battle.MOD_ID,"little_person_king"));
     public static final EntityType<WarriorVillager> WARRIOR_VILLAGER = FabricEntityType.Builder.createMob(WarriorVillager::new, SpawnGroup.CREATURE,
                     (mob) -> mob.defaultAttributes(() -> VillagerEntity.createVillagerAttributes()
                             .add(EntityAttributes.ATTACK_DAMAGE, 5.0D)
@@ -238,9 +242,26 @@ public class ModEntities {
                             (mob) -> mob.defaultAttributes(LittlePersonGiantEntity::createLittlePersonGiantAttributes)
                                     .spawnRestriction(SpawnLocationTypes.ON_GROUND,
                                             Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,(type, world, reason, pos, random) -> false))
-                    .dimensions(0.6F, 1.8F)
+                    .dimensions(0.6F, 0.8F)
                     .maxTrackingRange(40)
                     .build(little_person_giant);
+    public static final EntityType<LittlePersonGuardEntity> LITTLE_PERSON_GUARD =
+            FabricEntityType.Builder.createMob(LittlePersonGuardEntity::new, SpawnGroup.MISC,
+                            (mob) -> mob.defaultAttributes(LittlePersonGuardEntity::createLittlePersonGuardAttributes)
+                                    .spawnRestriction(SpawnLocationTypes.ON_GROUND,
+                                            Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, (type, world, reason, pos, random) -> false))
+                    .dimensions(0.6F, 0.9F)
+                    .maxTrackingRange(40)
+                    .build(little_person_guard);
+    public static final EntityType<LittlePersonKingEntity> LITTLE_PERSON_KING =
+            FabricEntityType.Builder.createMob(LittlePersonKingEntity::new, SpawnGroup.MISC,
+                            (mob) -> mob.defaultAttributes(LittlePersonKingEntity::createLittlePersonKingAttributes)
+                                    .spawnRestriction(SpawnLocationTypes.ON_GROUND,
+                                            Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,(type, world, reason, pos, random) -> false))
+                    .dimensions(0.6F, 0.9F)
+                    .maxTrackingRange(40)
+                    .build(little_person_king);
+
 
     public static void init() {
         Registry.register(Registries.ENTITY_TYPE, warrior_villager, WARRIOR_VILLAGER);
@@ -266,6 +287,8 @@ public class ModEntities {
         Registry.register(Registries.ENTITY_TYPE, little_person_militia, LITTLE_PERSON_MILITIA);
         Registry.register(Registries.ENTITY_TYPE, little_person_archer, LITTLE_PERSON_ARCHER);
         Registry.register(Registries.ENTITY_TYPE, little_person_giant, LITTLE_PERSON_GIANT);
+        Registry.register(Registries.ENTITY_TYPE, little_person_guard, LITTLE_PERSON_GUARD);
+        Registry.register(Registries.ENTITY_TYPE, little_person_king, LITTLE_PERSON_KING);
     }
 }
 

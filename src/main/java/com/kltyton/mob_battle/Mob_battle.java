@@ -4,11 +4,13 @@ import com.kltyton.mob_battle.attributer.ModAttributer;
 import com.kltyton.mob_battle.buff.ModBuffs;
 import com.kltyton.mob_battle.command.ModCommands;
 import com.kltyton.mob_battle.entity.ModEntities;
+import com.kltyton.mob_battle.entity.ModEntityAttributes;
 import com.kltyton.mob_battle.entity.drone.DroneManager;
 import com.kltyton.mob_battle.entity.sensor.ModSensorTypes;
+import com.kltyton.mob_battle.event.ClearItemEvent;
 import com.kltyton.mob_battle.event.ModEvents;
-import com.kltyton.mob_battle.items.ModItemGroups;
 import com.kltyton.mob_battle.items.ModItems;
+import com.kltyton.mob_battle.items.itemgroup.ModItemGroups;
 import com.kltyton.mob_battle.network.ModPackets;
 import com.kltyton.mob_battle.network.ServerPlayNetwork;
 import com.kltyton.mob_battle.sounds.ModSounds;
@@ -24,6 +26,7 @@ public class Mob_battle implements ModInitializer {
     @Override
     public void onInitialize() {
         ModSensorTypes.init();
+        ModEntityAttributes.init();
         ModItems.init();
         ModBuffs.init();
         ModCommands.init();
@@ -32,9 +35,10 @@ public class Mob_battle implements ModInitializer {
         ModAttributer.init();
         ModPackets.init();
         ServerPlayNetwork.init();
-        ModItemGroups.init();
         ModSounds.init();
         ServerBgmManager.init();
         DroneManager.init();
+        ModItemGroups.init();
+        ClearItemEvent.init();
     }
 }

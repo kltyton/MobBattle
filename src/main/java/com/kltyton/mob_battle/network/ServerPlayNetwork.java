@@ -10,6 +10,10 @@ import com.kltyton.mob_battle.entity.irongolem.VillagerIronGolemEntity;
 import com.kltyton.mob_battle.entity.irongolem.skill.IronGolemSkill;
 import com.kltyton.mob_battle.entity.littleperson.giant.LittlePersonGiantEntity;
 import com.kltyton.mob_battle.entity.littleperson.giant.skill.LittlePersonGiantSkill;
+import com.kltyton.mob_battle.entity.littleperson.guard.LittlePersonGuardEntity;
+import com.kltyton.mob_battle.entity.littleperson.guard.skill.LittlePersonGuardSkill;
+import com.kltyton.mob_battle.entity.littleperson.king.LittlePersonKingEntity;
+import com.kltyton.mob_battle.entity.littleperson.king.skill.LittlePersonKingSkill;
 import com.kltyton.mob_battle.entity.witherskeletonking.WitherSkeletonKingEntity;
 import com.kltyton.mob_battle.entity.witherskeletonking.skill.KingSkill;
 import com.kltyton.mob_battle.network.packet.*;
@@ -47,7 +51,7 @@ public class ServerPlayNetwork {
                     MinecraftServer server = context.server();
                     server.execute(() -> {
                         Entity anger = context.player().getWorld().getEntityById(payload.angerId());
-                        if (anger instanceof HighbirdAdulthoodEntity highbird && highbird.getWorld() instanceof ServerWorld serverWorld)
+                        if (anger instanceof HighbirdAdulthoodEntity highbird && highbird.getWorld() instanceof ServerWorld)
                             highbird.setAiDisabled(false);
                     });
                 }
@@ -68,74 +72,100 @@ public class ServerPlayNetwork {
                     MinecraftServer server = context.server();
                     server.execute(() -> {
                         Entity entity = context.player().getWorld().getEntityById(payload.entityId());
-                        if (entity instanceof DeepCreatureEntity deepCreature) {
-                            switch (payload.skillName()) {
-                                case "roar" -> Skill.runRoarSkill(deepCreature);
-                                case "earthquake" -> Skill.runEarthquake(deepCreature);
-                                case "smash" -> Skill.runSmash(deepCreature);
-                                case "side" -> Skill.runSideSkill(deepCreature);
-                                case "sonic_boom" -> Skill.runSonicBoom(deepCreature);
-                                case "charge" -> Skill.runCharge(deepCreature);
-                                case "stop_ai" -> deepCreature.setAiDisabled(true);
-                                case "start_ai" -> deepCreature.setAiDisabled(false);
-                                case "smash_ground_s" -> {
-                                    deepCreature.setAiDisabled(true);
-                                    Skill.runSmashGround(deepCreature, 10, 0.5, 1.0, 0.25, 3.0, 0.15);
+                        switch (entity) {
+                            case DeepCreatureEntity deepCreature -> {
+                                switch (payload.skillName()) {
+                                    case "roar" -> Skill.runRoarSkill(deepCreature);
+                                    case "earthquake" -> Skill.runEarthquake(deepCreature);
+                                    case "smash" -> Skill.runSmash(deepCreature);
+                                    case "side" -> Skill.runSideSkill(deepCreature);
+                                    case "sonic_boom" -> Skill.runSonicBoom(deepCreature);
+                                    case "charge" -> Skill.runCharge(deepCreature);
+                                    case "stop_ai" -> deepCreature.setAiDisabled(true);
+                                    case "start_ai" -> deepCreature.setAiDisabled(false);
+                                    case "smash_ground_s" -> {
+                                        deepCreature.setAiDisabled(true);
+                                        Skill.runSmashGround(deepCreature, 10, 0.5, 1.0, 0.25, 3.0, 0.15);
+                                    }
+                                    case "smash_ground_xl" -> {
+                                        deepCreature.setAiDisabled(true);
+                                        Skill.runSmashGround(deepCreature, 18, 0.5, 1.5, 0.2, 3.5, 0.1);
+                                    }
+                                    case "kill" -> deepCreature.remove(Entity.RemovalReason.KILLED);
+                                    case "catch" -> Skill.runCatch(deepCreature);
+                                    case "catch_end" -> Skill.runCatchEnd(deepCreature);
+                                    case "stop_run_catch" -> Skill.stopRunCatch(deepCreature);
+                                    case "damage" -> Skill.runDamage(deepCreature);
+                                    case "stop" -> {
+                                        deepCreature.setHasSkill(false);
+                                        deepCreature.setAiDisabled(false);
+                                    }
                                 }
-                                case "smash_ground_xl" -> {
-                                    deepCreature.setAiDisabled(true);
-                                    Skill.runSmashGround(deepCreature, 18,0.5, 1.5, 0.2, 3.5, 0.1);
-                                }
-                                case "kill" -> deepCreature.remove(Entity.RemovalReason.KILLED);
-                                case "catch" -> Skill.runCatch(deepCreature);
-                                case "catch_end" -> Skill.runCatchEnd(deepCreature);
-                                case "stop_run_catch" -> Skill.stopRunCatch(deepCreature);
-                                case "damage" -> Skill.runDamage(deepCreature);
-                                case "stop" -> {
-                                    deepCreature.setHasSkill(false);
-                                    deepCreature.setAiDisabled(false);
-                                }
-                                default -> Mob_battle.LOGGER.warn("没有找到技能：" + payload.skillName());
                             }
-                        } else if (entity instanceof WitherSkeletonKingEntity kingSkeletonKing) {
-                            switch (payload.skillName()) {
-                                case "attack" -> KingSkill.runAttackSkill(kingSkeletonKing);
-                                case "super_attack" -> KingSkill.runSuperAttackSkill(kingSkeletonKing);
-                                case "shot_wither_skull" -> KingSkill.runWitherSkullSkill(kingSkeletonKing);
-                                case "shot_all_wither_skull" -> KingSkill.runWitherAllSkullSkill(kingSkeletonKing);
-                                case "stop_ai" -> kingSkeletonKing.setAiDisabled(true);
-                                case "start_ai" -> kingSkeletonKing.setAiDisabled(false);
-                                case "stop" -> {
-                                    kingSkeletonKing.setHasSkill(false);
-                                    kingSkeletonKing.setAiDisabled(false);
+                            case WitherSkeletonKingEntity kingSkeletonKing -> {
+                                switch (payload.skillName()) {
+                                    case "attack" -> KingSkill.runAttackSkill(kingSkeletonKing);
+                                    case "super_attack" -> KingSkill.runSuperAttackSkill(kingSkeletonKing);
+                                    case "shot_wither_skull" -> KingSkill.runWitherSkullSkill(kingSkeletonKing);
+                                    case "shot_all_wither_skull" -> KingSkill.runWitherAllSkullSkill(kingSkeletonKing);
+                                    case "stop_ai" -> kingSkeletonKing.setAiDisabled(true);
+                                    case "start_ai" -> kingSkeletonKing.setAiDisabled(false);
+                                    case "stop" -> {
+                                        kingSkeletonKing.setHasSkill(false);
+                                        kingSkeletonKing.setAiDisabled(false);
+                                    }
                                 }
-                                default -> Mob_battle.LOGGER.warn("没有找到技能： " + payload.skillName());
                             }
-                        } else if (entity instanceof VillagerIronGolemEntity villagerIronGolemEntity) {
-                            switch (payload.skillName()) {
-                                case "damage_1_5" -> IronGolemSkill.runSkill_1_5(villagerIronGolemEntity);
-                                case "damage_2" -> IronGolemSkill.runSkill_2(villagerIronGolemEntity);
-                                case "stop_ai" -> villagerIronGolemEntity.setAiDisabled(true);
-                                case "start_ai" -> villagerIronGolemEntity.setAiDisabled(false);
-                                case "stop" -> {
-                                    villagerIronGolemEntity.setHasSkill(false);
-                                    villagerIronGolemEntity.setAiDisabled(false);
+                            case VillagerIronGolemEntity villagerIronGolemEntity -> {
+                                switch (payload.skillName()) {
+                                    case "damage_1_5" -> IronGolemSkill.runSkill_1_5(villagerIronGolemEntity);
+                                    case "damage_2" -> IronGolemSkill.runSkill_2(villagerIronGolemEntity);
+                                    case "stop_ai" -> villagerIronGolemEntity.setAiDisabled(true);
+                                    case "start_ai" -> villagerIronGolemEntity.setAiDisabled(false);
+                                    case "stop" -> {
+                                        villagerIronGolemEntity.setHasSkill(false);
+                                        villagerIronGolemEntity.setAiDisabled(false);
+                                    }
                                 }
-                                default -> Mob_battle.LOGGER.warn("没有找到技能： " + payload.skillName());
                             }
-                        } else if (entity instanceof LittlePersonGiantEntity littlePersonGiant) {
-                            switch (payload.skillName()) {
-                                case "attack2" -> LittlePersonGiantSkill.runSkill_2(littlePersonGiant);
-                                case "attack3" -> LittlePersonGiantSkill.runSkill_3(littlePersonGiant);
-                                case "attack4" -> LittlePersonGiantSkill.runSkill_4(littlePersonGiant);
-                                case "stop_ai" -> littlePersonGiant.setAiDisabled(true);
-                                case "start_ai" -> littlePersonGiant.setAiDisabled(false);
-                                case "stop" -> {
-                                    littlePersonGiant.setHasSkill(false);
-                                    littlePersonGiant.setAiDisabled(false);
+                            case LittlePersonGiantEntity littlePersonGiant -> {
+                                switch (payload.skillName()) {
+                                    case "attack2" -> LittlePersonGiantSkill.runSkill_2(littlePersonGiant);
+                                    case "attack3" -> LittlePersonGiantSkill.runSkill_3(littlePersonGiant);
+                                    case "attack4" -> LittlePersonGiantSkill.runSkill_4(littlePersonGiant);
+                                    case "stop_ai" -> littlePersonGiant.setAiDisabled(true);
+                                    case "start_ai" -> littlePersonGiant.setAiDisabled(false);
+                                    case "stop" -> {
+                                        littlePersonGiant.setHasSkill(false);
+                                        littlePersonGiant.setAiDisabled(false);
+                                    }
                                 }
-                                default -> Mob_battle.LOGGER.warn("没有找到技能： " + payload.skillName());
                             }
+                            case LittlePersonGuardEntity littlePersonGuardEntity -> {
+                                switch (payload.skillName()) {
+                                    case "attack2" -> LittlePersonGuardSkill.runSkill_2(littlePersonGuardEntity);
+                                    case "stop_ai" -> littlePersonGuardEntity.setAiDisabled(true);
+                                    case "start_ai" -> littlePersonGuardEntity.setAiDisabled(false);
+                                    case "stop" -> {
+                                        littlePersonGuardEntity.setHasSkill(false);
+                                        littlePersonGuardEntity.setAiDisabled(false);
+                                    }
+                                }
+                            }
+                            case LittlePersonKingEntity littlePersonKing -> {
+                                switch (payload.skillName()) {
+                                    case "attack2" -> LittlePersonKingSkill.runSkill_2(littlePersonKing);
+                                    case "attack3" -> LittlePersonKingSkill.runSkill_3(littlePersonKing);
+                                    case "stop_ai" -> littlePersonKing.setAiDisabled(true);
+                                    case "start_ai" -> littlePersonKing.setAiDisabled(false);
+                                    case "stop" -> {
+                                        littlePersonKing.setHasSkill(false);
+                                        littlePersonKing.setAiDisabled(false);
+                                    }
+                                }
+                            }
+                            case null, default ->
+                                    Mob_battle.LOGGER.warn("没有找到实体：{}的技能：{}", entity != null ? entity.getDisplayName() : "实体不存在", payload.skillName());
                         }
                     });
                 }
@@ -168,6 +198,10 @@ public class ServerPlayNetwork {
                 if (type == 2) DroneManager.handleAttackDroneMode(player);
                 if (type == 3) DroneManager.handleTreatmentDroneMode(player);
             });
+        });
+        ServerPlayNetworking.registerGlobalReceiver(ItemGroupPayload.ID, (payload, context) -> {
+            ServerPlayerEntity player = context.player();
+            context.server().execute(() -> ServerPlayNetworking.send(player, new ItemGroupPayload(player.getCommandTags().contains("shen"))));
         });
     }
 }

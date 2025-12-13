@@ -3,7 +3,6 @@ package com.kltyton.mob_battle.entity.deepcreature.skill;
 import com.kltyton.mob_battle.entity.deepcreature.DeepCreatureEntity;
 import com.kltyton.mob_battle.utils.TaskSchedulerUtil;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
@@ -153,13 +152,8 @@ public class Skill {
 
         // === 命中检测 ===
         List<LivingEntity> players = world.getEntitiesByClass(LivingEntity.class,
-                entity.getBoundingBox().expand(distance + 4),
-                p -> {
-            if (p instanceof PlayerEntity player) {
-                if (!player.isCreative()) return false;
-            }
-            return p.isAlive() && !p.isSpectator();
-        });
+                entity.getBoundingBox().expand(distance + 16),
+                p -> p.isAlive() && !p.isSpectator() && p != entity);
 
         for (LivingEntity player : players) {
             Vec3d playerPos = player.getPos().add(0, player.getStandingEyeHeight() * 0.5, 0);

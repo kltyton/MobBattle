@@ -11,3 +11,4 @@ accessible field net/minecraft/entity/Entity type Lnet/minecraft/entity/EntityTy
 accessible field net/minecraft/entity/projectile/FireballEntity explosionPower I
 accessible class net/minecraft/entity/effect/InstantHealthOrDamageStatusEffect
 accessible method net/minecraft/entity/LivingEntity getHitbox ()Lnet/minecraft/util/math/Box;
+accessible field net/minecraft/item/ItemGroup$DisplayContext hasPermissions Z

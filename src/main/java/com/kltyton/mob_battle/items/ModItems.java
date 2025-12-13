@@ -11,6 +11,7 @@ import com.kltyton.mob_battle.items.tool.meteorite.MeteoriteSword;
 import com.kltyton.mob_battle.items.tool.snipe.VsSnipe;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.ChargedProjectilesComponent;
+import net.minecraft.component.type.DeathProtectionComponent;
 import net.minecraft.item.Item;
 import net.minecraft.item.SpawnEggItem;
 import net.minecraft.item.equipment.EquipmentType;
@@ -41,6 +42,7 @@ public class ModItems {
     public static SpawnEggItem XU_SHENG_SPAWN_EGG;
     public static SpawnEggItem DEEP_CREATURE_SPAWN_EGG;
     public static SpawnEggItem WITHER_SKELETON_KING_SPAWN_EGG;
+    public static SpawnEggItem VILLAGER_KING_SPAWN_EGG;
     public static SpawnEggItem ARCHER_VILLAGER_SPAWN_EGG;
     public static SpawnEggItem WARRIOR_VILLAGER_SPAWN_EGG;
     public static SpawnEggItem BLUE_IRON_GOLEM_SPAWN_EGG;
@@ -50,6 +52,8 @@ public class ModItems {
     public static SpawnEggItem LITTLE_PERSON_MILITIA_SPAWN_EGG;
     public static SpawnEggItem LITTLE_PERSON_ARCHER_SPAWN_EGG;
     public static SpawnEggItem LITTLE_PERSON_GIANT_SPAWN_EGG;
+    public static SpawnEggItem LITTLE_PERSON_GUARD_SPAWN_EGG;
+    public static SpawnEggItem LITTLE_PERSON_KING_SPAWN_EGG;
 
     public static IncubationEggItem INCUBATION_EGG;
 
@@ -72,6 +76,8 @@ public class ModItems {
     public static Item METEORICORE_BOW;
     public static Item METEORICORE_SWORD;
     public static Item IRON_GOLD_SWORD;
+    public static Item IRON_GOLD_SWORD_DAMAGED;
+
     public static VsSnipe VS_SNIPE;
 
     public static void init() {
@@ -244,13 +250,19 @@ public class ModItems {
                 )
         );
         IRON_GOLD_SWORD = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "iron_gold_sword"),
-                new IronGoldSword(new Item.Settings()
+                new IronGoldSword(new Item.Settings().sword(ModMaterial.IRON_GOLD_TOOL_MATERIAL, 0f,-2.2f).maxCount(1).component(DataComponentTypes.DEATH_PROTECTION, DeathProtectionComponent.TOTEM_OF_UNDYING)
                         .registryKey(RegistryKey.of(
                                 RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "iron_gold_sword")
                         ))
                 )
         );
-
+        IRON_GOLD_SWORD_DAMAGED = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "iron_gold_sword_damaged"),
+                new IronGoldSword(new Item.Settings().sword(ModMaterial.IRON_GOLD_TOOL_MATERIAL, 0f,-2.2f).maxCount(1).maxDamage(0).component(DataComponentTypes.UNBREAKABLE, Unit.INSTANCE)
+                        .registryKey(RegistryKey.of(
+                                RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "iron_gold_sword_damaged")
+                        ))
+                )
+        );
         VS_SNIPE = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "vs_snipe"),
                 new VsSnipe(new Item.Settings()
                         .maxCount(1).maxDamage(465).component(DataComponentTypes.CHARGED_PROJECTILES, ChargedProjectilesComponent.DEFAULT).enchantable(1)
@@ -434,5 +446,36 @@ public class ModItems {
                                 ))
                 )
         );
+        LITTLE_PERSON_GUARD_SPAWN_EGG = Registry.register(Registries.ITEM,
+                Identifier.of(Mob_battle.MOD_ID, "little_person_guard_spawn_egg"),
+                new SpawnEggItem(
+                        ModEntities.LITTLE_PERSON_GUARD,
+                        new Item.Settings()
+                                .registryKey(RegistryKey.of(
+                                        RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "little_person_guard_spawn_egg")
+                                ))
+                )
+        );
+        LITTLE_PERSON_KING_SPAWN_EGG = Registry.register(Registries.ITEM,
+                Identifier.of(Mob_battle.MOD_ID, "little_person_king_spawn_egg"),
+                new SpawnEggItem(
+                        ModEntities.LITTLE_PERSON_KING,
+                        new Item.Settings()
+                                .registryKey(RegistryKey.of(
+                                        RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "little_person_king_spawn_egg")
+                                ))
+                )
+        );
+        VILLAGER_KING_SPAWN_EGG = Registry.register(Registries.ITEM,
+                Identifier.of(Mob_battle.MOD_ID, "villager_king_spawn_egg"),
+                new SpawnEggItem(
+                        ModEntities.VILLAGER_KING_ENTITY,
+                        new Item.Settings()
+                                .registryKey(RegistryKey.of(
+                                        RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "villager_king_spawn_egg")
+                                ))
+                )
+        );
+
     }
 }

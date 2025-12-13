@@ -21,7 +21,7 @@ public class SkillUtils {
         return entity.getWorld().getEntitiesByClass(
                 LivingEntity.class,
                 entity.getBoundingBox().expand(radius),
-                p -> p.isAlive() && entity.distanceTo(p) <= radius
+                p -> p.isAlive() && entity.distanceTo(p) <= radius && p != entity
         );
     }
 

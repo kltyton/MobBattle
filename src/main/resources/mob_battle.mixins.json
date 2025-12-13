@@ -22,6 +22,7 @@
     "initgoals.RaiderEntityMixin",
     "initgoals.WitherSkeletonEntityMixin",
     "irongold.AnvilScreenHandlerMixin",
+    "irongold.ItemStackMixin",
     "leashable.EntityMixin",
     "leashable.LeashableMixin",
     "leashable.MobEntityMixin",
@@ -29,6 +30,7 @@
     "undead.LivingEntityMixin"
   ],
   "client": [
+    "itemgroup.ItemGroupMixin",
     "client.render.AbstractClientPlayerEntityMixin",
     "client.render.EntityRendererMixin",
     "client.render.EntityRenderStateMixin",

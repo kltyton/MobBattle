@@ -22,7 +22,6 @@ public class BaseSword extends Item {
     public void postHit(ItemStack stack, LivingEntity target, LivingEntity attacker) {
         super.postHit(stack, target, attacker);
         if (this.attackCooldown >= 1.0F) addStatusEffect(target, attacker);
-
     }
     public void addStatusEffect(LivingEntity target, LivingEntity attacker) {}
 }

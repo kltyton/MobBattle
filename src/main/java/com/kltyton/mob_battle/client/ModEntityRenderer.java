@@ -17,6 +17,8 @@ import com.kltyton.mob_battle.entity.littleperson.archer.LittlePersonArcherEntit
 import com.kltyton.mob_battle.entity.littleperson.archer.littlearrow.LittleArrowEntityRender;
 import com.kltyton.mob_battle.entity.littleperson.civilian.LittlePersonCivilianEntityRenderer;
 import com.kltyton.mob_battle.entity.littleperson.giant.LittlePersonGiantEntityRenderer;
+import com.kltyton.mob_battle.entity.littleperson.guard.LittlePersonGuardEntityRenderer;
+import com.kltyton.mob_battle.entity.littleperson.king.LittlePersonKingEntityRenderer;
 import com.kltyton.mob_battle.entity.littleperson.militia.LittlePersonMilitiaEntityRenderer;
 import com.kltyton.mob_battle.entity.sugarmanscorpion.SugarManScorpionRenderer;
 import com.kltyton.mob_battle.entity.villager.archervillager.ArcherVillagerRenderer;
@@ -51,5 +53,7 @@ public class ModEntityRenderer {
         EntityRendererRegistry.register(ModEntities.LITTLE_PERSON_ARCHER, LittlePersonArcherEntityRenderer::new);
         EntityRendererRegistry.register(ModEntities.LITTLE_PERSON_GIANT, LittlePersonGiantEntityRenderer::new);
         EntityRendererRegistry.register(ModEntities.LITTLE_ARROW, LittleArrowEntityRender::new);
+        EntityRendererRegistry.register(ModEntities.LITTLE_PERSON_GUARD, LittlePersonGuardEntityRenderer::new);
+        EntityRendererRegistry.register(ModEntities.LITTLE_PERSON_KING, LittlePersonKingEntityRenderer::new);
     }
 }

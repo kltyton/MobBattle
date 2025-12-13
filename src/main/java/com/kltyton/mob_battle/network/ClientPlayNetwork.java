@@ -1,7 +1,10 @@
 package com.kltyton.mob_battle.network;
 
 import com.kltyton.mob_battle.accessor.ILead;
+import com.kltyton.mob_battle.items.itemgroup.ClientTagManager;
 import com.kltyton.mob_battle.network.packet.EntityUniversalPayload;
+import com.kltyton.mob_battle.network.packet.ILeadUpdatePayload;
+import com.kltyton.mob_battle.network.packet.ItemGroupPayload;
 import com.kltyton.mob_battle.network.packet.SoundPayload;
 import com.kltyton.mob_battle.sounds.bgm.ClientBgmManager;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -53,6 +56,23 @@ public class ClientPlayNetwork {
                         lead.setIsUniversalLeadEnyity(payload.isUniversal());
                         lead.setIsInvisibleUniversalLeadEnyity(payload.isInvisible());
                     }
+                }
+            });
+        });
+        ClientPlayNetworking.registerGlobalReceiver(ItemGroupPayload.ID, (payload, context) -> {
+            MinecraftClient client = context.client();
+            boolean isOpen = payload.isOpen();
+            client.execute(() -> ClientTagManager.isShen = isOpen);
+        });
+        ClientPlayNetworking.registerGlobalReceiver(ILeadUpdatePayload.ID, (payload, context) -> {
+            MinecraftClient client = context.client();
+            Entity entity = client.world.getEntityById(payload.entityId());
+            int iLead_1 = payload.iLead_1();
+            int iLead_2 = payload.iLead_2();
+            client.execute(() -> {
+                if (entity != null) {
+                    if (iLead_1 != 3) ((ILead) entity).setIsUniversalLeadEnyity(iLead_1 == 1);
+                    if (iLead_2 != 3) ((ILead) entity).setIsInvisibleUniversalLeadEnyity(iLead_2 == 1);
                 }
             });
         });

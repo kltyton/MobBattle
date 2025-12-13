@@ -35,6 +35,8 @@
   "item.mob_battle.little_person_militia_spawn_egg": "小人民兵刷怪蛋",
   "item.mob_battle.little_person_archer_spawn_egg": "小人射手刷怪蛋",
   "item.mob_battle.little_person_giant_spawn_egg": "小人巨人刷怪蛋",
+  "item.mob_battle.little_person_guard_spawn_egg": "小人守卫刷怪蛋",
+  "item.mob_battle.little_person_king_spawn_egg": "小人皇族刷怪蛋",
 
   "item.mob_battle.fireman_scroll": "烈焰人火球卷轴",
   "item.mob_battle.hell_helmet_1": "地狱头盔",
@@ -85,6 +87,8 @@
   "entity.mob_battle.little_person_militia": "小人民兵",
   "entity.mob_battle.little_person_archer": "小人射手",
   "entity.mob_battle.little_person_giant": "小人巨人",
+  "entity.mob_battle.little_person_guard": "小人守卫",
+  "entity.mob_battle.little_person_king": "小人皇族",
 
   "enchantment.mob_battle.magic_protection": "魔法保护"
 }

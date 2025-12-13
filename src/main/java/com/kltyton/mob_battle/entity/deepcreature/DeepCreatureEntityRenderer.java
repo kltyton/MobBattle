@@ -40,10 +40,6 @@ public class DeepCreatureEntityRenderer<R extends LivingEntityRenderState & GeoR
     protected float getDeathMaxRotation(GeoRenderState renderState) {
         return 0f;   // 自定义翻转角度
     }
-/*    @Override
-    public float getMotionAnimThreshold(DeepCreatureEntity animatable) {
-        return 0.05f;
-    }*/
     @Override
     public int getPackedOverlay(DeepCreatureEntity animatable, Void relatedObject, float u, float partialTick) {
         if (animatable == null)
@@ -57,7 +53,7 @@ public class DeepCreatureEntityRenderer<R extends LivingEntityRenderState & GeoR
     @Override
     public void renderFinal(R renderState, MatrixStack poseStack, BakedGeoModel model, VertexConsumerProvider bufferSource, @Nullable VertexConsumer buffer,
                             int packedLight, int packedOverlay, int renderColor) {
-        poseStack.pop();
+        poseStack.push();
         super.renderFinal(renderState, poseStack, model, bufferSource, buffer, packedLight, packedOverlay, renderColor);
         World world = ClientUtil.getLevel();
         PlayerEntity player = ClientUtil.getClientPlayer();
@@ -86,16 +82,18 @@ public class DeepCreatureEntityRenderer<R extends LivingEntityRenderState & GeoR
             }
             if (renderState.hasGeckolibData(IS_CATCH) && entity.getGrabTargetId() != -1 && entity.getGrabTargetId() == player.getId()) {
                 this.model.getBone("p_catch").ifPresent(bone -> {
-                    Vector3d pos = bone.getWorldPosition().add(0,0,0);
+                    Vector3d pos = bone.getWorldPosition().add(0,0 - 0.5,0);
                     if (!player.isAlive()) {
                         return;
                     }
+                    if (pos.x() == 0 && pos.z() == 0) return;
                     player.setPosition(pos.x, pos.y, pos.z);
                     player.setVelocity(Vec3d.ZERO);
                     player.velocityModified = true;
                 });
             }
         }
+        poseStack.pop();
     }
 
 }

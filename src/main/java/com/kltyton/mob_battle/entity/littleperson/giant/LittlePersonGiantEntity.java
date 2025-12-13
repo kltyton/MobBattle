@@ -1,5 +1,6 @@
 package com.kltyton.mob_battle.entity.littleperson.giant;
 
+import com.kltyton.mob_battle.entity.ModEntityAttributes;
 import com.kltyton.mob_battle.entity.littleperson.militia.LittlePersonMilitiaEntity;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -89,7 +90,7 @@ public class LittlePersonGiantEntity extends LittlePersonMilitiaEntity {
     }
     @Override
     public void heal() {
-        this.heal(50.0F);
+        this.heal(10.0F);
     }
     @Override
     public void tick() {
@@ -180,6 +181,7 @@ public class LittlePersonGiantEntity extends LittlePersonMilitiaEntity {
                 .add(EntityAttributes.MAX_HEALTH, 1300.0)
                 .add(EntityAttributes.FOLLOW_RANGE, 40.0)
                 .add(EntityAttributes.MOVEMENT_SPEED, 0.3)
-                .add(EntityAttributes.ATTACK_DAMAGE, 50.0);
+                .add(EntityAttributes.ATTACK_DAMAGE, 50.0)
+                .add(ModEntityAttributes.DAMAGE_REDUCTION, 0);
     }
 }

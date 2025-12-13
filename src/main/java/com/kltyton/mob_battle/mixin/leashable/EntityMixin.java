@@ -2,18 +2,20 @@ package com.kltyton.mob_battle.mixin.leashable;
 
 import com.kltyton.mob_battle.accessor.ILead;
 import com.kltyton.mob_battle.items.ModItems;
+import com.kltyton.mob_battle.network.packet.ILeadUpdatePayload;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.Leashable;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemConvertible;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.storage.ReadView;
 import net.minecraft.storage.WriteView;
-import org.spongepowered.asm.mixin.Implements;
-import org.spongepowered.asm.mixin.Interface;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Unique;
+import net.minecraft.world.World;
+import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
@@ -23,6 +25,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(Entity.class)
 @Implements(@Interface(iface = ILead.class, prefix = "custom$"))
 public abstract class EntityMixin implements ILead {
+    @Shadow
+    public abstract World getWorld();
+
+    @Shadow
+    public abstract int getId();
+
     @Unique
     private boolean isUniversalLeadEnyity = false;
     @Unique
@@ -39,10 +47,20 @@ public abstract class EntityMixin implements ILead {
     @Unique
     public void custom$setIsUniversalLeadEnyity(boolean isUniversalLeadEnyity) {
         this.isUniversalLeadEnyity = isUniversalLeadEnyity;
+        if (!this.getWorld().isClient()) {
+            for (PlayerEntity player : this.getWorld().getPlayers()) {
+                ServerPlayNetworking.send((ServerPlayerEntity) player, new ILeadUpdatePayload(this.getId(), isUniversalLeadEnyity ? 1 : 0, 3));
+            }
+        }
     }
     @Unique
     public void custom$setIsInvisibleUniversalLeadEnyity(boolean isInvisibleUniversalLeadEnyity) {
         this.isInvisibleUniversalLeadEnyity = isInvisibleUniversalLeadEnyity;
+        if (!this.getWorld().isClient()) {
+            for (PlayerEntity player : this.getWorld().getPlayers()) {
+                ServerPlayNetworking.send((ServerPlayerEntity) player, new ILeadUpdatePayload(this.getId(), 3, isInvisibleUniversalLeadEnyity ? 1 : 0));
+            }
+        }
     }
     @Redirect(method = "interact", at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;isOf(Lnet/minecraft/item/Item;)Z", ordinal = 2))
     private boolean isUniversalLead(ItemStack instance, Item item) {

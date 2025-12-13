@@ -1,30 +1,29 @@
-package com.kltyton.mob_battle.items;
+package com.kltyton.mob_battle.items.itemgroup;
 
 import com.kltyton.mob_battle.Mob_battle;
+import com.kltyton.mob_battle.items.ModItems;
 import com.kltyton.mob_battle.items.misc.BaseItems;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
-import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroupEntries;
-import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentLevelEntry;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
-import net.minecraft.item.ItemGroups;
 import net.minecraft.item.ItemStack;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.RegistryWrapper;
+import net.minecraft.registry.*;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
 public class ModItemGroups {
+
+
     public static void init() {
         // 添加到原版"生成蛋"物品组
-        ItemGroupEvents.modifyEntriesEvent(ItemGroups.SPAWN_EGGS).register(ModItemGroups::addSpawnEggsToTab);
-        Registry.register(Registries.ITEM_GROUP, Identifier.of(Mob_battle.MOD_ID, "main"), MOB_BATTLE_GROUP);
+        //ItemGroupEvents.modifyEntriesEvent(ItemGroups.SPAWN_EGGS).register(ModItemGroups::addSpawnEggsToTab);
+        Registry.register(Registries.ITEM_GROUP, MOB_BATTLE_GROUP_KEY, MOB_BATTLE_GROUP);
     }
+    public static final RegistryKey<ItemGroup> MOB_BATTLE_GROUP_KEY =
+            RegistryKey.of(RegistryKeys.ITEM_GROUP, Identifier.of(Mob_battle.MOD_ID, "main"));
     public static final ItemGroup MOB_BATTLE_GROUP = FabricItemGroup.builder()
             .icon(() -> new ItemStack(ModItems.BIG_FIREBALL_SCROLL))
             .displayName(Text.translatable("itemGroup.mob_battle.main"))
@@ -56,6 +55,9 @@ public class ModItemGroups {
                 entries.add(ModItems.LITTLE_PERSON_MILITIA_SPAWN_EGG);
                 entries.add(ModItems.LITTLE_PERSON_ARCHER_SPAWN_EGG);
                 entries.add(ModItems.LITTLE_PERSON_GIANT_SPAWN_EGG);
+                entries.add(ModItems.LITTLE_PERSON_GUARD_SPAWN_EGG);
+                entries.add(ModItems.LITTLE_PERSON_KING_SPAWN_EGG);
+                entries.add(ModItems.VILLAGER_KING_SPAWN_EGG);
                 //添加孵化蛋
                 entries.add(ModItems.INCUBATION_EGG);
 
@@ -92,7 +94,7 @@ public class ModItemGroups {
                 }
             })
             .build();
-    private static void addSpawnEggsToTab(FabricItemGroupEntries entries) {
+/*    private static void addSpawnEggsToTab(FabricItemGroupEntries entries) {
         // 添加高脚鸟系列的刷怪蛋
         entries.add(ModItems.HIGHBIRD_BABY_SPAWN_EGG);
         entries.add(ModItems.HIGHBIRD_TEENAGE_SPAWN_EGG);
@@ -101,5 +103,5 @@ public class ModItemGroups {
         entries.add(ModItems.XU_SHENG_SPAWN_EGG);
         entries.add(ModItems.ARCHER_VILLAGER_SPAWN_EGG);
         entries.add(ModItems.WARRIOR_VILLAGER_SPAWN_EGG);
-    }
+    }*/
 }

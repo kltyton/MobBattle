@@ -339,7 +339,7 @@ public class DeepCreatureEntity extends HostileEntity implements GeoEntity {
     // 剩余冲刺 tick
     public int chargeTicksLeft = 0;
     public int stuckCooldown = 200;
-    public int catchCooldown = 0;
+    public int catchCooldown = 600;
     @Override
     public void tick() {
         super.tick();
@@ -362,11 +362,11 @@ public class DeepCreatureEntity extends HostileEntity implements GeoEntity {
             if (catchCooldown > 0) {
                 catchCooldown--;
             }
-            if (catchCooldown == 0 && this.isSpawnAnimEnd() && hasSkill()) {
+            if (catchCooldown == 0 && this.isSpawnAnimEnd() && !hasSkill() && getSkillCooldown() == 0) {
                 performCatchSkill();
-                catchCooldown = 400;
+                catchCooldown = 600;
             }
-            if (chargeTicksLeft > 0 && this.isSpawnAnimEnd() && hasSkill()) {
+            if (chargeTicksLeft > 0 && this.isSpawnAnimEnd() && !hasSkill() && getSkillCooldown() == 0) {
                 // 1. 倒计时
                 chargeTicksLeft--;
                 // 2. 保持朝向
@@ -378,9 +378,9 @@ public class DeepCreatureEntity extends HostileEntity implements GeoEntity {
                 Vec3d step = chargeDir.multiply(0.65);
                 this.move(MovementType.SELF, step);
                 // 4. 撞击检测：以当前碰撞盒稍扩大一点
-                Box hitBox = this.getBoundingBox().expand(0.3);
+                Box hitBox = this.getBoundingBox().expand(8);
                 List<LivingEntity> list = getWorld().getOtherEntities(this, hitBox,
-                                e -> e instanceof LivingEntity && e.isAlive())
+                                e -> e instanceof LivingEntity && e.isAlive() && e != this)
                         .stream()
                         .map(e -> (LivingEntity) e)
                         .toList();
@@ -390,8 +390,8 @@ public class DeepCreatureEntity extends HostileEntity implements GeoEntity {
                     // 给自己 2 tick 无敌帧，避免同一帧多次伤害
                     if (e.timeUntilRegen <= 0) {
                         e.damage((ServerWorld)this.getWorld(), this.getDamageSources().mobAttack(this), 10.0F);
-                        e.takeKnockback(1.2, chargeDir.x, chargeDir.z);
-                        e.timeUntilRegen = 10;
+                        e.takeKnockback(1.5, chargeDir.x, chargeDir.z);
+                        e.timeUntilRegen = 2;
                     }
                 }
 
@@ -445,7 +445,7 @@ public class DeepCreatureEntity extends HostileEntity implements GeoEntity {
 
     @Override
     public void takeKnockback(double strength, double x, double z) {
-        super.takeKnockback(strength, x, z);
+        if (!this.isDead() && !this.isAiDisabled()) super.takeKnockback(strength, x, z);
     }
     @Override
     public boolean tryAttack(ServerWorld world, Entity target) {
@@ -480,51 +480,61 @@ public class DeepCreatureEntity extends HostileEntity implements GeoEntity {
     );
     private void performRoarSkill() {
         setSkillCooldown(20);
+        this.setHasSkill(true);
         this.setAiDisabled(true);
         this.triggerAnim("skill_controller", "roar");
     }
     private void performEarthquakeSkill() {
         setSkillCooldown(20);
         this.setAiDisabled(true);
+        this.setHasSkill(true);
         this.triggerAnim("skill_controller", "earthquake");
     }
     public void performLeftSmashSkill() {
         setSkillCooldown(20);
+        this.setHasSkill(true);
         this.setAiDisabled(true);
         this.triggerAnim("skill_controller", "lefts_smash");
     }
     public void performRightSmashSkill() {
         setSkillCooldown(20);
+        this.setHasSkill(true);
         this.setAiDisabled(true);
         this.triggerAnim("skill_controller", "rights_smash");
     }
     public void performLeftSideStrikeSkill() {
         setSkillCooldown(20);
+        this.setHasSkill(true);
         this.setAiDisabled(true);
         this.triggerAnim("skill_controller", "left_side_strike");
     }
     public void performRightSideStrikeSkill() {
         setSkillCooldown(20);
+        this.setHasSkill(true);
         this.setAiDisabled(true);
         this.triggerAnim("skill_controller", "right_side_strike");
     }
     public void performSonicBoomSkill() {
         setSkillCooldown(20);
+        this.setHasSkill(true);
         this.setAiDisabled(true);
         this.triggerAnim("skill_controller", "sonic_boom");
     }
     public void performChargeSkill() {
         setSkillCooldown(20);
+        this.setHasSkill(true);
         this.setAiDisabled(true);
         this.triggerAnim("skill_controller", "charge");
     }
     public void performJumpSkill() {
         setSkillCooldown(20);
+        this.setHasSkill(true);
         this.triggerAnim("skill_controller", "jump");
     }
     public void performCatchSkill() {
         setSkillCooldown(20);
         this.setAiDisabled(true);
+        this.setHasSkill(true);
         this.triggerAnim("skill_controller", "catch");
     }
 

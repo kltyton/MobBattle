@@ -4,6 +4,7 @@ import com.kltyton.mob_battle.entity.drone.treatmentdrone.TreatmentDroneEntity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.particle.ParticleTypes;
 import net.minecraft.util.math.Box;
 import net.minecraft.world.World;
 
@@ -105,6 +106,21 @@ public class HealTeamGoal extends Goal {
                 .forEach(entity -> {
                     entity.heal(drone.isOnlyPlayer() ? TreatmentDroneEntity.PLAYER_HEAL_AMOUNT : TreatmentDroneEntity.HEAL_AMOUNT);
                     world.sendEntityStatus(drone, (byte)7); // 爱心粒子
+                    // 添加村民的绿色粒子效果
+                    if (world.isClient) {
+                        for (int i = 0; i < 7; ++i) {
+                            double offsetX = this.drone.getRandom().nextGaussian() * 0.02D;
+                            double offsetY = this.drone.getRandom().nextGaussian() * 0.02D;
+                            double offsetZ = this.drone.getRandom().nextGaussian() * 0.02D;
+                            world.addParticleClient(
+                                    ParticleTypes.HAPPY_VILLAGER,
+                                    entity.getParticleX(1.0D),
+                                    entity.getRandomBodyY() + 0.5D,
+                                    entity.getParticleZ(1.0D),
+                                    offsetX, offsetY, offsetZ
+                            );
+                        }
+                    }
                 });
     }
 

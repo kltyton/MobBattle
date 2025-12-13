@@ -14,6 +14,7 @@ import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.mob.Monster;
+import net.minecraft.entity.passive.IronGolemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -41,6 +42,7 @@ public class LittlePersonArcherEntity extends HostileEntity implements LittlePer
         this.goalSelector.add(7, new WanderAroundFarGoal(this, 1.0)); // 添加远距离游荡目标
         this.goalSelector.add(8, new LookAtEntityGoal(this, PlayerEntity.class, 8.0F)); // 添加看向玩家的目标
         this.goalSelector.add(8, new LookAroundGoal(this)); // 添加环顾四周的目标
+        this.targetSelector.add(3, new ActiveTargetGoal<>(this, IronGolemEntity.class, true)); // 添加攻击铁傀儡目标
         this.targetSelector.add(2, new ActiveTargetGoal<>(this, PlayerEntity.class, true)); // 添加主动攻击玩家目标
         this.targetSelector.add(3, new ActiveTargetGoal<>(this, MobEntity.class, 5, false, false, (entity, world) -> entity instanceof Monster && !(entity instanceof LittlePersonEntity)));
     }
@@ -48,7 +50,7 @@ public class LittlePersonArcherEntity extends HostileEntity implements LittlePer
         return MobEntity.createMobAttributes()
                 .add(EntityAttributes.MAX_HEALTH, 100.0)
                 .add(EntityAttributes.FOLLOW_RANGE, 40.0)
-                .add(EntityAttributes.MOVEMENT_SPEED, 0.5)
+                .add(EntityAttributes.MOVEMENT_SPEED, 0.4)
                 .add(EntityAttributes.ATTACK_DAMAGE, 30.0);
     }
     @Override

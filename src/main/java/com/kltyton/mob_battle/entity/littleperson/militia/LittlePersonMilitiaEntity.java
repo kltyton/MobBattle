@@ -1,5 +1,6 @@
 package com.kltyton.mob_battle.entity.littleperson.militia;
 
+import com.kltyton.mob_battle.entity.ModEntityAttributes;
 import com.kltyton.mob_battle.entity.littleperson.LittlePersonEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -7,7 +8,10 @@ import net.minecraft.entity.ai.goal.*;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.mob.*;
+import net.minecraft.entity.mob.HostileEntity;
+import net.minecraft.entity.mob.MobEntity;
+import net.minecraft.entity.mob.Monster;
+import net.minecraft.entity.passive.IronGolemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.registry.tag.DamageTypeTags;
 import net.minecraft.server.world.ServerWorld;
@@ -33,6 +37,7 @@ public class LittlePersonMilitiaEntity extends HostileEntity implements LittlePe
         this.goalSelector.add(7, new WanderAroundFarGoal(this, 1.0)); // 添加远距离游荡目标
         this.goalSelector.add(8, new LookAtEntityGoal(this, PlayerEntity.class, 8.0F)); // 添加看向玩家的目标
         this.goalSelector.add(8, new LookAroundGoal(this)); // 添加环顾四周的目标
+        this.targetSelector.add(3, new ActiveTargetGoal<>(this, IronGolemEntity.class, true)); // 添加攻击铁傀儡目标
         this.targetSelector.add(2, new ActiveTargetGoal<>(this, PlayerEntity.class, true)); // 添加主动攻击玩家目标
         this.targetSelector.add(3, new ActiveTargetGoal<>(this, MobEntity.class, 5, false, false, (entity, world) -> entity instanceof Monster && !(entity instanceof LittlePersonEntity)));
     }
@@ -41,12 +46,12 @@ public class LittlePersonMilitiaEntity extends HostileEntity implements LittlePe
                 .add(EntityAttributes.MAX_HEALTH, 100.0)
                 .add(EntityAttributes.FOLLOW_RANGE, 40.0)
                 .add(EntityAttributes.MOVEMENT_SPEED, 0.5)
-                .add(EntityAttributes.ATTACK_DAMAGE, 20.0);
+                .add(EntityAttributes.ATTACK_DAMAGE, 20.0)
+                .add(ModEntityAttributes.DAMAGE_REDUCTION, 0);
     }
     public void heal() {
         this.heal(1.0F);
     }
-
     @Override
     public void tick() {
         super.tick();
@@ -85,7 +90,8 @@ public class LittlePersonMilitiaEntity extends HostileEntity implements LittlePe
     @Override
     public boolean damage(ServerWorld world, DamageSource source, float amount) {
         if (blockAttack(source, amount)) return false;
-        return super.damage(world, source, amount);
+        float reducedAmount = (float) (amount * (1 - this.getAttributeValue(ModEntityAttributes.DAMAGE_REDUCTION)));
+        return super.damage(world, source, reducedAmount);
     }
     private final AnimatableInstanceCache geoCache = GeckoLibUtil.createInstanceCache(this);
     protected static final RawAnimation IDLE_ANIM = RawAnimation.begin().thenLoop("idle");

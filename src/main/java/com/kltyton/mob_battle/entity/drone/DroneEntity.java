@@ -24,6 +24,7 @@ import net.minecraft.entity.passive.PassiveEntity;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
@@ -75,6 +76,7 @@ public abstract class DroneEntity extends TameableEntity implements RangedAttack
 
         if (!this.getWorld().isClient) {
             LivingEntity owner = this.getOwner();
+            if (owner instanceof ServerPlayerEntity player && !DroneManager.isPlayersDrone(this, player)) this.discard();
             if (this.age % 20 == 0) this.heal(10.0F);
             if (owner == null || owner.isRemoved() || !owner.isAlive()) {
                 this.ownerMissingTicks++;
