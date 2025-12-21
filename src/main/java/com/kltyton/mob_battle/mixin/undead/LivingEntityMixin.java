@@ -4,27 +4,36 @@ import com.kltyton.mob_battle.entity.witherskeletonking.skill.WitherSkullEntityK
 import com.kltyton.mob_battle.items.ModItems;
 import com.kltyton.mob_battle.utils.IronGoldArmorUtil;
 import net.minecraft.component.type.DeathProtectionComponent;
+import net.minecraft.entity.Attackable;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.damage.DamageType;
+import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.tag.EntityTypeTags;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Hand;
+import net.minecraft.world.World;
+import net.minecraft.world.waypoint.ServerWaypoint;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 @Mixin(LivingEntity.class)
-public abstract class LivingEntityMixin {
+public abstract class LivingEntityMixin extends Entity implements Attackable, ServerWaypoint {
+    public LivingEntityMixin(EntityType<?> type, World world) {
+        super(type, world);
+    }
+
     @Shadow
     public abstract void heal(float amount);
 
@@ -78,5 +87,11 @@ public abstract class LivingEntityMixin {
     @Inject(method = "tryUseDeathProtector", at = @At(value = "INVOKE", target = "Lnet/minecraft/component/type/DeathProtectionComponent;applyDeathEffects(Lnet/minecraft/item/ItemStack;Lnet/minecraft/entity/LivingEntity;)V", shift = At.Shift.AFTER))
     public void applyDeathEffects(DamageSource source, CallbackInfoReturnable<Boolean> cir) {
         this.heal(50);
+    }
+    @Inject(method = "takeKnockback", at = @At("HEAD"), cancellable = true)
+    public void takeKnockback(double strength, double x, double z, CallbackInfo ci) {
+        if ((Object)this instanceof MobEntity mob && mob.isAiDisabled()) {
+            ci.cancel();
+        }
     }
 }

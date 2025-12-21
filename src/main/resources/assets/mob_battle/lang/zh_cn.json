@@ -67,6 +67,10 @@
   "item.mob_battle.fire_red": "熔渣矿",
   "item.mob_battle.desert_crystal": "流沙结晶",
 
+  "block.mob_battle.scarecrow": "稻草人",
+  "block.mob_battle.target": "标靶",
+
+
   "effect.mob_battle.insect_bite": "虫噬",
   "entity.mob_battle.archer_villager": "射手村民",
   "entity.mob_battle.warrior_villager": "战士村民",

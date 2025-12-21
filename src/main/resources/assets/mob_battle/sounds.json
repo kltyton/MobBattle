@@ -13,5 +13,15 @@
     "sounds": [
       "mob_battle:shoreline"
     ]
+  },
+  "gun_shot": {
+    "sounds": [
+      "mob_battle:gun_shot"
+    ]
+  },
+  "gun_reload": {
+    "sounds": [
+      "mob_battle:gun_reload"
+    ]
   }
 }

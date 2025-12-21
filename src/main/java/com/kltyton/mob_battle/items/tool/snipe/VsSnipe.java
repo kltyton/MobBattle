@@ -2,11 +2,11 @@ package com.kltyton.mob_battle.items.tool.snipe;
 
 import com.kltyton.mob_battle.entity.bullet.BulletEntity;
 import com.kltyton.mob_battle.items.FabricItem;
+import com.kltyton.mob_battle.sounds.ModSounds;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.advancement.criterion.Criteria;
 import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.EnchantmentEffectComponentTypes;
 import net.minecraft.component.type.ChargedProjectilesComponent;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.LivingEntity;
@@ -41,9 +41,9 @@ public class VsSnipe extends RangedWeaponItem implements FabricItem {
     private boolean charged = false;
     private boolean loaded = false;
     private static final CrossbowItem.LoadingSounds DEFAULT_LOADING_SOUNDS = new CrossbowItem.LoadingSounds(
-            Optional.of(SoundEvents.ITEM_CROSSBOW_LOADING_START),
-            Optional.of(SoundEvents.ITEM_CROSSBOW_LOADING_MIDDLE),
-            Optional.of(SoundEvents.ITEM_CROSSBOW_LOADING_END)
+            Optional.of(ModSounds.GUN_RELOAD_SOUND_EVENT_REFERENCE),
+            null,
+            null
     );
 
     public VsSnipe(Item.Settings settings) {
@@ -118,8 +118,9 @@ public class VsSnipe extends RangedWeaponItem implements FabricItem {
             vector3f = vec3d2.toVector3f().rotate(quaternionf);
         }
         projectile.setVelocity(vector3f.x(), vector3f.y(), vector3f.z(), speed, divergence);
+        projectile.setNoGravity(true);
         float h = getSoundPitch(shooter.getRandom(), index);
-        shooter.getWorld().playSound(null, shooter.getX(), shooter.getY(), shooter.getZ(), SoundEvents.ITEM_CROSSBOW_SHOOT, shooter.getSoundCategory(), 1.0F, h);
+        shooter.getWorld().playSound(null, shooter.getX(), shooter.getY(), shooter.getZ(), ModSounds.GUN_SHOT_SOUND_EVENT, shooter.getSoundCategory(), 1.0F, h);
     }
 
     private static Vector3f calcVelocity(LivingEntity shooter, Vec3d direction, float yaw) {
@@ -138,7 +139,7 @@ public class VsSnipe extends RangedWeaponItem implements FabricItem {
         if (critical) {
             persistentProjectileEntity.setCritical(true);
         }
-
+        persistentProjectileEntity.setNoGravity(true);
         return persistentProjectileEntity;
     }
     @Override
@@ -148,6 +149,7 @@ public class VsSnipe extends RangedWeaponItem implements FabricItem {
             persistentProjectileEntity.setSound(SoundEvents.ITEM_CROSSBOW_HIT);
             persistentProjectileEntity.setDamage(50D);
         }
+        projectileEntity.setNoGravity(true);
         return projectileEntity;
     }
 
@@ -197,12 +199,12 @@ public class VsSnipe extends RangedWeaponItem implements FabricItem {
 
             if (f >= 0.5F && !this.loaded) {
                 this.loaded = true;
-                loadingSounds.mid()
-                        .ifPresent(sound -> world.playSound(null, user.getX(), user.getY(), user.getZ(), (SoundEvent)sound.value(), SoundCategory.PLAYERS, 0.5F, 1.0F));
+/*                loadingSounds.mid()
+                        .ifPresent(sound -> world.playSound(null, user.getX(), user.getY(), user.getZ(), (SoundEvent)sound.value(), SoundCategory.PLAYERS, 0.5F, 1.0F));*/
             }
 
             if (f >= 1.0F && !isCharged(stack) && loadProjectiles(user, stack)) {
-                loadingSounds.end()
+/*                loadingSounds.end()
                         .ifPresent(
                                 sound -> world.playSound(
                                         null,
@@ -214,7 +216,7 @@ public class VsSnipe extends RangedWeaponItem implements FabricItem {
                                         1.0F,
                                         1.0F / (world.getRandom().nextFloat() * 0.5F + 1.0F) + 0.2F
                                 )
-                        );
+                        );*/
             }
         }
     }
@@ -235,8 +237,7 @@ public class VsSnipe extends RangedWeaponItem implements FabricItem {
     }
 
     CrossbowItem.LoadingSounds getLoadingSounds(ItemStack stack) {
-        return (CrossbowItem.LoadingSounds)EnchantmentHelper.getEffect(stack, EnchantmentEffectComponentTypes.CROSSBOW_CHARGING_SOUNDS)
-                .orElse(DEFAULT_LOADING_SOUNDS);
+        return DEFAULT_LOADING_SOUNDS;
     }
 
     private static float getPullProgress(int useTicks, ItemStack stack, LivingEntity user) {

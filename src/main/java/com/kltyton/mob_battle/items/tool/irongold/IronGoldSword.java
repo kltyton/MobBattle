@@ -43,9 +43,9 @@ public class IronGoldSword extends BaseSword implements FabricItem {
     }
     public void postHit(ItemStack stack, LivingEntity target, LivingEntity attacker) {
         super.postHit(stack, target, attacker);
-        if (attacker instanceof PlayerEntity player) {
+/*        if (attacker instanceof PlayerEntity player) {
             stack.damage(5000, player);
-        }
+        }*/
     }
     @Override
     public void onLeftClickStart(PlayerEntity player, ItemStack stack, boolean isServer) {

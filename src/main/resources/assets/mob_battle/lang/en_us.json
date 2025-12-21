@@ -67,6 +67,9 @@
   "item.mob_battle.fire_red": "Fire Red",
   "item.mob_battle.desert_crystal": "Desert Crystal",
 
+  "block.mob_battle.scarecrow": "Scarecrow",
+  "block.mob_battle.target": "Target",
+
   "effect.mob_battle.insect_bite": "Insect Bite",
   "entity.mob_battle.archer_villager": "Archer Villager",
   "entity.mob_battle.warrior_villager": "Warrior Villager",

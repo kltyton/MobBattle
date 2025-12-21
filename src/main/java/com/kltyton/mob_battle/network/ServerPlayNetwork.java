@@ -29,8 +29,6 @@ import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
 
 public class ServerPlayNetwork {
     public static void init() {
@@ -191,7 +189,6 @@ public class ServerPlayNetwork {
             context.server().execute(() -> {
                 int type = payload.type();
                 if (!IronGoldArmorUtil.hasFullDiamondArmor(player)) {
-                    player.sendMessage(Text.literal("您没有装备全套铁合金盔甲，无法召唤或管理无人机").formatted(Formatting.RED), true);
                     return;
                 }
                 if (type == 1) DroneManager.handleSummonRequest(player);

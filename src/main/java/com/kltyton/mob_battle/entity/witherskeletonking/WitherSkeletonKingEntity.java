@@ -247,22 +247,28 @@ public class WitherSkeletonKingEntity extends WitherSkeletonEntity  implements G
         setSkillCooldown(10);
         this.triggerAnim("skill_controller", "attack");
     }
+    public boolean isHealthy(double health) {
+        return this.getHealth() <= this.getMaxHealth() * health;
+    }
     public void performSuperAttack() {
         setHasSkill(true);
         this.setAiDisabled(true);
-        setSuperAttackSkillCooldown(15 * 20);
+        int cd = 300;
+        if (this.isHealthy(0.35)) cd = 220;
+        else if (this.isHealthy(0.75)) cd = 260;
+        setSuperAttackSkillCooldown(cd);
         this.triggerAnim("skill_controller", "super_attack");
     }
     public void performShotWitherSkull() {
         setHasSkill(true);
         this.setAiDisabled(true);
-        setShotWitherSkullCooldown(16 * 20);
+        setShotWitherSkullCooldown(this.isHealthy(0.35) ? 160 : 320);
         this.triggerAnim("skill_controller", "shot_wither_skull");
     }
     public void performShotAllWitherSkull() {
         setHasSkill(true);
         this.setAiDisabled(true);
-        setShotAllWitherSkullCooldown(50 * 20);
+        setShotAllWitherSkullCooldown(isHealthy(0.35) ? 600 : 1000);
         this.triggerAnim("skill_controller", "shot_all_wither_skull");
     }
     public boolean canSuperAttack() {
@@ -340,7 +346,7 @@ public class WitherSkeletonKingEntity extends WitherSkeletonEntity  implements G
     }
     public static DefaultAttributeContainer.Builder addAttributes() {
         return HostileEntity.createHostileAttributes()
-                .add(EntityAttributes.MAX_HEALTH, 11000.0D)
+                .add(EntityAttributes.MAX_HEALTH, 12000.0D)
                 .add(EntityAttributes.MOVEMENT_SPEED, 0.3D)
                 .add(EntityAttributes.KNOCKBACK_RESISTANCE, 1.0D)
                 .add(EntityAttributes.ATTACK_KNOCKBACK, 1.5D)
@@ -353,6 +359,18 @@ public class WitherSkeletonKingEntity extends WitherSkeletonEntity  implements G
     @Override
     public void setHealth(float health) {
         super.setHealth(health);
+        if (!this.getWorld().isClient() && this.isHealthy(0.35)) {
+            this.addStatusEffect(new StatusEffectInstance(
+                    StatusEffects.SPEED,
+                    -1,
+                    0,
+                    true, true, true));
+            this.addStatusEffect(new StatusEffectInstance(
+                    StatusEffects.RESISTANCE,
+                    -1,
+                    0,
+                    true, true, true));
+        }
         if (!this.getWorld().isClient() && this.getHealth() == this.getMaxHealth() * 0.35 && !isPlaySound) {
             this.getWorld().playSound(this, this.getX(), this.getY(), this.getZ(), SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundCategory.HOSTILE, 3.0F, 1.0F);
             isPlaySound = true;

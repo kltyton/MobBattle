@@ -1,6 +1,7 @@
 {
 	"credit": "Made by Elo106",
 	"textures": {
+        "particle": "mob_battle:item/vs_snipe",
 		"4": "mob_battle:item/vs_snipe"
 	},
 	"elements": [

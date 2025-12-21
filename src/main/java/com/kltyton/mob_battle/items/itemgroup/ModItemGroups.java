@@ -1,6 +1,7 @@
 package com.kltyton.mob_battle.items.itemgroup;
 
 import com.kltyton.mob_battle.Mob_battle;
+import com.kltyton.mob_battle.block.ModBlocks;
 import com.kltyton.mob_battle.items.ModItems;
 import com.kltyton.mob_battle.items.misc.BaseItems;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
@@ -92,6 +93,9 @@ public class ModItemGroups {
                 for (Item item : BaseItems.ITEMS.values()) {
                     entries.add(item);
                 }
+                //添加方块
+                entries.add(ModBlocks.SCARECROW_BLOCK.asItem());
+                entries.add(ModBlocks.TARGET_BLOCK.asItem());
             })
             .build();
 /*    private static void addSpawnEggsToTab(FabricItemGroupEntries entries) {

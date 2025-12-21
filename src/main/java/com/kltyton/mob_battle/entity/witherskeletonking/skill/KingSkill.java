@@ -39,8 +39,8 @@ public class KingSkill {
                 .filter(entity -> !entity.isSpectator() && entity.isAlive())
                 .filter(entity -> entity.squaredDistanceTo(witherSkeletonKingEntity) <= range * range)
                 .forEach(entity -> {
-                    entity.damage((ServerWorld) world, entity.getDamageSources().mobAttack(witherSkeletonKingEntity), 260.0F);
-                    entity.damage((ServerWorld) world, entity.getDamageSources().magic(), 60.0F);
+                    entity.damage((ServerWorld) world, entity.getDamageSources().mobAttack(witherSkeletonKingEntity), witherSkeletonKingEntity.isHealthy(0.35) ? 280.0F :260.0F);
+                    entity.damage((ServerWorld) world, entity.getDamageSources().magic(), witherSkeletonKingEntity.isHealthy(0.35) ? 65.0F : 60.0F);
                     ((LivingEntity) entity).takeKnockback(2.0D, witherSkeletonKingEntity.getX() - entity.getX(), witherSkeletonKingEntity.getZ() - entity.getZ());
                 });
 
@@ -59,7 +59,7 @@ public class KingSkill {
         // 计算基础方向
         Vec3d lookDir = target.getEyePos().subtract(king.getEyePos()).normalize();
         // 生成凋零之首
-        WitherSkullEntityKing skull = new WitherSkullEntityKing(EntityType.WITHER_SKULL, world, 70);
+        WitherSkullEntityKing skull = new WitherSkullEntityKing(EntityType.WITHER_SKULL, world, king.isHealthy(0.35) ? 85 : 70);
         skull.setOwner(king);
         skull.setPosition(king.getX() - 0.2, king.getEyeY() - 0.2, king.getZ() - 0.2);
 
@@ -108,7 +108,7 @@ public class KingSkill {
                 3.0F, 1.0F);
 
         // ====== 向随机方向发射多个凋零之首 ======
-        int skullCount = 18; // 发射数量，可自行调整
+        int skullCount = king.isHealthy(0.35) ? 54 : 18; // 发射数量
         double speed = 1.6;  // 初始速度
 
         for (int i = 0; i < skullCount; i++) {

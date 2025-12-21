@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "mob_battle:block/scarecrow"
+    },
+    "facing=north": {
+      "model": "mob_battle:block/scarecrow",
+      "y": 270
+    },
+    "facing=south": {
+      "model": "mob_battle:block/scarecrow",
+      "y": 90
+    },
+    "facing=west": {
+      "model": "mob_battle:block/scarecrow",
+      "y": 180
+    }
+  }
+}

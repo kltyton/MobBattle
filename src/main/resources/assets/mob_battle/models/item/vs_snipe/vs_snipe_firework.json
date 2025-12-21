@@ -2,7 +2,8 @@
 	"format_version": "1.21.6",
 	"credit": "Made by Elo106",
 	"textures": {
-		"4": "mob_battle:item/vs_snipe"
+      "particle": "mob_battle:item/vs_snipe",
+      "4": "mob_battle:item/vs_snipe"
 	},
 	"elements": [
 		{
