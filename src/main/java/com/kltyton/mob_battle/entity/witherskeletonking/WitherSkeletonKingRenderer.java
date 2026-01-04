@@ -5,8 +5,8 @@ import net.minecraft.client.render.entity.state.LivingEntityRenderState;
 import software.bernie.geckolib.renderer.GeoEntityRenderer;
 import software.bernie.geckolib.renderer.base.GeoRenderState;
 
-public class WitherSkeletonKingRender<R extends LivingEntityRenderState & GeoRenderState> extends GeoEntityRenderer<WitherSkeletonKingEntity, R> {
-    public WitherSkeletonKingRender(EntityRendererFactory.Context context) {
+public class WitherSkeletonKingRenderer<R extends LivingEntityRenderState & GeoRenderState> extends GeoEntityRenderer<WitherSkeletonKingEntity, R> {
+    public WitherSkeletonKingRenderer(EntityRendererFactory.Context context) {
         super(context, new WitherSkeletonKingEntityModel());
     }
 }

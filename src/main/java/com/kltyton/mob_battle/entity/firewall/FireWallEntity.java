@@ -15,103 +15,109 @@ import net.minecraft.util.math.Box;
 import net.minecraft.world.World;
 
 public class FireWallEntity extends Entity {
+
+    /* ====== 可随意改的尺寸 ====== */
+    private double length = 5.0D;   // 沿“左-右”方向总长度（负方向2 + 正方向2）
+    private double height = 3.0D;   // 火墙高度
+    private double width  = 1.0D;   // 碰撞箱“厚度”（前后方向）
+    private double density = 1.2D;  // 粒子/检测格的密度（越小越密）
+
+    /* ====== 原有字段 ====== */
     private final LivingEntity owner;
     private int life = 120;
     private double originX, originY, originZ;
-    private float yaw; // 玩家朝向角度 (0~360)
+    private float yaw;
+    private float damage = 30.0F;
+
+    /* ---------------------------------------------------------- */
+    public float getDamage() { return damage; }
+    public void  setDamage(float damage) { this.damage = damage; }
+
+    /* 新增 setter，链式调用更爽 */
+    public void setLength(double len)   { this.length   = len;}
+    public void setHeight(double h)     { this.height   = h;}
+    public void setWidth(double w)      { this.width    = w;}
+    public void setDensity(double dens) { this.density  = dens;}
+    /* ---------------------------------------------------------- */
+
     public FireWallEntity(EntityType<?> type, World world, LivingEntity owner) {
         super(type, world);
         this.owner = owner;
         this.noClip = true;
-        // 固定生成点
-        // 玩家水平朝向（忽略俯仰角）
         this.yaw = owner.getYaw();
 
-        // 把 yaw 转换成弧度
         double rad = Math.toRadians(this.yaw);
-
-        // 基准点：玩家面前 2 格
         this.originX = owner.getX() - Math.sin(rad) * 2.0;
         this.originY = owner.getY();
         this.originZ = owner.getZ() + Math.cos(rad) * 2.0;
     }
 
+    /* 兼容旧构造，owner 为空时直接丢弃 */
     public FireWallEntity(EntityType<?> type, World world) {
         super(type, world);
         this.owner = null;
-        this.noClip = true; // 不阻挡
+        this.noClip = true;
     }
+
     @Override
     public void tick() {
         super.tick();
-        if (owner == null) {
-            discard();
-            return;
-        }
-        double rad = Math.toRadians(this.yaw);
+        if (owner == null) { discard(); return; }
+
+        double rad = Math.toRadians(yaw);
         double cos = Math.cos(rad);
         double sin = Math.sin(rad);
 
-        // 火墙长度 5（-2..2），高度 3
-        for (double i = -2; i <= 2; i += 1.2) {
-            for (double j = 0; j < 3; j += 1.2) {
-                // 沿着 yaw 的垂直方向偏移
+        /* ---------- 1. 粒子渲染 ---------- */
+        // 以 length 为中心左右对称，以 height 为高度
+        for (double i = -length / 2; i <= length / 2; i += density) {
+            for (double j = 0; j < height; j += density) {
                 double px = originX + cos * i;
                 double pz = originZ + sin * i;
                 double py = originY + j + 0.1;
 
                 if (this.getWorld().isClient) {
-                    this.getWorld().addParticleClient(
-                            ParticleTypes.FLAME,
+                    this.getWorld().addParticleClient(ParticleTypes.FLAME,
                             px, py, pz,
-                            (this.random.nextDouble() - 0.5) * 0.02,
+                            (random.nextDouble() - 0.5) * 0.02,
                             0.01,
-                            (this.random.nextDouble() - 0.5) * 0.02
-                    );
+                            (random.nextDouble() - 0.5) * 0.02);
                 } else {
-                    ((ServerWorld)this.getWorld()).spawnParticles(
-                            ParticleTypes.FLAME,
+                    ((ServerWorld) this.getWorld()).spawnParticles(ParticleTypes.FLAME,
                             px, py, pz,
-                            1,
-                            0.1, 0.1, 0.1,
-                            0.01
-                    );
+                            1, 0.1, 0.1, 0.1, 0.01);
                 }
             }
         }
 
-        if (!this.getWorld().isClient) {
-            if (life-- <= 0) {
-                discard();
-                return;
-            }
-            // 碰撞箱（沿 yaw 旋转）
-            Box box = new Box(
-                    originX - 2 * cos - 0.5, originY, originZ - 2 * sin - 0.5,
-                    originX + 2 * cos + 0.5, originY + 3, originZ + 2 * sin + 0.5
-            );
-            for (Entity e : getWorld().getOtherEntities(owner, box)) {
-                if (e instanceof LivingEntity living) {
-                    living.damage((ServerWorld)this.getWorld(), owner.getDamageSources().magic(), 30.0F);
-                    living.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 200, 1));
-                }
+        /* ---------- 2. 生命周期 & 伤害 ---------- */
+        if (this.getWorld().isClient) return;
+
+        if (--life <= 0) { discard(); return; }
+
+        // 碰撞箱：沿 yaw 方向为 length，垂直方向为 width，高度为 height
+        Box box = new Box(
+                originX - length / 2 * cos - width / 2,
+                originY,
+                originZ - length / 2 * sin - width / 2,
+                originX + length / 2 * cos + width / 2,
+                originY + height,
+                originZ + length / 2 * sin + width / 2
+        );
+
+        for (Entity e : this.getWorld().getOtherEntities(owner, box)) {
+            if (e instanceof LivingEntity living) {
+                living.damage((ServerWorld) this.getWorld(),
+                        owner.getDamageSources().magic(), damage);
+                living.addStatusEffect(
+                        new StatusEffectInstance(StatusEffects.SLOWNESS, 200, 1));
             }
         }
-
     }
 
-    @Override
-    protected void initDataTracker(DataTracker.Builder builder) {
-    }
-    @Override
-    public boolean damage(ServerWorld world, DamageSource source, float amount) {
-        return false;
-    }
-    @Override
-    protected void readCustomData(ReadView view) {
-    }
-    @Override
-    protected void writeCustomData(WriteView view) {
-    }
+    /* ====== 下面保持原有空实现即可 ====== */
+    @Override protected void initDataTracker(DataTracker.Builder builder) { }
+    @Override public boolean damage(ServerWorld world, DamageSource source, float amount) { return false; }
+    @Override protected void readCustomData(ReadView view) { }
+    @Override protected void writeCustomData(WriteView view) { }
 }
-

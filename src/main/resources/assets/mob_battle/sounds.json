@@ -23,5 +23,10 @@
     "sounds": [
       "mob_battle:gun_reload"
     ]
+  },
+  "meteorite": {
+    "sounds": [
+      "mob_battle:meteorite"
+    ]
   }
 }

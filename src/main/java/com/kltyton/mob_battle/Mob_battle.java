@@ -5,6 +5,7 @@ import com.kltyton.mob_battle.block.ModBlockEntities;
 import com.kltyton.mob_battle.block.ModBlocks;
 import com.kltyton.mob_battle.buff.ModBuffs;
 import com.kltyton.mob_battle.command.ModCommands;
+import com.kltyton.mob_battle.enchantment.ModEnchantments;
 import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.entity.ModEntityAttributes;
 import com.kltyton.mob_battle.entity.drone.DroneManager;
@@ -17,6 +18,7 @@ import com.kltyton.mob_battle.network.ModPackets;
 import com.kltyton.mob_battle.network.ServerPlayNetwork;
 import com.kltyton.mob_battle.sounds.ModSounds;
 import com.kltyton.mob_battle.sounds.bgm.ServerBgmManager;
+import com.kltyton.mob_battle.utils.ModTrackedDataHandler;
 import net.fabricmc.api.ModInitializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,10 +29,12 @@ public class Mob_battle implements ModInitializer {
 
     @Override
     public void onInitialize() {
+        ModTrackedDataHandler.init();
         ModSensorTypes.init();
         ModEntityAttributes.init();
         ModItems.init();
         ModBuffs.init();
+        ModEnchantments.init();
         ModCommands.init();
         ModEvents.init();
         ModEntities.init();

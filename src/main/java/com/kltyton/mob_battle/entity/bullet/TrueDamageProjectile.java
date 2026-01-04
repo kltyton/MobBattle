@@ -7,8 +7,9 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
-public abstract class TrueDamageProjectile extends PersistentProjectileEntity {
+public abstract class TrueDamageProjectile extends PersistentProjectileEntity implements ITrueDamageProjectile {
     boolean TrueDamage = false;
+    boolean isMage = false;
 
     protected TrueDamageProjectile(EntityType<? extends PersistentProjectileEntity> entityType, World world) {
         super(entityType, world);
@@ -21,11 +22,17 @@ public abstract class TrueDamageProjectile extends PersistentProjectileEntity {
     protected TrueDamageProjectile(EntityType<? extends PersistentProjectileEntity> type, double x, double y, double z, World world, ItemStack stack, @Nullable ItemStack weapon) {
         super(type, x, y, z, world, stack, weapon);
     }
-
-    public void setTrueDamage(boolean fixed_damage) {
+    @Override
+    public void setTrueDamage(boolean fixed_damage, Boolean isMage) {
         TrueDamage = fixed_damage;
-    };
+        this.isMage = isMage;
+    }
+    @Override
     public boolean isTrueDamage() {
         return TrueDamage;
-    };
+    }
+    @Override
+    public boolean isMage() {
+        return isMage;
+    }
 }

@@ -31,7 +31,7 @@ public class SuperBigFireballScrollItem extends FireballScrollItem {
             float speed = 1.5F; // 发射速度
             Vec3d speedVec = new Vec3d(lookVec.x * speed, lookVec.y * speed, lookVec.z * speed);
             // 创建自定义火球
-            CustomSuperBigFireballEntity fireball = new CustomSuperBigFireballEntity(ModEntities.BIG_CUSTOM_FIREBALL, world, user, 5.5F, true, 70.0F, speedVec);
+            CustomSuperBigFireballEntity fireball = new CustomSuperBigFireballEntity(ModEntities.BIG_CUSTOM_FIREBALL, world, user, 5.5F, true, 70.0F, speedVec, false);
             // 设置发射位置（玩家眼睛位置）
             fireball.setPosition(eyePos.add(lookVec.x * 2, lookVec.y - 1, lookVec.z * 2));
             // 生成火球实体

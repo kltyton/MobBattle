@@ -137,7 +137,7 @@ public class LittlePersonArcherEntity extends HostileEntity implements LittlePer
 
             // 减小散布参数以提高精度（从0.1F改为0.01F）
             arrowEntity.setVelocity(targetX, targetY, targetZ, 1.6F, 0.01F);
-            arrowEntity.setTrueDamage(true);
+            arrowEntity.setTrueDamage(true, false);
             // 发射箭
             serverWorld.spawnEntity(arrowEntity);
         }

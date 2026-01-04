@@ -17,8 +17,12 @@ import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
+import net.minecraft.entity.effect.StatusEffect;
+import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvent;
@@ -54,7 +58,14 @@ public class DeepCreatureEntity extends HostileEntity implements GeoEntity {
     public static final TrackedData<Boolean> HAS_SKILL = DataTracker.registerData(DeepCreatureEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
     public static final TrackedData<Integer> SKILL_COOLDOWN = DataTracker.registerData(DeepCreatureEntity.class, TrackedDataHandlerRegistry.INTEGER);
     public static final TrackedData<Integer> GRAB_TARGET_ID = DataTracker.registerData(DeepCreatureEntity.class, TrackedDataHandlerRegistry.INTEGER);
-
+    @Override
+    public boolean canHaveStatusEffect(StatusEffectInstance effect) {
+        RegistryEntry<StatusEffect> effectType = effect.getEffectType();
+        if (effectType.equals(StatusEffects.SLOWNESS)) {
+            return false;
+        }
+        return super.canHaveStatusEffect(effect);
+    }
     public DeepCreatureEntity(EntityType<? extends HostileEntity> entityType, World world) {
         super(entityType, world);
         this.setHasSkill(false);

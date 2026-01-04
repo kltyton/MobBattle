@@ -45,6 +45,10 @@ public class ModPackets {
                 ItemGroupPayload.ID,
                 ItemGroupPayload.CODEC
         );
+        PayloadTypeRegistry.playC2S().register(
+                MasterScepterPayload.ID,
+                MasterScepterPayload.CODEC
+        );
         PayloadTypeRegistry.playS2C().register(
                 ItemGroupPayload.ID,
                 ItemGroupPayload.CODEC

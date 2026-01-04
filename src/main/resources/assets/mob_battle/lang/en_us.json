@@ -4,8 +4,10 @@
   "key.mob_battle.summon_drone": "Summon Drone",
   "key.mob_battle.treatment_drone_mode": "Treatment Drone Mode",
   "key.mob_battle.attack_drone_mode": "Attack Drone Mode",
+  "key.mob_battle.master_scepter": "Open Maser Scepter GUI",
 
   "item.mob_battle.mutual_attack_stick": "Mutual Attack Stick",
+  "item.mob_battle.master_scepter": "大师法杖",
   "item.mob_battle.universal_lead": "Univaersal Lead",
   "item.mob_battle.invisible_universal_lead": "Invisible Universal Lead",
   "item.mob_battle.fireball_scroll": "Fireball Scroll",
@@ -13,6 +15,7 @@
   "item.mob_battle.super_big_fireball_scroll": "Super Big Fire Scroll",
   "item.mob_battle.fire_wall_scroll": "Fire Wall Scroll",
   "item.mob_battle.slowness_scroll": "Slowness Scroll",
+  "item.mob_battle.thousand_blossomed_immortal_fruit": "千蕊仙人果",
   "item.mob_battle.meteoricore_sword": "Meteoricore Sword",
   "item.mob_battle.meteoricore_axe": "Meteoricore Axe",
   "item.mob_battle.meteoricore_bow": "Meteoricore Bow",
@@ -37,6 +40,15 @@
   "item.mob_battle.little_person_giant_spawn_egg": "Little Person Giant",
   "item.mob_battle.little_person_guard_spawn_egg": "Little Person Guard",
   "item.mob_battle.little_person_king_spawn_egg": "Little Person King",
+  "item.mob_battle.militia_archer_villager_spawn_egg": "民兵弓箭手刷怪蛋",
+  "item.mob_battle.militia_warrior_villager_spawn_egg": "民兵战士刷怪蛋",
+  "item.mob_battle.void_cell_spawn_egg": "虚空细胞",
+  "item.mob_battle.skull_king_spawn_egg": "骷髅王",
+  "item.mob_battle.skull_archer_spawn_egg": "骷髅弓箭手",
+  "item.mob_battle.skull_warrior_spawn_egg": "骷髅战士",
+  "item.mob_battle.skull_mage_spawn_egg": "骷髅法师",
+  "item.mob_battle.young_min_spawn_egg": "幼年珉 ",
+  "item.mob_battle.hidden_eye_spawn_egg": "幽匿眼",
 
   "item.mob_battle.fireman_scroll": "Fireman Scroll",
   "item.mob_battle.hell_helmet_1": "Hell Helmet 1",
@@ -71,6 +83,8 @@
   "block.mob_battle.target": "Target",
 
   "effect.mob_battle.insect_bite": "Insect Bite",
+  "effect.mob_battle.stun": "Stun",
+
   "entity.mob_battle.archer_villager": "Archer Villager",
   "entity.mob_battle.warrior_villager": "Warrior Villager",
   "entity.mob_battle.xun_sheng": "Follow Man",
@@ -92,6 +106,16 @@
   "entity.mob_battle.little_person_giant": "Little Person Giant",
   "entity.mob_battle.little_person_guard": "Little Person Guard",
   "entity.mob_battle.little_person_king": "Little Person King",
+  "entity.mob_battle.militia_archer_villager": "民兵弓箭手",
+  "entity.mob_battle.militia_warrior_villager": "民兵战士",
+  "entity.mob_battle.meteorite": "陨石",
+  "entity.mob_battle.void_cell": "虚空细胞",
+  "entity.mob_battle.skull_king": "骷髅王",
+  "entity.mob_battle.skull_archer": "骷髅弓箭手",
+  "entity.mob_battle.skull_warrior": "骷髅战士",
+  "entity.mob_battle.skull_mage": "骷髅法师",
+  "entity.mob_battle.young_min": "幼年珉",
+  "entity.mob_battle.hidden_eye": "幽匿眼",
 
   "enchantment.mob_battle.magic_protection": "Magic Protection"
 }

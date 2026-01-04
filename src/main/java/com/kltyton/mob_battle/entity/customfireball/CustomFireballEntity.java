@@ -100,24 +100,4 @@ public class CustomFireballEntity extends FireballEntity {
         }
 
     }
-    // 在 CustomFireballEntity.java 中添加以下方法
-/*    @Override
-    public void tick() {
-        super.tick();
-
-        // 添加小火球的粒子效果（模仿烈焰人火球）
-        if (this.getWorld().isClient && this.damage == 5.0f) {
-            for (int i = 0; i < 2; i++) {
-                this.getWorld().addParticleClient(
-                        ParticleTypes.FLAME,
-                        this.getX() + (this.random.nextDouble() - 0.5) * 0.1,
-                        this.getY() + (this.random.nextDouble() - 0.5) * 0.1,
-                        this.getZ() + (this.random.nextDouble() - 0.5) * 0.1,
-                        this.random.nextGaussian() * 0.01,
-                        this.random.nextGaussian() * 0.01,
-                        this.random.nextGaussian() * 0.01
-                );
-            }
-        }
-    }*/
 }

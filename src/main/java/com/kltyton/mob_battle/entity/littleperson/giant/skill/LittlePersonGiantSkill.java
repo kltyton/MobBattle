@@ -54,7 +54,7 @@ public class LittlePersonGiantSkill {
 
             // 减小散布参数以提高精度（从0.1F改为0.01F）
             arrowEntity.setVelocity(targetX, targetY, targetZ, 1.6F, 0.01F);
-            arrowEntity.setTrueDamage(true);
+            arrowEntity.setTrueDamage(true, false);
             // 发射箭
             serverWorld.spawnEntity(arrowEntity);
         }
@@ -66,10 +66,7 @@ public class LittlePersonGiantSkill {
         return entity.getWorld().getEntitiesByClass(
                 LivingEntity.class,
                 entity.getBoundingBox().expand(radius),
-                p -> p.isAlive() &&
-                        entity.distanceTo(p) <= radius &&
-                        p != entity &&
-                        p.getScoreboardTeam() != entity.getScoreboardTeam()
+                p -> p.isAlive() && entity.distanceTo(p) <= radius && p != entity && !p.isTeammate(entity)
         );
     }
 }

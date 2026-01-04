@@ -15,12 +15,14 @@ import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
+import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.mob.WitherSkeletonEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
@@ -70,6 +72,14 @@ public class WitherSkeletonKingEntity extends WitherSkeletonEntity  implements G
         builder.add(SUPER_ATTACK_SKILL_COOLDOWN, 15 * 20);
         builder.add(SHOT_WITHER_SKULL_COOLDOWN, 16 * 20);
         builder.add(SHOT_ALL_WITHER_SKULL_COOLDOWN, 50 * 20);
+    }
+    @Override
+    public boolean canHaveStatusEffect(StatusEffectInstance effect) {
+        RegistryEntry<StatusEffect> effectType = effect.getEffectType();
+        if (effectType.equals(StatusEffects.SLOWNESS)) {
+            return false;
+        }
+        return super.canHaveStatusEffect(effect);
     }
     @Override
     public void tick() {
@@ -198,7 +208,7 @@ public class WitherSkeletonKingEntity extends WitherSkeletonEntity  implements G
         DamageSource damageSource = Optional.ofNullable(itemStack.getItem().getDamageSource(this)).orElse(this.getDamageSources().mobAttack(this));
         f = EnchantmentHelper.getDamage(world, itemStack, target, damageSource, f);
         f += itemStack.getItem().getBonusAttackDamage(target, f, damageSource);
-        if (this.getScoreboardTeam() == target.getScoreboardTeam()) return false;
+        if (this.isTeammate(target)) return false;
         boolean bl = target.damage(world, damageSource, f);
         if (bl) {
             float g = this.getAttackKnockbackAgainst(target, damageSource);
@@ -235,6 +245,7 @@ public class WitherSkeletonKingEntity extends WitherSkeletonEntity  implements G
     public boolean tryAttack(ServerWorld world, Entity target) {
         if (this.canSuperAttack()) {
             performSuperAttack();
+            return true;
         } else if (canSkill()) {
             performAttack();
             return true;

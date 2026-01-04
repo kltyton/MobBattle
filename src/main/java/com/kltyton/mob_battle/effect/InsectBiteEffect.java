@@ -4,9 +4,6 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.SpawnReason;
-import net.minecraft.entity.ai.brain.Brain;
-import net.minecraft.entity.ai.brain.MemoryModuleType;
 import net.minecraft.entity.attribute.EntityAttributeInstance;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
@@ -26,10 +23,6 @@ import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
-
-import java.util.HashSet;
-import java.util.Set;
-import java.util.TreeSet;
 
 public class InsectBiteEffect extends StatusEffect {
 
@@ -87,7 +80,7 @@ public class InsectBiteEffect extends StatusEffect {
         // 设置攻击伤害
         EntityAttributeInstance attackDamage = warden.getAttributeInstance(EntityAttributes.ATTACK_DAMAGE);
         if (attackDamage != null) {
-            attackDamage.setBaseValue(20.0);
+            attackDamage.setBaseValue(60.0);
         }
     }
 }

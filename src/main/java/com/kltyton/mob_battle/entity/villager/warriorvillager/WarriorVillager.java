@@ -1,6 +1,5 @@
 package com.kltyton.mob_battle.entity.villager.warriorvillager;
 
-import com.kltyton.mob_battle.block.ModBlocks;
 import net.minecraft.block.BlockState;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.*;
@@ -9,17 +8,11 @@ import net.minecraft.entity.ai.pathing.EntityNavigation;
 import net.minecraft.entity.ai.pathing.MobNavigation;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.data.DataTracker;
-import net.minecraft.entity.data.TrackedData;
-import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.passive.GolemEntity;
 import net.minecraft.entity.passive.IronGolemEntity;
-import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.storage.ReadView;
-import net.minecraft.storage.WriteView;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.Difficulty;
@@ -40,50 +33,6 @@ import java.util.List;
 public class WarriorVillager extends IronGolemEntity implements GeoEntity {
     // 添加群体仇恨的检测范围（64格）
     private static final double ALERT_RANGE = 64.0;
-
-    public static final TrackedData<BlockPos> HOME_POS = DataTracker.registerData(WarriorVillager.class, TrackedDataHandlerRegistry.BLOCK_POS);
-    public BlockPos getHomePos() {
-        return this.dataTracker.get(HOME_POS);
-    }
-    public void setHomePos(BlockPos pos) {
-        this.dataTracker.set(HOME_POS, pos);
-    }
-    @Override
-    public void writeData(WriteView view) {
-        super.writeData(view);
-        BlockPos homePos = this.getHomePos();
-        if (homePos != null) {
-            view.put("HomePos", BlockPos.CODEC, homePos);
-        }
-    }
-
-    @Override
-    public void readData(ReadView view) {
-        super.readData(view);
-        BlockPos homePos = this.getHomePos();
-        setHomePos(view.read("HomePos", BlockPos.CODEC).orElse(new BlockPos(0, -9999, 0)));
-    }
-    @Override
-    protected void initDataTracker(DataTracker.Builder builder) {
-        super.initDataTracker(builder);
-        builder.add(HOME_POS, new BlockPos(0, -9999, 0));
-    }
-    @Override
-    public void tick() {
-        super.tick();
-        if (!this.getWorld().isClient() && this.age % 20 == 0
-                && !getHomePos().equals(new BlockPos(0, -9999, 0))
-                && (this.getPos().distanceTo(getHomePos().toCenterPos()) >= 128.0)
-                || !this.getWorld().getBlockState(getHomePos()).isOf(ModBlocks.SCARECROW_BLOCK)){
-            VillagerEntity villager = EntityType.VILLAGER.create(this.getWorld(), SpawnReason.CONVERSION);
-            if (villager != null) {
-                villager.refreshPositionAndAngles(this.getX(), this.getY(), this.getZ(), this.getYaw(), this.getPitch());
-                this.getWorld().spawnEntity(villager);
-                this.setHomePos(new BlockPos(0, -9999, 0));
-                this.discard();
-            }
-        }
-    }
     public WarriorVillager(EntityType<? extends IronGolemEntity> entityType, World world) {
         super(entityType, world);
         this.getNavigation().setCanSwim(true);

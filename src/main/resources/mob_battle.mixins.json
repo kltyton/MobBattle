@@ -5,7 +5,7 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "ActiveTargetGoalMixin",
-    "ArrowEntityMixin",
+    "PersistentProjectileEntityMixin",
     "ClampedEntityAttributeAccessor",
     "IronGolemEntityMixin",
     "SnowGolemEntityMixin",
@@ -13,6 +13,7 @@
     "basebow.ArrowEntityMixin",
     "boss.EvokerFangsEntityMixin",
     "damage.DamageUtilMixin",
+    "entityspawn.MixinSpawnHelper",
     "heardstone.PlayerEntityMixin",
     "heardstone.ServerPlayerEntityMixin",
     "initgoals.AbstractPiglinEntityMixin",
@@ -26,16 +27,17 @@
     "leashable.EntityMixin",
     "leashable.LeashableMixin",
     "leashable.MobEntityMixin",
+    "sculkshrieker.SculkShriekerBlockMixin",
     "undead.InstantHealthOrDamageStatusEffectMixin",
     "undead.LivingEntityMixin"
   ],
   "client": [
-    "itemgroup.ItemGroupMixin",
     "client.render.AbstractClientPlayerEntityMixin",
     "client.render.EntityRendererMixin",
     "client.render.EntityRenderStateMixin",
     "crossbow.HeldItemRendererMixin",
     "crossbow.PlayerEntityRendererMixin",
+    "itemgroup.ItemGroupMixin",
     "sound.IMixinMusicTracker",
     "sound.MinecraftClientMixin",
     "sound.MixinMusicTracker"

@@ -1,5 +1,7 @@
 package com.kltyton.mob_battle.client.keybinding;
 
+import com.kltyton.mob_battle.client.screen.MasterScepterScreen;
+import com.kltyton.mob_battle.items.ModItems;
 import com.kltyton.mob_battle.network.packet.SummonDronePayload;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
@@ -12,6 +14,7 @@ public class ModKeyBinding {
     private static KeyBinding keySummon;   // 默认 X
     private static KeyBinding keyAttackDroneMode; // 默认 C
     private static KeyBinding keyTreatmentDroneMode;     // 默认 Z
+    private static KeyBinding keyMasterScepter;
     public static void init() {
         keySummon = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 "key.mob_battle.summon_drone",           // 翻译键
@@ -33,7 +36,12 @@ public class ModKeyBinding {
                 GLFW.GLFW_KEY_Z,
                 "category.mob_battle.general"
         ));
-
+        keyMasterScepter = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+                "key.mob_battle.master_scepter",
+                InputUtil.Type.KEYSYM,
+                GLFW.GLFW_KEY_SLASH,
+                "category.mob_battle.general"
+        ));
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             // while ：长按持续触发（类似原版打开背包的行为）
             while (keySummon.wasPressed()) {
@@ -46,6 +54,13 @@ public class ModKeyBinding {
 
             while (keyTreatmentDroneMode.wasPressed()) {
                 ClientPlayNetworking.send(new SummonDronePayload(3));
+            }
+            while (keyMasterScepter.wasPressed()) {
+                if (client.player != null && (client.player.getMainHandStack().isOf(ModItems.MASTER_SCEPTER) || client.player.getOffHandStack().isOf(ModItems.MASTER_SCEPTER))) {
+                    client.execute(() ->
+                            client.setScreen(new MasterScepterScreen())
+                    );
+                }
             }
         });
     }

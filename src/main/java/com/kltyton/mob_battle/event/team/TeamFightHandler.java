@@ -38,14 +38,13 @@ public class TeamFightHandler {
             try {
                 if (entity instanceof LivingEntity mob && !entity.isRemoved()) {
                     Team team = mob.getScoreboardTeam();
-
                     if (team != null && TeamFightManager.isInFight(team)) {
 
                         // 获取团队生存成员数量
                         long aliveMembers = world.getEntitiesByClass(
                                 LivingEntity.class,
                                 mob.getBoundingBox().expand(100),
-                                e -> e.getScoreboardTeam() == team && e.isAlive()
+                                e -> e.isTeammate(mob) && e.isAlive()
                         ).size();
 
                         if (aliveMembers == 0) {
@@ -73,7 +72,7 @@ public class TeamFightHandler {
             List<LivingEntity> candidates = mob.getWorld().getEntitiesByClass(
                     LivingEntity.class,
                     mob.getBoundingBox().expand(30),
-                    e -> e.getScoreboardTeam() == targetTeam &&
+                    e -> e.isTeammate(mob) &&
                             e.isAlive() &&
                             !e.isRemoved() &&
                             !e.equals(mob)

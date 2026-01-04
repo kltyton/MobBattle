@@ -1,5 +1,6 @@
 package com.kltyton.mob_battle.entity.customfireball;
 
+import com.kltyton.mob_battle.entity.ModEntities;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -7,6 +8,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.hit.EntityHitResult;
+import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.TeleportTarget;
 import net.minecraft.world.World;
@@ -17,13 +19,16 @@ public class CustomSuperBigFireballEntity extends CustomFireballEntity {
     private float lastOwnerHealth;
     private float frozenYaw;
     private float frozenPitch;
-    public CustomSuperBigFireballEntity(EntityType<? extends CustomSuperBigFireballEntity> entityType, World world, LivingEntity owner, float power, boolean createFire, float damage, Vec3d speedV3d) {
+    public boolean SbBfbp;
+    public boolean fuckOwner = true;
+    public CustomSuperBigFireballEntity(EntityType<? extends CustomSuperBigFireballEntity> entityType, World world, LivingEntity owner, float power, boolean createFire, float damage, Vec3d speedV3d, boolean SbBfbp) {
         super(entityType, world, owner, power, createFire, damage);
         this.speedV3d = speedV3d;
         this.lastOwnerHealth = owner.getHealth();
         this.frozenYaw = owner.getYaw();
         this.frozenPitch = owner.getPitch();
         this.ownerEntityPos = owner.getPos();
+        this.SbBfbp = SbBfbp;
     }
     public CustomSuperBigFireballEntity(EntityType<? extends CustomSuperBigFireballEntity> entityType, World world) {
         super(entityType, world);
@@ -58,7 +63,7 @@ public class CustomSuperBigFireballEntity extends CustomFireballEntity {
         Entity falseOwner = this.getOwner();
         // ---- 2. 冻结主人 ----
         if (this.age < growTime) {
-            if (falseOwner instanceof LivingEntity trueOwner) {
+            if (falseOwner instanceof LivingEntity trueOwner && this.fuckOwner) {
                 trueOwner.setVelocity(Vec3d.ZERO); // 禁止移动
                 trueOwner.setYaw(frozenYaw);       // 锁定朝向
                 trueOwner.setPitch(frozenPitch);
@@ -73,12 +78,50 @@ public class CustomSuperBigFireballEntity extends CustomFireballEntity {
         }
 
         // ---- 3. 受伤销毁 ----
-        if (falseOwner instanceof LivingEntity trueOwner) {
+        if (falseOwner instanceof LivingEntity trueOwner && this.fuckOwner) {
             if (trueOwner.getHealth() < lastOwnerHealth) {
                 this.discard(); // 主人受伤 -> 火球消失
                 return;
             }
             lastOwnerHealth = trueOwner.getHealth();
+        }
+    }
+    @Override
+    protected void onCollision(HitResult hitResult) {
+        super.onCollision(hitResult);
+        if (!this.getWorld().isClient && this.SbBfbp) {
+            Vec3d pos = hitResult.getPos();
+            Entity ownerEntity = this.getOwner();
+            if (!(ownerEntity instanceof LivingEntity owner)) {
+                return;
+            }
+
+            for (int i = 0; i < 10; i++) {
+                Vec3d speedVec = new Vec3d(
+                        this.random.nextGaussian(),
+                        this.random.nextGaussian(),
+                        this.random.nextGaussian()
+                ).normalize().multiply(3.0); // 3.0 为散射速度（越大越快）
+
+                if (speedVec.lengthSquared() < 0.01) {
+                    speedVec = new Vec3d(0, 1, 0).multiply(3.0);
+                }
+
+                CustomSuperBigFireballEntity fireball = new CustomSuperBigFireballEntity(
+                        ModEntities.BIG_CUSTOM_FIREBALL,
+                        this.getWorld(),
+                        owner,
+                        5.5F,
+                        true,
+                        70.0F,
+                        speedVec,
+                        false
+                );
+                fireball.fuckOwner = false;
+                Vec3d offsetPos = pos.add(speedVec.normalize().multiply(0.1));
+                fireball.setPosition(offsetPos);
+                this.getWorld().spawnEntity(fireball);
+            }
         }
     }
 }

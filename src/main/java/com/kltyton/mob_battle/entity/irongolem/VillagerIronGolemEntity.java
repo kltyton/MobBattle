@@ -7,11 +7,14 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityStatuses;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.ai.goal.*;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
+import net.minecraft.entity.mob.MobEntity;
+import net.minecraft.entity.mob.Monster;
 import net.minecraft.entity.passive.IronGolemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -34,7 +37,21 @@ public class VillagerIronGolemEntity extends IronGolemEntity implements GeoEntit
         this.setHasSkill(false);
         this.setSkillCooldown(200);
     }
-
+    @Override
+    protected void initGoals() {
+        this.goalSelector.add(1, new MeleeAttackGoal(this, 1.0, true));
+        this.goalSelector.add(2, new WanderNearTargetGoal(this, 0.9, 32.0F));
+        this.goalSelector.add(2, new WanderAroundPointOfInterestGoal(this, 0.6, false));
+        this.goalSelector.add(4, new IronGolemWanderAroundGoal(this, 0.6));
+        this.goalSelector.add(5, new IronGolemLookGoal(this));
+        this.goalSelector.add(7, new LookAtEntityGoal(this, PlayerEntity.class, 6.0F));
+        this.goalSelector.add(8, new LookAroundGoal(this));
+        this.targetSelector.add(1, new TrackIronGolemTargetGoal(this));
+        this.targetSelector.add(2, new RevengeGoal(this));
+        this.targetSelector.add(3, new ActiveTargetGoal<>(this, PlayerEntity.class, 10, true, false, this::shouldAngerAt));
+        this.targetSelector.add(3, new ActiveTargetGoal<>(this, MobEntity.class, 5, false, false, (entity, world) -> entity instanceof Monster));
+        this.targetSelector.add(4, new UniversalAngerGoal<>(this, false));
+    }
     //skill
     public static final TrackedData<Boolean> HAS_SKILL = DataTracker.registerData(VillagerIronGolemEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
     public static final TrackedData<Integer> SKILL_COOLDOWN = DataTracker.registerData(VillagerIronGolemEntity.class, TrackedDataHandlerRegistry.INTEGER);

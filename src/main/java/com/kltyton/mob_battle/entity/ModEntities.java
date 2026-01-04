@@ -8,6 +8,7 @@ import com.kltyton.mob_battle.entity.deepcreature.DeepCreatureEntity;
 import com.kltyton.mob_battle.entity.drone.attackdrone.AttackDroneEntity;
 import com.kltyton.mob_battle.entity.drone.treatmentdrone.TreatmentDroneEntity;
 import com.kltyton.mob_battle.entity.firewall.FireWallEntity;
+import com.kltyton.mob_battle.entity.hiddeneye.HiddenEyeEntity;
 import com.kltyton.mob_battle.entity.highbird.adulthood.HighbirdAdulthoodEntity;
 import com.kltyton.mob_battle.entity.highbird.baby.HighbirdBabyEntity;
 import com.kltyton.mob_battle.entity.highbird.egg.HighbirdEggEntity;
@@ -20,10 +21,19 @@ import com.kltyton.mob_battle.entity.littleperson.giant.LittlePersonGiantEntity;
 import com.kltyton.mob_battle.entity.littleperson.guard.LittlePersonGuardEntity;
 import com.kltyton.mob_battle.entity.littleperson.king.LittlePersonKingEntity;
 import com.kltyton.mob_battle.entity.littleperson.militia.LittlePersonMilitiaEntity;
+import com.kltyton.mob_battle.entity.meteorite.MeteoriteEntity;
+import com.kltyton.mob_battle.entity.min.YoungMinEntity;
+import com.kltyton.mob_battle.entity.skull.archer.SkullArcherEntity;
+import com.kltyton.mob_battle.entity.skull.king.SkullKingEntity;
+import com.kltyton.mob_battle.entity.skull.mage.SkullMageEntity;
+import com.kltyton.mob_battle.entity.skull.warrior.SkullWarriorEntity;
 import com.kltyton.mob_battle.entity.sugarmanscorpion.SugarManScorpion;
 import com.kltyton.mob_battle.entity.villager.archervillager.ArcherVillager;
+import com.kltyton.mob_battle.entity.villager.militia.MilitiaArcherVillager;
+import com.kltyton.mob_battle.entity.villager.militia.MilitiaWarriorVillager;
 import com.kltyton.mob_battle.entity.villager.villagerking.VillagerKingEntity;
 import com.kltyton.mob_battle.entity.villager.warriorvillager.WarriorVillager;
+import com.kltyton.mob_battle.entity.voidcell.VoidCellEntity;
 import com.kltyton.mob_battle.entity.witherskeletonking.WitherSkeletonKingEntity;
 import com.kltyton.mob_battle.entity.xunsheng.XunShengEntity;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityType;
@@ -40,8 +50,11 @@ import net.minecraft.util.Identifier;
 import net.minecraft.world.Heightmap;
 
 public class ModEntities {
+    public static final RegistryKey<EntityType<?>> militia_warrior_villager = RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(Mob_battle.MOD_ID,"militia_warrior_villager"));
+    public static final RegistryKey<EntityType<?>> militia_archer_villager = RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(Mob_battle.MOD_ID,"militia_archer_villager"));
     public static final RegistryKey<EntityType<?>> warrior_villager = RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(Mob_battle.MOD_ID,"warrior_villager"));
     public static final RegistryKey<EntityType<?>> archer_villager = RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(Mob_battle.MOD_ID,"archer_villager"));
+    public static final RegistryKey<EntityType<?>> void_cell = RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(Mob_battle.MOD_ID,"void_cell"));
     public static final RegistryKey<EntityType<?>> xun_sheng= RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(Mob_battle.MOD_ID,"xun_sheng"));
     public static final RegistryKey<EntityType<?>> deep_creature = RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(Mob_battle.MOD_ID,"deep_creature"));
     public static final RegistryKey<EntityType<?>> highbird_baby = RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(Mob_battle.MOD_ID,"highbird_baby"));
@@ -49,13 +62,21 @@ public class ModEntities {
     public static final RegistryKey<EntityType<?>> highbird_adulthood = RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(Mob_battle.MOD_ID,"highbird_adulthood"));
     public static final RegistryKey<EntityType<?>> highbird_egg = RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(Mob_battle.MOD_ID,"highbird_egg"));
     public static final RegistryKey<EntityType<?>> bigfireball = RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(Mob_battle.MOD_ID,"bigfireball"));
+    public static final RegistryKey<EntityType<?>> meteorite = RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(Mob_battle.MOD_ID,"meteorite"));
     public static final RegistryKey<EntityType<?>> firewall = RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(Mob_battle.MOD_ID,"fairewall"));
     public static final RegistryKey<EntityType<?>> blue_iron_golem = RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(Mob_battle.MOD_ID,"blue_iron_golem"));
     public static final RegistryKey<EntityType<?>> sugar_man_scorpion = RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(Mob_battle.MOD_ID,"sugar_man_scorpion"));
     public static final RegistryKey<EntityType<?>> wither_skeleton_king = RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(Mob_battle.MOD_ID,"wither_skeleton_king"));
+    public static final RegistryKey<EntityType<?>> skull_king = RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(Mob_battle.MOD_ID,"skull_king"));
+    public static final RegistryKey<EntityType<?>> skull_archer = RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(Mob_battle.MOD_ID,"skull_archer"));
+    public static final RegistryKey<EntityType<?>> skull_warrior = RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(Mob_battle.MOD_ID,"skull_warrior"));
+    public static final RegistryKey<EntityType<?>> skull_mage = RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(Mob_battle.MOD_ID,"skull_mage"));
+    public static final RegistryKey<EntityType<?>> young_min = RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(Mob_battle.MOD_ID,"young_min"));
+    public static final RegistryKey<EntityType<?>> hidden_eye = RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(Mob_battle.MOD_ID,"hidden_eye"));
+
     public static final RegistryKey<EntityType<?>> bullet = RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(Mob_battle.MOD_ID,"bullet"));
     public static final RegistryKey<EntityType<?>> little_arrow = RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(Mob_battle.MOD_ID,"little_arrow"));
-    public static final RegistryKey<EntityType<?>> villgaer_iron_golem = RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(Mob_battle.MOD_ID,"iron_golem"));
+    public static final RegistryKey<EntityType<?>> villager_iron_golem = RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(Mob_battle.MOD_ID,"iron_golem"));
     public static final RegistryKey<EntityType<?>> villager_king = RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(Mob_battle.MOD_ID,"villager_king"));
     public static final RegistryKey<EntityType<?>> attack_drone =  RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(Mob_battle.MOD_ID,"attack_drone"));
     public static final RegistryKey<EntityType<?>> treatment_drone = RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(Mob_battle.MOD_ID,"treatment_drone"));
@@ -65,6 +86,26 @@ public class ModEntities {
     public static final RegistryKey<EntityType<?>> little_person_giant = RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(Mob_battle.MOD_ID,"little_person_giant"));
     public static final RegistryKey<EntityType<?>> little_person_guard = RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(Mob_battle.MOD_ID,"little_person_guard"));
     public static final RegistryKey<EntityType<?>> little_person_king = RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(Mob_battle.MOD_ID,"little_person_king"));
+    public static final EntityType<MilitiaWarriorVillager> MILITIA_WARRIOR_VILLAGER = FabricEntityType.Builder.createMob(MilitiaWarriorVillager::new, SpawnGroup.CREATURE,
+
+                    (mob) -> mob.defaultAttributes(() -> MilitiaWarriorVillager.createVillagerAttributes()
+                                    .add(EntityAttributes.ATTACK_DAMAGE, 5.0D)
+                                    .add(EntityAttributes.ARMOR, 2.0D))
+                            .spawnRestriction(SpawnLocationTypes.ON_GROUND,
+                                    Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, MilitiaWarriorVillager::checkWarriorSpawnRules))
+            .dimensions(0.6F, 1.95F)
+            .maxTrackingRange(16)
+            .build(militia_warrior_villager);
+    public static final EntityType<MilitiaArcherVillager> MILITIA_ARCHER_VILLAGER = FabricEntityType.Builder.createMob(MilitiaArcherVillager::new, SpawnGroup.CREATURE,
+                    (mob) -> mob.defaultAttributes(() -> MilitiaArcherVillager.createVillagerAttributes()
+                                    .add(EntityAttributes.ATTACK_DAMAGE, 3.0D)
+                                    .add(EntityAttributes.ARMOR, 1.0D))
+                            .spawnRestriction(SpawnLocationTypes.ON_GROUND,
+                                    Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,
+                                    MilitiaArcherVillager::checkSnuffleSpawnRules))
+            .dimensions(0.6F, 1.95F)
+            .maxTrackingRange(16)
+            .build(militia_archer_villager);
     public static final EntityType<WarriorVillager> WARRIOR_VILLAGER = FabricEntityType.Builder.createMob(WarriorVillager::new, SpawnGroup.CREATURE,
                     (mob) -> mob.defaultAttributes(() -> VillagerEntity.createVillagerAttributes()
                             .add(EntityAttributes.ATTACK_DAMAGE, 5.0D)
@@ -75,15 +116,23 @@ public class ModEntities {
             .maxTrackingRange(16)
             .build(warrior_villager);
     public static final EntityType<ArcherVillager> ARCHER_VILLAGER = FabricEntityType.Builder.createMob(ArcherVillager::new, SpawnGroup.CREATURE,
-                    (mob) -> mob.defaultAttributes(() -> VillagerEntity.createVillagerAttributes()
+                    (mob) -> mob.defaultAttributes(() -> ArcherVillager.createVillagerAttributes()
                             .add(EntityAttributes.ATTACK_DAMAGE, 3.0D)
                             .add(EntityAttributes.ARMOR, 1.0D))
                             .spawnRestriction(SpawnLocationTypes.ON_GROUND,
                                     Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,
                                     ArcherVillager::checkSnuffleSpawnRules))
             .dimensions(0.6F, 1.95F)
-            .maxTrackingRange(16)
+            .maxTrackingRange(64)
             .build(archer_villager);
+    public static final EntityType<VoidCellEntity> VOID_CELL = FabricEntityType.Builder.createMob(VoidCellEntity::new, SpawnGroup.CREATURE,
+                    (mob) -> mob.defaultAttributes(VoidCellEntity::createVoidCellAttributes)
+                                    .spawnRestriction(SpawnLocationTypes.ON_GROUND,
+                                            Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,(type, world, reason, pos, random) -> false))
+            .dimensions(0.6F, 0.6F)
+            .maxTrackingRange(16)
+            .build(void_cell);
+
     public static final EntityType<XunShengEntity> XUN_SHENG = FabricEntityType.Builder.createMob(XunShengEntity::new, SpawnGroup.MONSTER,
                     (mob) -> mob.defaultAttributes(XunShengEntity::addAttributes)
                             .spawnRestriction(SpawnLocationTypes.ON_GROUND,
@@ -98,6 +147,7 @@ public class ModEntities {
                             .spawnRestriction(SpawnLocationTypes.ON_GROUND,
                                     Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,(type, world, reason, pos, random) -> false))
             .dimensions(3.6F, 6.95F)
+            .makeFireImmune()
             .maxTrackingRange(64)
             .build(deep_creature);
     public static final EntityType<WitherSkeletonKingEntity> WITHER_SKELETON_KING = FabricEntityType.Builder.createMob(WitherSkeletonKingEntity::new, SpawnGroup.MONSTER,
@@ -106,7 +156,55 @@ public class ModEntities {
                                     Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,(type, world, reason, pos, random) -> false))
             .dimensions(1.0F, 3.15F)
             .maxTrackingRange(64)
+            .makeFireImmune()
             .build(wither_skeleton_king);
+    public static final EntityType<SkullKingEntity> SKULL_KING = FabricEntityType.Builder.createMob(SkullKingEntity::new, SpawnGroup.MONSTER,
+                    (mob) -> mob.defaultAttributes(SkullKingEntity::addAttributes)
+                            .spawnRestriction(SpawnLocationTypes.ON_GROUND,
+                                    Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,(type, world, reason, pos, random) -> false))
+            .dimensions(1.0F, 3.15F)
+            .maxTrackingRange(64)
+            .makeFireImmune()
+            .build(skull_king);
+    public static final EntityType<SkullArcherEntity> SKULL_ARCHER = FabricEntityType.Builder.createMob(SkullArcherEntity::new, SpawnGroup.MONSTER,
+                    (mob) -> mob.defaultAttributes(SkullArcherEntity::addAttributes)
+                            .spawnRestriction(SpawnLocationTypes.ON_GROUND,
+                                    Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,(type, world, reason, pos, random) -> false))
+            .dimensions(0.75F, 1.8F)
+            .maxTrackingRange(64)
+            .makeFireImmune()
+            .build(skull_archer);
+    public static final EntityType<SkullWarriorEntity> SKULL_WARRIOR = FabricEntityType.Builder.createMob(SkullWarriorEntity::new, SpawnGroup.MONSTER,
+                    (mob) -> mob.defaultAttributes(SkullWarriorEntity::addAttributes)
+                            .spawnRestriction(SpawnLocationTypes.ON_GROUND,
+                                    Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,(type, world, reason, pos, random) -> false))
+            .dimensions(0.6F, 1.95F)
+            .maxTrackingRange(64)
+            .makeFireImmune()
+            .build(skull_warrior);
+    public static final EntityType<SkullMageEntity> SKULL_MAGE = FabricEntityType.Builder.createMob(SkullMageEntity::new, SpawnGroup.MONSTER,
+                    (mob) -> mob.defaultAttributes(SkullMageEntity::addAttributes)
+                            .spawnRestriction(SpawnLocationTypes.ON_GROUND,
+                                    Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,(type, world, reason, pos, random) -> false))
+            .dimensions(0.6F, 1.95F)
+            .maxTrackingRange(64)
+            .makeFireImmune()
+            .build(skull_mage);
+    public static final EntityType<YoungMinEntity> YOUNG_MIN = FabricEntityType.Builder.createMob(YoungMinEntity::new, SpawnGroup.CREATURE,
+                    (mob) -> mob.defaultAttributes(YoungMinEntity::createAttributes)
+                            .spawnRestriction(SpawnLocationTypes.ON_GROUND,
+                                    Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,(type, world, reason, pos, random) -> false))
+            .dimensions(0.6F, 0.8F)
+            .maxTrackingRange(16)
+            .build(young_min);
+    public static final EntityType<HiddenEyeEntity> HIDDEN_EYE = FabricEntityType.Builder.createMob(HiddenEyeEntity::new, SpawnGroup.CREATURE,
+                (mob) -> mob.defaultAttributes(HiddenEyeEntity::createAttributes)
+                            .spawnRestriction(SpawnLocationTypes.ON_GROUND,
+                                    Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,(type, world, reason, pos, random) -> false))
+            .dimensions(0.6F, 1.2F)
+            .maxTrackingRange(16)
+            .build(hidden_eye);
+
     /* ↓↓↓ 在 ModEntities 类里新增 ↓↓↓ */
     public static final EntityType<HighbirdBabyEntity> HIGHBIRD_BABY = FabricEntityType.Builder.createMob(HighbirdBabyEntity::new, SpawnGroup.CREATURE,
             (mob) -> mob.defaultAttributes(HighbirdBabyEntity::createHighbirdAttributes)
@@ -144,7 +242,7 @@ public class ModEntities {
                                     Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,(type, world, reason, pos, random) -> false))
             .dimensions(1.4F, 2.7F)
             .maxTrackingRange(10)
-            .build(villgaer_iron_golem);
+            .build(villager_iron_golem);
     public static final EntityType<VillagerKingEntity> VILLAGER_KING_ENTITY = FabricEntityType.Builder.createMob(VillagerKingEntity::new, SpawnGroup.MISC,
                     (mob) -> mob.defaultAttributes(VillagerKingEntity::createVillagerKingAttributes)
                             .spawnRestriction(SpawnLocationTypes.ON_GROUND,
@@ -174,6 +272,13 @@ public class ModEntities {
                     .maxTrackingRange(4)
                     .trackingTickInterval(10)
                     .build(bigfireball);
+    public static final EntityType<MeteoriteEntity> METEORITE =
+            EntityType.Builder.<MeteoriteEntity>create(MeteoriteEntity::new, SpawnGroup.MISC)
+                    .dropsNothing()
+                    .dimensions(1.0F, 1.0F)
+                    .maxTrackingRange(4)
+                    .trackingTickInterval(10)
+                    .build(meteorite);
     public static final EntityType<FireWallEntity> FIRE_WALL =
             EntityType.Builder.<FireWallEntity>create(FireWallEntity::new, SpawnGroup.MISC)
                     .dropsNothing()
@@ -264,11 +369,21 @@ public class ModEntities {
 
 
     public static void init() {
+        Registry.register(Registries.ENTITY_TYPE, militia_warrior_villager, MILITIA_WARRIOR_VILLAGER);
+        Registry.register(Registries.ENTITY_TYPE, militia_archer_villager, MILITIA_ARCHER_VILLAGER);
         Registry.register(Registries.ENTITY_TYPE, warrior_villager, WARRIOR_VILLAGER);
         Registry.register(Registries.ENTITY_TYPE, archer_villager, ARCHER_VILLAGER);
+        Registry.register(Registries.ENTITY_TYPE, void_cell, VOID_CELL);
         Registry.register(Registries.ENTITY_TYPE, xun_sheng, XUN_SHENG);
         Registry.register(Registries.ENTITY_TYPE, deep_creature, DEEP_CREATURE);
         Registry.register(Registries.ENTITY_TYPE, wither_skeleton_king, WITHER_SKELETON_KING);
+        Registry.register(Registries.ENTITY_TYPE, skull_king, SKULL_KING);
+        Registry.register(Registries.ENTITY_TYPE, skull_archer, SKULL_ARCHER);
+        Registry.register(Registries.ENTITY_TYPE, skull_warrior, SKULL_WARRIOR);
+        Registry.register(Registries.ENTITY_TYPE, skull_mage, SKULL_MAGE);
+        Registry.register(Registries.ENTITY_TYPE, young_min, YOUNG_MIN);
+        Registry.register(Registries.ENTITY_TYPE, hidden_eye, HIDDEN_EYE);
+        Registry.register(Registries.ENTITY_TYPE, meteorite, METEORITE);
         Registry.register(Registries.ENTITY_TYPE, highbird_baby, HIGHBIRD_BABY);
         Registry.register(Registries.ENTITY_TYPE, highbird_egg, HIGHBIRD_EGG);
         Registry.register(Registries.ENTITY_TYPE, highbird_teenage, HIGHBIRD_TEENAGE);
@@ -279,7 +394,7 @@ public class ModEntities {
         Registry.register(Registries.ENTITY_TYPE, sugar_man_scorpion, SUGAR_MAN_SCORPION);
         Registry.register(Registries.ENTITY_TYPE, bullet, BULLET_ENTITY);
         Registry.register(Registries.ENTITY_TYPE, little_arrow, LITTLE_ARROW);
-        Registry.register(Registries.ENTITY_TYPE, villgaer_iron_golem, VILLAGER_IRON_GOLEM_ENTITY);
+        Registry.register(Registries.ENTITY_TYPE, villager_iron_golem, VILLAGER_IRON_GOLEM_ENTITY);
         Registry.register(Registries.ENTITY_TYPE, villager_king, VILLAGER_KING_ENTITY);
         Registry.register(Registries.ENTITY_TYPE, attack_drone, ATTACK_DRONE);
         Registry.register(Registries.ENTITY_TYPE, treatment_drone, TREATMENT_DRONE);

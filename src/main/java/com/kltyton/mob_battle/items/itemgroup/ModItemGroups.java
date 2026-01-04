@@ -30,6 +30,7 @@ public class ModItemGroups {
             .displayName(Text.translatable("itemGroup.mob_battle.main"))
             .entries((context, entries) -> {
                 entries.add(ModItems.MUTUAL_ATTACK_STICK);
+                entries.add(ModItems.MASTER_SCEPTER);
                 entries.add(ModItems.UNIVERSAL_LEAD);
                 entries.add(ModItems.INVISIBLE_UNIVERSAL_LEAD);
                 entries.add(ModItems.FIREBALL_SCROLL);
@@ -39,6 +40,7 @@ public class ModItemGroups {
                 entries.add(ModItems.SLOWNESS_SCROLL);
                 entries.add(ModItems.FIRE_WALL_SCROLL);
                 entries.add(ModItems.HEART_STONE);
+                entries.add(ModItems.THOUSAND_BLOSSOMED_IMMORTAL_FRUIT);
                 // 添加刷怪蛋
                 entries.add(ModItems.HIGHBIRD_BABY_SPAWN_EGG);
                 entries.add(ModItems.HIGHBIRD_TEENAGE_SPAWN_EGG);
@@ -59,6 +61,13 @@ public class ModItemGroups {
                 entries.add(ModItems.LITTLE_PERSON_GUARD_SPAWN_EGG);
                 entries.add(ModItems.LITTLE_PERSON_KING_SPAWN_EGG);
                 entries.add(ModItems.VILLAGER_KING_SPAWN_EGG);
+                entries.add(ModItems.VOID_CELL_SPAWN_EGG);
+                entries.add(ModItems.SKULL_KING_SPAWN_EGG);
+                entries.add(ModItems.SKULL_ARCHER_SPAWN_EGG);
+                entries.add(ModItems.SKULL_WARRIOR_SPAWN_EGG);
+                entries.add(ModItems.SKULL_MAGE_SPAWN_EGG);
+                entries.add(ModItems.YOUNG_MIN_SPAWN_EGG);
+                entries.add(ModItems.HIDDEN_EYE_SPAWN_EGG);
                 //添加孵化蛋
                 entries.add(ModItems.INCUBATION_EGG);
 

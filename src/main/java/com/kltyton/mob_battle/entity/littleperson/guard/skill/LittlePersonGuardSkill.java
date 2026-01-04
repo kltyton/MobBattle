@@ -23,7 +23,7 @@ public class LittlePersonGuardSkill {
                 p -> p.isAlive() &&
                         entity.distanceTo(p) <= radius &&
                         p != entity &&
-                        p.getScoreboardTeam() != entity.getScoreboardTeam()
+                        !p.isTeammate(entity)
         );
     }
 }

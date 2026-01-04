@@ -19,7 +19,7 @@ public class KingSkill {
             Box damageBox = witherSkeletonKingEntity.getBoundingBox().expand(range, range, range);
             world.getOtherEntities(witherSkeletonKingEntity, damageBox).stream()
                     .filter(entity -> entity instanceof LivingEntity)
-                    .filter(entity -> entity.getScoreboardTeam() != witherSkeletonKingEntity.getScoreboardTeam())
+                    .filter(entity -> !entity.isTeammate(witherSkeletonKingEntity))
                     .filter(entity -> !entity.isSpectator() && entity.isAlive())
                     .filter(entity -> entity.squaredDistanceTo(witherSkeletonKingEntity) <= range * range)
                     .forEach(entity -> {
@@ -35,7 +35,7 @@ public class KingSkill {
         Box damageBox = witherSkeletonKingEntity.getBoundingBox().expand(range, range, range);
         world.getOtherEntities(witherSkeletonKingEntity, damageBox).stream()
                 .filter(entity -> entity instanceof LivingEntity)
-                .filter(entity -> entity.getScoreboardTeam() != witherSkeletonKingEntity.getScoreboardTeam())
+                .filter(entity -> !entity.isTeammate(witherSkeletonKingEntity))
                 .filter(entity -> !entity.isSpectator() && entity.isAlive())
                 .filter(entity -> entity.squaredDistanceTo(witherSkeletonKingEntity) <= range * range)
                 .forEach(entity -> {
@@ -76,7 +76,6 @@ public class KingSkill {
 
         // ====== 同队增益：力量 VI（6秒）======
         double buffRange = 5.0D;
-        var team = king.getScoreboardTeam();
 
         Box area = king.getBoundingBox().expand(buffRange);
         world.getOtherEntities(king, area).stream()
@@ -84,7 +83,7 @@ public class KingSkill {
                 .map(e -> (LivingEntity) e)
                 .filter(LivingEntity::isAlive)
                 .filter(e -> !e.isSpectator())
-                .filter(e -> e.getScoreboardTeam() != null && e.getScoreboardTeam() == team)
+                .filter(e -> e.isTeammate(king))
                 .forEach(ally -> {
                     ally.addStatusEffect(new StatusEffectInstance(
                             StatusEffects.STRENGTH,
@@ -139,7 +138,6 @@ public class KingSkill {
 
         // ====== 同队增益：力量 VI（6秒）======
         double buffRange = 5.0D;
-        var team = king.getScoreboardTeam();
 
         Box area = king.getBoundingBox().expand(buffRange);
         world.getOtherEntities(king, area).stream()
@@ -147,7 +145,7 @@ public class KingSkill {
                 .map(e -> (LivingEntity) e)
                 .filter(LivingEntity::isAlive)
                 .filter(e -> !e.isSpectator())
-                .filter(e -> e.getScoreboardTeam() != null && e.getScoreboardTeam() == team)
+                .filter(e -> e.isTeammate(king))
                 .forEach(ally -> {
                     ally.addStatusEffect(new StatusEffectInstance(
                             StatusEffects.STRENGTH,

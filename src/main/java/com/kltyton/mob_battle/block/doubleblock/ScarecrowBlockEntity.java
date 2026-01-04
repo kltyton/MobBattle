@@ -2,14 +2,13 @@ package com.kltyton.mob_battle.block.doubleblock;
 
 import com.kltyton.mob_battle.block.ModBlockEntities;
 import com.kltyton.mob_battle.entity.ModEntities;
-import com.kltyton.mob_battle.entity.villager.warriorvillager.WarriorVillager;
+import com.kltyton.mob_battle.entity.villager.militia.MilitiaWarriorVillager;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.entity.passive.IronGolemEntity;
 import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -53,7 +52,7 @@ public class ScarecrowBlockEntity extends BlockEntity {
             Entity entity = world.getEntity(uuid);
 
             // 如果实体不存在、不是铁傀儡、已死亡、或距离超过64格，则移除
-            if (!(entity instanceof IronGolemEntity golem) || !golem.isAlive() ||
+            if (!(entity instanceof MilitiaWarriorVillager golem) || !golem.isAlive() ||
                     golem.squaredDistanceTo(pos.toCenterPos()) > RANGE * RANGE) {
                 iterator.remove();
                 markDirty();
@@ -64,13 +63,12 @@ public class ScarecrowBlockEntity extends BlockEntity {
     private void tryTransformVillager(ServerWorld world, BlockPos pos) {
         Box box = new Box(pos).expand(DETECT_VILLAGER_RANGE);
         List<VillagerEntity> villagers = world.getEntitiesByClass(VillagerEntity.class, box,
-                v -> v.getVillagerData().profession().matchesKey(VillagerProfession.NONE));
+                v -> !v.isBaby() && v.getVillagerData().profession().matchesKey(VillagerProfession.NONE));
 
         if (!villagers.isEmpty()) {
             VillagerEntity villager = villagers.getFirst();
-
             // 转化
-            WarriorVillager golem = ModEntities.WARRIOR_VILLAGER.create(world, SpawnReason.CONVERSION);
+            MilitiaWarriorVillager golem = ModEntities.MILITIA_WARRIOR_VILLAGER.create(world, SpawnReason.CONVERSION);
             if (golem != null) {
                 golem.setHomePos(pos);
                 golem.refreshPositionAndAngles(villager.getX(), villager.getY(), villager.getZ(), villager.getYaw(), villager.getPitch());
@@ -88,7 +86,7 @@ public class ScarecrowBlockEntity extends BlockEntity {
         }
         for (UUID uuid : trackedGolems) {
             Entity entity = world.getEntity(uuid);
-            if (entity instanceof WarriorVillager warrior && entity.isAlive()) {
+            if (entity instanceof MilitiaWarriorVillager warrior && entity.isAlive()) {
                 warrior.addStatusEffect(new StatusEffectInstance(
                         StatusEffects.GLOWING,
                         5 * 20,

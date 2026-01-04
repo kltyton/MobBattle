@@ -1,5 +1,6 @@
 package com.kltyton.mob_battle.mixin.initgoals;
 
+import com.kltyton.mob_battle.entity.skull.IModSkullEntity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.goal.ActiveTargetGoal;
@@ -34,6 +35,12 @@ public abstract class WitherSkeletonEntityMixin extends AbstractSkeletonEntity {
 
     @Unique
     private boolean isValidTarget(LivingEntity target, ServerWorld world) {
+        if (this.isTeammate(target)) {
+            return false;
+        }
+        if (this instanceof IModSkullEntity) {
+            return !(target instanceof IModSkullEntity);
+        }
         return !(target instanceof WitherEntity || target instanceof WitherSkeletonEntity);
     }
 }

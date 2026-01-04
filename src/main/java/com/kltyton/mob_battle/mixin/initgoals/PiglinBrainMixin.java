@@ -8,9 +8,9 @@ import net.minecraft.entity.ai.brain.MemoryModuleType;
 import net.minecraft.entity.mob.AbstractPiglinEntity;
 import net.minecraft.entity.mob.PiglinBrain;
 import net.minecraft.entity.mob.PiglinEntity;
-import net.minecraft.scoreboard.Team;
 import net.minecraft.server.world.ServerWorld;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
@@ -59,26 +59,13 @@ public class PiglinBrainMixin {
             }
         }
     }
-
-    /* 工具方法：判断两个 LivingEntity 是否在同一队伍 */
+    @Unique
     private static boolean areInSameTeam(LivingEntity a, LivingEntity b) {
-        if (a == null || b == null) return false;
-        Team teamA = a.getScoreboardTeam();
-        Team teamB = b.getScoreboardTeam();
-        return teamA != null && teamA.isEqual(teamB);
+        return a.isTeammate(b);
     }
     @Inject(method = "getNearestZombifiedPiglin", at = @At("HEAD"), cancellable = true)
     private static void getNearestZombifiedPiglin(PiglinEntity piglin, CallbackInfoReturnable<Boolean> cir) {
         cir.setReturnValue(false);
         cir.cancel();
     }
-/*    @Inject(method = "sense", at = @At("RETURN"), locals = LocalCapture.CAPTURE_FAILSOFT)
-    private void sense(ServerWorld world, LivingEntity entity, CallbackInfo ci, Brain brain, Optional<MobEntity> optional, Optional optional2, Optional optional3, Optional optional4, Optional optional5, Optional optional6, Optional optional7, int i, List list, List list2) {
-        LivingTargetCache livingTargetCache = (LivingTargetCache)brain.getOptionalRegisteredMemory(MemoryModuleType.VISIBLE_MOBS).orElse(LivingTargetCache.empty());
-        for (LivingEntity livingEntity : livingTargetCache.iterate(livingEntityx -> true)) {
-            if (!(livingEntity instanceof AbstractPiglinEntity)) {
-                brain.remember(MemoryModuleType.NEAREST_VISIBLE_ZOMBIFIED, livingEntity);
-            }
-        }
-    }*/
 }

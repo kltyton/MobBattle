@@ -2,7 +2,7 @@ package com.kltyton.mob_battle.mixin.undead;
 
 import com.kltyton.mob_battle.entity.witherskeletonking.skill.WitherSkullEntityKing;
 import com.kltyton.mob_battle.items.ModItems;
-import com.kltyton.mob_battle.utils.IronGoldArmorUtil;
+import com.kltyton.mob_battle.utils.ArmorUtil;
 import net.minecraft.component.type.DeathProtectionComponent;
 import net.minecraft.entity.Attackable;
 import net.minecraft.entity.Entity;
@@ -10,9 +10,11 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.damage.DamageType;
+import net.minecraft.entity.damage.DamageTypes;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.registry.tag.DamageTypeTags;
 import net.minecraft.registry.tag.EntityTypeTags;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.server.world.ServerWorld;
@@ -21,8 +23,10 @@ import net.minecraft.world.World;
 import net.minecraft.world.waypoint.ServerWaypoint;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
@@ -37,6 +41,13 @@ public abstract class LivingEntityMixin extends Entity implements Attackable, Se
     @Shadow
     public abstract void heal(float amount);
 
+    @Inject(method = "canTarget(Lnet/minecraft/entity/LivingEntity;)Z", at = @At("HEAD"), cancellable = true)
+    private void preventTeamTargeting(LivingEntity target, CallbackInfoReturnable<Boolean> cir) {
+        LivingEntity self = (LivingEntity) (Object) this;
+        if (self.isTeammate(target)) {
+            cir.setReturnValue(false);
+        }
+    }
     @Redirect(method = "canHaveStatusEffect", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/EntityType;isIn(Lnet/minecraft/registry/tag/TagKey;)Z", ordinal = 2))
     private boolean cancelCanHaveStatusEffect(EntityType<?> instance, TagKey<EntityType<?>> tag) {
         if (instance.isIn(EntityTypeTags.UNDEAD)) return false;
@@ -59,6 +70,39 @@ public abstract class LivingEntityMixin extends Entity implements Attackable, Se
         }
         return instance.isIn(tag);
     }
+    @Unique
+    boolean isMagic = false;
+    @ModifyVariable(
+            method = "damage",
+            at = @At("HEAD"),
+            index = 2,
+            argsOnly = true
+    )
+    private DamageSource modifyDamageSource(DamageSource value) {
+        isMagic = value.isIn(DamageTypeTags.WITCH_RESISTANT_TO);
+        return value;
+    }
+    @ModifyVariable(
+            method = "damage",
+            at = @At("HEAD"),
+            index = 3,
+            argsOnly = true
+    )
+    private float modifyDamageArgument(float damage) {
+        int level = ArmorUtil.getMagicProtectionLevel((LivingEntity) (Object) this);
+        if (isMagic && level > 0) {
+            float reductionPercentage = Math.min(level * 0.04f, 0.80f);
+            return damage * (1.0f - reductionPercentage);
+        }
+        return damage;
+    }
+    @Inject(method = "damage", at = @At("HEAD"), cancellable = true)
+    public void damage(ServerWorld world, DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
+        if (source.isOf(DamageTypes.OUT_OF_WORLD) && (Object) this instanceof PlayerEntity player && (player.isCreative() || player.isSpectator())) {
+            cir.setReturnValue(false);
+            cir.cancel();
+        }
+    }
     @Redirect(method = "applyDamage", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;isInvulnerableTo(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/entity/damage/DamageSource;)Z"))
     public boolean isInvulnerableTo(LivingEntity instance, ServerWorld world, DamageSource source) {
         Entity sourcer = source.getSource();
@@ -77,16 +121,24 @@ public abstract class LivingEntityMixin extends Entity implements Attackable, Se
             instance.decrement(amount);
         }
     }
+    @Unique
+    public boolean isIronGoldSword = false;
     @Inject(method = "tryUseDeathProtector", at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;copy()Lnet/minecraft/item/ItemStack;"), locals = LocalCapture.CAPTURE_FAILSOFT, cancellable = true)
     public void tryUseDeathProtector(DamageSource source, CallbackInfoReturnable<Boolean> cir, DeathProtectionComponent deathProtectionComponent, ItemStack itemStack2, Hand[] var5, int var6, int var7, Hand hand) {
-        if (itemStack2.isOf(ModItems.IRON_GOLD_SWORD) && (!IronGoldArmorUtil.hasFullDiamondArmor((LivingEntity) (Object) this) || itemStack2.getDamage() >= itemStack2.getMaxDamage() - 1)) {
+        if (itemStack2.isOf(ModItems.IRON_GOLD_SWORD) && (!ArmorUtil.hasFullDiamondArmor((LivingEntity) (Object) this) || itemStack2.getDamage() >= itemStack2.getMaxDamage() - 1)) {
+            isIronGoldSword = false;
             cir.cancel();
             cir.setReturnValue(false);
+        } else {
+            isIronGoldSword = true;
         }
     }
-    @Inject(method = "tryUseDeathProtector", at = @At(value = "INVOKE", target = "Lnet/minecraft/component/type/DeathProtectionComponent;applyDeathEffects(Lnet/minecraft/item/ItemStack;Lnet/minecraft/entity/LivingEntity;)V", shift = At.Shift.AFTER))
+    @Inject(method = "tryUseDeathProtector", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;setHealth(F)V"))
     public void applyDeathEffects(DamageSource source, CallbackInfoReturnable<Boolean> cir) {
-        this.heal(50);
+        if (isIronGoldSword) {
+            this.heal(50);
+            isIronGoldSword = false;
+        }
     }
     @Inject(method = "takeKnockback", at = @At("HEAD"), cancellable = true)
     public void takeKnockback(double strength, double x, double z, CallbackInfo ci) {

@@ -1,6 +1,5 @@
 package com.kltyton.mob_battle.entity.villager.archervillager;
 
-import com.kltyton.mob_battle.block.ModBlocks;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.SpawnReason;
@@ -10,15 +9,13 @@ import net.minecraft.entity.ai.goal.SwimGoal;
 import net.minecraft.entity.ai.goal.UniversalAngerGoal;
 import net.minecraft.entity.ai.pathing.EntityNavigation;
 import net.minecraft.entity.ai.pathing.MobNavigation;
+import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.data.DataTracker;
-import net.minecraft.entity.data.TrackedData;
-import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.mob.Angerable;
+import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.passive.GolemEntity;
 import net.minecraft.entity.passive.SnowGolemEntity;
-import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.ArrowEntity;
 import net.minecraft.item.ItemStack;
@@ -26,8 +23,6 @@ import net.minecraft.item.Items;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.storage.ReadView;
-import net.minecraft.storage.WriteView;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.TimeHelper;
@@ -52,48 +47,10 @@ import java.util.UUID;
 
 // 远程村民
 public class ArcherVillager extends SnowGolemEntity implements Angerable, GeoEntity {
-    public static final TrackedData<BlockPos> HOME_POS = DataTracker.registerData(ArcherVillager.class, TrackedDataHandlerRegistry.BLOCK_POS);
-    public BlockPos getHomePos() {
-        return this.dataTracker.get(HOME_POS);
-    }
-    public void setHomePos(BlockPos pos) {
-        this.dataTracker.set(HOME_POS, pos);
-    }
-    @Override
-    public void writeData(WriteView view) {
-        super.writeData(view);
-        BlockPos homePos = this.getHomePos();
-        if (homePos != null) {
-            view.put("HomePos", BlockPos.CODEC, homePos);
-        }
-    }
-
-    @Override
-    public void readData(ReadView view) {
-        super.readData(view);
-        BlockPos homePos = this.getHomePos();
-        setHomePos(view.read("HomePos", BlockPos.CODEC).orElse(new BlockPos(0, -9999, 0)));
-    }
-    @Override
-    protected void initDataTracker(DataTracker.Builder builder) {
-        super.initDataTracker(builder);
-        builder.add(HOME_POS, new BlockPos(0, -9999, 0));
-    }
-    @Override
-    public void tick() {
-        super.tick();
-        if (!this.getWorld().isClient() && this.age % 20 == 0
-                && !getHomePos().equals(new BlockPos(0, -9999, 0))
-                && (this.getPos().distanceTo(getHomePos().toCenterPos()) >= 128.0)
-                || !this.getWorld().getBlockState(getHomePos()).isOf(ModBlocks.TARGET_BLOCK)){
-            VillagerEntity villager = EntityType.VILLAGER.create(this.getWorld(), SpawnReason.CONVERSION);
-            if (villager != null) {
-                villager.refreshPositionAndAngles(this.getX(), this.getY(), this.getZ(), this.getYaw(), this.getPitch());
-                this.getWorld().spawnEntity(villager);
-                this.setHomePos(new BlockPos(0, -9999, 0));
-                this.discard();
-            }
-        }
+    public static DefaultAttributeContainer.Builder createVillagerAttributes() {
+        return MobEntity.createMobAttributes()
+                .add(EntityAttributes.MOVEMENT_SPEED, 0.5)
+                .add(EntityAttributes.FOLLOW_RANGE, 64.0);
     }
     @Nullable
     private UUID angryAt;
@@ -107,9 +64,10 @@ public class ArcherVillager extends SnowGolemEntity implements Angerable, GeoEnt
     protected void initGoals() {
         super.initGoals();
         this.goalSelector.add(0, new SwimGoal(this)); // 添加游泳AI
-        this.targetSelector.add(2, new RevengeGoal(this, new Class[0]));
-        this.targetSelector.add(2, new ActiveTargetGoal(this, PlayerEntity.class, 10, true, false, this::shouldAngerAt));
-        this.targetSelector.add(2, new UniversalAngerGoal(this, false));
+        this.targetSelector.add(2, new RevengeGoal(this));
+        this.targetSelector.add(2, new ActiveTargetGoal<>(this, net.minecraft.entity.mob.PhantomEntity.class, true));
+        this.targetSelector.add(2, new ActiveTargetGoal<>(this, PlayerEntity.class, 10, true, false, this::shouldAngerAt));
+        this.targetSelector.add(2, new UniversalAngerGoal<>(this, false));
     }
     @Override
     public boolean hurtByWater() {
@@ -136,29 +94,39 @@ public class ArcherVillager extends SnowGolemEntity implements Angerable, GeoEnt
     }
     @Override
     public void shootAt(LivingEntity target, float pullProgress) {
-        double targetX = target.getX() - this.getX();
-        double targetY = target.getEyeY() - (double)1.1F;
-        double targetZ = target.getZ() - this.getZ();
-        double distance = Math.sqrt(targetX * targetX + targetZ * targetZ) * (double)0.2F;
         World world = this.getWorld();
+        if (!(world instanceof ServerWorld serverWorld)) return;
 
-        if (world instanceof ServerWorld serverWorld) {
-            this.triggerAnim("attack_controller", "attack");
-            // 创建箭实体
-            ArrowEntity arrowEntity = new ArrowEntity(world, this, new ItemStack(Items.ARROW), this.getMainHandStack().getItem() == Items.BOW ? this.getMainHandStack() : null);
-            // 设置箭的伤害
-            arrowEntity.setDamage(this.getAttributeValue(EntityAttributes.ATTACK_DAMAGE));
-            arrowEntity.setOwner(this);
-            // 设置箭的速度和轨迹
-            // 调整发射角度和速度，提高准确性
-            double adjustedY = targetY + distance * 0.5; // 调整箭的发射高度
-            arrowEntity.setVelocity(targetX, adjustedY - arrowEntity.getY(), targetZ, 1.6F, 0.1F); // 调整速度和轨迹
-            // 发射箭
-            serverWorld.spawnEntity(arrowEntity);
-        }
+        this.triggerAnim("attack_controller", "attack");
 
-        // 播放攻击音效
-        this.playSound(SoundEvents.ENTITY_SNOW_GOLEM_SHOOT, 1.0F, 0.4F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
+        // 1. 创建箭实体
+        ItemStack arrowStack = new ItemStack(Items.ARROW);
+        ArrowEntity arrowEntity = new ArrowEntity(world, this, arrowStack, null);
+
+        // 2. 设置伤害（建议根据属性获取）
+        arrowEntity.setDamage(this.getAttributeValue(EntityAttributes.ATTACK_DAMAGE));
+
+        // 3. 计算向量
+        double dX = target.getX() - this.getX();
+        double dY = target.getEyeY() - 0.33D - arrowEntity.getY(); // 目标眼部略低一点
+        double dZ = target.getZ() - this.getZ();
+        double distance = Math.sqrt(dX * dX + dZ * dZ);
+
+        // 4. 动态调整弹道速度和仰角
+        // 射程越远，初速度需要越高。1.6F 是普通弓箭，我们可以给到 3.0F 或更高来对付幻翼
+        float velocity = 2.5F;
+
+        // 自动修正重力导致的下坠：距离越远，向上偏移量越大
+        // 这是一个简单的线性补偿公式
+        float gravityCorrection = (float)distance * 0.15F;
+
+        // 5. 设置速度
+        // 参数含义: x, y, z, 速度, 散布度(0代表无偏离，绝对精准)
+        arrowEntity.setVelocity(dX, dY + (double)gravityCorrection, dZ, velocity, 0.0F);
+
+        // 6. 发射与音效
+        serverWorld.spawnEntity(arrowEntity);
+        this.playSound(SoundEvents.ENTITY_SKELETON_SHOOT, 1.0F, 1.0F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
     }
     @Override
     public boolean damage(ServerWorld world, DamageSource source, float amount) {

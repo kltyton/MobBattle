@@ -54,7 +54,7 @@ public class WitherSkullEntityKing extends WitherSkullEntity {
             Entity var8 = entityHitResult.getEntity();
             boolean bl;
             if (this.getOwner() instanceof LivingEntity livingEntity) {
-                if (this.getOwner().getScoreboardTeam() == var8.getScoreboardTeam()) return;
+                if (this.getOwner().isTeammate(var8)) return;
                 DamageSource damageSource = this.getDamageSources().witherSkull(this, livingEntity);
                 bl = var8.damage(serverWorld, damageSource, power);
                 var8.damage(serverWorld, this.getDamageSources().explosion(this, livingEntity), 130F);

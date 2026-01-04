@@ -2,16 +2,19 @@ package com.kltyton.mob_battle.items;
 
 import com.kltyton.mob_battle.Mob_battle;
 import com.kltyton.mob_battle.entity.ModEntities;
+import com.kltyton.mob_battle.items.food.ThousandBlossomedImmortalFruit;
 import com.kltyton.mob_battle.items.misc.*;
 import com.kltyton.mob_battle.items.scroll.*;
 import com.kltyton.mob_battle.items.tool.BaseAxe;
 import com.kltyton.mob_battle.items.tool.BaseBow;
+import com.kltyton.mob_battle.items.tool.MasterScepterItem;
 import com.kltyton.mob_battle.items.tool.irongold.IronGoldSword;
 import com.kltyton.mob_battle.items.tool.meteorite.MeteoriteSword;
 import com.kltyton.mob_battle.items.tool.snipe.VsSnipe;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.ChargedProjectilesComponent;
 import net.minecraft.component.type.DeathProtectionComponent;
+import net.minecraft.component.type.FoodComponent;
 import net.minecraft.item.Item;
 import net.minecraft.item.SpawnEggItem;
 import net.minecraft.item.equipment.EquipmentType;
@@ -25,6 +28,7 @@ import net.minecraft.util.Unit;
 public class ModItems {
     // 杂项物品
     public static MutualAttackStickItem MUTUAL_ATTACK_STICK;
+    public static MasterScepterItem MASTER_SCEPTER;
     public static UniversalLeadItem UNIVERSAL_LEAD;
     public static InvisibleUniversalLeadItem INVISIBLE_UNIVERSAL_LEAD;
     public static FireballScrollItem FIREBALL_SCROLL;
@@ -34,6 +38,7 @@ public class ModItems {
     public static SlownessScrollItem SLOWNESS_SCROLL;
     public static FireWallScrollItem FIRE_WALL_SCROLL;
     public static HeartStoneItem HEART_STONE;
+    public static ThousandBlossomedImmortalFruit THOUSAND_BLOSSOMED_IMMORTAL_FRUIT;
     // 刷怪蛋
     public static SpawnEggItem HIGHBIRD_BABY_SPAWN_EGG;
     public static SpawnEggItem HIGHBIRD_TEENAGE_SPAWN_EGG;
@@ -45,6 +50,8 @@ public class ModItems {
     public static SpawnEggItem VILLAGER_KING_SPAWN_EGG;
     public static SpawnEggItem ARCHER_VILLAGER_SPAWN_EGG;
     public static SpawnEggItem WARRIOR_VILLAGER_SPAWN_EGG;
+    public static SpawnEggItem MILITIA_ARCHER_VILLAGER_SPAWN_EGG;
+    public static SpawnEggItem MILITIA_WARRIOR_VILLAGER_SPAWN_EGG;
     public static SpawnEggItem BLUE_IRON_GOLEM_SPAWN_EGG;
     public static SpawnEggItem SUGAR_MAN_SCORPION_SPAWN_EGG;
     public static SpawnEggItem IRON_GOLEM_SPAWN_EGG;
@@ -54,6 +61,14 @@ public class ModItems {
     public static SpawnEggItem LITTLE_PERSON_GIANT_SPAWN_EGG;
     public static SpawnEggItem LITTLE_PERSON_GUARD_SPAWN_EGG;
     public static SpawnEggItem LITTLE_PERSON_KING_SPAWN_EGG;
+    public static SpawnEggItem SKULL_KING_SPAWN_EGG;
+    public static SpawnEggItem SKULL_ARCHER_SPAWN_EGG;
+    public static SpawnEggItem SKULL_WARRIOR_SPAWN_EGG;
+    public static SpawnEggItem SKULL_MAGE_SPAWN_EGG;
+    public static SpawnEggItem VOID_CELL_SPAWN_EGG;
+    public static SpawnEggItem YOUNG_MIN_SPAWN_EGG;
+    public static SpawnEggItem HIDDEN_EYE_SPAWN_EGG;
+
 
     public static IncubationEggItem INCUBATION_EGG;
 
@@ -87,7 +102,10 @@ public class ModItems {
                 new MutualAttackStickItem(new Item.Settings().maxCount(1)
                         .registryKey(RegistryKey.of(
                                 RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "mutual_attack_stick")))));
-
+        MASTER_SCEPTER = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "master_scepter"),
+                new MasterScepterItem(new Item.Settings().maxCount(1)
+                        .registryKey(RegistryKey.of(
+                                RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "master_scepter")))));
         UNIVERSAL_LEAD = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "universal_lead"),
                 new UniversalLeadItem(new Item.Settings()
                         .registryKey(RegistryKey.of(
@@ -121,6 +139,10 @@ public class ModItems {
                 new FireWallScrollItem(new Item.Settings().useCooldown(35)
                         .registryKey(RegistryKey.of(
                                 RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "fire_wall_scroll")))));
+        THOUSAND_BLOSSOMED_IMMORTAL_FRUIT = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "thousand_blossomed_immortal_fruit"),
+                new ThousandBlossomedImmortalFruit(new Item.Settings().food(new FoodComponent.Builder().nutrition(4).saturationModifier(0.3F).alwaysEdible().build()).useCooldown(60)
+                        .registryKey(RegistryKey.of(
+                                RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "thousand_blossomed_immortal_fruit")))));
 
         HEART_STONE = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "heart_stone"),
                 new HeartStoneItem(new Item.Settings().maxCount(3)
@@ -271,6 +293,69 @@ public class ModItems {
                         ))
                 )
         );
+        SKULL_KING_SPAWN_EGG = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "skull_king_spawn_egg"),
+                new SpawnEggItem(
+                        ModEntities.SKULL_KING,
+                        new Item.Settings()
+                                .registryKey(RegistryKey.of(
+                                        RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "skull_king_spawn_egg")
+                                ))
+                )
+        );
+        SKULL_ARCHER_SPAWN_EGG = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "skull_archer_spawn_egg"),
+                new SpawnEggItem(
+                        ModEntities.SKULL_ARCHER,
+                        new Item.Settings()
+                                .registryKey(RegistryKey.of(
+                                        RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "skull_archer_spawn_egg")
+                                ))
+                )
+        );
+        SKULL_WARRIOR_SPAWN_EGG = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "skull_warrior_spawn_egg"),
+                new SpawnEggItem(
+                        ModEntities.SKULL_WARRIOR,
+                        new Item.Settings()
+                                .registryKey(RegistryKey.of(
+                                        RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "skull_warrior_spawn_egg")
+                                ))
+                )
+        );
+        SKULL_MAGE_SPAWN_EGG = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "skull_mage_spawn_egg"),
+                new SpawnEggItem(
+                        ModEntities.SKULL_MAGE,
+                        new Item.Settings()
+                                .registryKey(RegistryKey.of(
+                                        RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "skull_mage_spawn_egg")
+                                ))
+                )
+        );
+        VOID_CELL_SPAWN_EGG = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "void_cell_spawn_egg"),
+                new SpawnEggItem(
+                        ModEntities.VOID_CELL,
+                        new Item.Settings()
+                                .registryKey(RegistryKey.of(
+                                        RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "void_cell_spawn_egg")
+                                ))
+                )
+        );
+        YOUNG_MIN_SPAWN_EGG = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "young_min_spawn_egg"),
+                new SpawnEggItem(
+                        ModEntities.YOUNG_MIN,
+                        new Item.Settings()
+                                .registryKey(RegistryKey.of(
+                                        RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "young_min_spawn_egg")
+                                ))
+                )
+        );
+        HIDDEN_EYE_SPAWN_EGG = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "hidden_eye_spawn_egg"),
+                new SpawnEggItem(
+                        ModEntities.HIDDEN_EYE,
+                        new Item.Settings()
+                                .registryKey(RegistryKey.of(
+                                        RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "hidden_eye_spawn_egg")
+                                ))
+                )
+        );
         // 注册高脚鸟刷怪蛋
         HIGHBIRD_BABY_SPAWN_EGG = Registry.register(Registries.ITEM,
                 Identifier.of(Mob_battle.MOD_ID, "highbird_baby_spawn_egg"),
@@ -342,6 +427,26 @@ public class ModItems {
                         new Item.Settings()
                                 .registryKey(RegistryKey.of(
                                         RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "wither_skeleton_king_spawn_egg")
+                                ))
+                )
+        );
+        MILITIA_ARCHER_VILLAGER_SPAWN_EGG = Registry.register(Registries.ITEM,
+                Identifier.of(Mob_battle.MOD_ID, "militia_archer_villager_spawn_egg"),
+                new SpawnEggItem(
+                        ModEntities.MILITIA_ARCHER_VILLAGER,
+                        new Item.Settings()
+                                .registryKey(RegistryKey.of(
+                                        RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "militia_archer_villager_spawn_egg")
+                                ))
+                )
+        );
+        MILITIA_WARRIOR_VILLAGER_SPAWN_EGG = Registry.register(Registries.ITEM,
+                Identifier.of(Mob_battle.MOD_ID, "militia_warrior_villager_spawn_egg"),
+                new SpawnEggItem(
+                        ModEntities.MILITIA_WARRIOR_VILLAGER,
+                        new Item.Settings()
+                                .registryKey(RegistryKey.of(
+                                        RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "militia_warrior_villager_spawn_egg")
                                 ))
                 )
         );

@@ -4,29 +4,6 @@
     "translate": "enchantment.mob_battle.magic_protection"
   },
   "effects": {
-    "minecraft:damage_protection": [
-      {
-        "effect": {
-          "type": "minecraft:add",
-          "value": {
-            "type": "minecraft:linear",
-            "base": 2.0,
-            "per_level_above_first": 2.0
-          }
-        },
-        "requirements": {
-          "condition": "minecraft:damage_source_properties",
-          "predicate": {
-            "tags": [
-              {
-                "expected": true,
-                "id": "minecraft:witch_resistant_to"
-              }
-            ]
-          }
-        }
-      }
-    ]
   },
   "exclusive_set": "#minecraft:exclusive_set/armor",
   "slots": ["armor"],

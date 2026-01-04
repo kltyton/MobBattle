@@ -4,7 +4,6 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.TargetPredicate;
 import net.minecraft.entity.ai.goal.ActiveTargetGoal;
 import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.scoreboard.AbstractTeam;
 import org.jetbrains.annotations.Nullable;
 
 public class HABActiveTargetGoal<T extends LivingEntity> extends ActiveTargetGoal {
@@ -24,9 +23,7 @@ public class HABActiveTargetGoal<T extends LivingEntity> extends ActiveTargetGoa
         } else if (!this.mob.canTarget(livingEntity)) {
             return false;
         } else {
-            AbstractTeam abstractTeam = this.mob.getScoreboardTeam();
-            AbstractTeam abstractTeam2 = livingEntity.getScoreboardTeam();
-            if (abstractTeam != null && abstractTeam2 == abstractTeam) {
+            if (this.mob.isTeammate(livingEntity)) {
                 return false;
             } else {
                 double d = this.getFollowRange();

@@ -12,7 +12,6 @@ import net.minecraft.entity.mob.AbstractPiglinEntity;
 import net.minecraft.entity.mob.PiglinBruteBrain;
 import net.minecraft.entity.mob.PiglinBruteEntity;
 import net.minecraft.item.Items;
-import net.minecraft.scoreboard.Team;
 import net.minecraft.server.world.ServerWorld;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
@@ -71,13 +70,9 @@ public abstract class PiglinBruteBrainMixin {
             }
         }
     }
-
-    /* 同样加一个工具方法 */
+    @Unique
     private static boolean areInSameTeam(LivingEntity a, LivingEntity b) {
-        if (a == null || b == null) return false;
-        Team teamA = a.getScoreboardTeam();
-        Team teamB = b.getScoreboardTeam();
-        return teamA != null && teamA.isEqual(teamB);
+        return a.isTeammate(b);
     }
     /**
      * @author Use CROSSBOW

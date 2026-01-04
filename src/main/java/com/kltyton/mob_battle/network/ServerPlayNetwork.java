@@ -14,12 +14,21 @@ import com.kltyton.mob_battle.entity.littleperson.guard.LittlePersonGuardEntity;
 import com.kltyton.mob_battle.entity.littleperson.guard.skill.LittlePersonGuardSkill;
 import com.kltyton.mob_battle.entity.littleperson.king.LittlePersonKingEntity;
 import com.kltyton.mob_battle.entity.littleperson.king.skill.LittlePersonKingSkill;
+import com.kltyton.mob_battle.entity.skull.archer.SkullArcherEntity;
+import com.kltyton.mob_battle.entity.skull.archer.SkullArcherEntitySkill;
+import com.kltyton.mob_battle.entity.skull.king.SkullKingEntity;
+import com.kltyton.mob_battle.entity.skull.king.SkullKingEntitySkill;
+import com.kltyton.mob_battle.entity.skull.mage.SkullMageEntity;
+import com.kltyton.mob_battle.entity.skull.mage.SkullMageEntitySkill;
+import com.kltyton.mob_battle.entity.skull.warrior.SkullWarriorEntity;
+import com.kltyton.mob_battle.entity.skull.warrior.SkullWarriorEntitySkill;
 import com.kltyton.mob_battle.entity.witherskeletonking.WitherSkeletonKingEntity;
 import com.kltyton.mob_battle.entity.witherskeletonking.skill.KingSkill;
+import com.kltyton.mob_battle.event.masterscepter.MasterScepterManager;
 import com.kltyton.mob_battle.network.packet.*;
+import com.kltyton.mob_battle.utils.ArmorUtil;
 import com.kltyton.mob_battle.utils.EnchantmentUtil;
 import com.kltyton.mob_battle.utils.HeadStoneUtil;
-import com.kltyton.mob_battle.utils.IronGoldArmorUtil;
 import com.kltyton.mob_battle.utils.LeftClickUtil;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.enchantment.Enchantment;
@@ -162,6 +171,53 @@ public class ServerPlayNetwork {
                                     }
                                 }
                             }
+                            case SkullKingEntity skullKingEntity -> {
+                                switch (payload.skillName()) {
+                                    case "attack" -> SkullKingEntitySkill.runAttackSkill(skullKingEntity);
+                                    case "super_attack" -> SkullKingEntitySkill.runSuperAttackSkill(skullKingEntity);
+                                    case "summon_skull" -> SkullKingEntitySkill.runSummonSkullSkill(skullKingEntity);
+                                    case "stop_ai" -> skullKingEntity.setAiDisabled(true);
+                                    case "start_ai" -> skullKingEntity.setAiDisabled(false);
+                                    case "stop" -> {
+                                        skullKingEntity.setHasSkill(false);
+                                        skullKingEntity.setAiDisabled(false);
+                                    }
+                                }
+                            }
+                            case SkullArcherEntity skullArcherEntity -> {
+                                switch (payload.skillName()) {
+                                    case "attack" -> SkullArcherEntitySkill.runAttackSkill(skullArcherEntity);
+                                    case "stop_ai" -> skullArcherEntity.setAiDisabled(true);
+                                    case "start_ai" -> skullArcherEntity.setAiDisabled(false);
+                                    case "stop" -> {
+                                        skullArcherEntity.setHasSkill(false);
+                                        skullArcherEntity.setAiDisabled(false);
+                                    }
+                                }
+                            }
+                            case SkullWarriorEntity skullWarriorEntity -> {
+                                switch (payload.skillName()) {
+                                    case "attack" -> SkullWarriorEntitySkill.runAttackSkill(skullWarriorEntity);
+                                    case "stop_ai" -> skullWarriorEntity.setAiDisabled(true);
+                                    case "start_ai" -> skullWarriorEntity.setAiDisabled(false);
+                                    case "stop" -> {
+                                        skullWarriorEntity.setHasSkill(false);
+                                        skullWarriorEntity.setAiDisabled(false);
+                                    }
+                                }
+                            }
+                            case SkullMageEntity skullMageEntity -> {
+                                switch (payload.skillName()) {
+                                    case "attack" -> SkullMageEntitySkill.runAttackSkill(skullMageEntity);
+                                    case "summon_skull" -> SkullMageEntitySkill.runSummonSkullSkill(skullMageEntity);
+                                    case "stop_ai" -> skullMageEntity.setAiDisabled(true);
+                                    case "start_ai" -> skullMageEntity.setAiDisabled(false);
+                                    case "stop" -> {
+                                        skullMageEntity.setHasSkill(false);
+                                        skullMageEntity.setAiDisabled(false);
+                                    }
+                                }
+                            }
                             case null, default ->
                                     Mob_battle.LOGGER.warn("没有找到实体：{}的技能：{}", entity != null ? entity.getDisplayName() : "实体不存在", payload.skillName());
                         }
@@ -188,7 +244,7 @@ public class ServerPlayNetwork {
             ServerPlayerEntity player = context.player();
             context.server().execute(() -> {
                 int type = payload.type();
-                if (!IronGoldArmorUtil.hasFullDiamondArmor(player)) {
+                if (!ArmorUtil.hasFullDiamondArmor(player)) {
                     return;
                 }
                 if (type == 1) DroneManager.handleSummonRequest(player);
@@ -199,6 +255,13 @@ public class ServerPlayNetwork {
         ServerPlayNetworking.registerGlobalReceiver(ItemGroupPayload.ID, (payload, context) -> {
             ServerPlayerEntity player = context.player();
             context.server().execute(() -> ServerPlayNetworking.send(player, new ItemGroupPayload(player.getCommandTags().contains("shen"))));
+        });
+        ServerPlayNetworking.registerGlobalReceiver(MasterScepterPayload.ID, (payload, context) -> {
+            context.server().execute(() -> { // 切换到主线程
+                ServerPlayerEntity player = context.player();
+                String command = payload.id();
+                MasterScepterManager.runCommand(player, command);
+            });
         });
     }
 }

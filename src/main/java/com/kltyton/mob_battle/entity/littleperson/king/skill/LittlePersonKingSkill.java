@@ -80,8 +80,7 @@ public class LittlePersonKingSkill {
                 entity.getBoundingBox().expand(radius),
                 p -> p.isAlive() &&
                         entity.distanceTo(p) <= radius &&
-                        p != entity &&
-                        p.getScoreboardTeam() != entity.getScoreboardTeam()
+                        p != entity && !p.isTeammate(entity)
         );
     }
     public static List<LittlePersonGuardEntity> getNearbyLittlePersonGuardEntity(LittlePersonKingEntity entity, double radius) {

@@ -8,6 +8,7 @@ import com.kltyton.mob_battle.entity.deepcreature.DeepCreatureEntityRenderer;
 import com.kltyton.mob_battle.entity.drone.attackdrone.AttackDroneEntityRenderer;
 import com.kltyton.mob_battle.entity.drone.treatmentdrone.TreatmentDroneEntityRenderer;
 import com.kltyton.mob_battle.entity.firewall.FireWallEntityRenderer;
+import com.kltyton.mob_battle.entity.hiddeneye.HiddenEyeEntityRenderer;
 import com.kltyton.mob_battle.entity.highbird.adulthood.HighbirdAdulthoodEntityRenderer;
 import com.kltyton.mob_battle.entity.highbird.baby.HighbirdBabyEntityRenderer;
 import com.kltyton.mob_battle.entity.highbird.egg.HighbirdEggEntityRenderer;
@@ -20,26 +21,44 @@ import com.kltyton.mob_battle.entity.littleperson.giant.LittlePersonGiantEntityR
 import com.kltyton.mob_battle.entity.littleperson.guard.LittlePersonGuardEntityRenderer;
 import com.kltyton.mob_battle.entity.littleperson.king.LittlePersonKingEntityRenderer;
 import com.kltyton.mob_battle.entity.littleperson.militia.LittlePersonMilitiaEntityRenderer;
+import com.kltyton.mob_battle.entity.meteorite.MeteoriteEntityRender;
+import com.kltyton.mob_battle.entity.min.YoungMinEntityRenderer;
+import com.kltyton.mob_battle.entity.skull.archer.SkullArcherEntityRenderer;
+import com.kltyton.mob_battle.entity.skull.king.SkullKingEntityRenderer;
+import com.kltyton.mob_battle.entity.skull.mage.SkullMageEntityRenderer;
+import com.kltyton.mob_battle.entity.skull.warrior.SkullWarriorEntityRenderer;
 import com.kltyton.mob_battle.entity.sugarmanscorpion.SugarManScorpionRenderer;
 import com.kltyton.mob_battle.entity.villager.archervillager.ArcherVillagerRenderer;
+import com.kltyton.mob_battle.entity.villager.militia.MilitiaArcherVillagerRenderer;
+import com.kltyton.mob_battle.entity.villager.militia.MilitiaWarriorVillagerRenderer;
 import com.kltyton.mob_battle.entity.villager.villagerking.VillagerKingEntityRenderer;
 import com.kltyton.mob_battle.entity.villager.warriorvillager.WarriorVillagerRenderer;
-import com.kltyton.mob_battle.entity.witherskeletonking.WitherSkeletonKingRender;
+import com.kltyton.mob_battle.entity.voidcell.VoidCellEntityRenderer;
+import com.kltyton.mob_battle.entity.witherskeletonking.WitherSkeletonKingRenderer;
 import com.kltyton.mob_battle.entity.xunsheng.XunShengEntityRenderer;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 
 public class ModEntityRenderer {
     public static void init() {
+        EntityRendererRegistry.register(ModEntities.MILITIA_WARRIOR_VILLAGER, MilitiaWarriorVillagerRenderer::new);
+        EntityRendererRegistry.register(ModEntities.MILITIA_ARCHER_VILLAGER, MilitiaArcherVillagerRenderer::new);
         EntityRendererRegistry.register(ModEntities.WARRIOR_VILLAGER, WarriorVillagerRenderer::new);
         EntityRendererRegistry.register(ModEntities.ARCHER_VILLAGER, ArcherVillagerRenderer::new);
         EntityRendererRegistry.register(ModEntities.XUN_SHENG, XunShengEntityRenderer::new);
         EntityRendererRegistry.register(ModEntities.DEEP_CREATURE, DeepCreatureEntityRenderer::new);
-        EntityRendererRegistry.register(ModEntities.WITHER_SKELETON_KING, WitherSkeletonKingRender::new);
+        EntityRendererRegistry.register(ModEntities.WITHER_SKELETON_KING, WitherSkeletonKingRenderer::new);
+        EntityRendererRegistry.register(ModEntities.SKULL_KING, SkullKingEntityRenderer::new);
+        EntityRendererRegistry.register(ModEntities.SKULL_ARCHER, SkullArcherEntityRenderer::new);
+        EntityRendererRegistry.register(ModEntities.SKULL_WARRIOR, SkullWarriorEntityRenderer::new);
+        EntityRendererRegistry.register(ModEntities.SKULL_MAGE, SkullMageEntityRenderer::new);
+        EntityRendererRegistry.register(ModEntities.YOUNG_MIN, YoungMinEntityRenderer::new);
+        EntityRendererRegistry.register(ModEntities.HIDDEN_EYE, HiddenEyeEntityRenderer::new);
         EntityRendererRegistry.register(ModEntities.HIGHBIRD_BABY, HighbirdBabyEntityRenderer::new);
         EntityRendererRegistry.register(ModEntities.HIGHBIRD_EGG, HighbirdEggEntityRenderer::new);
         EntityRendererRegistry.register(ModEntities.HIGHBIRD_TEENAGE, HighbirdTeenageEntityRenderer::new);
         EntityRendererRegistry.register(ModEntities.HIGHBIRD_ADULTHOOD, HighbirdAdulthoodEntityRenderer::new);
         EntityRendererRegistry.register(ModEntities.BIG_CUSTOM_FIREBALL, CustomSuperBigFireballEntityRenderer::new);
+        EntityRendererRegistry.register(ModEntities.METEORITE, MeteoriteEntityRender::new);
         EntityRendererRegistry.register(ModEntities.FIRE_WALL, FireWallEntityRenderer::new);
         EntityRendererRegistry.register(ModEntities.BLUE_IRON_GOLEM, BlueIronGolemEntityRenderer::new);
         EntityRendererRegistry.register(ModEntities.SUGAR_MAN_SCORPION, SugarManScorpionRenderer::new);
@@ -55,5 +74,6 @@ public class ModEntityRenderer {
         EntityRendererRegistry.register(ModEntities.LITTLE_ARROW, LittleArrowEntityRender::new);
         EntityRendererRegistry.register(ModEntities.LITTLE_PERSON_GUARD, LittlePersonGuardEntityRenderer::new);
         EntityRendererRegistry.register(ModEntities.LITTLE_PERSON_KING, LittlePersonKingEntityRenderer::new);
+        EntityRendererRegistry.register(ModEntities.VOID_CELL, VoidCellEntityRenderer::new);
     }
 }
