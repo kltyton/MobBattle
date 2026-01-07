@@ -84,6 +84,7 @@
 
 
   "effect.mob_battle.insect_bite": "虫噬",
+  "effect.mob_battle.pro_insect_bite": "虫噬 PRO",
   "effect.mob_battle.stun": "眩晕",
 
   "entity.mob_battle.archer_villager": "射手村民",

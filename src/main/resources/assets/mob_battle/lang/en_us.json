@@ -83,6 +83,7 @@
   "block.mob_battle.target": "Target",
 
   "effect.mob_battle.insect_bite": "Insect Bite",
+  "effect.mob_battle.pro_insect_bite": "PRO Insect Bite",
   "effect.mob_battle.stun": "Stun",
 
   "entity.mob_battle.archer_villager": "Archer Villager",

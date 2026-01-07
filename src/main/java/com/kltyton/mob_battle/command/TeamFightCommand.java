@@ -1,19 +1,21 @@
 package com.kltyton.mob_battle.command;
 
 import com.kltyton.mob_battle.event.team.TeamFightManager;
+import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
+import net.minecraft.command.argument.TeamArgumentType;
 import net.minecraft.scoreboard.Team;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
 
-import static net.minecraft.server.command.CommandManager.*;
-import com.mojang.brigadier.CommandDispatcher;
+import static net.minecraft.server.command.CommandManager.argument;
+import static net.minecraft.server.command.CommandManager.literal;
 
 public class TeamFightCommand {
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(literal("teamFight")
-                .then(argument("team1", StringArgumentType.string())
-                        .then(argument("team2", StringArgumentType.string())
+                .then(argument("team1", TeamArgumentType.team())
+                        .then(argument("team2", TeamArgumentType.team())
                                 .executes(context -> {
                                     ServerCommandSource source = context.getSource();
                                     String team1Name = StringArgumentType.getString(context, "team1");
@@ -33,7 +35,7 @@ public class TeamFightCommand {
                                 }))));
         // 新增停止指令
         dispatcher.register(literal("stopTeamFight")
-                .then(argument("team", StringArgumentType.string())
+                .then(argument("team", TeamArgumentType.team())
                         .executes(context -> {
                             ServerCommandSource source = context.getSource();
                             String teamName = StringArgumentType.getString(context, "team");

@@ -39,7 +39,7 @@ public class ModKeyBinding {
         keyMasterScepter = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 "key.mob_battle.master_scepter",
                 InputUtil.Type.KEYSYM,
-                GLFW.GLFW_KEY_SLASH,
+                GLFW.GLFW_KEY_BACKSLASH,
                 "category.mob_battle.general"
         ));
         ClientTickEvents.END_CLIENT_TICK.register(client -> {

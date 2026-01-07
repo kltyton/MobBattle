@@ -64,14 +64,15 @@ public class CustomSuperBigFireballEntity extends CustomFireballEntity {
         // ---- 2. 冻结主人 ----
         if (this.age < growTime) {
             if (falseOwner instanceof LivingEntity trueOwner && this.fuckOwner) {
-                trueOwner.setVelocity(Vec3d.ZERO); // 禁止移动
-                trueOwner.setYaw(frozenYaw);       // 锁定朝向
-                trueOwner.setPitch(frozenPitch);
-                if (ownerEntityPos != null) trueOwner.setPos(ownerEntityPos.x, ownerEntityPos.y, ownerEntityPos.z);
-                if (trueOwner.isPlayer())
-                    trueOwner.teleportTo(
-                            new TeleportTarget((ServerWorld) this.getWorld(), ownerEntityPos, Vec3d.ZERO, trueOwner.getYaw(), trueOwner.getPitch(), TeleportTarget.NO_OP));
-                trueOwner.velocityModified = true; // 强制客户端同步
+                if (ownerEntityPos != null) {
+                    trueOwner.setVelocity(Vec3d.ZERO); // 禁止移动
+                    trueOwner.setYaw(frozenYaw);       // 锁定朝向
+                    trueOwner.setPitch(frozenPitch);
+                    trueOwner.setPos(ownerEntityPos.x, ownerEntityPos.y, ownerEntityPos.z);
+                    if (trueOwner.isPlayer())
+                        trueOwner.teleportTo(new TeleportTarget((ServerWorld) this.getWorld(), ownerEntityPos, Vec3d.ZERO, trueOwner.getYaw(), trueOwner.getPitch(), TeleportTarget.NO_OP));
+                    trueOwner.velocityModified = true; // 强制客户端同步
+                }
             }
         } else if (this.age == growTime) {
             this.setVelocity(speedV3d);

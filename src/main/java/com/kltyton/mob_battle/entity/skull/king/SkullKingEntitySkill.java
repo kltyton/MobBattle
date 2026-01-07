@@ -1,6 +1,7 @@
 package com.kltyton.mob_battle.entity.skull.king;
 
 import com.kltyton.mob_battle.entity.ModEntities;
+import com.kltyton.mob_battle.entity.skull.IModSkullEntity;
 import com.kltyton.mob_battle.entity.skull.archer.SkullArcherEntity;
 import com.kltyton.mob_battle.entity.skull.mage.SkullMageEntity;
 import net.minecraft.entity.LivingEntity;
@@ -22,7 +23,11 @@ public class SkullKingEntitySkill {
                     .filter(entity -> !entity.isSpectator() && entity.isAlive())
                     .filter(entity -> entity.squaredDistanceTo(witherSkeletonKingEntity) <= range * range)
                     .forEach(entity -> {
-                        if (entity != witherSkeletonKingEntity.getTarget()) {
+                        boolean isFriend = false;
+                        if (entity instanceof IModSkullEntity skullEntity) {
+                            isFriend = skullEntity.isOwner(witherSkeletonKingEntity);
+                        }
+                        if (entity != witherSkeletonKingEntity.getTarget() && !isFriend) {
                             witherSkeletonKingEntity.tryAttackBase((ServerWorld) world, entity);
                         }
                     });
@@ -38,11 +43,16 @@ public class SkullKingEntitySkill {
                 .filter(entity -> !entity.isSpectator() && entity.isAlive())
                 .filter(entity -> entity.squaredDistanceTo(witherSkeletonKingEntity) <= range * range)
                 .forEach(entity -> {
-                    entity.damage((ServerWorld) world, entity.getDamageSources().mobAttack(witherSkeletonKingEntity), 120F);
-                    entity.damage((ServerWorld) world, entity.getDamageSources().magic(), 30F);
-                    ((LivingEntity) entity).takeKnockback(2.0D, witherSkeletonKingEntity.getX() - entity.getX(), witherSkeletonKingEntity.getZ() - entity.getZ());
+                    boolean isFriend = false;
+                    if (entity instanceof IModSkullEntity skullEntity) {
+                        isFriend = skullEntity.isOwner(witherSkeletonKingEntity);
+                    }
+                    if (!isFriend) {
+                        entity.damage((ServerWorld) world, entity.getDamageSources().mobAttack(witherSkeletonKingEntity), 120F);
+                        entity.damage((ServerWorld) world, entity.getDamageSources().magic(), 30F);
+                        ((LivingEntity) entity).takeKnockback(2.0D, witherSkeletonKingEntity.getX() - entity.getX(), witherSkeletonKingEntity.getZ() - entity.getZ());
+                    }
                 });
-
     }
     public static void runSummonSkullSkill(SkullKingEntity king) {
         World world = king.getWorld();

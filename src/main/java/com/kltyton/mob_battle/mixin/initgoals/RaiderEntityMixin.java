@@ -3,7 +3,10 @@ package com.kltyton.mob_battle.mixin.initgoals;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.goal.ActiveTargetGoal;
+import net.minecraft.entity.mob.CreeperEntity;
 import net.minecraft.entity.mob.PatrolEntity;
+import net.minecraft.entity.mob.SilverfishEntity;
+import net.minecraft.entity.mob.WitchEntity;
 import net.minecraft.entity.raid.RaiderEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.World;
@@ -34,6 +37,9 @@ public abstract class RaiderEntityMixin extends PatrolEntity {
 
     @Unique
     private boolean isValidTarget(LivingEntity target, ServerWorld world) {
-        return !(target instanceof RaiderEntity);
+        if ((Object) this instanceof WitchEntity witchEntity) {
+            return !(target instanceof RaiderEntity) && !witchEntity.isTeammate(target) && !(target instanceof SilverfishEntity) && !(target instanceof CreeperEntity);
+        }
+        return !(target instanceof RaiderEntity) && !this.isTeammate(target);
     }
 }

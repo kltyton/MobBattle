@@ -3,7 +3,7 @@ package com.kltyton.mob_battle;
 import com.kltyton.mob_battle.attributer.ModAttributer;
 import com.kltyton.mob_battle.block.ModBlockEntities;
 import com.kltyton.mob_battle.block.ModBlocks;
-import com.kltyton.mob_battle.buff.ModBuffs;
+import com.kltyton.mob_battle.effect.ModEffects;
 import com.kltyton.mob_battle.command.ModCommands;
 import com.kltyton.mob_battle.enchantment.ModEnchantments;
 import com.kltyton.mob_battle.entity.ModEntities;
@@ -33,7 +33,7 @@ public class Mob_battle implements ModInitializer {
         ModSensorTypes.init();
         ModEntityAttributes.init();
         ModItems.init();
-        ModBuffs.init();
+        ModEffects.init();
         ModEnchantments.init();
         ModCommands.init();
         ModEvents.init();

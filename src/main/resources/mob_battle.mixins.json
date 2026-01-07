@@ -5,9 +5,9 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "ActiveTargetGoalMixin",
-    "PersistentProjectileEntityMixin",
     "ClampedEntityAttributeAccessor",
     "IronGolemEntityMixin",
+    "PersistentProjectileEntityMixin",
     "SnowGolemEntityMixin",
     "WardenEntityMixin",
     "basebow.ArrowEntityMixin",
@@ -28,8 +28,10 @@
     "leashable.LeashableMixin",
     "leashable.MobEntityMixin",
     "sculkshrieker.SculkShriekerBlockMixin",
+    "silverfishentity.SilverfishEntityMixin",
     "undead.InstantHealthOrDamageStatusEffectMixin",
-    "undead.LivingEntityMixin"
+    "undead.LivingEntityMixin",
+    "witchentity.WitchEntityMixin"
   ],
   "client": [
     "client.render.AbstractClientPlayerEntityMixin",

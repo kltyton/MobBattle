@@ -69,7 +69,7 @@ public class InsectBiteEffect extends StatusEffect {
         }
     }
 
-    private void setupWardenAttributes(WardenEntity warden) {
+    protected void setupWardenAttributes(WardenEntity warden) {
         // 设置最大生命值
         EntityAttributeInstance maxHealth = warden.getAttributeInstance(EntityAttributes.MAX_HEALTH);
         if (maxHealth != null) {
@@ -80,7 +80,7 @@ public class InsectBiteEffect extends StatusEffect {
         // 设置攻击伤害
         EntityAttributeInstance attackDamage = warden.getAttributeInstance(EntityAttributes.ATTACK_DAMAGE);
         if (attackDamage != null) {
-            attackDamage.setBaseValue(60.0);
+            attackDamage.setBaseValue(20.0);
         }
     }
 }

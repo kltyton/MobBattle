@@ -1,6 +1,6 @@
 package com.kltyton.mob_battle.event.masterscepter;
 
-import com.kltyton.mob_battle.buff.ModBuffs;
+import com.kltyton.mob_battle.effect.ModEffects;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
@@ -31,7 +31,7 @@ public class SbSw {
                     true                      // 显示图标
             );
             StatusEffectInstance stun = new StatusEffectInstance(
-                    ModBuffs.STUN_ENTRY,
+                    ModEffects.STUN_ENTRY,
                     20,
                     0,
                     false,            // 是否来自信标

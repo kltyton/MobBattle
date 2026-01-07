@@ -1,6 +1,6 @@
 package com.kltyton.mob_battle.event;
 
-import com.kltyton.mob_battle.buff.ModBuffs;
+import com.kltyton.mob_battle.effect.ModEffects;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
@@ -24,7 +24,7 @@ public class BuffStunClientEvent {
             UUID id = player.getUuid();
 
             // 被眩晕中
-            if (player.hasStatusEffect(ModBuffs.STUN_ENTRY)) {
+            if (player.hasStatusEffect(ModEffects.STUN_ENTRY)) {
                 if (!STUN_MAP.containsKey(id)) {
                     STUN_MAP.put(id, new BuffStunClientEvent.PlayerStunState(player.getPos(), player.getYaw(), player.getPitch()));
                 }

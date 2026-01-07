@@ -219,7 +219,7 @@ public class ServerPlayNetwork {
                                 }
                             }
                             case null, default ->
-                                    Mob_battle.LOGGER.warn("没有找到实体：{}的技能：{}", entity != null ? entity.getDisplayName() : "实体不存在", payload.skillName());
+                                    Mob_battle.LOGGER.warn("没有找到实体：'{}' 的技能：{}", entity != null ? entity.getDisplayName() : "实体不存在", payload.skillName());
                         }
                     });
                 }

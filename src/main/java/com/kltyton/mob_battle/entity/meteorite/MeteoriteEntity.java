@@ -1,6 +1,6 @@
 package com.kltyton.mob_battle.entity.meteorite;
 
-import com.kltyton.mob_battle.buff.ModBuffs;
+import com.kltyton.mob_battle.effect.ModEffects;
 import com.kltyton.mob_battle.entity.customfireball.CustomFireballEntity;
 import com.kltyton.mob_battle.sounds.ModSounds;
 import net.minecraft.entity.Entity;
@@ -69,7 +69,7 @@ public class MeteoriteEntity extends CustomFireballEntity {
                 if (target.isTeammate(owner) || target == owner) {
                     continue;
                 }
-                target.addStatusEffect(new StatusEffectInstance(ModBuffs.STUN_ENTRY, 100, 0));
+                target.addStatusEffect(new StatusEffectInstance(ModEffects.STUN_ENTRY, 100, 0));
 
                 DamageSource physicalSource = world.getDamageSources().fireball(this, owner);
                 DamageSource magicSource = world.getDamageSources().indirectMagic(this, owner);

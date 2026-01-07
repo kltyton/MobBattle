@@ -1,6 +1,7 @@
 package com.kltyton.mob_battle.mixin.leashable;
 
 import com.kltyton.mob_battle.accessor.ILead;
+import com.kltyton.mob_battle.event.alliance.AllianceUtils;
 import com.kltyton.mob_battle.items.ModItems;
 import com.kltyton.mob_battle.network.packet.ILeadUpdatePayload;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -23,6 +24,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(Entity.class)
 @Implements(@Interface(iface = ILead.class, prefix = "custom$"))
@@ -123,5 +125,14 @@ public abstract class EntityMixin implements ILead {
     private void loadCustomData(ReadView view, CallbackInfo ci) {
         custom$setIsUniversalLeadEnyity(view.getBoolean("IsUniversalLeadEnyity", false));
         custom$setIsInvisibleUniversalLeadEnyity(view.getBoolean("IsInvisibleUniversalLeadEnyity", false));
+    }
+    @Inject(method = "isTeammate", at = @At("RETURN"), cancellable = true)
+    //同盟指令
+    public final void isTeammate(Entity other, CallbackInfoReturnable<Boolean> cir) {
+        if (AllianceUtils.isSameAlliance((Entity) (Object) this, other)) cir.setReturnValue(true);
+    }
+    @Inject(method = "isInSameTeam", at = @At("RETURN"), cancellable = true)
+    protected void isInSameTeam(Entity other, CallbackInfoReturnable<Boolean> cir) {
+        if (AllianceUtils.isSameAlliance((Entity) (Object) this, other)) cir.setReturnValue(true);
     }
 }
