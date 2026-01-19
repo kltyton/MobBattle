@@ -7,5 +7,6 @@ public class ModEvents {
         EntitySelectionEvent.init();
         TeamFightHandler.init();
         BuffStunEvent.init();
+        PlayerAttackEvent.init();
     }
 }

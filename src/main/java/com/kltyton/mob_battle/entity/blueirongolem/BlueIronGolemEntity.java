@@ -1,5 +1,6 @@
 package com.kltyton.mob_battle.entity.blueirongolem;
 
+import com.kltyton.mob_battle.entity.irongolem.ModBaseIronGolemEntity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ai.goal.*;
 import net.minecraft.entity.mob.MobEntity;
@@ -8,7 +9,7 @@ import net.minecraft.entity.passive.IronGolemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.world.World;
 
-public class BlueIronGolemEntity extends IronGolemEntity {
+public class BlueIronGolemEntity extends IronGolemEntity implements ModBaseIronGolemEntity {
     public BlueIronGolemEntity(EntityType<? extends IronGolemEntity> entityType, World world) {
         super(entityType, world);
     }

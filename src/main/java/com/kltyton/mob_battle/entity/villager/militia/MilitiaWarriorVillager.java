@@ -1,6 +1,7 @@
 package com.kltyton.mob_battle.entity.villager.militia;
 
 import com.kltyton.mob_battle.block.ModBlocks;
+import com.kltyton.mob_battle.entity.irongolem.ModBaseIronGolemEntity;
 import net.minecraft.block.BlockState;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.*;
@@ -19,6 +20,7 @@ import net.minecraft.entity.passive.GolemEntity;
 import net.minecraft.entity.passive.IronGolemEntity;
 import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
@@ -33,7 +35,7 @@ import net.minecraft.world.World;
 import java.util.List;
 
 // 近战村民
-public class MilitiaWarriorVillager extends IronGolemEntity{
+public class MilitiaWarriorVillager extends IronGolemEntity implements ModBaseIronGolemEntity {
     public static DefaultAttributeContainer.Builder createVillagerAttributes() {
         return MobEntity.createMobAttributes()
                 .add(EntityAttributes.MOVEMENT_SPEED, 0.5)
@@ -75,7 +77,7 @@ public class MilitiaWarriorVillager extends IronGolemEntity{
         super.tick();
         if (!this.getWorld().isClient() && this.age % 20 == 0) {
             this.heal(1f);
-            if (!getHomePos().equals(new BlockPos(0, -9999, 0)) && (this.getPos().distanceTo(getHomePos().toCenterPos()) >= 128.0) || !this.getWorld().getBlockState(getHomePos()).isOf(ModBlocks.TARGET_BLOCK)) {
+            if (!getHomePos().equals(new BlockPos(0, -9999, 0)) && !this.getWorld().getBlockState(getHomePos()).isOf(ModBlocks.TARGET_BLOCK)) {
                 VillagerEntity villager = EntityType.VILLAGER.create(this.getWorld(), SpawnReason.CONVERSION);
                 if (villager != null) {
                     villager.refreshPositionAndAngles(this.getX(), this.getY(), this.getZ(), this.getYaw(), this.getPitch());
@@ -94,18 +96,20 @@ public class MilitiaWarriorVillager extends IronGolemEntity{
     @Override
     public boolean tryAttack(ServerWorld world, Entity target) {
         this.attackTicksLeft = 10;
+        ItemStack itemStack = this.getWeaponStack();
         world.sendEntityStatus(this, EntityStatuses.PLAY_ATTACK_SOUND);
-        float f = this.getAttackDamage();
-        float g = (int)f > 0 ? f / 2.0F + this.random.nextInt((int)f) : f;
         DamageSource damageSource = this.getDamageSources().mobAttack(this);
+        float f = this.getAttackDamage();
+        f = EnchantmentHelper.getDamage(world, itemStack, target, damageSource, f);
+        f += itemStack.getItem().getBonusAttackDamage(target, f, damageSource);
+        float g = (int)f > 0 ? f / 2.0F + this.random.nextInt((int)f) : f;
+
         boolean bl = target.damage(world, damageSource, g);
         if (bl) {
             // 获取目标的击退抗性
             double d = target instanceof LivingEntity livingEntity ?
                     livingEntity.getAttributeValue(EntityAttributes.KNOCKBACK_RESISTANCE) : 0.0;
-            // 计算实际击退效果（击退抗性会减少击飞力度）
             double e = Math.max(0.0, 1.0 - d);
-            // 设置目标的速度，实现击飞效果（y轴方向增加速度）
             target.setVelocity(target.getVelocity().add(0.1 * e, 0.0, 0.1 * e));
             EnchantmentHelper.onTargetDamaged(world, target, damageSource);
         }

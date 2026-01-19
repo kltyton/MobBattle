@@ -1,5 +1,8 @@
 package com.kltyton.mob_battle.entity.witherskeletonking;
 
+import com.kltyton.mob_battle.entity.accessor.BigBossLookControl;
+import com.kltyton.mob_battle.entity.accessor.BigBossMoveControl;
+import com.kltyton.mob_battle.entity.accessor.BigBossNavigation;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.block.Blocks;
@@ -63,14 +66,16 @@ public class WitherSkeletonKingEntity extends WitherSkeletonEntity  implements G
     public static final TrackedData<Integer> SKILL_COOLDOWN = DataTracker.registerData(WitherSkeletonKingEntity.class, TrackedDataHandlerRegistry.INTEGER);
     public static final TrackedData<Integer> SUPER_ATTACK_SKILL_COOLDOWN = DataTracker.registerData(WitherSkeletonKingEntity.class, TrackedDataHandlerRegistry.INTEGER);
     public static final TrackedData<Integer> SHOT_WITHER_SKULL_COOLDOWN = DataTracker.registerData(WitherSkeletonKingEntity.class, TrackedDataHandlerRegistry.INTEGER);
+    public static final TrackedData<Integer> SUPER_SHOT_WITHER_SKULL_COOLDOWN = DataTracker.registerData(WitherSkeletonKingEntity.class, TrackedDataHandlerRegistry.INTEGER);
     public static final TrackedData<Integer> SHOT_ALL_WITHER_SKULL_COOLDOWN = DataTracker.registerData(WitherSkeletonKingEntity.class, TrackedDataHandlerRegistry.INTEGER);
     @Override
     protected void initDataTracker(DataTracker.Builder builder) {
         super.initDataTracker(builder);
         builder.add(HAS_SKILL, false);
-        builder.add(SKILL_COOLDOWN, 0);
+        builder.add(SKILL_COOLDOWN, 20);
         builder.add(SUPER_ATTACK_SKILL_COOLDOWN, 15 * 20);
         builder.add(SHOT_WITHER_SKULL_COOLDOWN, 16 * 20);
+        builder.add(SUPER_SHOT_WITHER_SKULL_COOLDOWN, 50 * 20);
         builder.add(SHOT_ALL_WITHER_SKULL_COOLDOWN, 50 * 20);
     }
     @Override
@@ -88,6 +93,7 @@ public class WitherSkeletonKingEntity extends WitherSkeletonEntity  implements G
             if (!hasSkill()) {
                 this.setAiDisabled(false);
                 if (canShotWitherSkull()) performShotWitherSkull();
+                if (canSuperShotWitherSkull()) performSuperShotWitherSkull();
                 if (canShotAllWitherSkull()) performShotAllWitherSkull();
 
                 // 冷却递减
@@ -97,6 +103,8 @@ public class WitherSkeletonKingEntity extends WitherSkeletonEntity  implements G
                 if (superAttackCd > 0) setSuperAttackSkillCooldown(superAttackCd - 1);
                 int shotWitherSkullCd = getShotWitherSkullCooldown();
                 if (shotWitherSkullCd > 0) setShotWitherSkullCooldown(shotWitherSkullCd - 1);
+                int superShotWitherSkullCd = getSuperShotWitherSkullCooldown();
+                if (superShotWitherSkullCd > 0) setSuperShotWitherSkullCooldown(superShotWitherSkullCd - 1);
                 int shotAllWitherSkullCd = getShotAllWitherSkullCooldown();
                 if (shotAllWitherSkullCd > 0) setShotAllWitherSkullCooldown(shotAllWitherSkullCd - 1);
             }
@@ -179,7 +187,7 @@ public class WitherSkeletonKingEntity extends WitherSkeletonEntity  implements G
     @Override
     public EntityData initialize(ServerWorldAccess world, LocalDifficulty difficulty, SpawnReason spawnReason, @Nullable EntityData entityData) {
         EntityData entityData2 = this.initializeBase2(world, difficulty, spawnReason, entityData);
-        Objects.requireNonNull(this.getAttributeInstance(EntityAttributes.ATTACK_DAMAGE)).setBaseValue(85.0D);
+        Objects.requireNonNull(this.getAttributeInstance(EntityAttributes.ATTACK_DAMAGE)).setBaseValue(100.0D);
         this.setAiDisabled(false);
         this.updateAttackType();
         return entityData2;
@@ -188,7 +196,10 @@ public class WitherSkeletonKingEntity extends WitherSkeletonEntity  implements G
         super(entityType, world);
         this.setHasSkill(false);
         this.setAiDisabled(false);
-        this.setSkillCooldown(0);
+        this.setSkillCooldown(20);
+        this.lookControl = new BigBossLookControl(this);
+        this.moveControl = new BigBossMoveControl(this);
+        this.navigation = new BigBossNavigation(this, world);
         addStatusEffect(new StatusEffectInstance(
                 StatusEffects.FIRE_RESISTANCE,
                 -1,
@@ -203,7 +214,7 @@ public class WitherSkeletonKingEntity extends WitherSkeletonEntity  implements G
     protected void initEquipment(Random random, LocalDifficulty localDifficulty) {
     }
     private boolean tryAttackBase(ServerWorld world, Entity target) {
-        float f = 85.0F;
+        float f = 100.0F;
         ItemStack itemStack = this.getWeaponStack();
         DamageSource damageSource = Optional.ofNullable(itemStack.getItem().getDamageSource(this)).orElse(this.getDamageSources().mobAttack(this));
         f = EnchantmentHelper.getDamage(world, itemStack, target, damageSource, f);
@@ -255,7 +266,7 @@ public class WitherSkeletonKingEntity extends WitherSkeletonEntity  implements G
     public void performAttack() {
         setHasSkill(true);
         this.setAiDisabled(true);
-        setSkillCooldown(10);
+        setSkillCooldown(20);
         this.triggerAnim("skill_controller", "attack");
     }
     public boolean isHealthy(double health) {
@@ -263,6 +274,7 @@ public class WitherSkeletonKingEntity extends WitherSkeletonEntity  implements G
     }
     public void performSuperAttack() {
         setHasSkill(true);
+        setSkillCooldown(20);
         this.setAiDisabled(true);
         int cd = 300;
         if (this.isHealthy(0.35)) cd = 220;
@@ -272,12 +284,21 @@ public class WitherSkeletonKingEntity extends WitherSkeletonEntity  implements G
     }
     public void performShotWitherSkull() {
         setHasSkill(true);
+        setSkillCooldown(20);
         this.setAiDisabled(true);
         setShotWitherSkullCooldown(this.isHealthy(0.35) ? 160 : 320);
         this.triggerAnim("skill_controller", "shot_wither_skull");
     }
+    public void performSuperShotWitherSkull() {
+        setHasSkill(true);
+        setSkillCooldown(20);
+        this.setAiDisabled(true);
+        setSuperShotWitherSkullCooldown(50 * 20);
+        this.triggerAnim("skill_controller", "super_shot_wither_skull");
+    }
     public void performShotAllWitherSkull() {
         setHasSkill(true);
+        setSkillCooldown(20);
         this.setAiDisabled(true);
         setShotAllWitherSkullCooldown(isHealthy(0.35) ? 600 : 1000);
         this.triggerAnim("skill_controller", "shot_all_wither_skull");
@@ -287,6 +308,9 @@ public class WitherSkeletonKingEntity extends WitherSkeletonEntity  implements G
     }
     public boolean canShotWitherSkull() {
         return this.getHealth() <= this.getMaxHealth() * 0.75 && canSkill() && getShotWitherSkullCooldown() == 0;
+    }
+    public boolean canSuperShotWitherSkull() {
+        return this.getHealth() <= this.getMaxHealth() * 0.75 && canSkill() && getSuperShotWitherSkullCooldown() == 0;
     }
     public boolean canShotAllWitherSkull() {
         return this.getHealth() <= this.getMaxHealth() * 0.35 && canSkill() && getShotAllWitherSkullCooldown() == 0;
@@ -299,6 +323,7 @@ public class WitherSkeletonKingEntity extends WitherSkeletonEntity  implements G
     protected static final RawAnimation ATTACK_ANIM = RawAnimation.begin().thenPlay("new3");
     protected static final RawAnimation SUPER_ATTACK_ANIM = RawAnimation.begin().thenPlay("new4");
     protected static final RawAnimation SHOT_WITHER_SKULL = RawAnimation.begin().thenPlay("new6");
+    protected static final RawAnimation SUPER_SHOT_WITHER_SKULL = RawAnimation.begin().thenPlay("new5");
     protected static final RawAnimation SHOT_ALL_WITHER_SKULL = RawAnimation.begin().thenPlay("new2");
 
     @Override
@@ -315,10 +340,17 @@ public class WitherSkeletonKingEntity extends WitherSkeletonEntity  implements G
                 .triggerableAnim("attack", ATTACK_ANIM)
                 .triggerableAnim("super_attack", SUPER_ATTACK_ANIM)
                 .triggerableAnim("shot_wither_skull", SHOT_WITHER_SKULL)
+                .triggerableAnim("super_shot_wither_skull", SUPER_SHOT_WITHER_SKULL)
                 .triggerableAnim("shot_all_wither_skull", SHOT_ALL_WITHER_SKULL)
                 .setSoundKeyframeHandler(s -> {})
                 .setCustomInstructionKeyframeHandler(s -> {
                     PlayerEntity player = ClientUtil.getClientPlayer();
+                    if ("canHalo".equals(s.keyframeData().getInstructions())) {
+                        s.animationState().renderState().addGeckolibData(WitherSkeletonKingRenderer.CAN_HALO, true);
+                    }
+                    if ("cancelHalo".equals(s.keyframeData().getInstructions())) {
+                        s.animationState().renderState().addGeckolibData(WitherSkeletonKingRenderer.CAN_HALO, false);
+                    }
                     if ("runAttack".equals(s.keyframeData().getInstructions())) {
                         player.playSound(SoundEvents.ENTITY_PLAYER_ATTACK_SWEEP, 1.0F, 1.0F);
                         ClientPlayNetworking.send(new SkillPayload(
@@ -334,6 +366,11 @@ public class WitherSkeletonKingEntity extends WitherSkeletonEntity  implements G
                     if ("runWitherSkull".equals(s.keyframeData().getInstructions())) {
                         ClientPlayNetworking.send(new SkillPayload(
                                 "shot_wither_skull", this.getId()
+                        ));
+                    }
+                    if ("runSuperWitherSkull".equals(s.keyframeData().getInstructions())) {
+                        ClientPlayNetworking.send(new SkillPayload(
+                                "super_shot_wither_skull", this.getId()
                         ));
                     }
                     if ("runShotAllWitherSkull".equals(s.keyframeData().getInstructions())) {
@@ -357,11 +394,11 @@ public class WitherSkeletonKingEntity extends WitherSkeletonEntity  implements G
     }
     public static DefaultAttributeContainer.Builder addAttributes() {
         return HostileEntity.createHostileAttributes()
-                .add(EntityAttributes.MAX_HEALTH, 12000.0D)
+                .add(EntityAttributes.MAX_HEALTH, 20000.0D)
                 .add(EntityAttributes.MOVEMENT_SPEED, 0.3D)
                 .add(EntityAttributes.KNOCKBACK_RESISTANCE, 1.0D)
                 .add(EntityAttributes.ATTACK_KNOCKBACK, 1.5D)
-                .add(EntityAttributes.ATTACK_DAMAGE, 85.0D)
+                .add(EntityAttributes.ATTACK_DAMAGE, 100.0D)
                 .add(EntityAttributes.FOLLOW_RANGE, 24.0D)
                 .add(EntityAttributes.ARMOR, 25.0D)
                 .add(EntityAttributes.ARMOR_TOUGHNESS, 20.0D);
@@ -403,6 +440,9 @@ public class WitherSkeletonKingEntity extends WitherSkeletonEntity  implements G
     public int getShotWitherSkullCooldown() {
         return getDataTracker().get(SHOT_WITHER_SKULL_COOLDOWN);
     }
+    public int getSuperShotWitherSkullCooldown() {
+        return getDataTracker().get(SUPER_SHOT_WITHER_SKULL_COOLDOWN);
+    }
     public int getShotAllWitherSkullCooldown() {
         return getDataTracker().get(SHOT_ALL_WITHER_SKULL_COOLDOWN);
     }
@@ -417,6 +457,9 @@ public class WitherSkeletonKingEntity extends WitherSkeletonEntity  implements G
     }
     public void setShotWitherSkullCooldown(int cooldown) {
         getDataTracker().set(SHOT_WITHER_SKULL_COOLDOWN, cooldown);
+    }
+    public void setSuperShotWitherSkullCooldown(int cooldown) {
+        getDataTracker().set(SUPER_SHOT_WITHER_SKULL_COOLDOWN, cooldown);
     }
     public void setShotAllWitherSkullCooldown(int cooldown) {
         getDataTracker().set(SHOT_ALL_WITHER_SKULL_COOLDOWN, cooldown);

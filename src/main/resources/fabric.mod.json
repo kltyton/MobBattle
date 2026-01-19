@@ -10,6 +10,9 @@
   "icon": "assets/mob_battle/icon.png",
   "environment": "*",
   "entrypoints": {
+    "fabric-datagen": [
+      "com.kltyton.mob_battle.data.Mob_battleDataGenerator"
+    ],
     "client": [
       "com.kltyton.mob_battle.client.Mob_battleClient"
     ],

@@ -2,6 +2,7 @@ package com.kltyton.mob_battle.entity.villager.militia;
 
 import com.kltyton.mob_battle.block.ModBlocks;
 import com.kltyton.mob_battle.entity.bullet.ITrueDamageProjectile;
+import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.SpawnReason;
@@ -78,7 +79,7 @@ public class MilitiaArcherVillager extends SnowGolemEntity implements Angerable 
         super.tick();
         if (!this.getWorld().isClient() && this.age % 20 == 0) {
             this.heal(1f);
-            if (!getHomePos().equals(new BlockPos(0, -9999, 0)) && (this.getPos().distanceTo(getHomePos().toCenterPos()) >= 128.0) || !this.getWorld().getBlockState(getHomePos()).isOf(ModBlocks.TARGET_BLOCK)) {
+            if (!getHomePos().equals(new BlockPos(0, -9999, 0)) && !this.getWorld().getBlockState(getHomePos()).isOf(ModBlocks.TARGET_BLOCK)) {
                 VillagerEntity villager = EntityType.VILLAGER.create(this.getWorld(), SpawnReason.CONVERSION);
                 if (villager != null) {
                     villager.refreshPositionAndAngles(this.getX(), this.getY(), this.getZ(), this.getYaw(), this.getPitch());
@@ -107,6 +108,7 @@ public class MilitiaArcherVillager extends SnowGolemEntity implements Angerable 
         this.targetSelector.add(2, new ActiveTargetGoal<>(this, PlayerEntity.class, 10, true, false, this::shouldAngerAt));
         this.targetSelector.add(2, new UniversalAngerGoal<>(this, false));
     }
+
     @Override
     public boolean hurtByWater() {
         return false;
@@ -142,11 +144,16 @@ public class MilitiaArcherVillager extends SnowGolemEntity implements Angerable 
             // 创建箭实体
             ArrowEntity arrowEntity = new ArrowEntity(world, this, new ItemStack(Items.ARROW), this.getMainHandStack().getItem() == Items.BOW ? this.getMainHandStack() : null);
             ((ITrueDamageProjectile) arrowEntity).setTrueDamage(true, false);
+            ItemStack itemStack = this.getWeaponStack();
+            float f = (float) this.getAttributeValue(EntityAttributes.ATTACK_DAMAGE);
+            System.out.println("Arrow Damage: " + f);
+            f = EnchantmentHelper.getDamage(serverWorld, itemStack, target, this.getDamageSources().arrow(arrowEntity, this), f);
+            System.out.println("Arrow Damage: " + f);
+            f += itemStack.getItem().getBonusAttackDamage(target, f, this.getDamageSources().arrow(arrowEntity, this));
+            System.out.println("Arrow Damage: " + f);
             // 设置箭的伤害
-            arrowEntity.setDamage(this.getAttributeValue(EntityAttributes.ATTACK_DAMAGE));
+            arrowEntity.setDamage(f);
             arrowEntity.setOwner(this);
-            // 设置箭的速度和轨迹
-            // 调整发射角度和速度，提高准确性
             double adjustedY = targetY + distance * 0.5; // 调整箭的发射高度
             arrowEntity.setVelocity(targetX, adjustedY - arrowEntity.getY(), targetZ, 1.6F, 0.1F); // 调整速度和轨迹
             // 发射箭

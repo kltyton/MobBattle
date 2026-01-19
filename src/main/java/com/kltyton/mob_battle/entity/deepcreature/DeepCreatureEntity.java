@@ -153,7 +153,6 @@ public class DeepCreatureEntity extends HostileEntity implements GeoEntity {
             }
         }).triggerableAnim("death", DEAD_ANIM));
         controllers.add(new AnimationController<>("skill_controller",animTest -> {
-            animTest.renderState().addGeckolibData(DeepCreatureEntityRenderer.ENTITY_ID, this.getId());
             if (animTest.controller().getAnimationState() == AnimationController.State.STOPPED && this.hasSkill()) {
                 ClientPlayNetworking.send(new SkillPayload(
                         "stop", this.getId()
@@ -318,6 +317,7 @@ public class DeepCreatureEntity extends HostileEntity implements GeoEntity {
     }
 
     private PlayState animationController(final AnimationTest<DeepCreatureEntity> state) {
+        state.renderState().addGeckolibData(DeepCreatureEntityRenderer.ENTITY_ID, this.getId());
         if (state.isCurrentAnimation(DEAD_ANIM)) {
             ClientPlayNetworking.send(new SkillPayload(
                     "stop_ai", this.getId()

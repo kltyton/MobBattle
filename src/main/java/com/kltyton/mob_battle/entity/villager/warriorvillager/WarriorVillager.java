@@ -1,5 +1,6 @@
 package com.kltyton.mob_battle.entity.villager.warriorvillager;
 
+import com.kltyton.mob_battle.entity.irongolem.ModBaseIronGolemEntity;
 import net.minecraft.block.BlockState;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.*;
@@ -30,7 +31,7 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 import java.util.List;
 
 // 近战村民
-public class WarriorVillager extends IronGolemEntity implements GeoEntity {
+public class WarriorVillager extends IronGolemEntity implements GeoEntity, ModBaseIronGolemEntity {
     // 添加群体仇恨的检测范围（64格）
     private static final double ALERT_RANGE = 64.0;
     public WarriorVillager(EntityType<? extends IronGolemEntity> entityType, World world) {

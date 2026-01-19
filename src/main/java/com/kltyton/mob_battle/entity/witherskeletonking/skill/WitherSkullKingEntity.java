@@ -25,9 +25,9 @@ import net.minecraft.world.event.GameEvent;
 import net.minecraft.world.explosion.Explosion;
 import net.minecraft.world.explosion.ExplosionBehavior;
 
-public class WitherSkullEntityKing extends WitherSkullEntity {
+public class WitherSkullKingEntity extends WitherSkullEntity {
     public float power;
-    public WitherSkullEntityKing(EntityType<? extends WitherSkullEntity> entityType, World world, float power) {
+    public WitherSkullKingEntity(EntityType<? extends WitherSkullEntity> entityType, World world, float power) {
         super(entityType, world);
         this.power = power;
     }
@@ -57,7 +57,7 @@ public class WitherSkullEntityKing extends WitherSkullEntity {
                 if (this.getOwner().isTeammate(var8)) return;
                 DamageSource damageSource = this.getDamageSources().witherSkull(this, livingEntity);
                 bl = var8.damage(serverWorld, damageSource, power);
-                var8.damage(serverWorld, this.getDamageSources().explosion(this, livingEntity), 130F);
+                var8.damage(serverWorld, this.getDamageSources().explosion(this, livingEntity), 160F);
                 if (bl) {
                     if (var8.isAlive()) {
                         EnchantmentHelper.onTargetDamaged(serverWorld, var8, damageSource);

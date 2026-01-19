@@ -30,7 +30,7 @@ import software.bernie.geckolib.animation.RawAnimation;
 import software.bernie.geckolib.util.ClientUtil;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
-public class VillagerIronGolemEntity extends IronGolemEntity implements GeoEntity {
+public class VillagerIronGolemEntity extends IronGolemEntity implements GeoEntity, ModBaseIronGolemEntity {
     public VillagerIronGolemEntity(EntityType<? extends IronGolemEntity> entityType, World world) {
         super(entityType, world);
         this.setAiDisabled(false);

@@ -33,8 +33,10 @@ import com.kltyton.mob_battle.entity.villager.militia.MilitiaArcherVillagerRende
 import com.kltyton.mob_battle.entity.villager.militia.MilitiaWarriorVillagerRenderer;
 import com.kltyton.mob_battle.entity.villager.villagerking.VillagerKingEntityRenderer;
 import com.kltyton.mob_battle.entity.villager.warriorvillager.WarriorVillagerRenderer;
+import com.kltyton.mob_battle.entity.vindicatorgeneral.VindicatorGeneralEntityRenderer;
 import com.kltyton.mob_battle.entity.voidcell.VoidCellEntityRenderer;
 import com.kltyton.mob_battle.entity.witherskeletonking.WitherSkeletonKingRenderer;
+import com.kltyton.mob_battle.entity.witherskeletonking.skill.WitherSkullBulletEntityRenderer;
 import com.kltyton.mob_battle.entity.xunsheng.XunShengEntityRenderer;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 
@@ -47,6 +49,7 @@ public class ModEntityRenderer {
         EntityRendererRegistry.register(ModEntities.XUN_SHENG, XunShengEntityRenderer::new);
         EntityRendererRegistry.register(ModEntities.DEEP_CREATURE, DeepCreatureEntityRenderer::new);
         EntityRendererRegistry.register(ModEntities.WITHER_SKELETON_KING, WitherSkeletonKingRenderer::new);
+        EntityRendererRegistry.register(ModEntities.VINDICATOR_GENERAL, VindicatorGeneralEntityRenderer::new);
         EntityRendererRegistry.register(ModEntities.SKULL_KING, SkullKingEntityRenderer::new);
         EntityRendererRegistry.register(ModEntities.SKULL_ARCHER, SkullArcherEntityRenderer::new);
         EntityRendererRegistry.register(ModEntities.SKULL_WARRIOR, SkullWarriorEntityRenderer::new);
@@ -63,6 +66,7 @@ public class ModEntityRenderer {
         EntityRendererRegistry.register(ModEntities.BLUE_IRON_GOLEM, BlueIronGolemEntityRenderer::new);
         EntityRendererRegistry.register(ModEntities.SUGAR_MAN_SCORPION, SugarManScorpionRenderer::new);
         EntityRendererRegistry.register(ModEntities.BULLET_ENTITY, BulletEntityRenderer::new);
+        EntityRendererRegistry.register(ModEntities.WITHER_SKULL_BULLET_ENTITY, WitherSkullBulletEntityRenderer::new);
         EntityRendererRegistry.register(ModEntities.VILLAGER_IRON_GOLEM_ENTITY, VillagerIronGolemEntityRenderer::new);
         EntityRendererRegistry.register(ModEntities.VILLAGER_KING_ENTITY, VillagerKingEntityRenderer::new);
         EntityRendererRegistry.register(ModEntities.ATTACK_DRONE, AttackDroneEntityRenderer::new);

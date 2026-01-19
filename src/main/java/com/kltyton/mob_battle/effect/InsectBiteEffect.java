@@ -1,5 +1,6 @@
 package com.kltyton.mob_battle.effect;
 
+import com.kltyton.mob_battle.utils.EntityUtil;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -42,9 +43,6 @@ public class InsectBiteEffect extends StatusEffect {
                 0,
                 world.random.nextInt(5) - 2
         );
-
-        // 创建自定义坚守者
-        // 使用正确的生成方式
         Registry<EntityType<?>> entityRegistry = world.getRegistryManager().getOrThrow(RegistryKeys.ENTITY_TYPE);
         RegistryEntry<EntityType<?>> wardenEntry = entityRegistry.getEntry(EntityType.WARDEN);
 
@@ -61,6 +59,7 @@ public class InsectBiteEffect extends StatusEffect {
             );
 
             if (warden instanceof WardenEntity) {
+                warden.setPosition(EntityUtil.findSafeSpawnPosition(world, warden, pos.toCenterPos()).orElse(pos.toCenterPos()));
                 setupWardenAttributes((WardenEntity) warden);
                 ((MobEntity)warden).setTarget(entity); // 设置攻击目标
             }

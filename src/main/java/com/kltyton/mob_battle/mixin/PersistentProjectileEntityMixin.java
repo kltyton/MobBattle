@@ -1,6 +1,6 @@
 package com.kltyton.mob_battle.mixin;
 
-import com.kltyton.mob_battle.command.FriendlyProjectileDamageCommand;
+import com.kltyton.mob_battle.command.FriendlyDamageCommand;
 import com.kltyton.mob_battle.entity.bullet.ITrueDamageProjectile;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -62,7 +62,7 @@ public abstract class PersistentProjectileEntityMixin extends ProjectileEntity{
         Entity owner = projectile.getOwner();
         World world = projectile.getWorld();
         if (world instanceof ServerWorld serverWorld) {
-            if (!serverWorld.getGameRules().getBoolean(FriendlyProjectileDamageCommand.ENABLE_FRIENDLY_PROJECTILE_DAMAGE)) {
+            if (!serverWorld.getGameRules().getBoolean(FriendlyDamageCommand.ENABLE_FRIENDLY_PROJECTILE_DAMAGE)) {
                 if (owner != null && target != null) {
                     // 使用原版团队匹配逻辑（包含null安全处理）
                     if (owner.isTeammate(target)) {
@@ -82,7 +82,7 @@ public abstract class PersistentProjectileEntityMixin extends ProjectileEntity{
         World world = projectile.getWorld();
 
         if (world instanceof ServerWorld serverWorld) {
-            if (!serverWorld.getGameRules().getBoolean(FriendlyProjectileDamageCommand.ENABLE_FRIENDLY_PROJECTILE_DAMAGE)) {
+            if (!serverWorld.getGameRules().getBoolean(FriendlyDamageCommand.ENABLE_FRIENDLY_PROJECTILE_DAMAGE)) {
                 if (owner != null && entity != null) {
                     if (owner.isTeammate(entity)) {
                         cir.setReturnValue(false);

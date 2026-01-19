@@ -103,25 +103,30 @@ public class ArcherVillager extends SnowGolemEntity implements Angerable, GeoEnt
         ItemStack arrowStack = new ItemStack(Items.ARROW);
         ArrowEntity arrowEntity = new ArrowEntity(world, this, arrowStack, null);
 
-        // 2. 设置伤害（建议根据属性获取）
+        // 【重要】设置箭的初始位置为实体的眼睛高度（或略低一点），防止从脚下发出
+        // 对于巨型实体，建议根据模型手动指定偏移量
+        arrowEntity.setPosition(this.getX(), this.getEyeY() - 0.5D, this.getZ());
+
+        // 2. 设置伤害
         arrowEntity.setDamage(this.getAttributeValue(EntityAttributes.ATTACK_DAMAGE));
 
         // 3. 计算向量
         double dX = target.getX() - this.getX();
-        double dY = target.getEyeY() - 0.33D - arrowEntity.getY(); // 目标眼部略低一点
+        // 【优化】瞄准目标的躯干中心（getBodyY(0.5)），而不是眼睛，防止近距离过高
+        double dY = target.getBodyY(0.5D) - arrowEntity.getY();
         double dZ = target.getZ() - this.getZ();
         double distance = Math.sqrt(dX * dX + dZ * dZ);
 
-        // 4. 动态调整弹道速度和仰角
-        // 射程越远，初速度需要越高。1.6F 是普通弓箭，我们可以给到 3.0F 或更高来对付幻翼
+        // 4. 动态调整速度
         float velocity = 2.5F;
 
-        // 自动修正重力导致的下坠：距离越远，向上偏移量越大
-        // 这是一个简单的线性补偿公式
-        float gravityCorrection = (float)distance * 0.15F;
+        // 【核心修复】重力补偿算法
+        // 1.6F 速度下默认补偿通常是 distance * 0.2
+        // 速度越快，下坠越少。公式大致为：基础补偿 * (1.6 / 当前速度)^2
+        // 这里我们简单化：因为你速度是 2.5，系数应该显著缩小，建议尝试 0.05F - 0.08F
+        float gravityCorrection = (float)distance * 0.06F;
 
         // 5. 设置速度
-        // 参数含义: x, y, z, 速度, 散布度(0代表无偏离，绝对精准)
         arrowEntity.setVelocity(dX, dY + (double)gravityCorrection, dZ, velocity, 0.0F);
 
         // 6. 发射与音效

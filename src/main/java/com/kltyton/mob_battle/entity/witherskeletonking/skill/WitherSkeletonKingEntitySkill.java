@@ -8,10 +8,11 @@ import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.Box;
+import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
-public class KingSkill {
+public class WitherSkeletonKingEntitySkill {
     public static void runAttackSkill(WitherSkeletonKingEntity witherSkeletonKingEntity) {
         double range = 3.0D;
         World world = witherSkeletonKingEntity.getWorld();
@@ -39,8 +40,15 @@ public class KingSkill {
                 .filter(entity -> !entity.isSpectator() && entity.isAlive())
                 .filter(entity -> entity.squaredDistanceTo(witherSkeletonKingEntity) <= range * range)
                 .forEach(entity -> {
-                    entity.damage((ServerWorld) world, entity.getDamageSources().mobAttack(witherSkeletonKingEntity), witherSkeletonKingEntity.isHealthy(0.35) ? 280.0F :260.0F);
-                    entity.damage((ServerWorld) world, entity.getDamageSources().magic(), witherSkeletonKingEntity.isHealthy(0.35) ? 65.0F : 60.0F);
+                    float attackDamage = 260.0f;
+                    float magicDamage = 60.0f;
+                    if (witherSkeletonKingEntity.isHealthy(0.75)) attackDamage = 300.0f;
+                    if (witherSkeletonKingEntity.isHealthy(0.35)) {
+                        attackDamage = 350.0f;
+                        magicDamage = 75.0f;
+                    }
+                    entity.damage((ServerWorld) world, entity.getDamageSources().mobAttack(witherSkeletonKingEntity), attackDamage);
+                    entity.damage((ServerWorld) world, entity.getDamageSources().magic(), magicDamage);
                     ((LivingEntity) entity).takeKnockback(2.0D, witherSkeletonKingEntity.getX() - entity.getX(), witherSkeletonKingEntity.getZ() - entity.getZ());
                 });
 
@@ -59,7 +67,7 @@ public class KingSkill {
         // 计算基础方向
         Vec3d lookDir = target.getEyePos().subtract(king.getEyePos()).normalize();
         // 生成凋零之首
-        WitherSkullEntityKing skull = new WitherSkullEntityKing(EntityType.WITHER_SKULL, world, king.isHealthy(0.35) ? 85 : 70);
+        WitherSkullKingEntity skull = new WitherSkullKingEntity(EntityType.WITHER_SKULL, world, king.isHealthy(0.35) ? 85 : 70);
         skull.setOwner(king);
         skull.setPosition(king.getX() - 0.2, king.getEyeY() - 0.2, king.getZ() - 0.2);
 
@@ -97,6 +105,33 @@ public class KingSkill {
                             true, true, true));
                 });
     }
+    public static void runSuperWitherSkullSkill(WitherSkeletonKingEntity king) {
+        World world = king.getWorld();
+        // 播放发射音效
+        world.playSound(null, king.getX(), king.getY(), king.getZ(),
+                SoundEvents.ENTITY_WITHER_SHOOT, king.getSoundCategory(),
+                3.0F, 1.0F);
+        // ====== 向随机方向发射多个凋零之首 ======
+        int skullCount = 5;
+        for (int i = 0; i < skullCount; i++) {
+            // 稍微分散出生点（避免重叠）
+            double xOffset = (world.getRandom().nextDouble() - 0.5);
+            double yOffset = world.getRandom().nextDouble() * 0.5;
+            double zOffset = (world.getRandom().nextDouble() - 0.5);
+            Vec3d lookDir = king.getRotationVec(1.0F);  // 获取面向方向
+            Direction.Axis mainAxis = Math.abs(lookDir.x) > Math.abs(lookDir.z) ?
+                    Direction.Axis.X : Direction.Axis.Z;
+
+            WitherSkullBulletEntity bullet = new WitherSkullBulletEntity(
+                    world,
+                    king,
+                    king.getTarget(),
+                    mainAxis);
+            // 把子弹加到世界
+            bullet.setPosition(king.getX() + xOffset, king.getEyeY() + yOffset, king.getZ() + zOffset);
+            world.spawnEntity(bullet);
+        }
+    }
     public static void runWitherAllSkullSkill(WitherSkeletonKingEntity king) {
         World world = king.getWorld();
         if (!(world instanceof ServerWorld serverWorld)) return;
@@ -111,7 +146,7 @@ public class KingSkill {
         double speed = 1.6;  // 初始速度
 
         for (int i = 0; i < skullCount; i++) {
-            WitherSkullEntityKing skull = new WitherSkullEntityKing(EntityType.WITHER_SKULL, world, 70);
+            WitherSkullKingEntity skull = new WitherSkullKingEntity(EntityType.WITHER_SKULL, world, 70);
             skull.setOwner(king);
 
             // 稍微分散出生点（避免重叠）

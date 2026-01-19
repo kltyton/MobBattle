@@ -119,5 +119,7 @@
   "entity.mob_battle.young_min": "幼年珉",
   "entity.mob_battle.hidden_eye": "幽匿眼",
 
-  "enchantment.mob_battle.magic_protection": "魔法保护"
+  "enchantment.mob_battle.magic_protection": "魔法保护",
+  "item.mob_battle.vindicator_general_spawn_egg": "卫道士将军刷怪蛋",
+  "entity.mob_battle.vindicator_general": "卫道士将军"
 }

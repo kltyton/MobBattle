@@ -47,7 +47,7 @@ public class DeepCreatureEntityRenderer<R extends LivingEntityRenderState & GeoR
 
         return OverlayTexture.packUv(
                 OverlayTexture.getU(u),
-                OverlayTexture.getV(false)   // ← 这里
+                OverlayTexture.getV(false)
         );
     }
     @Override
@@ -59,7 +59,8 @@ public class DeepCreatureEntityRenderer<R extends LivingEntityRenderState & GeoR
         PlayerEntity player = ClientUtil.getClientPlayer();
         if (world != null && renderState.hasGeckolibData(ENTITY_ID)) {
             Integer entityIdObj = renderState.getGeckolibData(ENTITY_ID);
-            DeepCreatureEntity entity = (DeepCreatureEntity) world.getEntityById(entityIdObj);
+            DeepCreatureEntity entity = null;
+            if (entityIdObj != null) entity = (DeepCreatureEntity) world.getEntityById(entityIdObj);
             if (entity != null && entity.hasSkill()) {
                 this.model.getBone("right_hand").ifPresent(bone -> {
                     Random rand = ClientUtil.getLevel().getRandom();

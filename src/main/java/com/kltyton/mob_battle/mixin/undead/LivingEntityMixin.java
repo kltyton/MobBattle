@@ -1,6 +1,6 @@
 package com.kltyton.mob_battle.mixin.undead;
 
-import com.kltyton.mob_battle.entity.witherskeletonking.skill.WitherSkullEntityKing;
+import com.kltyton.mob_battle.entity.witherskeletonking.skill.WitherSkullKingEntity;
 import com.kltyton.mob_battle.items.ModItems;
 import com.kltyton.mob_battle.utils.ArmorUtil;
 import net.minecraft.component.type.DeathProtectionComponent;
@@ -65,7 +65,7 @@ public abstract class LivingEntityMixin extends Entity implements Attackable, Se
     private boolean cancelDamage(DamageSource instance, TagKey<DamageType> tag) {
         Entity sourcer = instance.getSource();
         Entity attacker = instance.getAttacker();
-        if (sourcer instanceof WitherSkullEntityKing && attacker instanceof WitherSkullEntityKing) {
+        if (sourcer instanceof WitherSkullKingEntity && attacker instanceof WitherSkullKingEntity) {
             return true;
         }
         return instance.isIn(tag);
@@ -107,7 +107,7 @@ public abstract class LivingEntityMixin extends Entity implements Attackable, Se
     public boolean isInvulnerableTo(LivingEntity instance, ServerWorld world, DamageSource source) {
         Entity sourcer = source.getSource();
         Entity attacker = source.getAttacker();
-        if (sourcer instanceof WitherSkullEntityKing && attacker instanceof WitherSkullEntityKing) {
+        if (sourcer instanceof WitherSkullKingEntity && attacker instanceof WitherSkullKingEntity) {
             instance.timeUntilRegen = 0;
             return false;
         }

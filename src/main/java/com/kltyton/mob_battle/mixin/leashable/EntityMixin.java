@@ -129,10 +129,10 @@ public abstract class EntityMixin implements ILead {
     @Inject(method = "isTeammate", at = @At("RETURN"), cancellable = true)
     //同盟指令
     public final void isTeammate(Entity other, CallbackInfoReturnable<Boolean> cir) {
-        if (AllianceUtils.isSameAlliance((Entity) (Object) this, other)) cir.setReturnValue(true);
+        if (other != null && AllianceUtils.isSameAlliance((Entity) (Object) this, other)) cir.setReturnValue(true);
     }
     @Inject(method = "isInSameTeam", at = @At("RETURN"), cancellable = true)
     protected void isInSameTeam(Entity other, CallbackInfoReturnable<Boolean> cir) {
-        if (AllianceUtils.isSameAlliance((Entity) (Object) this, other)) cir.setReturnValue(true);
+        if (other != null && AllianceUtils.isSameAlliance((Entity) (Object) this, other)) cir.setReturnValue(true);
     }
 }

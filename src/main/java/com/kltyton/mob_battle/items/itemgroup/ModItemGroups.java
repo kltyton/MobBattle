@@ -68,6 +68,7 @@ public class ModItemGroups {
                 entries.add(ModItems.SKULL_MAGE_SPAWN_EGG);
                 entries.add(ModItems.YOUNG_MIN_SPAWN_EGG);
                 entries.add(ModItems.HIDDEN_EYE_SPAWN_EGG);
+                entries.add(ModItems.VINDICATOR_GENERAL_SPAWN_EGG);
                 //添加孵化蛋
                 entries.add(ModItems.INCUBATION_EGG);
 

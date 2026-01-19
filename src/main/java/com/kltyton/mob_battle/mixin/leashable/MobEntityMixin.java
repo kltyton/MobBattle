@@ -31,4 +31,8 @@ public abstract class MobEntityMixin extends LivingEntity implements EquipmentHo
     private void allowUniversalLead(CallbackInfo ci) {
         if (((ILead)this).getIsUniversalLeadEnyity()) ci.cancel();
     }
+    @Inject(method = "setTarget", at = @At("HEAD"), cancellable = true)
+    private void allowUniversalLead(LivingEntity target, CallbackInfo ci) {
+        if (target != null && target.isTeammate(this)) ci.cancel();
+    }
 }

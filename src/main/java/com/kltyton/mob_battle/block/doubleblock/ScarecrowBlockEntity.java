@@ -28,7 +28,7 @@ import java.util.UUID;
 public class ScarecrowBlockEntity extends BlockEntity {
     private List<UUID> trackedGolems = new ArrayList<>();
     private static final int MAX_GOLEMS = 2;
-    private static final double RANGE =128.0;
+    public static final double RANGE =256.0;
     private static final double DETECT_VILLAGER_RANGE = 5.0;
 
     public ScarecrowBlockEntity(BlockPos pos, BlockState state) {

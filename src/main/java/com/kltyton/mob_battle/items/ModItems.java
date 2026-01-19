@@ -1,6 +1,7 @@
 package com.kltyton.mob_battle.items;
 
 import com.kltyton.mob_battle.Mob_battle;
+import com.kltyton.mob_battle.components.ModConsumableComponents;
 import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.items.food.ThousandBlossomedImmortalFruit;
 import com.kltyton.mob_battle.items.misc.*;
@@ -68,6 +69,7 @@ public class ModItems {
     public static SpawnEggItem VOID_CELL_SPAWN_EGG;
     public static SpawnEggItem YOUNG_MIN_SPAWN_EGG;
     public static SpawnEggItem HIDDEN_EYE_SPAWN_EGG;
+    public static SpawnEggItem VINDICATOR_GENERAL_SPAWN_EGG;
 
 
     public static IncubationEggItem INCUBATION_EGG;
@@ -103,7 +105,7 @@ public class ModItems {
                         .registryKey(RegistryKey.of(
                                 RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "mutual_attack_stick")))));
         MASTER_SCEPTER = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "master_scepter"),
-                new MasterScepterItem(new Item.Settings().maxCount(1)
+                new MasterScepterItem(new Item.Settings().maxCount(1).component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
                         .registryKey(RegistryKey.of(
                                 RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "master_scepter")))));
         UNIVERSAL_LEAD = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "universal_lead"),
@@ -140,7 +142,7 @@ public class ModItems {
                         .registryKey(RegistryKey.of(
                                 RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "fire_wall_scroll")))));
         THOUSAND_BLOSSOMED_IMMORTAL_FRUIT = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "thousand_blossomed_immortal_fruit"),
-                new ThousandBlossomedImmortalFruit(new Item.Settings().food(new FoodComponent.Builder().nutrition(4).saturationModifier(0.3F).alwaysEdible().build()).useCooldown(60)
+                new ThousandBlossomedImmortalFruit(new Item.Settings().food(new FoodComponent.Builder().nutrition(4).saturationModifier(0.3F).alwaysEdible().build(), ModConsumableComponents.THOUSAND_BLOSSOMED_IMMORTAL_FRUIT).useCooldown(60)
                         .registryKey(RegistryKey.of(
                                 RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "thousand_blossomed_immortal_fruit")))));
 
@@ -581,6 +583,15 @@ public class ModItems {
                                 ))
                 )
         );
-
+        VINDICATOR_GENERAL_SPAWN_EGG = Registry.register(Registries.ITEM,
+                Identifier.of(Mob_battle.MOD_ID, "vindicator_general_spawn_egg"),
+                new SpawnEggItem(
+                        ModEntities.VINDICATOR_GENERAL,
+                        new Item.Settings()
+                                .registryKey(RegistryKey.of(
+                                        RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "vindicator_general_spawn_egg")
+                                ))
+                )
+        );
     }
 }

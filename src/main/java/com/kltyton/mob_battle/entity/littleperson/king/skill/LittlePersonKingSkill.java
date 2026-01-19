@@ -3,6 +3,7 @@ package com.kltyton.mob_battle.entity.littleperson.king.skill;
 import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.entity.littleperson.guard.LittlePersonGuardEntity;
 import com.kltyton.mob_battle.entity.littleperson.king.LittlePersonKingEntity;
+import com.kltyton.mob_battle.utils.EntityUtil;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LightningEntity;
 import net.minecraft.entity.LivingEntity;
@@ -62,6 +63,7 @@ public class LittlePersonKingSkill {
             littlePersonGuard.refreshPositionAndAngles(x, y, z, serverWorld.random.nextFloat() * 360.0F, 0.0F);
             littlePersonGuard.initialize(serverWorld, serverWorld.getLocalDifficulty(spawnPos), SpawnReason.EVENT, null);
             littlePersonGuard.setLife(1200);
+            littlePersonGuard.setPosition(EntityUtil.findSafeSpawnPosition(serverWorld, littlePersonGuard, spawnPos.toCenterPos()).orElse(spawnPos.toCenterPos()));
             serverWorld.spawnEntity(littlePersonGuard);
             Scoreboard scoreboard = serverWorld.getScoreboard();
             Team littlePersonKingEntityTeam = scoreboard.getTeam(littlePersonKingEntity.getName().getString());

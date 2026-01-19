@@ -1,8 +1,12 @@
 package com.kltyton.mob_battle.entity.skull.king;
 
+import com.kltyton.mob_battle.entity.accessor.BigBossLookControl;
+import com.kltyton.mob_battle.entity.accessor.BigBossMoveControl;
+import com.kltyton.mob_battle.entity.accessor.BigBossNavigation;
 import com.kltyton.mob_battle.entity.skull.IModSkullEntity;
 import com.kltyton.mob_battle.entity.witherskeletonking.WitherSkeletonKingEntity;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
+import com.kltyton.mob_battle.utils.EntityUtil;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.block.Blocks;
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -63,8 +67,8 @@ public class SkullKingEntity extends WitherSkeletonEntity implements GeoEntity, 
     protected void initDataTracker(DataTracker.Builder builder) {
         super.initDataTracker(builder);
         builder.add(HAS_SKILL, false);
-        builder.add(SKILL_COOLDOWN, 0);
-        builder.add(SUPER_ATTACK_SKILL_COOLDOWN, 200);
+        builder.add(SKILL_COOLDOWN, 20);
+        builder.add(SUPER_ATTACK_SKILL_COOLDOWN, 300);
         builder.add(SUMMON_SKULL_COOLDOWN, 200);
     }
     @Override
@@ -162,7 +166,10 @@ public class SkullKingEntity extends WitherSkeletonEntity implements GeoEntity, 
         super(entityType, world);
         this.setHasSkill(false);
         this.setAiDisabled(false);
-        this.setSkillCooldown(0);
+        this.setSkillCooldown(20);
+        this.lookControl = new BigBossLookControl(this);
+        this.moveControl = new BigBossMoveControl(this);
+        this.navigation = new BigBossNavigation(this, world);
     }
     public boolean tryAttackBase(ServerWorld world, Entity target) {
         float f = 90.0F;
@@ -202,26 +209,29 @@ public class SkullKingEntity extends WitherSkeletonEntity implements GeoEntity, 
     public void performAttack() {
         setHasSkill(true);
         this.setAiDisabled(true);
-        setSkillCooldown(10);
+        setSkillCooldown(20);
         this.triggerAnim("skill_controller", "attack");
     }
     public void performSuperAttack() {
         setHasSkill(true);
         this.setAiDisabled(true);
+        setSkillCooldown(20);
         setSuperAttackSkillCooldown(300);
         this.triggerAnim("skill_controller", "super_attack");
     }
     public void performSummonSkull() {
         setHasSkill(true);
         this.setAiDisabled(true);
-        setSummonSkullCooldown(200);
+        setSkillCooldown(20);
+        setSummonSkullCooldown(300);
         this.triggerAnim("skill_controller", "summon_skull");
     }
     public boolean canSuperAttack() {
         return canSkill() && getSuperAttackSkillCooldown() == 0;
     }
     public boolean canSummonSkull() {
-        return canSkill() && getSummonSkullCooldown() == 0;
+        int count = EntityUtil.getNearbyEntityCount(this, LivingEntity.class, IModSkullEntity.class, 100);
+        return count < 60 && canSkill() && getSummonSkullCooldown() == 0;
     }
     public boolean canSkill() {
         return !this.getWorld().isClient() && !hasSkill() && getSkillCooldown() == 0 && this.getTarget() != null;

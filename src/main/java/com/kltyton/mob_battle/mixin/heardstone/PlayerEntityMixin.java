@@ -1,6 +1,6 @@
 package com.kltyton.mob_battle.mixin.heardstone;
 
-import com.kltyton.mob_battle.entity.witherskeletonking.skill.WitherSkullEntityKing;
+import com.kltyton.mob_battle.entity.witherskeletonking.skill.WitherSkullKingEntity;
 import com.kltyton.mob_battle.items.tool.snipe.VsSnipe;
 import com.kltyton.mob_battle.utils.HeadStoneUtil;
 import net.minecraft.entity.Entity;
@@ -48,7 +48,7 @@ public abstract class PlayerEntityMixin extends LivingEntity {
     public boolean isInvulnerableTo(PlayerEntity instance, ServerWorld world, DamageSource source) {
         Entity sourcer = source.getSource();
         Entity attacker = source.getAttacker();
-        if (sourcer instanceof WitherSkullEntityKing && attacker instanceof WitherSkullEntityKing) {
+        if (sourcer instanceof WitherSkullKingEntity && attacker instanceof WitherSkullKingEntity) {
             instance.timeUntilRegen = 0;
             return false;
         }

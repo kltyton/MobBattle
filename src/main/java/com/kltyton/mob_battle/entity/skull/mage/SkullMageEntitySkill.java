@@ -3,6 +3,7 @@ package com.kltyton.mob_battle.entity.skull.mage;
 import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.entity.skull.archer.SkullArcherEntity;
 import com.kltyton.mob_battle.entity.skull.warrior.SkullWarriorEntity;
+import com.kltyton.mob_battle.utils.EntityUtil;
 import net.minecraft.entity.SpawnReason;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.Vec3d;
@@ -22,7 +23,8 @@ public class SkullMageEntitySkill {
 
                 SkullArcherEntity skullEntity = ModEntities.SKULL_ARCHER.create(serverWorld, SpawnReason.MOB_SUMMONED);
                 if (skullEntity != null) {
-                    skullEntity.refreshPositionAndAngles(summonPos.x, summonPos.y, summonPos.z, king.getRandom().nextFloat() * 360.0F, 0.0F);
+                    Vec3d safeSpawnPos = EntityUtil.findSafeSpawnPosition(serverWorld, skullEntity, summonPos).orElse(summonPos);
+                    skullEntity.refreshPositionAndAngles(safeSpawnPos.x, safeSpawnPos.y, safeSpawnPos.z, king.getRandom().nextFloat() * 360.0F, 0.0F);
                     if (king.getTarget() != null) {
                         skullEntity.setTarget(king.getTarget());
                     }
@@ -37,7 +39,8 @@ public class SkullMageEntitySkill {
 
                 SkullWarriorEntity skullEntity = ModEntities.SKULL_WARRIOR.create(serverWorld, SpawnReason.MOB_SUMMONED);
                 if (skullEntity != null) {
-                    skullEntity.refreshPositionAndAngles(summonPos.x, summonPos.y, summonPos.z, king.getRandom().nextFloat() * 360.0F, 0.0F);
+                    Vec3d safeSpawnPos = EntityUtil.findSafeSpawnPosition(serverWorld, skullEntity, summonPos).orElse(summonPos);
+                    skullEntity.refreshPositionAndAngles(safeSpawnPos.x, safeSpawnPos.y, safeSpawnPos.z, king.getRandom().nextFloat() * 360.0F, 0.0F);
                     if (king.getTarget() != null) {
                         skullEntity.setTarget(king.getTarget());
                     }

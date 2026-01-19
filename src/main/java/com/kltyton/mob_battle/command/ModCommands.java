@@ -9,6 +9,6 @@ public class ModCommands {
             BgmCommand.register(dispatcher, registryAccess);
             AllianceCommand.register(dispatcher);
         });
-        FriendlyProjectileDamageCommand.register();
+        FriendlyDamageCommand.init();
     }
 }

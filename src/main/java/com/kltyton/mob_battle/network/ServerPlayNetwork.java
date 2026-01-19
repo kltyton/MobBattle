@@ -22,8 +22,10 @@ import com.kltyton.mob_battle.entity.skull.mage.SkullMageEntity;
 import com.kltyton.mob_battle.entity.skull.mage.SkullMageEntitySkill;
 import com.kltyton.mob_battle.entity.skull.warrior.SkullWarriorEntity;
 import com.kltyton.mob_battle.entity.skull.warrior.SkullWarriorEntitySkill;
+import com.kltyton.mob_battle.entity.vindicatorgeneral.VindicatorGeneralEntity;
+import com.kltyton.mob_battle.entity.vindicatorgeneral.VindicatorGeneralEntitySkill;
 import com.kltyton.mob_battle.entity.witherskeletonking.WitherSkeletonKingEntity;
-import com.kltyton.mob_battle.entity.witherskeletonking.skill.KingSkill;
+import com.kltyton.mob_battle.entity.witherskeletonking.skill.WitherSkeletonKingEntitySkill;
 import com.kltyton.mob_battle.event.masterscepter.MasterScepterManager;
 import com.kltyton.mob_battle.network.packet.*;
 import com.kltyton.mob_battle.utils.ArmorUtil;
@@ -111,10 +113,11 @@ public class ServerPlayNetwork {
                             }
                             case WitherSkeletonKingEntity kingSkeletonKing -> {
                                 switch (payload.skillName()) {
-                                    case "attack" -> KingSkill.runAttackSkill(kingSkeletonKing);
-                                    case "super_attack" -> KingSkill.runSuperAttackSkill(kingSkeletonKing);
-                                    case "shot_wither_skull" -> KingSkill.runWitherSkullSkill(kingSkeletonKing);
-                                    case "shot_all_wither_skull" -> KingSkill.runWitherAllSkullSkill(kingSkeletonKing);
+                                    case "attack" -> WitherSkeletonKingEntitySkill.runAttackSkill(kingSkeletonKing);
+                                    case "super_attack" -> WitherSkeletonKingEntitySkill.runSuperAttackSkill(kingSkeletonKing);
+                                    case "shot_wither_skull" -> WitherSkeletonKingEntitySkill.runWitherSkullSkill(kingSkeletonKing);
+                                    case "shot_all_wither_skull" -> WitherSkeletonKingEntitySkill.runWitherAllSkullSkill(kingSkeletonKing);
+                                    case "super_shot_wither_skull" -> WitherSkeletonKingEntitySkill.runSuperWitherSkullSkill(kingSkeletonKing);
                                     case "stop_ai" -> kingSkeletonKing.setAiDisabled(true);
                                     case "start_ai" -> kingSkeletonKing.setAiDisabled(false);
                                     case "stop" -> {
@@ -215,6 +218,22 @@ public class ServerPlayNetwork {
                                     case "stop" -> {
                                         skullMageEntity.setHasSkill(false);
                                         skullMageEntity.setAiDisabled(false);
+                                    }
+                                }
+                            }
+                            case VindicatorGeneralEntity vindicatorGeneralEntity -> {
+                                switch (payload.skillName()) {
+                                    case "attack" -> VindicatorGeneralEntitySkill.runAttackSkill(vindicatorGeneralEntity);
+                                    case "super_attack" -> VindicatorGeneralEntitySkill.runSuperAttackSkill(vindicatorGeneralEntity);
+                                    case "mini_attack" -> VindicatorGeneralEntitySkill.runMiniAttackSkill(vindicatorGeneralEntity);
+                                    case "max_attack_1" -> VindicatorGeneralEntitySkill.runMaxAttackSkill_1(vindicatorGeneralEntity);
+                                    case "max_attack_2" -> VindicatorGeneralEntitySkill.runMaxAttackSkill_2(vindicatorGeneralEntity);
+                                    case "max_attack_3" -> VindicatorGeneralEntitySkill.runMaxAttackSkill_3(vindicatorGeneralEntity);
+                                    case "stop_ai" -> vindicatorGeneralEntity.setAiDisabled(true);
+                                    case "start_ai" -> vindicatorGeneralEntity.setAiDisabled(false);
+                                    case "stop" -> {
+                                        vindicatorGeneralEntity.setHasSkill(false);
+                                        vindicatorGeneralEntity.setAiDisabled(false);
                                     }
                                 }
                             }
