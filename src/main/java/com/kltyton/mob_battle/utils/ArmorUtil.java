@@ -1,9 +1,11 @@
 package com.kltyton.mob_battle.utils;
 
+import com.kltyton.mob_battle.effect.ModEffects;
 import com.kltyton.mob_battle.enchantment.ModEnchantments;
 import com.kltyton.mob_battle.items.ModItems;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 
@@ -30,7 +32,15 @@ public class ArmorUtil {
                 totalLevel += EnchantmentUtil.getEnchantmentLevel(world, stack, ModEnchantments.MAGIC_PROTECTION);
             }
         }
-
+        if (totalLevel != 0) {
+            StatusEffectInstance effect = entity.getStatusEffect(ModEffects.ARMOR_PIERCING_ENTRY);
+            if (effect != null) {
+                int level = effect.getAmplifier() + 1;
+                int newProtection = totalLevel - level;
+                newProtection = Math.max(0, newProtection);
+                return newProtection;
+            }
+        }
         return totalLevel;
     }
 

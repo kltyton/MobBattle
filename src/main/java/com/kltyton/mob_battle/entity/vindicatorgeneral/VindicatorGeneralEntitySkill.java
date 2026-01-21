@@ -36,7 +36,7 @@ public class VindicatorGeneralEntitySkill {
                 .filter(entity -> !entity.isSpectator() && entity.isAlive())
                 .filter(entity -> entity.squaredDistanceTo(vindicatorGeneralEntity) <= range * range)
                 .forEach(entity -> {
-                    float attackDamage = 350.0f;
+                    float attackDamage = 320.0f;
                     vindicatorGeneralEntity.tryAttackBaseDamage((ServerWorld) world, entity, attackDamage);
                 });
 
@@ -65,7 +65,7 @@ public class VindicatorGeneralEntitySkill {
                 .filter(entity -> !entity.isSpectator() && entity.isAlive())
                 .filter(entity -> entity.squaredDistanceTo(vindicatorGeneralEntity) <= range * range)
                 .forEach(entity -> {
-                    float attackDamage = 400.0f;
+                    float attackDamage = 350.0f;
                     vindicatorGeneralEntity.tryAttackBaseDamage((ServerWorld) world, entity, attackDamage);
                 });
     }
@@ -79,7 +79,7 @@ public class VindicatorGeneralEntitySkill {
                 .filter(entity -> !entity.isSpectator() && entity.isAlive())
                 .filter(entity -> entity.squaredDistanceTo(vindicatorGeneralEntity) <= range * range)
                 .forEach(entity -> {
-                    float attackDamage = 200.0f;
+                    float attackDamage = 150.0f;
                     vindicatorGeneralEntity.tryAttackBaseDamage((ServerWorld) world, entity, attackDamage);
                     ((LivingEntity) entity).addStatusEffect(new StatusEffectInstance(
                             StatusEffects.SLOWNESS,
@@ -98,7 +98,7 @@ public class VindicatorGeneralEntitySkill {
                 .filter(entity -> !entity.isSpectator() && entity.isAlive())
                 .filter(entity -> entity.squaredDistanceTo(vindicatorGeneralEntity) <= range * range)
                 .forEach(entity -> {
-                    float attackDamage = 300.0f;
+                    float attackDamage = 250.0f;
                     vindicatorGeneralEntity.tryAttackBaseDamage((ServerWorld) world, entity, attackDamage);
                     ((LivingEntity) entity).addStatusEffect(new StatusEffectInstance(
                             ModEffects.STUN_ENTRY,

@@ -260,7 +260,7 @@ public class WitherSkullBulletEntity extends ProjectileEntity {
 
     @Override
     public boolean canHit(Entity entity) {
-        return entity.isTeammate(this.getOwner()) || (super.canHit(entity) && !entity.noClip);
+        return !entity.isTeammate(this.getOwner()) && super.canHit(entity) && !entity.noClip;
     }
 
     @Override
@@ -294,8 +294,11 @@ public class WitherSkullBulletEntity extends ProjectileEntity {
         victim.sidedDamage(indirectMagicSrc, 30.0F);
 
         if (damaged) {
-            if (this.getWorld() instanceof ServerWorld sw)
+            if (this.getWorld() instanceof ServerWorld sw) {
                 EnchantmentHelper.onTargetDamaged(sw, victim, explosionSrc);
+                EnchantmentHelper.onTargetDamaged(sw, victim, projectileSrc);
+                EnchantmentHelper.onTargetDamaged(sw, victim, indirectMagicSrc);
+            }
             if (victim instanceof LivingEntity lv) {
                 lv.addStatusEffect(
                         new StatusEffectInstance(StatusEffects.NAUSEA, 60, 4), /* 200 tick = 10 s */

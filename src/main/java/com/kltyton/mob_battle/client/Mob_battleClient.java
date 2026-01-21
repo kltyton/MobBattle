@@ -1,5 +1,6 @@
 package com.kltyton.mob_battle.client;
 
+import com.kltyton.mob_battle.block.ModBlocksClient;
 import com.kltyton.mob_battle.client.keybinding.ModKeyBinding;
 import com.kltyton.mob_battle.event.ModClientEvents;
 import com.kltyton.mob_battle.network.ClientPlayNetwork;
@@ -14,5 +15,7 @@ public class Mob_battleClient implements ClientModInitializer {
         ModModel.init();
         ModEntityRenderer.init();
         ModKeyBinding.init();
+        ModArmorRenderer.init();
+        ModBlocksClient.init();
     }
 }

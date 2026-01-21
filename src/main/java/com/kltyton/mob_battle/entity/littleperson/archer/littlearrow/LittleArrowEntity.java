@@ -36,41 +36,37 @@ public class LittleArrowEntity extends TrueDamageProjectile {
         super(ModEntities.LITTLE_ARROW, owner, world, stack, shotFrom);
         this.initColor();
     }
-
+    public LittleArrowEntity(EntityType<LittleArrowEntity> entityType, World world, LivingEntity owner, ItemStack stack, @Nullable ItemStack shotFrom) {
+        super(entityType, owner, world, stack, shotFrom);
+        this.initColor();
+    }
     private PotionContentsComponent getPotionContents() {
         return this.getItemStack().getOrDefault(DataComponentTypes.POTION_CONTENTS, PotionContentsComponent.DEFAULT);
     }
-
     private float getPotionDurationScale() {
         return this.getItemStack().getOrDefault(DataComponentTypes.POTION_DURATION_SCALE, 1.0F);
     }
-
     private void setPotionContents(PotionContentsComponent potionContentsComponent) {
         this.getItemStack().set(DataComponentTypes.POTION_CONTENTS, potionContentsComponent);
         this.initColor();
     }
-
     @Override
     protected void setStack(ItemStack stack) {
         super.setStack(stack);
         this.initColor();
     }
-
     private void initColor() {
         PotionContentsComponent potionContentsComponent = this.getPotionContents();
         this.dataTracker.set(COLOR, potionContentsComponent.equals(PotionContentsComponent.DEFAULT) ? -1 : potionContentsComponent.getColor());
     }
-
     public void addEffect(StatusEffectInstance effect) {
         this.setPotionContents(this.getPotionContents().with(effect));
     }
-
     @Override
     protected void initDataTracker(DataTracker.Builder builder) {
         super.initDataTracker(builder);
         builder.add(COLOR, -1);
     }
-
     @Override
     public void tick() {
         super.tick();
@@ -87,7 +83,6 @@ public class LittleArrowEntity extends TrueDamageProjectile {
             this.setStack(new ItemStack(Items.ARROW));
         }
     }
-
     private void spawnParticles(int amount) {
         int i = this.getColor();
         if (i != -1 && amount > 0) {
@@ -99,11 +94,9 @@ public class LittleArrowEntity extends TrueDamageProjectile {
             }
         }
     }
-
     public int getColor() {
         return this.dataTracker.get(COLOR);
     }
-
     @Override
     protected void onHit(LivingEntity target) {
         super.onHit(target);
@@ -121,7 +114,6 @@ public class LittleArrowEntity extends TrueDamageProjectile {
     protected ItemStack getDefaultItemStack() {
         return new ItemStack(Items.ARROW);
     }
-
     @Override
     public void handleStatus(byte status) {
         if (status == 0) {
@@ -129,7 +121,7 @@ public class LittleArrowEntity extends TrueDamageProjectile {
             if (i != -1) {
                 float f = (i >> 16 & 0xFF) / 255.0F;
                 float g = (i >> 8 & 0xFF) / 255.0F;
-                float h = (i >> 0 & 0xFF) / 255.0F;
+                float h = (i & 0xFF) / 255.0F;
 
                 for (int j = 0; j < 20; j++) {
                     this.getWorld()

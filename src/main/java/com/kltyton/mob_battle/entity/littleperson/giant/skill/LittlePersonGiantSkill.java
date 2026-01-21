@@ -1,5 +1,6 @@
 package com.kltyton.mob_battle.entity.littleperson.giant.skill;
 
+import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.entity.littleperson.archer.littlearrow.LittleArrowEntity;
 import com.kltyton.mob_battle.entity.littleperson.giant.LittlePersonGiantEntity;
 import net.minecraft.entity.LivingEntity;
@@ -39,19 +40,15 @@ public class LittlePersonGiantSkill {
         double targetY = target.getEyeY() - littlePersonGiant.getEyeY(); // 更精确的高度计算
         double targetZ = target.getZ() - littlePersonGiant.getZ();
         double distance = Math.sqrt(targetX * targetX + targetZ * targetZ);
-
         // 预测目标移动（提高准确性）
         targetY += target.getVelocity().getY() * distance * 0.25; // 重力补偿
-
         World world = littlePersonGiant.getWorld();
-
         if (world instanceof ServerWorld serverWorld) {
             // 创建箭实体
-            LittleArrowEntity arrowEntity = new LittleArrowEntity(world, littlePersonGiant, new ItemStack(Items.ARROW), littlePersonGiant.getMainHandStack().getItem() == Items.BOW ? littlePersonGiant.getMainHandStack() : null);
+            LittleArrowEntity arrowEntity = new LittleArrowEntity(ModEntities.STONE_ARROW, world, littlePersonGiant, new ItemStack(Items.ARROW), littlePersonGiant.getMainHandStack().getItem() == Items.BOW ? littlePersonGiant.getMainHandStack() : null);
             // 设置箭的伤害
             arrowEntity.setDamage(damage);
             arrowEntity.setOwner(littlePersonGiant);
-
             // 减小散布参数以提高精度（从0.1F改为0.01F）
             arrowEntity.setVelocity(targetX, targetY, targetZ, 1.6F, 0.01F);
             arrowEntity.setTrueDamage(true, false);

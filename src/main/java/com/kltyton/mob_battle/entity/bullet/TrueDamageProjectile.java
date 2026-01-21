@@ -10,11 +10,9 @@ import org.jetbrains.annotations.Nullable;
 public abstract class TrueDamageProjectile extends PersistentProjectileEntity implements ITrueDamageProjectile {
     boolean TrueDamage = false;
     boolean isMage = false;
-
     protected TrueDamageProjectile(EntityType<? extends PersistentProjectileEntity> entityType, World world) {
         super(entityType, world);
     }
-
     protected TrueDamageProjectile(EntityType<? extends PersistentProjectileEntity> type, LivingEntity owner, World world, ItemStack stack, @Nullable ItemStack shotFrom) {
         super(type, owner, world, stack, shotFrom);
     }

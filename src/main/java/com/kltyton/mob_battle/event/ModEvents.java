@@ -8,5 +8,6 @@ public class ModEvents {
         TeamFightHandler.init();
         BuffStunEvent.init();
         PlayerAttackEvent.init();
+        SelfDestructEffectEvent.init();
     }
 }

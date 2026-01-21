@@ -185,10 +185,8 @@ public class VillagerIronGolemEntity extends IronGolemEntity implements GeoEntit
     }
     private PlayState animationController(final AnimationTest<VillagerIronGolemEntity> state) {
         if (state.isMoving()) {
-            // 移动状态时播放行走动画
             return state.setAndContinue(WALK_ANIM);
         } else {
-            // 空闲状态时播放待机动画
             return state.setAndContinue(IDEA_ANIM);
         }
     }

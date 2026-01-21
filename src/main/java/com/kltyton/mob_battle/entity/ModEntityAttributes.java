@@ -9,7 +9,6 @@ import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.Identifier;
 
 public class ModEntityAttributes {
-    // 推荐方式：直接定义为 RegistryEntry
     public static RegistryEntry<EntityAttribute> DAMAGE_REDUCTION;
 
     public static void init() {

@@ -10,7 +10,7 @@ import java.util.List;
 
 
 public class ModConsumableComponents {
-    public static final ConsumableComponent THOUSAND_BLOSSOMED_IMMORTAL_FRUIT = ConsumableComponents.food()
+    public static final ConsumableComponent COOKED_HIGHBIRD_EGG = ConsumableComponents.food()
             .consumeEffect(
                     new ApplyEffectsConsumeEffect(
                             List.of(

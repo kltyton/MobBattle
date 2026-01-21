@@ -17,6 +17,7 @@ import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.NotNull;
 import software.bernie.geckolib.animatable.manager.AnimatableManager;
 import software.bernie.geckolib.animatable.processing.AnimationController;
 import software.bernie.geckolib.animation.PlayState;
@@ -134,7 +135,7 @@ public class LittlePersonGiantEntity extends LittlePersonMilitiaEntity {
         }
     }
     @Override
-    public boolean blockAttack(DamageSource source, float amount) {
+    public boolean blockAttack(@NotNull DamageSource source, float amount) {
         return false;
     }
     protected static final RawAnimation ATTACK_ANIM_2 = RawAnimation.begin().thenPlay("attack2");

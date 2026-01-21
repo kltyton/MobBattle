@@ -3,6 +3,7 @@ package com.kltyton.mob_battle.entity.littleperson.archer;
 import com.kltyton.mob_battle.entity.littleperson.LittlePersonEntity;
 import com.kltyton.mob_battle.entity.littleperson.archer.littlearrow.LittleArrowEntity;
 import com.kltyton.mob_battle.entity.littleperson.militia.LittlePersonMilitiaEntity;
+import com.kltyton.mob_battle.entity.villager.warriorvillager.WarriorVillager;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -43,6 +44,7 @@ public class LittlePersonArcherEntity extends HostileEntity implements LittlePer
         this.goalSelector.add(8, new LookAtEntityGoal(this, PlayerEntity.class, 8.0F)); // 添加看向玩家的目标
         this.goalSelector.add(8, new LookAroundGoal(this)); // 添加环顾四周的目标
         this.targetSelector.add(3, new ActiveTargetGoal<>(this, IronGolemEntity.class, true)); // 添加攻击铁傀儡目标
+        this.targetSelector.add(2, new ActiveTargetGoal<>(this, WarriorVillager.class, true));
         this.targetSelector.add(2, new ActiveTargetGoal<>(this, PlayerEntity.class, true)); // 添加主动攻击玩家目标
         this.targetSelector.add(3, new ActiveTargetGoal<>(this, MobEntity.class, 5, false, false, (entity, world) -> entity instanceof Monster && !(entity instanceof LittlePersonEntity)));
     }

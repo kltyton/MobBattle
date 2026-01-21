@@ -34,6 +34,7 @@
     "witchentity.WitchEntityMixin"
   ],
   "client": [
+    "armor.EcredcultistGlowArmorRenderer",
     "client.render.AbstractClientPlayerEntityMixin",
     "client.render.EntityRendererMixin",
     "client.render.EntityRenderStateMixin",

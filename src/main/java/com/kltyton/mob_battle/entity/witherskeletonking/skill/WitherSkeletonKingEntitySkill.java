@@ -10,6 +10,7 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.random.Random;
 import net.minecraft.world.World;
 
 public class WitherSkeletonKingEntitySkill {
@@ -113,13 +114,23 @@ public class WitherSkeletonKingEntitySkill {
                 3.0F, 1.0F);
         // ====== 向随机方向发射多个凋零之首 ======
         int skullCount = 5;
+        Random random = world.getRandom();
         for (int i = 0; i < skullCount; i++) {
             // 稍微分散出生点（避免重叠）
-            double xOffset = (world.getRandom().nextDouble() - 0.5);
-            double yOffset = world.getRandom().nextDouble() * 0.5;
-            double zOffset = (world.getRandom().nextDouble() - 0.5);
-            Vec3d lookDir = king.getRotationVec(1.0F);  // 获取面向方向
-            Direction.Axis mainAxis = Math.abs(lookDir.x) > Math.abs(lookDir.z) ?
+            // 1. 扩大出生点分布范围 (左右 1.5 格, 上下 2.0 格)
+            double xOffset = (random.nextDouble() - 0.5) * 8.0;
+            double yOffset = (random.nextDouble() - 0.5) * 8.0; // 围绕眼睛上下浮动
+            double zOffset = (random.nextDouble() - 0.5) * 8.0;
+
+            Vec3d lookDir = king.getRotationVec(1.0F);
+            Vec3d velocity = lookDir.add(
+                    (random.nextDouble() - 0.5) * 8.0, // X轴扰动
+                    (random.nextDouble() - 0.5) * 8.0, // Y轴扰动
+                    (random.nextDouble() - 0.5) * 8.0  // Z轴扰动
+            ).normalize(); // 重新归一化，确保速度一致
+
+            // 3. 确定主轴逻辑 (保留你原有的 Axis 逻辑)
+            Direction.Axis mainAxis = Math.abs(velocity.x) > Math.abs(velocity.z) ?
                     Direction.Axis.X : Direction.Axis.Z;
 
             WitherSkullBulletEntity bullet = new WitherSkullBulletEntity(

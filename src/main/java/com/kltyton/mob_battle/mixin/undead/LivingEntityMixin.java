@@ -1,33 +1,32 @@
 package com.kltyton.mob_battle.mixin.undead;
 
+import com.kltyton.mob_battle.Mob_battle;
+import com.kltyton.mob_battle.effect.ModEffects;
 import com.kltyton.mob_battle.entity.witherskeletonking.skill.WitherSkullKingEntity;
 import com.kltyton.mob_battle.items.ModItems;
 import com.kltyton.mob_battle.utils.ArmorUtil;
 import net.minecraft.component.type.DeathProtectionComponent;
-import net.minecraft.entity.Attackable;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.*;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.damage.DamageType;
 import net.minecraft.entity.damage.DamageTypes;
+import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.registry.Registries;
 import net.minecraft.registry.tag.DamageTypeTags;
 import net.minecraft.registry.tag.EntityTypeTags;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Hand;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraft.world.waypoint.ServerWaypoint;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyVariable;
-import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
@@ -37,10 +36,8 @@ public abstract class LivingEntityMixin extends Entity implements Attackable, Se
     public LivingEntityMixin(EntityType<?> type, World world) {
         super(type, world);
     }
-
     @Shadow
     public abstract void heal(float amount);
-
     @Inject(method = "canTarget(Lnet/minecraft/entity/LivingEntity;)Z", at = @At("HEAD"), cancellable = true)
     private void preventTeamTargeting(LivingEntity target, CallbackInfoReturnable<Boolean> cir) {
         LivingEntity self = (LivingEntity) (Object) this;
@@ -145,5 +142,41 @@ public abstract class LivingEntityMixin extends Entity implements Attackable, Se
         if ((Object)this instanceof MobEntity mob && mob.isAiDisabled()) {
             ci.cancel();
         }
+    }
+    @Redirect(method = "tickMovement", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;canActVoluntarily()Z", ordinal = 1))
+    public boolean tickMovement(LivingEntity instance) {
+        LivingEntity entity = (LivingEntity) (Object) this;
+        String entityType = Registries.ENTITY_TYPE.getEntry(entity.getType()).getKey().get().getValue().getNamespace();
+        if (Mob_battle.MOD_ID.equals(entityType) && entity instanceof MobEntity mob && mob.isAiDisabled()) {
+            return true;
+        }
+        return instance.canActVoluntarily();
+    }
+    @Redirect(method = "applyMovementInput", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;move(Lnet/minecraft/entity/MovementType;Lnet/minecraft/util/math/Vec3d;)V"))
+    public void applyMovementInput(LivingEntity instance, MovementType type, Vec3d movement) {
+        if (Registries.ENTITY_TYPE.getEntry(instance.getType()).getKey().isPresent()) {
+            String entityType = Registries.ENTITY_TYPE.getEntry(instance.getType()).getKey().get().getValue().getNamespace();
+            if (Mob_battle.MOD_ID.equals(entityType) && instance instanceof MobEntity mob && mob.isAiDisabled()) {
+                Vec3d vec3d = new Vec3d(0, movement.y, 0);
+                this.move(type, vec3d);
+            } else {
+                this.move(type, movement);
+            }
+        }
+    }
+    @ModifyArg(
+            method = "modifyAppliedDamage",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/DamageUtil;getInflictedDamage(FF)F"),
+            index = 1
+    )
+    private float reduceEnchantmentProtection(float protection) {
+        StatusEffectInstance effect = ((LivingEntity) (Object) this).getStatusEffect(ModEffects.ARMOR_PIERCING_ENTRY);
+        if (effect != null) {
+            int level = effect.getAmplifier() + 1;
+            float newProtection = protection - (1.0f * level);
+            newProtection = Math.max(0.0f, newProtection);
+            return newProtection;
+        }
+        return protection;
     }
 }

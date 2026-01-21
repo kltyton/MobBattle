@@ -8,13 +8,11 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.registry.tag.DamageTypeTags;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.world.World;
@@ -130,27 +128,10 @@ public class LittlePersonGuardEntity extends LittlePersonMilitiaEntity {
                 .add(EntityAttributes.ATTACK_DAMAGE, 50.0)
                 .add(ModEntityAttributes.DAMAGE_REDUCTION, 0.8);
     }
-    @Override
-    public boolean blockAttack(DamageSource source, float amount) {
-        // 检查伤害是否来自实体直接攻击
-        if (source.getSource() instanceof Entity &&
-                !source.isIn(DamageTypeTags.IS_FALL) &&
-                !source.isIn(DamageTypeTags.IS_FIRE) &&
-                !source.isIn(DamageTypeTags.IS_EXPLOSION) &&
-                !source.isIn(DamageTypeTags.IS_DROWNING) &&
-                !source.isIn(DamageTypeTags.IS_FREEZING) &&
-                !source.isIn(DamageTypeTags.IS_LIGHTNING) &&
-                !source.isIn(DamageTypeTags.BURN_FROM_STEPPING) &&
-                !source.isIn(DamageTypeTags.WITCH_RESISTANT_TO) &&
-                amount <= 80.0F) {
-
-            // 20%概率免疫伤害
-            if (this.random.nextInt(100) < 30) {
-                this.playSound(SoundEvents.ITEM_SHIELD_BLOCK.value(), 1.0F, 1.0F);
-                this.triggerAnim("attack_controller", "block");
-                return true;
-            }
-        }
-        return false;
+    public int blockProbability() {
+        return 30;
+    }
+    public float maxBlockDamage() {
+        return 80f;
     }
 }

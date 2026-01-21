@@ -7,7 +7,6 @@ import com.kltyton.mob_battle.network.packet.ILeadUpdatePayload;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.Leashable;
-import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemConvertible;
@@ -16,7 +15,6 @@ import net.minecraft.item.Items;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.storage.ReadView;
 import net.minecraft.storage.WriteView;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
@@ -29,24 +27,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(Entity.class)
 @Implements(@Interface(iface = ILead.class, prefix = "custom$"))
 public abstract class EntityMixin implements ILead {
-    @Inject(method = "setVelocity(Lnet/minecraft/util/math/Vec3d;)V", at = @At("HEAD"), cancellable = true)
-    public void setVelocity(Vec3d velocity, CallbackInfo ci) {
-        if ((Object) this instanceof MobEntity mobEntity && mobEntity.isAiDisabled()) {
-            ci.cancel();
-        }
-    }
-    @Inject(method = "setVelocity(DDD)V", at = @At("HEAD"), cancellable = true)
-    public void setVelocity(double x, double y, double z, CallbackInfo ci) {
-        if ((Object) this instanceof MobEntity mobEntity && mobEntity.isAiDisabled()) {
-            ci.cancel();
-        }
-    }
-    @Inject(method = "setVelocityClient", at = @At("HEAD"), cancellable = true)
-    public void setVelocityClient(double x, double y, double z, CallbackInfo ci) {
-        if ((Object) this instanceof MobEntity mobEntity && mobEntity.isAiDisabled()) {
-            ci.cancel();
-        }
-    }
     @Shadow
     public abstract World getWorld();
 

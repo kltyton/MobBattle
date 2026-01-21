@@ -90,6 +90,7 @@ public class WitherSkeletonKingEntity extends WitherSkeletonEntity  implements G
     public void tick() {
         super.tick();
         if (!this.getWorld().isClient()) {
+            if (this.age % 20 == 0) this.heal(10.0F);
             if (!hasSkill()) {
                 this.setAiDisabled(false);
                 if (canShotWitherSkull()) performShotWitherSkull();
@@ -244,7 +245,7 @@ public class WitherSkeletonKingEntity extends WitherSkeletonEntity  implements G
         } else {
             if (target instanceof LivingEntity livingEntity) {
                 livingEntity.addStatusEffect(new StatusEffectInstance(StatusEffects.WITHER, 200), this);
-                if (livingEntity.isDead()) this.heal(20.0F);
+                if (livingEntity.isDead()) this.heal(5.0F);
                 if (!(target instanceof PlayerEntity)) {
                     livingEntity.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 100, 1), this);
                 }

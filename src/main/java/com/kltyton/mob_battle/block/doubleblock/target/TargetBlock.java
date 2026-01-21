@@ -1,6 +1,7 @@
-package com.kltyton.mob_battle.block.doubleblock;
+package com.kltyton.mob_battle.block.doubleblock.target;
 
 import com.kltyton.mob_battle.block.ModBlockEntities;
+import com.kltyton.mob_battle.block.doubleblock.DoubleBlock;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -17,7 +18,7 @@ import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.World;
 
-public class TargetBlock extends DoubleBlock{
+public class TargetBlock extends DoubleBlock {
     public TargetBlock(Settings settings) {
         super(settings);
     }

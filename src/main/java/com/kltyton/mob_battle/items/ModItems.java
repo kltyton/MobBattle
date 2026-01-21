@@ -3,6 +3,7 @@ package com.kltyton.mob_battle.items;
 import com.kltyton.mob_battle.Mob_battle;
 import com.kltyton.mob_battle.components.ModConsumableComponents;
 import com.kltyton.mob_battle.entity.ModEntities;
+import com.kltyton.mob_battle.items.armor.ModBaseArmorItem;
 import com.kltyton.mob_battle.items.food.ThousandBlossomedImmortalFruit;
 import com.kltyton.mob_battle.items.misc.*;
 import com.kltyton.mob_battle.items.scroll.*;
@@ -16,6 +17,8 @@ import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.ChargedProjectilesComponent;
 import net.minecraft.component.type.DeathProtectionComponent;
 import net.minecraft.component.type.FoodComponent;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.SpawnEggItem;
 import net.minecraft.item.equipment.EquipmentType;
@@ -26,7 +29,13 @@ import net.minecraft.registry.RegistryKeys;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Unit;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class ModItems {
+    public static final Map<String, Item> ITEMS = new HashMap<>();
+    public static final Map<String, SpawnEggItem> SPAWN_EGG_ITEMS = new HashMap<>();
+
     // 杂项物品
     public static MutualAttackStickItem MUTUAL_ATTACK_STICK;
     public static MasterScepterItem MASTER_SCEPTER;
@@ -40,6 +49,8 @@ public class ModItems {
     public static FireWallScrollItem FIRE_WALL_SCROLL;
     public static HeartStoneItem HEART_STONE;
     public static ThousandBlossomedImmortalFruit THOUSAND_BLOSSOMED_IMMORTAL_FRUIT;
+    public static Item LOBSTER_MAIN_COURSE;
+    public static Item COOKED_HIGHBIRD_EGG;
     // 刷怪蛋
     public static SpawnEggItem HIGHBIRD_BABY_SPAWN_EGG;
     public static SpawnEggItem HIGHBIRD_TEENAGE_SPAWN_EGG;
@@ -70,7 +81,9 @@ public class ModItems {
     public static SpawnEggItem YOUNG_MIN_SPAWN_EGG;
     public static SpawnEggItem HIDDEN_EYE_SPAWN_EGG;
     public static SpawnEggItem VINDICATOR_GENERAL_SPAWN_EGG;
-
+    public static SpawnEggItem HULKBUSTER_SPAWN_EGG;
+    public static SpawnEggItem SILENCE_PHANTOM_SPAWN_EGG;
+    public static SpawnEggItem COAL_SILVERFISH_SPAWN_EGG;
 
     public static IncubationEggItem INCUBATION_EGG;
 
@@ -87,6 +100,11 @@ public class ModItems {
     public static Item IRON_GOLD_CHESTPLATE;
     public static Item IRON_GOLD_LEGGINGS;
     public static Item IRON_GOLD_BOOTS;
+
+    public static ModBaseArmorItem ECREDCULTIST_HELMET;
+    public static ModBaseArmorItem ECREDCULTIST_CHESTPLATE;
+    public static ModBaseArmorItem ECREDCULTIST_LEGGINGS;
+    public static ModBaseArmorItem ECREDCULTIST_BOOTS;
 
     //工具以及武器
     public static Item METEORICORE_AXE;
@@ -141,10 +159,23 @@ public class ModItems {
                 new FireWallScrollItem(new Item.Settings().useCooldown(35)
                         .registryKey(RegistryKey.of(
                                 RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "fire_wall_scroll")))));
+        //.useRemainder(THOUSAND_BLOSSOMED_IMMORTAL_FRUIT)
         THOUSAND_BLOSSOMED_IMMORTAL_FRUIT = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "thousand_blossomed_immortal_fruit"),
-                new ThousandBlossomedImmortalFruit(new Item.Settings().food(new FoodComponent.Builder().nutrition(4).saturationModifier(0.3F).alwaysEdible().build(), ModConsumableComponents.THOUSAND_BLOSSOMED_IMMORTAL_FRUIT).useCooldown(60)
+                new ThousandBlossomedImmortalFruit(new Item.Settings().food(new FoodComponent.Builder().nutrition(4).saturationModifier(0.3F).alwaysEdible().build()).useCooldown(60)
                         .registryKey(RegistryKey.of(
                                 RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "thousand_blossomed_immortal_fruit")))));
+        LOBSTER_MAIN_COURSE = registerItem("lobster_main_course",
+                new Item.Settings().food(
+                        new FoodComponent.Builder().nutrition(10).saturationModifier(0.3F).build()
+                )
+        );
+
+        COOKED_HIGHBIRD_EGG = registerItem("cooked_highbird_egg",
+                new Item.Settings().food(
+                        new FoodComponent.Builder().nutrition(20).saturationModifier(20).alwaysEdible().build(),
+                        ModConsumableComponents.COOKED_HIGHBIRD_EGG
+                )
+        );
 
         HEART_STONE = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "heart_stone"),
                 new HeartStoneItem(new Item.Settings().maxCount(3)
@@ -215,6 +246,43 @@ public class ModItems {
                                 ))
                 )
         );
+        ECREDCULTIST_HELMET = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "ecredcultist_helmet"),
+                new ModBaseArmorItem(new Item.Settings().armor(ModMaterial.ECREDCULTIST_INSTANCE, EquipmentType.HELMET)
+                        .maxDamage(1).maxCount(1).component(DataComponentTypes.UNBREAKABLE, Unit.INSTANCE)
+                        .registryKey(RegistryKey.of(
+                                RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "ecredcultist_helmet")
+                        )),
+                        ModMaterial.ECREDCULTIST_INSTANCE
+                )
+        );
+        ECREDCULTIST_CHESTPLATE = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "ecredcultist_chestplate"),
+                new ModBaseArmorItem(new Item.Settings().armor(ModMaterial.ECREDCULTIST_INSTANCE, EquipmentType.CHESTPLATE)
+                        .maxDamage(1).maxCount(1).component(DataComponentTypes.UNBREAKABLE, Unit.INSTANCE)
+                        .registryKey(RegistryKey.of(
+                                RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "ecredcultist_chestplate")
+                        )),
+                        ModMaterial.ECREDCULTIST_INSTANCE
+                )
+        );
+        ECREDCULTIST_LEGGINGS = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "ecredcultist_leggings"),
+                new ModBaseArmorItem(new Item.Settings().armor(ModMaterial.ECREDCULTIST_INSTANCE, EquipmentType.LEGGINGS)
+                        .maxDamage(1).maxCount(1).component(DataComponentTypes.UNBREAKABLE, Unit.INSTANCE)
+                        .registryKey(RegistryKey.of(
+                                RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "ecredcultist_leggings")
+                        )),
+                        ModMaterial.ECREDCULTIST_INSTANCE
+                )
+        );
+        ECREDCULTIST_BOOTS = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "ecredcultist_boots"),
+                new ModBaseArmorItem(
+                        new Item.Settings().armor(ModMaterial.ECREDCULTIST_INSTANCE, EquipmentType.BOOTS)
+                        .maxDamage(1).maxCount(1).component(DataComponentTypes.UNBREAKABLE, Unit.INSTANCE)
+                        .registryKey(RegistryKey.of(
+                                RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "ecredcultist_boots")
+                        )),
+                        ModMaterial.ECREDCULTIST_INSTANCE
+                )
+        );
 
         IRON_GOLD_HELMET = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "iron_gold_helmet"),
                 new Item(new Item.Settings().armor(ModMaterial.IRON_GOLD_INSTANCE, EquipmentType.HELMET)
@@ -274,7 +342,9 @@ public class ModItems {
                 )
         );
         IRON_GOLD_SWORD = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "iron_gold_sword"),
-                new IronGoldSword(new Item.Settings().sword(ModMaterial.IRON_GOLD_TOOL_MATERIAL, 0f,-2.2f).maxCount(1).component(DataComponentTypes.DEATH_PROTECTION, DeathProtectionComponent.TOTEM_OF_UNDYING)
+                new IronGoldSword(new Item.Settings()
+                        .sword(ModMaterial.IRON_GOLD_TOOL_MATERIAL, 49f,-2.2f).maxCount(1)
+                        .component(DataComponentTypes.DEATH_PROTECTION, DeathProtectionComponent.TOTEM_OF_UNDYING)
                         .registryKey(RegistryKey.of(
                                 RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "iron_gold_sword")
                         ))
@@ -593,5 +663,49 @@ public class ModItems {
                                 ))
                 )
         );
+        HULKBUSTER_SPAWN_EGG = registerSpawnEggItem(ModEntities.HULKBUSTER, "hulkbuster_spawn_egg");
+        SILENCE_PHANTOM_SPAWN_EGG = registerSpawnEggItem(ModEntities.SILENCE_PHANTOM, "silence_phantom_spawn_egg");
+        COAL_SILVERFISH_SPAWN_EGG = registerSpawnEggItem(ModEntities.COAL_SILVERFISH, "coal_silverfish_spawn_egg");
+
+        ModEntities.SPAWN_EGG_ENTITIES.forEach((id, entityType) -> {
+            @SuppressWarnings("unchecked")
+            EntityType<? extends MobEntity> mobType = (EntityType<? extends MobEntity>) entityType;
+            registerSpawnEggItem(mobType, id);
+        });
+    }
+    private static Item registerItem(String id) {
+        Identifier itemId = Identifier.of(Mob_battle.MOD_ID, id);
+        Item.Settings settings = new Item.Settings()
+                .registryKey(RegistryKey.of(RegistryKeys.ITEM, itemId));
+        Item item = Registry.register(Registries.ITEM, itemId, new Item(settings));
+        ITEMS.put(id, item);
+        return item;
+    }
+    public static Item registerItem(String id, Item.Settings settings) {
+        Identifier itemId = Identifier.of(Mob_battle.MOD_ID, id);
+        Item.Settings finalsettings = settings
+                .registryKey(RegistryKey.of(RegistryKeys.ITEM, itemId));
+        Item item = Registry.register(
+                Registries.ITEM,
+                itemId,
+                new Item(finalsettings)
+        );
+        ITEMS.put(id, item);
+        return item;
+    }
+    public static SpawnEggItem registerSpawnEggItem(EntityType<? extends MobEntity> entityType, String id) {
+        Identifier itemId = Identifier.of(Mob_battle.MOD_ID, id);
+        Item.Settings finalsettings = new Item.Settings()
+                .registryKey(RegistryKey.of(RegistryKeys.ITEM, itemId));
+        SpawnEggItem item = Registry.register(
+                Registries.ITEM,
+                itemId,
+                new SpawnEggItem(
+                        entityType,
+                        finalsettings
+                )
+        );
+        SPAWN_EGG_ITEMS.put(id, item);
+        return item;
     }
 }

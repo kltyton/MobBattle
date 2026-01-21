@@ -1,6 +1,7 @@
-package com.kltyton.mob_battle.block.doubleblock;
+package com.kltyton.mob_battle.block.doubleblock.scarecrow;
 
 import com.kltyton.mob_battle.block.ModBlockEntities;
+import com.kltyton.mob_battle.block.doubleblock.DoubleBlock;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -60,6 +61,7 @@ public class ScarecrowBlock extends DoubleBlock {
 
         return ActionResult.PASS;
     }
+
     private static final VoxelShape LOWER_SHAPE = VoxelShapes.union(
             Block.createCuboidShape(6, 1, 6, 10, 13, 10),
             Block.createCuboidShape(1, 0, 1, 15, 1, 15),

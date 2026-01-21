@@ -38,7 +38,7 @@ public class DeepCreatureEntityRenderer<R extends LivingEntityRenderState & GeoR
     }
     @Override
     protected float getDeathMaxRotation(GeoRenderState renderState) {
-        return 0f;   // 自定义翻转角度
+        return 0f;
     }
     @Override
     public int getPackedOverlay(DeepCreatureEntity animatable, Void relatedObject, float u, float partialTick) {

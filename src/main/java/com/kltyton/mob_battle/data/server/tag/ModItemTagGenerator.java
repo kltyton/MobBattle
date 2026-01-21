@@ -11,10 +11,9 @@ public class ModItemTagGenerator extends FabricTagProvider.ItemTagProvider {
         super(output, registriesFuture);
     }
 
-
     @Override
     protected void configure(RegistryWrapper.WrapperLookup wrapperLookup) {
-/*        valueLookupBuilder(ItemTags.WOODEN_SLABS)
+/*       valueLookupBuilder(ItemTags.WOODEN_SLABS)
                 .add(Items.SLIME_BALL)
                 .add(Items.ROTTEN_FLESH)
                 .addOptionalTag(ItemTags.DIRT)

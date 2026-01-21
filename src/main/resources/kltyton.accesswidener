@@ -13,3 +13,12 @@ accessible class net/minecraft/entity/effect/InstantHealthOrDamageStatusEffect
 accessible method net/minecraft/entity/LivingEntity getHitbox ()Lnet/minecraft/util/math/Box;
 accessible field net/minecraft/item/ItemGroup$DisplayContext hasPermissions Z
 accessible method net/minecraft/entity/ai/control/MoveControl isPosWalkable (FF)Z
+accessible method net/minecraft/client/render/entity/feature/ArmorFeatureRenderer hasModel (Lnet/minecraft/component/type/EquippableComponent;Lnet/minecraft/entity/EquipmentSlot;)Z
+accessible field net/minecraft/entity/mob/PhantomEntity movementType Lnet/minecraft/entity/mob/PhantomEntity$PhantomMovementType;
+accessible method net/minecraft/entity/mob/PhantomEntity testTargetPredicate (Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/entity/LivingEntity;Lnet/minecraft/entity/ai/TargetPredicate;)Z
+accessible class net/minecraft/entity/mob/PhantomEntity$FindTargetGoal
+accessible class net/minecraft/entity/mob/PhantomEntity$CircleMovementGoal
+accessible class net/minecraft/entity/mob/PhantomEntity$PhantomMovementType
+accessible field net/minecraft/entity/mob/PhantomEntity circlingCenter Lnet/minecraft/util/math/BlockPos;
+accessible field net/minecraft/entity/mob/PhantomEntity targetPosition Lnet/minecraft/util/math/Vec3d;
+accessible class net/minecraft/entity/mob/PhantomEntity$MovementGoal

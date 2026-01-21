@@ -147,7 +147,7 @@ public class VsSnipe extends RangedWeaponItem implements FabricItem {
         ProjectileEntity projectileEntity = createArrowEntityBase(world, shooter, weaponStack, projectileStack, critical);
         if (projectileEntity instanceof PersistentProjectileEntity persistentProjectileEntity) {
             persistentProjectileEntity.setSound(SoundEvents.ITEM_CROSSBOW_HIT);
-            persistentProjectileEntity.setDamage(50D);
+            persistentProjectileEntity.setDamage(80D);
         }
         projectileEntity.setNoGravity(true);
         return projectileEntity;

@@ -1,9 +1,8 @@
 package com.kltyton.mob_battle.entity.vindicatorgeneral;
 
+import com.kltyton.mob_battle.entity.accessor.BigBossLookControl;
 import com.kltyton.mob_battle.entity.accessor.BigBossMoveControl;
 import com.kltyton.mob_battle.entity.accessor.BigBossNavigation;
-import com.kltyton.mob_battle.entity.witherskeletonking.WitherSkeletonKingEntity;
-import com.kltyton.mob_battle.entity.accessor.BigBossLookControl;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -88,6 +87,7 @@ public class VindicatorGeneralEntity extends VindicatorEntity implements GeoEnti
             if (!hasSkill()) {
                 this.setAiDisabled(false);
             }
+            if (this.age % 20 == 0) this.heal(10);
         }
     }
     @Override
@@ -257,7 +257,7 @@ public class VindicatorGeneralEntity extends VindicatorEntity implements GeoEnti
                 .add(EntityAttributes.MAX_HEALTH, 20000.0D)
                 .add(EntityAttributes.MOVEMENT_SPEED, 0.3D)
                 .add(EntityAttributes.KNOCKBACK_RESISTANCE, 1.0D)
-                .add(EntityAttributes.ATTACK_DAMAGE, 120.0D)
+                .add(EntityAttributes.ATTACK_DAMAGE, 80.0D)
                 .add(EntityAttributes.FOLLOW_RANGE, 24.0D)
                 .add(EntityAttributes.ARMOR, 30.0D)
                 .add(EntityAttributes.ARMOR_TOUGHNESS, 20.0D);
@@ -330,7 +330,7 @@ public class VindicatorGeneralEntity extends VindicatorEntity implements GeoEnti
     public AnimatableInstanceCache getAnimatableInstanceCache() {
         return this.geoCache;
     }
-    private PlayState animationController(final AnimationTest<WitherSkeletonKingEntity> state) {
+    private PlayState animationController(final AnimationTest<VindicatorGeneralEntity> state) {
         if (state.isMoving()) {
             return state.setAndContinue(WALK_ANIM);
         }

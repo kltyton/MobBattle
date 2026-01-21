@@ -1,16 +1,47 @@
 package com.kltyton.mob_battle.utils;
 
 import net.minecraft.entity.Entity;
+import net.minecraft.scoreboard.AbstractTeam;
+import net.minecraft.scoreboard.Scoreboard;
+import net.minecraft.scoreboard.Team;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 
 public class EntityUtil {
+    public enum TeamFilter {
+        ALL,             // 所有人
+        EXCLUDE_TEAM,    // 排除队友
+        ONLY_TEAM        // 只看队友
+    }
+    /**
+     * 将实体 targetA 加入到实体 sourceB 所在的队伍中
+     * @param targetA 要加入队伍的实体
+     * @param sourceB 参考队伍的实体
+     */
+    public static void joinSameTeam(Entity targetA, Entity sourceB) {
+        // 1. 获取参考实体 B 的队伍
+        AbstractTeam abstractTeam = sourceB.getScoreboardTeam();
+
+        // 只有当 B 确实在一个队伍中时才执行操作
+        if (abstractTeam instanceof Team team) {
+            Scoreboard scoreboard = sourceB.getWorld().getScoreboard();
+
+            // 2. 获取实体 A 的标识符
+            // 在原版记分板中，玩家使用名称，而实体使用 UUID 字符串
+            String entryA = targetA.getUuidAsString();
+
+            // 3. 将 A 添加到队伍中
+            // 该方法会自动将 A 从之前的队伍中移除
+            scoreboard.addScoreHolderToTeam(entryA, team);
+        }
+    }
     /**
      * 获取指定实体周围指定范围内的某类实体的数量（球形范围，精确距离）
      *
@@ -20,37 +51,54 @@ public class EntityUtil {
      *                    传入 Object.class 表示不进行额外筛选（等同于无筛选）。
      * @param radius      范围半径（单位：格）
      * @param includeSelf 是否包含中心实体自身（如果是同一类的话）
+     * @param teamFilter           队伍筛选
      * @param <T>         实体类型
      * @return 符合条件的实体数量
      */
-    public static <T extends Entity> int getNearbyEntityCount(Entity center, Class<T> clazz, Class<?> filterClass, double radius, boolean includeSelf) {
+    public static <T extends Entity> int getNearbyEntityCount(Entity center, Class<T> clazz, Class<?> filterClass, double radius, boolean includeSelf, TeamFilter teamFilter) {
+        List<T> nearbyEntities = getNearbyEntity(center, clazz, filterClass, radius, includeSelf, teamFilter);
+        if (nearbyEntities == null) return 0;
+        else return nearbyEntities.size();
+    }
+    /**
+     * 获取指定实体周围指定范围内的某类实体的集合（球形范围，精确距离）
+     *
+     * @param center               中心实体
+     * @param clazz                要统计的实体类
+     * @param filterClass          额外筛选类
+     * @param radius               范围半径
+     * @param includeSelf          是否包含中心实体自身
+     * @param teamFilter           队伍筛选
+     * @param <T>                  实体类型
+     * @return 符合条件的实体列表
+     */
+    public static <T extends Entity> List<T> getNearbyEntity(Entity center, Class<T> clazz, Class<?> filterClass, double radius, boolean includeSelf, TeamFilter teamFilter) {
         World world = center.getWorld();
-
         if (world.isClient()) {
-            return 0;
+            return List.of();
         }
-
         double radiusSq = radius * radius;
         Box box = center.getBoundingBox().expand(radius);
-
         Predicate<T> predicate = entity -> {
             if (!entity.isAlive()) return false;
             if (!includeSelf && entity == center) return false;
             if (!filterClass.isInstance(entity)) return false;
+            boolean isTeammate = entity.isTeammate(center);
+            if (teamFilter == TeamFilter.EXCLUDE_TEAM && isTeammate) return false;
+            if (teamFilter == TeamFilter.ONLY_TEAM && !isTeammate) return false;
             return entity.squaredDistanceTo(center) <= radiusSq;
         };
-
-        return world.getEntitiesByClass(clazz, box, predicate).size();
+        return world.getEntitiesByClass(clazz, box, predicate);
     }
 
     /**
      * 重载版本：默认不包含自身，可自定义范围
      */
     public static <T extends Entity> int getNearbyEntityCount(Entity center, Class<T> clazz, double radius) {
-        return getNearbyEntityCount(center, clazz, Object.class, radius, false);
+        return getNearbyEntityCount(center, clazz, Object.class, radius, false, TeamFilter.ONLY_TEAM);
     }
     public static <T extends Entity> int getNearbyEntityCount(Entity center, Class<T> clazz, Class<?> filterClass, double radius) {
-        return getNearbyEntityCount(center, clazz, filterClass, radius, false);
+        return getNearbyEntityCount(center, clazz, filterClass, radius, false, TeamFilter.ONLY_TEAM);
     }
     /**
      * 在指定中心位置附近寻找安全的实体生成位置（避免卡墙、浮空、无实体冲突）

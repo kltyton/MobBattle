@@ -28,10 +28,6 @@ public class MeteoriteEntity extends CustomFireballEntity {
     public MeteoriteEntity(EntityType<? extends CustomFireballEntity> entityType, World world, LivingEntity owner, float power, boolean createFire, float damage) {
         super(entityType, world, owner, power, createFire, damage);
     }
-
-    public MeteoriteEntity(World world, LivingEntity owner, float power, boolean createFire, float damage) {
-        super(world, owner, power, createFire, damage);
-    }
     @Override
     protected boolean isBurning() {
         return false;

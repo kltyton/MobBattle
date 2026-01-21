@@ -25,6 +25,10 @@ public class ModPackets {
                 LeftClickPacket.ID,
                 LeftClickPacket.CODEC
         );
+        PayloadTypeRegistry.playC2S().register(
+                HulkbusterEntityPayload.ID,
+                HulkbusterEntityPayload.CODEC
+        );
         PayloadTypeRegistry.playS2C().register(
                 SoundPayload.ID,
                 SoundPayload.CODEC

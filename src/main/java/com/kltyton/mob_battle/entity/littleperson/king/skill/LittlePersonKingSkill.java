@@ -9,8 +9,6 @@ import net.minecraft.entity.LightningEntity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.SpawnReason;
 import net.minecraft.particle.ParticleTypes;
-import net.minecraft.scoreboard.Scoreboard;
-import net.minecraft.scoreboard.Team;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
@@ -64,13 +62,9 @@ public class LittlePersonKingSkill {
             littlePersonGuard.initialize(serverWorld, serverWorld.getLocalDifficulty(spawnPos), SpawnReason.EVENT, null);
             littlePersonGuard.setLife(1200);
             littlePersonGuard.setPosition(EntityUtil.findSafeSpawnPosition(serverWorld, littlePersonGuard, spawnPos.toCenterPos()).orElse(spawnPos.toCenterPos()));
+            EntityUtil.joinSameTeam(littlePersonGuard, littlePersonKingEntity);
             serverWorld.spawnEntity(littlePersonGuard);
-            Scoreboard scoreboard = serverWorld.getScoreboard();
-            Team littlePersonKingEntityTeam = scoreboard.getTeam(littlePersonKingEntity.getName().getString());
-            if (littlePersonKingEntityTeam != null) {
-                String littlePersonGuardScoreName = littlePersonGuard.getNameForScoreboard();
-                scoreboard.addScoreHolderToTeam(littlePersonGuardScoreName, littlePersonKingEntityTeam);
-            }
+            EntityUtil.joinSameTeam(littlePersonGuard, littlePersonKingEntity);
         }
         serverWorld.spawnParticles(ParticleTypes.POOF,
                 kingPos.x, kingPos.y + 1, kingPos.z,

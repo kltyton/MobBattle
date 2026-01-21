@@ -4,9 +4,13 @@ import com.kltyton.mob_battle.Mob_battle;
 import com.kltyton.mob_battle.entity.deepcreature.DeepCreatureEntity;
 import com.kltyton.mob_battle.entity.deepcreature.skill.Skill;
 import com.kltyton.mob_battle.entity.drone.DroneManager;
+import com.kltyton.mob_battle.entity.general.GeneralEntityOnlyOneSkill;
+import com.kltyton.mob_battle.entity.general.GeneralEntitySkillHelper;
 import com.kltyton.mob_battle.entity.highbird.HighbirdBaseEntity;
 import com.kltyton.mob_battle.entity.highbird.adulthood.HighbirdAdulthoodEntity;
 import com.kltyton.mob_battle.entity.irongolem.VillagerIronGolemEntity;
+import com.kltyton.mob_battle.entity.irongolem.hulkbuster.HulkbusterEntity;
+import com.kltyton.mob_battle.entity.irongolem.hulkbuster.HulkbusterEntitySkill;
 import com.kltyton.mob_battle.entity.irongolem.skill.IronGolemSkill;
 import com.kltyton.mob_battle.entity.littleperson.giant.LittlePersonGiantEntity;
 import com.kltyton.mob_battle.entity.littleperson.giant.skill.LittlePersonGiantSkill;
@@ -14,6 +18,7 @@ import com.kltyton.mob_battle.entity.littleperson.guard.LittlePersonGuardEntity;
 import com.kltyton.mob_battle.entity.littleperson.guard.skill.LittlePersonGuardSkill;
 import com.kltyton.mob_battle.entity.littleperson.king.LittlePersonKingEntity;
 import com.kltyton.mob_battle.entity.littleperson.king.skill.LittlePersonKingSkill;
+import com.kltyton.mob_battle.entity.littleperson.skillentity.BaseSkillLittlePersonEntity;
 import com.kltyton.mob_battle.entity.skull.archer.SkullArcherEntity;
 import com.kltyton.mob_battle.entity.skull.archer.SkullArcherEntitySkill;
 import com.kltyton.mob_battle.entity.skull.king.SkullKingEntity;
@@ -72,6 +77,20 @@ public class ServerPlayNetwork {
                         Entity entity = context.player().getWorld().getEntityById(payload.keeperId());
                         if (entity != null) {
                             HeadStoneUtil.setKeep(entity.getUuid(), payload.isKeep());
+                        }
+                    });
+                }
+        );
+        ServerPlayNetworking.registerGlobalReceiver(HulkbusterEntityPayload.ID,
+                (payload, context) -> {
+                    MinecraftServer server = context.server();
+                    server.execute(() -> {
+                        HulkbusterEntity hulkbuster = (HulkbusterEntity) context.player().getWorld().getEntity(payload.uuid());
+                        if (hulkbuster != null) {
+                            switch (payload.name()) {
+                                case "right_muzzle" -> hulkbuster.rightMuzzle = payload.pos();
+                                case "left_muzzle" -> hulkbuster.leftMuzzle = payload.pos();
+                            }
                         }
                     });
                 }
@@ -174,6 +193,21 @@ public class ServerPlayNetwork {
                                     }
                                 }
                             }
+                            case BaseSkillLittlePersonEntity baseSkillLittlePersonEntity -> {
+                                switch (payload.skillName()) {
+                                    case "attack2" -> baseSkillLittlePersonEntity.runSkill_2(baseSkillLittlePersonEntity);
+                                    case "attack3" -> baseSkillLittlePersonEntity.runSkill_3(baseSkillLittlePersonEntity);
+                                    case "attack4" -> baseSkillLittlePersonEntity.runSkill_4(baseSkillLittlePersonEntity);
+                                    case "attack5" -> baseSkillLittlePersonEntity.runSkill_5(baseSkillLittlePersonEntity);
+                                    case "attack6" -> baseSkillLittlePersonEntity.runSkill_6(baseSkillLittlePersonEntity);
+                                    case "stop_ai" -> baseSkillLittlePersonEntity.setAiDisabled(true);
+                                    case "start_ai" -> baseSkillLittlePersonEntity.setAiDisabled(false);
+                                    case "stop" -> {
+                                        baseSkillLittlePersonEntity.setHasSkill(false);
+                                        baseSkillLittlePersonEntity.setAiDisabled(false);
+                                    }
+                                }
+                            }
                             case SkullKingEntity skullKingEntity -> {
                                 switch (payload.skillName()) {
                                     case "attack" -> SkullKingEntitySkill.runAttackSkill(skullKingEntity);
@@ -237,8 +271,31 @@ public class ServerPlayNetwork {
                                     }
                                 }
                             }
-                            case null, default ->
-                                    Mob_battle.LOGGER.warn("没有找到实体：'{}' 的技能：{}", entity != null ? entity.getDisplayName() : "实体不存在", payload.skillName());
+                            case HulkbusterEntity hulkbusterEntity -> {
+                                switch (payload.skillName()) {
+                                    case "attack" -> HulkbusterEntitySkill.runAttackSkill(hulkbusterEntity);
+                                    case "super_attack" -> HulkbusterEntitySkill.runSuperAttackSkill(hulkbusterEntity);
+                                    case "mini_attack" -> HulkbusterEntitySkill.runMiniAttackSkill(hulkbusterEntity);
+                                    case "max_attack" -> HulkbusterEntitySkill.runMaxAttackSkill(hulkbusterEntity);
+                                    case "stop_ai" -> hulkbusterEntity.setAiDisabled(true);
+                                    case "start_ai" -> hulkbusterEntity.setAiDisabled(false);
+                                    case "stop" -> {
+                                        hulkbusterEntity.setHasSkill(false);
+                                        hulkbusterEntity.setAiDisabled(false);
+                                    }
+                                }
+                            }
+
+                            case null -> Mob_battle.LOGGER.warn("实体不存在");
+
+                            default -> {
+                                if (entity instanceof GeneralEntityOnlyOneSkill<?> skillInterface) {
+                                    GeneralEntitySkillHelper.handleSkillPayload(skillInterface, payload);
+                                } else {
+                                    Mob_battle.LOGGER.warn("没有找到实体：'{}' 的技能：{}", entity.getDisplayName(), payload.skillName());
+                                }
+                            }
+
                         }
                     });
                 }

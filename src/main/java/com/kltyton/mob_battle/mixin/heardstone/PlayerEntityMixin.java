@@ -1,5 +1,6 @@
 package com.kltyton.mob_battle.mixin.heardstone;
 
+import com.kltyton.mob_battle.effect.ModEffects;
 import com.kltyton.mob_battle.entity.witherskeletonking.skill.WitherSkullKingEntity;
 import com.kltyton.mob_battle.items.tool.snipe.VsSnipe;
 import com.kltyton.mob_battle.utils.HeadStoneUtil;
@@ -14,8 +15,11 @@ import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+import java.util.Objects;
 
 @Mixin(PlayerEntity.class)
 public abstract class PlayerEntityMixin extends LivingEntity {
@@ -53,6 +57,19 @@ public abstract class PlayerEntityMixin extends LivingEntity {
             return false;
         }
         return instance.isInvulnerableTo(world, source);
+    }
+    @ModifyVariable(method = "addExhaustion", at = @At("HEAD"), argsOnly = true)
+    private float modifyExhaustion(float exhaustion) {
+        PlayerEntity player = (PlayerEntity) (Object) this;
+
+        // 检查玩家是否有糖分效果
+        if (player.hasStatusEffect(ModEffects.SUGAR_ENTRY)) {
+            int amplifier = Objects.requireNonNull(player.getStatusEffect(ModEffects.SUGAR_ENTRY)).getAmplifier();
+            float multiplier = 1.0f - (0.2f * (amplifier + 1));
+            multiplier = Math.max(0.0f, multiplier);
+            return exhaustion * multiplier;
+        }
+        return exhaustion;
     }
 
 }

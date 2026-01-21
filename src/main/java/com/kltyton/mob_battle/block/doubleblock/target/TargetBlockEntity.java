@@ -1,8 +1,8 @@
-package com.kltyton.mob_battle.block.doubleblock;
+package com.kltyton.mob_battle.block.doubleblock.target;
 
 import com.kltyton.mob_battle.block.ModBlockEntities;
 import com.kltyton.mob_battle.entity.ModEntities;
-import com.kltyton.mob_battle.entity.villager.militia.MilitiaWarriorVillager;
+import com.kltyton.mob_battle.entity.villager.militia.MilitiaArcherVillager;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.Entity;
@@ -25,18 +25,18 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 
-public class ScarecrowBlockEntity extends BlockEntity {
+public class TargetBlockEntity extends BlockEntity {
     private List<UUID> trackedGolems = new ArrayList<>();
     private static final int MAX_GOLEMS = 2;
     public static final double RANGE =256.0;
     private static final double DETECT_VILLAGER_RANGE = 5.0;
 
-    public ScarecrowBlockEntity(BlockPos pos, BlockState state) {
-        super(ModBlockEntities.SCARECROW_ENTITY, pos, state);
+    public TargetBlockEntity(BlockPos pos, BlockState state) {
+        super(ModBlockEntities.TARGET_ENTITY, pos, state);
     }
 
     // 每秒运行一次逻辑 (20 ticks)，节省性能
-    public static void tick(World world, BlockPos pos, BlockState state, ScarecrowBlockEntity be) {
+    public static void tick(World world, BlockPos pos, BlockState state, TargetBlockEntity be) {
         if (world.isClient || world.getTime() % 20 != 0) return;
         ServerWorld serverWorld = (ServerWorld) world;
         be.validateGolems(serverWorld, pos);
@@ -52,7 +52,7 @@ public class ScarecrowBlockEntity extends BlockEntity {
             Entity entity = world.getEntity(uuid);
 
             // 如果实体不存在、不是铁傀儡、已死亡、或距离超过64格，则移除
-            if (!(entity instanceof MilitiaWarriorVillager golem) || !golem.isAlive() ||
+            if (!(entity instanceof MilitiaArcherVillager golem) || !golem.isAlive() ||
                     golem.squaredDistanceTo(pos.toCenterPos()) > RANGE * RANGE) {
                 iterator.remove();
                 markDirty();
@@ -67,8 +67,9 @@ public class ScarecrowBlockEntity extends BlockEntity {
 
         if (!villagers.isEmpty()) {
             VillagerEntity villager = villagers.getFirst();
+
             // 转化
-            MilitiaWarriorVillager golem = ModEntities.MILITIA_WARRIOR_VILLAGER.create(world, SpawnReason.CONVERSION);
+            MilitiaArcherVillager golem = ModEntities.MILITIA_ARCHER_VILLAGER.create(world, SpawnReason.CONVERSION);
             if (golem != null) {
                 golem.setHomePos(pos);
                 golem.refreshPositionAndAngles(villager.getX(), villager.getY(), villager.getZ(), villager.getYaw(), villager.getPitch());
@@ -84,9 +85,10 @@ public class ScarecrowBlockEntity extends BlockEntity {
         if (trackedGolems.isEmpty()) {
             return;
         }
+
         for (UUID uuid : trackedGolems) {
             Entity entity = world.getEntity(uuid);
-            if (entity instanceof MilitiaWarriorVillager warrior && entity.isAlive()) {
+            if (entity instanceof MilitiaArcherVillager warrior && entity.isAlive()) {
                 warrior.addStatusEffect(new StatusEffectInstance(
                         StatusEffects.GLOWING,
                         5 * 20,
