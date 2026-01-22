@@ -892,6 +892,9 @@
 			"timeline": {
 				"1.875": "runAttack5;"
 			}
+		},
+		"die": {
+			"loop": "hold_on_last_frame"
 		}
 	},
 	"geckolib_format_version": 2

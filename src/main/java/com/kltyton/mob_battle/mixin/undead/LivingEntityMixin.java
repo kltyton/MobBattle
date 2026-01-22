@@ -1,6 +1,7 @@
 package com.kltyton.mob_battle.mixin.undead;
 
 import com.kltyton.mob_battle.Mob_battle;
+import com.kltyton.mob_battle.accessor.ILead;
 import com.kltyton.mob_battle.effect.ModEffects;
 import com.kltyton.mob_battle.entity.witherskeletonking.skill.WitherSkullKingEntity;
 import com.kltyton.mob_battle.items.ModItems;
@@ -10,6 +11,9 @@ import net.minecraft.entity.*;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.damage.DamageType;
 import net.minecraft.entity.damage.DamageTypes;
+import net.minecraft.entity.data.DataTracker;
+import net.minecraft.entity.data.TrackedData;
+import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -23,16 +27,45 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraft.world.waypoint.ServerWaypoint;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 @Mixin(LivingEntity.class)
+@Implements(@Interface(iface = ILead.class, prefix = "custom$"))
 public abstract class LivingEntityMixin extends Entity implements Attackable, ServerWaypoint {
+    @Unique
+    private static final TrackedData<Boolean> UNIVERSAL_LEAD = DataTracker.registerData(LivingEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
+    @Unique
+    private static final TrackedData<Boolean> INVISIBLE_LEAD = DataTracker.registerData(LivingEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
+
+    @Unique
+    public boolean custom$getIsUniversalLeadEnyity() {
+        return this.dataTracker.get(UNIVERSAL_LEAD);
+    }
+
+    @Unique
+    public void custom$setIsUniversalLeadEnyity(boolean value) {
+        this.dataTracker.set(UNIVERSAL_LEAD, value);
+    }
+
+    @Unique
+    public boolean custom$getIsInvisibleUniversalLeadEnyity() {
+        return this.dataTracker.get(INVISIBLE_LEAD);
+    }
+
+    @Unique
+    public void custom$setIsInvisibleUniversalLeadEnyity(boolean value) {
+        this.dataTracker.set(INVISIBLE_LEAD, value);
+    }
+
+    @Inject(method = "initDataTracker", at = @At("TAIL"))
+    protected void initCustomDataTracker(DataTracker.Builder builder, CallbackInfo ci) {
+        builder.add(UNIVERSAL_LEAD, false);
+        builder.add(INVISIBLE_LEAD, false);
+    }
     public LivingEntityMixin(EntityType<?> type, World world) {
         super(type, world);
     }

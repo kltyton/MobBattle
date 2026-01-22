@@ -32,7 +32,6 @@ public abstract class EntityMixin implements ILead {
 
     @Shadow
     public abstract int getId();
-
     @Unique
     private boolean isUniversalLeadEnyity = false;
     @Unique
@@ -96,12 +95,12 @@ public abstract class EntityMixin implements ILead {
         return item;
     }
 
-    @Inject(method = "writeData", at = @At("TAIL"))
+    @Inject(method = "writeData", at = @At("RETURN"))
     private void saveCustomData(WriteView view, CallbackInfo ci) {
         view.putBoolean("IsUniversalLeadEnyity", custom$getIsUniversalLeadEnyity());
         view.putBoolean("IsInvisibleUniversalLeadEnyity", custom$getIsInvisibleUniversalLeadEnyity());
     }
-    @Inject(method = "readData", at = @At("TAIL"))
+    @Inject(method = "readData", at = @At("RETURN"))
     private void loadCustomData(ReadView view, CallbackInfo ci) {
         custom$setIsUniversalLeadEnyity(view.getBoolean("IsUniversalLeadEnyity", false));
         custom$setIsInvisibleUniversalLeadEnyity(view.getBoolean("IsInvisibleUniversalLeadEnyity", false));

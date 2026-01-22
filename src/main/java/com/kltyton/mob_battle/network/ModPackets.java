@@ -10,14 +10,6 @@ public class ModPackets {
                 HighbirdAttackPayload.CODEC
         );
         PayloadTypeRegistry.playC2S().register(
-                HighbirdAngerPayload.ID,
-                HighbirdAngerPayload.CODEC
-        );
-        PayloadTypeRegistry.playC2S().register(
-                KeepInventoryPayload.ID,
-                KeepInventoryPayload.CODEC
-        );
-        PayloadTypeRegistry.playC2S().register(
                 SkillPayload.ID,
                 SkillPayload.CODEC
         );
@@ -32,10 +24,6 @@ public class ModPackets {
         PayloadTypeRegistry.playS2C().register(
                 SoundPayload.ID,
                 SoundPayload.CODEC
-        );
-        PayloadTypeRegistry.playS2C().register(
-                EntityUniversalPayload.ID,
-                EntityUniversalPayload.CODEC
         );
         PayloadTypeRegistry.playC2S().register(
                 EnchantmentPayload.ID,

@@ -11,7 +11,6 @@ import net.minecraft.entity.mob.WardenEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.world.World;
 import net.minecraft.world.event.Vibrations;
-import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -25,10 +24,6 @@ public abstract class WardenEntityMixin extends HostileEntity implements Vibrati
         // 触发DataTrackers静态初始化
         boolean dummy = DataTrackersEvent.FORCED_ATTACK_FLAG != null;
     }
-    @Shadow public abstract void updateAttackTarget(LivingEntity target);
-
-
-    @Shadow public abstract void increaseAngerAt(@Nullable Entity entity, int amount, boolean listening);
 
     @Shadow public abstract Brain<WardenEntity> getBrain();
 

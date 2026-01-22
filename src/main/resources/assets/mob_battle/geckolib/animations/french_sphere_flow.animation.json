@@ -770,6 +770,9 @@
 					}
 				}
 			}
+		},
+		"die": {
+			"loop": "hold_on_last_frame"
 		}
 	},
 	"geckolib_format_version": 2

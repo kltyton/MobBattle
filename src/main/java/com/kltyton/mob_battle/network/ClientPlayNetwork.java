@@ -2,7 +2,6 @@ package com.kltyton.mob_battle.network;
 
 import com.kltyton.mob_battle.accessor.ILead;
 import com.kltyton.mob_battle.items.itemgroup.ClientTagManager;
-import com.kltyton.mob_battle.network.packet.EntityUniversalPayload;
 import com.kltyton.mob_battle.network.packet.ILeadUpdatePayload;
 import com.kltyton.mob_battle.network.packet.ItemGroupPayload;
 import com.kltyton.mob_battle.network.packet.SoundPayload;
@@ -11,7 +10,6 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.Identifier;
-import net.minecraft.world.World;
 
 public class ClientPlayNetwork {
     public static void init() {
@@ -41,20 +39,6 @@ public class ClientPlayNetwork {
                         ClientBgmManager.resetAll();
                         ClientBgmManager.forcedMusicId = id;
                         ClientBgmManager.forcedVolume = volume;
-                    }
-                }
-            });
-        });
-        ClientPlayNetworking.registerGlobalReceiver(EntityUniversalPayload.ID, (payload, context) -> {
-            MinecraftClient client = context.client();
-            World world = client.world;
-            client.execute(() -> {
-                // 客户端接收到包，更新实体数据
-                if (world != null) {
-                    Entity entity = world.getEntityById(payload.entityId());
-                    if (entity instanceof ILead lead) {
-                        lead.setIsUniversalLeadEnyity(payload.isUniversal());
-                        lead.setIsInvisibleUniversalLeadEnyity(payload.isInvisible());
                     }
                 }
             });

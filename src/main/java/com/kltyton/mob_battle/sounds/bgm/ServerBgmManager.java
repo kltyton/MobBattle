@@ -1,5 +1,6 @@
 package com.kltyton.mob_battle.sounds.bgm;
 
+import com.kltyton.mob_battle.Mob_battle;
 import com.kltyton.mob_battle.network.packet.SoundPayload;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
@@ -15,19 +16,18 @@ import java.util.*;
 public class ServerBgmManager {
 
     public static void init() {
-        // ✅ 自动加载与保存
+        // 自动加载与保存
         ServerLifecycleEvents.SERVER_STARTED.register(server -> {
             List<BgmZone> list = BgmZoneStorage.load(server);
             list.forEach(z -> ZONES.put(z.name(), z));
-            System.out.println("[MobBattle] 已加载 BGM 区域: " + ZONES.size());
+            Mob_battle.LOGGER.info("[MobBattle] 已加载 BGM 区域: " + ZONES.size());
         });
 
         ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
             BgmZoneStorage.save(server, ZONES.values());
-            System.out.println("[MobBattle] 已保存 BGM 区域: " + ZONES.size());
+            Mob_battle.LOGGER.info("[MobBattle] 已保存 BGM 区域: " + ZONES.size());
         });
 
-        // ✅ 每 tick 检查玩家所在区域
         ServerTickEvents.END_SERVER_TICK.register(server -> {
             for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
                 BgmZone zone = getZoneFor(player);

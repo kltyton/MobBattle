@@ -72,7 +72,7 @@ public class TeamFightHandler {
             List<LivingEntity> candidates = mob.getWorld().getEntitiesByClass(
                     LivingEntity.class,
                     mob.getBoundingBox().expand(30),
-                    e -> e.isTeammate(mob) &&
+                    e -> !e.isTeammate(mob) &&
                             e.isAlive() &&
                             !e.isRemoved() &&
                             !e.equals(mob)

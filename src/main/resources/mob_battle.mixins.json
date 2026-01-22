@@ -29,9 +29,9 @@
     "leashable.MobEntityMixin",
     "sculkshrieker.SculkShriekerBlockMixin",
     "silverfishentity.SilverfishEntityMixin",
-    "undead.InstantHealthOrDamageStatusEffectMixin",
     "undead.LivingEntityMixin",
-    "witchentity.WitchEntityMixin"
+    "witchentity.WitchEntityMixin",
+    "world.WorldViewMixin"
   ],
   "client": [
     "armor.EcredcultistGlowArmorRenderer",
@@ -41,7 +41,6 @@
     "crossbow.HeldItemRendererMixin",
     "crossbow.PlayerEntityRendererMixin",
     "itemgroup.ItemGroupMixin",
-    "sound.IMixinMusicTracker",
     "sound.MinecraftClientMixin",
     "sound.MixinMusicTracker"
   ],

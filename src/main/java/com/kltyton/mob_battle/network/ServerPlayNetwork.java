@@ -7,7 +7,6 @@ import com.kltyton.mob_battle.entity.drone.DroneManager;
 import com.kltyton.mob_battle.entity.general.GeneralEntityOnlyOneSkill;
 import com.kltyton.mob_battle.entity.general.GeneralEntitySkillHelper;
 import com.kltyton.mob_battle.entity.highbird.HighbirdBaseEntity;
-import com.kltyton.mob_battle.entity.highbird.adulthood.HighbirdAdulthoodEntity;
 import com.kltyton.mob_battle.entity.irongolem.VillagerIronGolemEntity;
 import com.kltyton.mob_battle.entity.irongolem.hulkbuster.HulkbusterEntity;
 import com.kltyton.mob_battle.entity.irongolem.hulkbuster.HulkbusterEntitySkill;
@@ -35,7 +34,6 @@ import com.kltyton.mob_battle.event.masterscepter.MasterScepterManager;
 import com.kltyton.mob_battle.network.packet.*;
 import com.kltyton.mob_battle.utils.ArmorUtil;
 import com.kltyton.mob_battle.utils.EnchantmentUtil;
-import com.kltyton.mob_battle.utils.HeadStoneUtil;
 import com.kltyton.mob_battle.utils.LeftClickUtil;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.enchantment.Enchantment;
@@ -56,28 +54,6 @@ public class ServerPlayNetwork {
                         Entity attacker = context.player().getWorld().getEntityById(payload.attackerId());
                         if (attacker instanceof HighbirdBaseEntity highbird && highbird.getWorld() instanceof ServerWorld serverWorld)
                             highbird.performAttack(serverWorld, highbird.getTarget());
-                    });
-                }
-        );
-        // 注册服务器端接收器
-        ServerPlayNetworking.registerGlobalReceiver(HighbirdAngerPayload.ID,
-                (payload, context) -> {
-                    MinecraftServer server = context.server();
-                    server.execute(() -> {
-                        Entity anger = context.player().getWorld().getEntityById(payload.angerId());
-                        if (anger instanceof HighbirdAdulthoodEntity highbird && highbird.getWorld() instanceof ServerWorld)
-                            highbird.setAiDisabled(false);
-                    });
-                }
-        );
-        ServerPlayNetworking.registerGlobalReceiver(KeepInventoryPayload.ID,
-                (payload, context) -> {
-                    MinecraftServer server = context.server();
-                    server.execute(() -> {
-                        Entity entity = context.player().getWorld().getEntityById(payload.keeperId());
-                        if (entity != null) {
-                            HeadStoneUtil.setKeep(entity.getUuid(), payload.isKeep());
-                        }
                     });
                 }
         );
