@@ -1,5 +1,6 @@
 package com.kltyton.mob_battle.entity.skull.mage;
 
+import com.kltyton.mob_battle.entity.ModSkillEntityType;
 import com.kltyton.mob_battle.entity.bullet.ITrueDamageProjectile;
 import com.kltyton.mob_battle.entity.skull.IModSkullEntity;
 import com.kltyton.mob_battle.entity.witherskeletonking.WitherSkeletonKingEntity;
@@ -205,6 +206,7 @@ public class SkullMageEntity extends SkeletonEntity implements GeoEntity, IModSk
         if (!this.isDead() && !this.isAiDisabled()) super.takeKnockback(strength, x, z);
     }
     public void shootAtBase(LivingEntity target, float pullProgress) {
+        if (!ModSkillEntityType.canSkill(this)) return;
         ItemStack bowStack = this.getStackInHand(ProjectileUtil.getHandPossiblyHolding(this, Items.BOW));
         ItemStack arrowStack = this.getProjectileType(bowStack);
         PersistentProjectileEntity projectile = this.createArrowProjectile(arrowStack, pullProgress, bowStack);
@@ -234,6 +236,7 @@ public class SkullMageEntity extends SkeletonEntity implements GeoEntity, IModSk
         this.triggerAnim("skill_controller", "attack");
     }
     public boolean canSkill() {
+        if (!ModSkillEntityType.canSkill(this)) return false;
         return !this.getWorld().isClient() && !hasSkill() && getSkillCooldown() == 0 && this.getTarget() != null;
     }
     public static final TrackedData<Boolean> HAS_SKILL = DataTracker.registerData(SkullMageEntity.class, TrackedDataHandlerRegistry.BOOLEAN);

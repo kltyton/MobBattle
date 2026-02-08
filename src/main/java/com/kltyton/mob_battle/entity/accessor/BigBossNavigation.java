@@ -13,11 +13,10 @@ public class BigBossNavigation extends MobNavigation {
     @Override
     public void tick() {
         if (this.currentPath != null && !this.currentPath.isFinished()) {
-            this.nodeReachProximity = Math.max(1.5F, this.entity.getWidth() * 0.8F);
+            this.nodeReachProximity = Math.max(1.5F, this.entity.getWidth() * 0.9F);
         }
         super.tick();
     }
-
     @Override
     protected void continueFollowingPath() {
         if (this.currentPath == null || this.currentPath.isFinished()) {

@@ -1,6 +1,7 @@
 {
   "itemGroup.mob_battle.main": "Mob Battle",
-  "category.mob_battle.general": "Mob Battle",
+
+  "category.mob_battle.general": "Mob Battle键位",
   "key.mob_battle.summon_drone": "召唤无人机",
   "key.mob_battle.treatment_drone_mode": "治疗无人机模式切换",
   "key.mob_battle.attack_drone_mode": "攻击无人机模式切换",

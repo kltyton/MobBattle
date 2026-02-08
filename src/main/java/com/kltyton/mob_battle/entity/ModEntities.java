@@ -3,12 +3,13 @@ package com.kltyton.mob_battle.entity;
 import com.kltyton.mob_battle.Mob_battle;
 import com.kltyton.mob_battle.entity.blueirongolem.BlueIronGolemEntity;
 import com.kltyton.mob_battle.entity.bullet.BulletEntity;
-import com.kltyton.mob_battle.entity.coalsilverfish.CoalSilverfishEntity;
 import com.kltyton.mob_battle.entity.customfireball.CustomSuperBigFireballEntity;
 import com.kltyton.mob_battle.entity.deepcreature.DeepCreatureEntity;
 import com.kltyton.mob_battle.entity.drone.attackdrone.AttackDroneEntity;
 import com.kltyton.mob_battle.entity.drone.treatmentdrone.TreatmentDroneEntity;
+import com.kltyton.mob_battle.entity.evoker.SuperEvokerEntity;
 import com.kltyton.mob_battle.entity.firewall.FireWallEntity;
+import com.kltyton.mob_battle.entity.flowerfairy.FlowerFairyEntity;
 import com.kltyton.mob_battle.entity.hiddeneye.HiddenEyeEntity;
 import com.kltyton.mob_battle.entity.highbird.adulthood.HighbirdAdulthoodEntity;
 import com.kltyton.mob_battle.entity.highbird.baby.HighbirdBabyEntity;
@@ -19,16 +20,21 @@ import com.kltyton.mob_battle.entity.irongolem.hulkbuster.HulkbusterEntity;
 import com.kltyton.mob_battle.entity.irongolem.hulkbuster.missile.MissileEntity;
 import com.kltyton.mob_battle.entity.littleperson.archer.LittlePersonArcherEntity;
 import com.kltyton.mob_battle.entity.littleperson.archer.littlearrow.LittleArrowEntity;
+import com.kltyton.mob_battle.entity.littleperson.archer.soldier.LittlePersonSoldierArcherEntity;
 import com.kltyton.mob_battle.entity.littleperson.civilian.LittlePersonCivilianEntity;
 import com.kltyton.mob_battle.entity.littleperson.giant.LittlePersonGiantEntity;
 import com.kltyton.mob_battle.entity.littleperson.guard.LittlePersonGuardEntity;
 import com.kltyton.mob_battle.entity.littleperson.king.LittlePersonKingEntity;
 import com.kltyton.mob_battle.entity.littleperson.militia.LittlePersonMilitiaEntity;
+import com.kltyton.mob_battle.entity.littleperson.militia.soldier.LittlePersonSoldierEntity;
 import com.kltyton.mob_battle.entity.littleperson.skillentity.*;
 import com.kltyton.mob_battle.entity.littleperson.skillentity.ironmanbullet.IronManBulletEntity;
 import com.kltyton.mob_battle.entity.meteorite.MeteoriteEntity;
 import com.kltyton.mob_battle.entity.min.YoungMinEntity;
+import com.kltyton.mob_battle.entity.misc.PoisonousBeachEntity;
+import com.kltyton.mob_battle.entity.misc.shield.ShieldEntity;
 import com.kltyton.mob_battle.entity.silencephantom.SilencePhantomEntity;
+import com.kltyton.mob_battle.entity.silverfish.silverfish.*;
 import com.kltyton.mob_battle.entity.skull.archer.SkullArcherEntity;
 import com.kltyton.mob_battle.entity.skull.king.SkullKingEntity;
 import com.kltyton.mob_battle.entity.skull.mage.SkullMageEntity;
@@ -45,6 +51,7 @@ import com.kltyton.mob_battle.entity.witherskeletonking.WitherSkeletonKingEntity
 import com.kltyton.mob_battle.entity.witherskeletonking.skill.WitherSkullBulletEntity;
 import com.kltyton.mob_battle.entity.xunsheng.XunShengEntity;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityType;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.SpawnGroup;
 import net.minecraft.entity.SpawnLocationTypes;
@@ -63,6 +70,7 @@ import java.util.Map;
 
 public class ModEntities {
     public static Map<String, EntityType<?>> SPAWN_EGG_ENTITIES = new HashMap<>();
+    public static Map<String, EntityType<?>> GENERAL_RENDERERS = new HashMap<>();
     public static Map<String, EntityType<?>> LITTLE_PERSON_ENTITIES = new HashMap<>();
     public static final RegistryKey<EntityType<?>> militia_warrior_villager = RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(Mob_battle.MOD_ID,"militia_warrior_villager"));
     public static final RegistryKey<EntityType<?>> militia_archer_villager = RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(Mob_battle.MOD_ID,"militia_archer_villager"));
@@ -403,6 +411,7 @@ public class ModEntities {
                     .passengerAttachments(0.3375F)
                     .vehicleAttachment(-0.125F)
                     .maxTrackingRange(8)
+                    .makeFireImmune()
                     .build(silence_phantom);
     public static final EntityType<CoalSilverfishEntity> COAL_SILVERFISH =
             FabricEntityType.Builder.createMob(CoalSilverfishEntity::new, SpawnGroup.MONSTER,
@@ -414,6 +423,100 @@ public class ModEntities {
                     .passengerAttachments(0.2375F)
                     .maxTrackingRange(8)
                     .build(coal_silverfish);
+    public static final EntityType<LiruiSilverfishEntity> LIRUI_SILVERFISH = createEntityType(
+            "ruili_silverfish",
+            FabricEntityType.Builder.createMob(LiruiSilverfishEntity::new, SpawnGroup.MONSTER,
+                            (mob) -> mob.defaultAttributes(LiruiSilverfishEntity::createAttributes)
+                                    .spawnRestriction(SpawnLocationTypes.ON_GROUND,
+                                            Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,(type, world, reason, pos, random) -> false))
+                    .dimensions(0.4F, 0.3F)
+                    .eyeHeight(0.13F)
+                    .passengerAttachments(0.2375F)
+                    .maxTrackingRange(8),
+            true,
+            true
+    );
+    public static final EntityType<DrillSilverfishEntity> DRILL_SILVERFISH = createEntityType(
+            "drill_silverfish",
+            FabricEntityType.Builder.createMob(DrillSilverfishEntity::new, SpawnGroup.MONSTER,
+                            (mob) -> mob.defaultAttributes(DrillSilverfishEntity::createAttributes)
+                                    .spawnRestriction(SpawnLocationTypes.ON_GROUND,
+                                            Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,(type, world, reason, pos, random) -> false))
+                    .dimensions(0.4F, 0.3F)
+                    .eyeHeight(0.13F)
+                    .passengerAttachments(0.2375F)
+                    .maxTrackingRange(8),
+            true,
+            true
+    );
+    public static final EntityType<PoisonousSilverfishEntity> POISONOUS_SILVERFISH = createEntityType(
+            "poisonous_silverfish",
+            FabricEntityType.Builder.createMob(PoisonousSilverfishEntity::new, SpawnGroup.MONSTER,
+                            (mob) -> mob.defaultAttributes(PoisonousSilverfishEntity::createAttributes)
+                                    .spawnRestriction(SpawnLocationTypes.ON_GROUND,
+                                            Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,(type, world, reason, pos, random) -> false))
+                    .dimensions(0.4F, 0.3F)
+                    .eyeHeight(0.13F)
+                    .passengerAttachments(0.2375F)
+                    .maxTrackingRange(8),
+            true,
+            true
+    );
+    public static final EntityType<LoadSilverfishEntity> LOAD_SILVERFISH = createEntityType(
+            "load_silverfish",
+            FabricEntityType.Builder.createMob(LoadSilverfishEntity::new, SpawnGroup.MONSTER,
+                            (mob) -> mob.defaultAttributes(LoadSilverfishEntity::createAttributes)
+                                    .spawnRestriction(SpawnLocationTypes.ON_GROUND,
+                                            Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,(type, world, reason, pos, random) -> false))
+                    .dimensions(0.4F, 0.3F)
+                    .eyeHeight(0.13F)
+                    .passengerAttachments(0.2375F)
+                    .maxTrackingRange(8),
+            true,
+            true
+    );
+    public static final EntityType<LongWhipSilverfishEntity> LONG_WHIP_SILVERFISH = createEntityType(
+            "long_whip_silverfish",
+            FabricEntityType.Builder.createMob(LongWhipSilverfishEntity::new, SpawnGroup.MONSTER,
+                            (mob) -> mob.defaultAttributes(LongWhipSilverfishEntity::createAttributes)
+                                    .spawnRestriction(SpawnLocationTypes.ON_GROUND,
+                                            Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,(type, world, reason, pos, random) -> false))
+                    .dimensions(1F, 1F)
+                    .eyeHeight(0.13F)
+                    .passengerAttachments(0.2375F)
+                    .maxTrackingRange(8),
+            true,
+            true
+    );
+    public static final EntityType<FlowerFairyEntity> FLOWER_FAIRY = createEntityType(
+            "flower_fairy",
+            FabricEntityType.Builder.createMob(FlowerFairyEntity::new, SpawnGroup.CREATURE,
+
+                            (mob) -> mob.defaultAttributes(FlowerFairyEntity::createAttributes)
+                                    .spawnRestriction(SpawnLocationTypes.ON_GROUND,
+                                            Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, (type, world, reason, pos, random) -> false))
+
+                    .dimensions(0.4F, 0.4F)
+                    .eyeHeight(0.3F)
+                    .maxTrackingRange(10),
+            true,
+            true
+    );
+    public static final EntityType<SuperEvokerEntity> SUPER_EVOKER  = createEntityType(
+            "super_evoker",
+            FabricEntityType.Builder.createMob(SuperEvokerEntity::new, SpawnGroup.MONSTER,
+
+            (mob) -> mob.defaultAttributes(SuperEvokerEntity::createSuperEvokerAttributes)
+                    .spawnRestriction(SpawnLocationTypes.ON_GROUND,
+                            Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, (type, world, reason, pos, random) -> false))
+
+                    .dimensions(0.6F, 1.95F)
+                    .passengerAttachments(2.0F)
+                    .vehicleAttachment(-0.6F)
+                    .maxTrackingRange(8),
+            true,
+            false
+    );
     public static final EntityType<TreatmentDroneEntity> TREATMENT_DRONE =
             FabricEntityType.Builder.createMob(TreatmentDroneEntity::new, SpawnGroup.MISC,
                     (mob) -> mob.defaultAttributes(TreatmentDroneEntity::createDroneAttributes)
@@ -550,6 +653,109 @@ public class ModEntities {
                     .dimensions(0.6F, 0.9F)
                     .maxTrackingRange(40)
     );
+    public static final EntityType<MagicManEntity> MAGIC_MAN = createLittlePersonEntityType(
+            "magic_man",
+            FabricEntityType.Builder.createMob(
+                            MagicManEntity::new, SpawnGroup.MISC,
+                            (mob) -> mob.defaultAttributes(MagicManEntity::createLittlePersonAttributes)
+                                    .spawnRestriction(SpawnLocationTypes.ON_GROUND,
+                                            Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,(type, world, reason, pos, random) -> false))
+                    .dimensions(0.6F, 0.9F)
+                    .maxTrackingRange(40)
+    );
+    public static final EntityType<HeavenCrippledFeetEntity> HEAVEN_CRIPPLED_FEET = createLittlePersonEntityType(
+            "heaven_crippled_feet",
+            FabricEntityType.Builder.createMob(
+                            HeavenCrippledFeetEntity::new, SpawnGroup.MISC,
+                            (mob) -> mob.defaultAttributes(HeavenCrippledFeetEntity::createLittlePersonAttributes)
+                                    .spawnRestriction(SpawnLocationTypes.ON_GROUND,
+                                            Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,(type, world, reason, pos, random) -> false))
+                    .dimensions(0.6F, 0.9F)
+                    .maxTrackingRange(40)
+    );
+
+    public static final EntityType<BloodyBladeEntity> BLOODY_BLADE = createLittlePersonEntityType(
+            "bloody_blade",
+            FabricEntityType.Builder.createMob(
+                            BloodyBladeEntity::new, SpawnGroup.MISC,
+                            (mob) -> mob.defaultAttributes(BloodyBladeEntity::createLittlePersonAttributes)
+                                    .spawnRestriction(SpawnLocationTypes.ON_GROUND,
+                                            Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,(type, world, reason, pos, random) -> false))
+                    .dimensions(0.6F, 0.9F)
+                    .maxTrackingRange(40)
+    );
+    public static final EntityType<HumanShieldEntity> HUMAN_SHIELD = createLittlePersonEntityType(
+            "human_shield",
+            FabricEntityType.Builder.createMob(
+                            HumanShieldEntity::new, SpawnGroup.MISC,
+                            (mob) -> mob.defaultAttributes(HumanShieldEntity::createLittlePersonAttributes)
+                                    .spawnRestriction(SpawnLocationTypes.ON_GROUND,
+                                            Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,(type, world, reason, pos, random) -> false))
+                    .dimensions(0.6F, 0.9F)
+                    .maxTrackingRange(40)
+    );
+
+    public static final EntityType<HumanHammerEntity> HUMAN_HAMMER = createLittlePersonEntityType(
+            "human_hammer",
+            FabricEntityType.Builder.createMob(
+                            HumanHammerEntity::new, SpawnGroup.MISC,
+                            (mob) -> mob.defaultAttributes(HumanHammerEntity::createLittlePersonAttributes)
+                                    .spawnRestriction(SpawnLocationTypes.ON_GROUND,
+                                            Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,(type, world, reason, pos, random) -> false))
+                    .dimensions(0.6F, 0.9F)
+                    .maxTrackingRange(40)
+    );
+    public static final EntityType<LittlePersonSoldierEntity> LITTLE_PERSON_SOLDIER = createLittlePersonEntityType(
+            "little_person_soldier",
+            FabricEntityType.Builder.createMob(
+                            LittlePersonSoldierEntity::new, SpawnGroup.MISC,
+                            (mob) -> mob.defaultAttributes(LittlePersonSoldierEntity::createLittlePersonMilitiaAttributes)
+                                    .spawnRestriction(SpawnLocationTypes.ON_GROUND,
+                                            Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,(type, world, reason, pos, random) -> false))
+                    .dimensions(0.6F, 0.9F)
+                    .maxTrackingRange(40)
+    );
+    public static final EntityType<LittlePersonSoldierArcherEntity> LITTLE_PERSON_SOLDIER_ARCHER = createLittlePersonEntityType(
+            "little_person_soldier_archer",
+            FabricEntityType.Builder.createMob(
+                            LittlePersonSoldierArcherEntity::new, SpawnGroup.MISC,
+                            (mob) -> mob.defaultAttributes(LittlePersonSoldierArcherEntity::createLittlePersonAttributes)
+                                    .spawnRestriction(SpawnLocationTypes.ON_GROUND,
+                                            Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,(type, world, reason, pos, random) -> false))
+                    .dimensions(0.6F, 0.9F)
+                    .maxTrackingRange(40)
+    );
+    public static final EntityType<SexEntity> SEX_ENTITY = createLittlePersonEntityType(
+            "sex_entity",
+            FabricEntityType.Builder.createMob(
+                            SexEntity::new, SpawnGroup.MISC,
+                            (mob) -> mob.defaultAttributes(SexEntity::createLittlePersonAttributes)
+                                    .spawnRestriction(SpawnLocationTypes.ON_GROUND,
+                                            Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,(type, world, reason, pos, random) -> false))
+                    .dimensions(0.6F, 0.9F)
+                    .maxTrackingRange(40)
+    );
+
+
+
+    public static final EntityType<ShieldEntity> SHIELD = createEntityType(
+            "shield_force_field",
+            EntityType.Builder.create(ShieldEntity::new, SpawnGroup.MISC)
+                    .dimensions(5.0f, 5.0f) // 最终碰撞箱大小
+                    .maxTrackingRange(10)
+                    .trackingTickInterval(1),
+            false,
+            false
+    );
+    public static final EntityType<PoisonousBeachEntity> POISONOUS_BEACH = createEntityType(
+            "poisonous_beach",
+            EntityType.Builder.create(PoisonousBeachEntity::new, SpawnGroup.MISC)
+                    .dimensions(1.0f, 0.0f) // 最终碰撞箱大小
+                    .maxTrackingRange(10)
+                    .trackingTickInterval(1),
+            false,
+            true
+    );
 
     public static void init() {
         Registry.register(Registries.ENTITY_TYPE, militia_warrior_villager, MILITIA_WARRIOR_VILLAGER);
@@ -598,15 +804,16 @@ public class ModEntities {
         Registry.register(Registries.ENTITY_TYPE, little_person_guard, LITTLE_PERSON_GUARD);
         Registry.register(Registries.ENTITY_TYPE, little_person_king, LITTLE_PERSON_KING);
     }
-    public static <T extends MobEntity> EntityType<T> createEntityType(String name, EntityType.Builder<T> builder) {
+    public static <T extends Entity> EntityType<T> createEntityType(String name, EntityType.Builder<T> builder, boolean registerSpawnEgg, boolean generalRenderer) {
         RegistryKey<EntityType<?>> key = RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(Mob_battle.MOD_ID, name));
         EntityType<T> type = builder.build(key);
         Registry.register(Registries.ENTITY_TYPE, key, type);
-        SPAWN_EGG_ENTITIES.put(name, type);
+        if (registerSpawnEgg) SPAWN_EGG_ENTITIES.put(name, type);
+        if (generalRenderer) GENERAL_RENDERERS.put(name, type);
         return type;
     }
     public static <T extends MobEntity> EntityType<T> createLittlePersonEntityType(String name, EntityType.Builder<T> builder) {
-        EntityType<T> type = createEntityType(name, builder);
+        EntityType<T> type = createEntityType(name, builder, true, false);
         LITTLE_PERSON_ENTITIES.put(name, type);
         return type;
     }

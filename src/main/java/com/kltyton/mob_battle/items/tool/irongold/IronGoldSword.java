@@ -2,6 +2,7 @@ package com.kltyton.mob_battle.items.tool.irongold;
 
 import com.kltyton.mob_battle.Mob_battle;
 import com.kltyton.mob_battle.items.FabricItem;
+import com.kltyton.mob_battle.items.ModMaterial;
 import com.kltyton.mob_battle.items.tool.BaseSword;
 import com.kltyton.mob_battle.utils.ArmorUtil;
 import net.minecraft.component.DataComponentTypes;
@@ -32,7 +33,7 @@ public class IronGoldSword extends BaseSword implements FabricItem {
         super.inventoryTick(stack, world, entity, slot);
         if (entity instanceof LivingEntity living) {
             AttributeModifiersComponent current = stack.getOrDefault(DataComponentTypes.ATTRIBUTE_MODIFIERS, AttributeModifiersComponent.DEFAULT);
-            boolean shouldHaveBonus = ArmorUtil.hasFullDiamondArmor(living);
+            boolean shouldHaveBonus = ArmorUtil.hasFullArmor(living, ModMaterial.IRON_GOLD_INSTANCE);
             AttributeModifiersComponent updated;
             if (shouldHaveBonus) {
                 updated = current.with(

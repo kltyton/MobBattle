@@ -1,8 +1,10 @@
 package com.kltyton.mob_battle.mixin.leashable;
 
 import com.kltyton.mob_battle.accessor.ILead;
+import com.kltyton.mob_battle.entity.ModEntityAttributes;
 import net.minecraft.entity.*;
 import net.minecraft.entity.mob.MobEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -34,5 +36,11 @@ public abstract class MobEntityMixin extends LivingEntity implements EquipmentHo
     @Inject(method = "setTarget", at = @At("HEAD"), cancellable = true)
     private void allowUniversalLead(LivingEntity target, CallbackInfo ci) {
         if (target != null && target.isTeammate(this)) ci.cancel();
+    }
+    @Inject(method = "tryAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;damage(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/entity/damage/DamageSource;F)Z"), cancellable = true)
+    private void cancelMeleeAttack(ServerWorld world, Entity target, CallbackInfoReturnable<Boolean> cir) {
+        if (this.getAttributes().hasAttribute(ModEntityAttributes.MAGIC_DAMAGE)) {
+            target.damage(world, this.getDamageSources().indirectMagic(this, this), (float) this.getAttributeValue(ModEntityAttributes.MAGIC_DAMAGE));
+        }
     }
 }

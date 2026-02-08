@@ -11,20 +11,20 @@ public class BigBossLookControl extends LookControl {
 
     @Override
     public void lookAt(Entity entity, float maxYawChange, float maxPitchChange) {
-        super.lookAt(entity, 8.0F, 8.0F);  // 强制小角度
+        super.lookAt(entity, 30.0F, 30.0F);
     }
 
     @Override
     public void lookAt(double x, double y, double z, float maxYawChange, float maxPitchChange) {
-        super.lookAt(x, y, z, 8.0F, 8.0F);
+        super.lookAt(x, y, z, 30.0F, 30.0F);
     }
 
     @Override
     public void tick() {
         super.tick();
-        // 可选：把无目标时对齐 bodyYaw 的 10.0F 也改小
         if (this.lookAtTimer <= 0) {
-            this.entity.headYaw = this.changeAngle(this.entity.headYaw, this.entity.bodyYaw, 5.0F);  // 原版是10.0F
+            // 头部追随身体的速度
+            this.entity.headYaw = this.changeAngle(this.entity.headYaw, this.entity.bodyYaw, 10.0F);
         }
     }
 }

@@ -1,6 +1,7 @@
 package com.kltyton.mob_battle.entity.littleperson.king;
 
 import com.kltyton.mob_battle.entity.ModEntityAttributes;
+import com.kltyton.mob_battle.entity.ModSkillEntityType;
 import com.kltyton.mob_battle.entity.littleperson.guard.LittlePersonGuardEntity;
 import com.kltyton.mob_battle.entity.littleperson.king.skill.LittlePersonKingSkill;
 import com.kltyton.mob_battle.entity.littleperson.militia.LittlePersonMilitiaEntity;
@@ -81,8 +82,10 @@ public class LittlePersonKingEntity extends LittlePersonMilitiaEntity {
         }
     }
     public boolean canSkill(String skill) {
+        if (!canSkill()) return false;
         return !this.getWorld().isClient() && !hasSkill() && getSkillCooldown(skill) == 0 && this.getTarget() != null;
     }
+
     public void performSkill(String skill) {
         this.setHasSkill(true);
         this.setAiDisabled(true);
@@ -155,6 +158,7 @@ public class LittlePersonKingEntity extends LittlePersonMilitiaEntity {
     }
     @Override
     public boolean tryAttack(ServerWorld world, Entity target) {
+        if (!ModSkillEntityType.canSkill(this)) return false;
         if (canSkill("attack2")) {
             performSkill("attack2");
             return true;

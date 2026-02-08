@@ -1,5 +1,6 @@
 package com.kltyton.mob_battle.entity.littleperson.skillentity;
 
+import com.kltyton.mob_battle.entity.littleperson.skillentity.base.BaseSkillLittlePersonEntity;
 import com.kltyton.mob_battle.utils.EntityUtil;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -22,7 +23,7 @@ public class PoisonousSlashEntity extends BaseSkillLittlePersonEntity {
     }
     public static DefaultAttributeContainer.Builder createLittlePersonAttributes() {
         return BaseSkillLittlePersonEntity.createAttributes()
-                .add(EntityAttributes.MAX_HEALTH, 4000.0)
+                .add(EntityAttributes.MAX_HEALTH, 4500.0)
                 .add(EntityAttributes.ATTACK_DAMAGE, 55.0);
     }
     @Override
@@ -54,10 +55,8 @@ public class PoisonousSlashEntity extends BaseSkillLittlePersonEntity {
     }
     @Override
     public void runSkill_3(BaseSkillLittlePersonEntity entity) {
-        this.addStatusEffect(new StatusEffectInstance(StatusEffects.SPEED, 10 * 20, 1));
-        this.addStatusEffect(new StatusEffectInstance(StatusEffects.STRENGTH, 8 * 20, 1));
-        this.addStatusEffect(new StatusEffectInstance(StatusEffects.ABSORPTION, 10 * 20, 4));
-        this.addStatusEffect(new StatusEffectInstance(StatusEffects.RESISTANCE, 10 * 20, 1));
+        this.addStatusEffect(new StatusEffectInstance(StatusEffects.STRENGTH, 10 * 20, 4));
+        this.addStatusEffect(new StatusEffectInstance(StatusEffects.ABSORPTION, 10 * 20, 14));
     }
     @Override
     public void runSkill_4(BaseSkillLittlePersonEntity entity) {

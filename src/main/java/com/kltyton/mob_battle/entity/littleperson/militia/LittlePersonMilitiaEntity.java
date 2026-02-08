@@ -1,6 +1,7 @@
 package com.kltyton.mob_battle.entity.littleperson.militia;
 
 import com.kltyton.mob_battle.entity.ModEntityAttributes;
+import com.kltyton.mob_battle.entity.ModSkillEntityType;
 import com.kltyton.mob_battle.entity.littleperson.LittlePersonEntity;
 import com.kltyton.mob_battle.entity.villager.warriorvillager.WarriorVillager;
 import net.minecraft.entity.Entity;
@@ -13,7 +14,7 @@ import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.mob.Monster;
-import net.minecraft.entity.passive.IronGolemEntity;
+import net.minecraft.entity.passive.GolemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.registry.tag.DamageTypeTags;
 import net.minecraft.server.world.ServerWorld;
@@ -30,7 +31,7 @@ import software.bernie.geckolib.animation.RawAnimation;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 public class LittlePersonMilitiaEntity extends HostileEntity implements LittlePersonEntity {
-
+    public String[] attackVariants;
     public LittlePersonMilitiaEntity(EntityType<? extends HostileEntity> entityType, World world) {
         super(entityType, world);
     }
@@ -40,17 +41,17 @@ public class LittlePersonMilitiaEntity extends HostileEntity implements LittlePe
         this.goalSelector.add(7, new WanderAroundFarGoal(this, 1.0)); // 添加远距离游荡目标
         this.goalSelector.add(8, new LookAtEntityGoal(this, PlayerEntity.class, 8.0F)); // 添加看向玩家的目标
         this.goalSelector.add(8, new LookAroundGoal(this)); // 添加环顾四周的目标
-        this.targetSelector.add(3, new ActiveTargetGoal<>(this, IronGolemEntity.class, true)); // 添加攻击铁傀儡目标
+        this.targetSelector.add(3, new ActiveTargetGoal<>(this, GolemEntity.class, true)); // 添加攻击傀儡目标
         this.targetSelector.add(2, new ActiveTargetGoal<>(this, WarriorVillager.class, true));
         this.targetSelector.add(2, new ActiveTargetGoal<>(this, PlayerEntity.class, true)); // 添加主动攻击玩家目标
         this.targetSelector.add(3, new ActiveTargetGoal<>(this, MobEntity.class, 5, false, false, (entity, world) -> entity instanceof Monster && !(entity instanceof LittlePersonEntity)));
     }
     public static DefaultAttributeContainer.Builder createLittlePersonMilitiaAttributes() {
         return MobEntity.createMobAttributes()
-                .add(EntityAttributes.MAX_HEALTH, 100.0)
+                .add(EntityAttributes.MAX_HEALTH, 10.0)
                 .add(EntityAttributes.FOLLOW_RANGE, 40.0)
                 .add(EntityAttributes.MOVEMENT_SPEED, 0.5)
-                .add(EntityAttributes.ATTACK_DAMAGE, 20.0)
+                .add(EntityAttributes.ATTACK_DAMAGE, 10.0)
                 .add(ModEntityAttributes.DAMAGE_REDUCTION, 0);
     }
 
@@ -67,16 +68,28 @@ public class LittlePersonMilitiaEntity extends HostileEntity implements LittlePe
     }
     @Override
     public boolean tryAttack(ServerWorld world, Entity target) {
-        this.triggerAnim("attack_controller", "attack");
+        if (!canSkill()) return false;
+        if (attackVariants != null) {
+
+            int randomIndex = (int) (Math.random() * attackVariants.length);
+            this.triggerAnim("skill_controller", attackVariants[randomIndex]);
+
+        } else this.triggerAnim("attack_controller", "attack");
         boolean bl = super.tryAttack(world, target);
         if (bl && target instanceof LivingEntity livingEntity) {
             attackAdditional(livingEntity);
         }
         return bl;
     }
+    @Override
+    public boolean canSkill() {
+        return ModSkillEntityType.canSkill(this);
+    }
+    @Override
     public int blockProbability() {
         return 20;
     }
+    @Override
     public float maxBlockDamage() {
         return 35f;
     }
@@ -107,14 +120,16 @@ public class LittlePersonMilitiaEntity extends HostileEntity implements LittlePe
     @Override
     public boolean damage(ServerWorld world, DamageSource source, float amount) {
         if (blockAttack(source, amount)) return false;
-        float reducedAmount = (float) (amount * (1 - this.getAttributeValue(ModEntityAttributes.DAMAGE_REDUCTION)));
-        return super.damage(world, source, reducedAmount);
+        return super.damage(world, source, amount);
     }
     private final AnimatableInstanceCache geoCache = GeckoLibUtil.createInstanceCache(this);
     protected static final RawAnimation IDLE_ANIM = RawAnimation.begin().thenLoop("idle");
     protected static final RawAnimation IDLE_SOMETIME_ANIM = RawAnimation.begin().thenPlay("idle_sometimes");
     protected static final RawAnimation WALK_ANIM = RawAnimation.begin().thenLoop("walk");
     protected static final RawAnimation ATTACK_ANIM = RawAnimation.begin().thenPlay("attack");
+    protected static final RawAnimation ATTACK_ANIM_VARIANT_1 = RawAnimation.begin().thenPlay("attack_1");
+    protected static final RawAnimation ATTACK_ANIM_VARIANT_2 = RawAnimation.begin().thenPlay("attack_2");
+    protected static final RawAnimation ATTACK_ANIM_VARIANT_3 = RawAnimation.begin().thenPlay("attack_3");
     protected static final RawAnimation BLOCK_ANIM = RawAnimation.begin().thenPlay("block");
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
@@ -122,10 +137,13 @@ public class LittlePersonMilitiaEntity extends HostileEntity implements LittlePe
         controllers.add(new AnimationController<>("main_controller", 5, this::mainController));
         controllers.add(new AnimationController<>( "attack_controller",animTest -> PlayState.STOP)
                 .triggerableAnim("attack", ATTACK_ANIM)
+                .triggerableAnim("attack_1", ATTACK_ANIM_VARIANT_1)
+                .triggerableAnim("attack_2", ATTACK_ANIM_VARIANT_2)
+                .triggerableAnim("attack_3", ATTACK_ANIM_VARIANT_3)
                 .triggerableAnim("idle_sometimes", IDLE_SOMETIME_ANIM)
                 .triggerableAnim("block", BLOCK_ANIM));
     }
-    private PlayState mainController(final AnimationTest<LittlePersonMilitiaEntity> event) {
+    public PlayState mainController(final AnimationTest<LittlePersonMilitiaEntity> event) {
         return event.isMoving() ? event.setAndContinue(WALK_ANIM) : event.setAndContinue(IDLE_ANIM);
     }
     @Override

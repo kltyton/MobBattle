@@ -1,5 +1,6 @@
 package com.kltyton.mob_battle.entity.irongolem;
 
+import com.kltyton.mob_battle.entity.ModSkillEntityType;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -30,7 +31,7 @@ import software.bernie.geckolib.animation.RawAnimation;
 import software.bernie.geckolib.util.ClientUtil;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
-public class VillagerIronGolemEntity extends IronGolemEntity implements GeoEntity, ModBaseIronGolemEntity {
+public class VillagerIronGolemEntity extends IronGolemEntity implements GeoEntity, ModBaseIronGolemEntity, ModSkillEntityType {
     public VillagerIronGolemEntity(EntityType<? extends IronGolemEntity> entityType, World world) {
         super(entityType, world);
         this.setAiDisabled(false);
@@ -77,6 +78,7 @@ public class VillagerIronGolemEntity extends IronGolemEntity implements GeoEntit
     }
 
     public boolean canSkill() {
+        if (!ModSkillEntityType.canSkill(this)) return false;
         return !this.getWorld().isClient() && !hasSkill() && getSkillCooldown() == 0 && this.getTarget() != null;
     }
     public void performSkill() {
@@ -110,6 +112,7 @@ public class VillagerIronGolemEntity extends IronGolemEntity implements GeoEntit
     }
     @Override
     public boolean tryAttack(ServerWorld world, Entity target) {
+        if (!ModSkillEntityType.canSkill(this)) return false;
         if (canSkill()) {
             performSkill();
             return true;

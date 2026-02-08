@@ -14,12 +14,21 @@ public class ModSounds {
     public static final Identifier GUN_SHOT = Identifier.of(Mob_battle.MOD_ID, "gun_shot");
     public static final Identifier GUN_RELOAD = Identifier.of(Mob_battle.MOD_ID, "gun_reload");
     public static final Identifier METEORITE = Identifier.of(Mob_battle.MOD_ID, "meteorite");
+    public static final Identifier B_C_DOG_JIAO_ID = Identifier.of(Mob_battle.MOD_ID, "b_c_dog_jiao");
+    public static final Identifier B_C_DEBUFF_DOG_JIAO_ID = Identifier.of(Mob_battle.MOD_ID, "b_c_debuff_dog_jiao");
+    public static final Identifier B_C_BELLOW_DOG_JIAO_ID = Identifier.of(Mob_battle.MOD_ID, "b_c_bellow_dog_jiao");
+    public static final Identifier B_C_Z_DOG_JIAO_ID = Identifier.of(Mob_battle.MOD_ID, "b_c_z_dog_jiao");
     public static SoundEvent DOG_JIAO_SOUND_EVENT = SoundEvent.of(DOG_JIAO_ID);
     public static SoundEvent ENGINEERS_SANCTUM_SOUND_EVENT = SoundEvent.of(ENGINEERS_SANCTUM);
     public static SoundEvent SHORELINE_SOUND_EVENT = SoundEvent.of(SHORELINE);
     public static SoundEvent GUN_SHOT_SOUND_EVENT = SoundEvent.of(GUN_SHOT);
     public static SoundEvent GUN_RELOAD_SOUND_EVENT = SoundEvent.of(GUN_RELOAD);
-     public static SoundEvent METEORITE_SOUND_EVENT = SoundEvent.of(METEORITE);
+    public static SoundEvent METEORITE_SOUND_EVENT = SoundEvent.of(METEORITE);
+    public static SoundEvent B_C_DOG_JIAO_SOUND_EVENT = SoundEvent.of(B_C_DOG_JIAO_ID);
+    public static SoundEvent B_C_DEBUFF_DOG_JIAO_SOUND_EVENT = SoundEvent.of(B_C_DEBUFF_DOG_JIAO_ID);
+    public static SoundEvent B_C_BELLOW_DOG_JIAO_SOUND_EVENT = SoundEvent.of(B_C_BELLOW_DOG_JIAO_ID);
+    public static SoundEvent B_C_Z_DOG_JIAO_SOUND_EVENT = SoundEvent.of(B_C_Z_DOG_JIAO_ID);
+
     public static RegistryEntry.Reference<SoundEvent> GUN_RELOAD_SOUND_EVENT_REFERENCE = Registry.registerReference(Registries.SOUND_EVENT, GUN_RELOAD, GUN_RELOAD_SOUND_EVENT);
      public static RegistryEntry.Reference<SoundEvent> METEORITE_SOUND_EVENT_REFERENCE = Registry.registerReference(Registries.SOUND_EVENT, METEORITE, METEORITE_SOUND_EVENT);
     public static void init() {
@@ -27,6 +36,10 @@ public class ModSounds {
         Registry.register(Registries.SOUND_EVENT, ENGINEERS_SANCTUM, ENGINEERS_SANCTUM_SOUND_EVENT);
         Registry.register(Registries.SOUND_EVENT, SHORELINE, SHORELINE_SOUND_EVENT);
         Registry.register(Registries.SOUND_EVENT, GUN_SHOT, GUN_SHOT_SOUND_EVENT);
+        Registry.register(Registries.SOUND_EVENT, B_C_DOG_JIAO_ID, B_C_DOG_JIAO_SOUND_EVENT);
+        Registry.register(Registries.SOUND_EVENT, B_C_DEBUFF_DOG_JIAO_ID, B_C_DEBUFF_DOG_JIAO_SOUND_EVENT);
+        Registry.register(Registries.SOUND_EVENT, B_C_BELLOW_DOG_JIAO_ID, B_C_BELLOW_DOG_JIAO_SOUND_EVENT);
+        Registry.register(Registries.SOUND_EVENT, B_C_Z_DOG_JIAO_ID, B_C_Z_DOG_JIAO_SOUND_EVENT);
     }
 }
 

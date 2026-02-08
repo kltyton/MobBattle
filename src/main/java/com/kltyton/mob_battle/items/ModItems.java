@@ -10,9 +10,11 @@ import com.kltyton.mob_battle.items.scroll.*;
 import com.kltyton.mob_battle.items.tool.BaseAxe;
 import com.kltyton.mob_battle.items.tool.BaseBow;
 import com.kltyton.mob_battle.items.tool.MasterScepterItem;
+import com.kltyton.mob_battle.items.tool.backpack.BackpackItem;
 import com.kltyton.mob_battle.items.tool.irongold.IronGoldSword;
 import com.kltyton.mob_battle.items.tool.meteorite.MeteoriteSword;
 import com.kltyton.mob_battle.items.tool.snipe.VsSnipe;
+import com.kltyton.mob_battle.items.tool.sword.FineKnifeItem;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.ChargedProjectilesComponent;
 import net.minecraft.component.type.DeathProtectionComponent;
@@ -21,12 +23,14 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.SpawnEggItem;
+import net.minecraft.item.ToolMaterial;
 import net.minecraft.item.equipment.EquipmentType;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Rarity;
 import net.minecraft.util.Unit;
 
 import java.util.HashMap;
@@ -47,6 +51,14 @@ public class ModItems {
     public static FiremanScrollItem FIREMAN_SCROLL;
     public static SlownessScrollItem SLOWNESS_SCROLL;
     public static FireWallScrollItem FIRE_WALL_SCROLL;
+    public static SummonVexBookItem WARLOCK_BOOK;
+    public static SummonVexBookItem GRAND_SUMMON_BOOK;
+    public static GuardianSealItem GUARDIAN_SEAL;
+    public static FineKnifeItem FINE_KNIFE;
+    public static BackpackItem SMALL_BACKPACK;
+    public static BackpackItem LARGE_BACKPACK;
+
+
     public static HeartStoneItem HEART_STONE;
     public static ThousandBlossomedImmortalFruit THOUSAND_BLOSSOMED_IMMORTAL_FRUIT;
     public static Item LOBSTER_MAIN_COURSE;
@@ -100,6 +112,11 @@ public class ModItems {
     public static Item IRON_GOLD_CHESTPLATE;
     public static Item IRON_GOLD_LEGGINGS;
     public static Item IRON_GOLD_BOOTS;
+    // 翠钻合金套
+    public static Item EMERALD_DIAMOND_HELMET;
+    public static Item EMERALD_DIAMOND_CHESTPLATE;
+    public static Item EMERALD_DIAMOND_LEGGINGS;
+    public static Item EMERALD_DIAMOND_BOOTS;
 
     public static ModBaseArmorItem ECREDCULTIST_HELMET;
     public static ModBaseArmorItem ECREDCULTIST_CHESTPLATE;
@@ -111,6 +128,7 @@ public class ModItems {
     public static Item METEORICORE_BOW;
     public static Item METEORICORE_SWORD;
     public static Item IRON_GOLD_SWORD;
+    public static Item EMERALD_DIAMOND_SWORD;
     public static Item IRON_GOLD_SWORD_DAMAGED;
 
     public static VsSnipe VS_SNIPE;
@@ -316,6 +334,42 @@ public class ModItems {
                                 ))
                 )
         );
+        // 翠钻合金套
+        EMERALD_DIAMOND_HELMET = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "emerald_diamond_helmet"),
+                new Item(new Item.Settings()
+                        .armor(ModMaterial.EMERALD_DIAMOND_ALLOY_INSTANCE, EquipmentType.HELMET)
+                        .component(DataComponentTypes.UNBREAKABLE, Unit.INSTANCE)
+                        .maxCount(1)
+                        .registryKey(RegistryKey.of(RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "emerald_diamond_helmet")))
+                )
+        );
+
+        EMERALD_DIAMOND_CHESTPLATE = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "emerald_diamond_chestplate"),
+                new Item(new Item.Settings()
+                        .armor(ModMaterial.EMERALD_DIAMOND_ALLOY_INSTANCE, EquipmentType.CHESTPLATE)
+                        .component(DataComponentTypes.UNBREAKABLE, Unit.INSTANCE)
+                        .maxCount(1)
+                        .registryKey(RegistryKey.of(RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "emerald_diamond_chestplate")))
+                )
+        );
+
+        EMERALD_DIAMOND_LEGGINGS = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "emerald_diamond_leggings"),
+                new Item(new Item.Settings()
+                        .armor(ModMaterial.EMERALD_DIAMOND_ALLOY_INSTANCE, EquipmentType.LEGGINGS)
+                        .component(DataComponentTypes.UNBREAKABLE, Unit.INSTANCE)
+                        .maxCount(1)
+                        .registryKey(RegistryKey.of(RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "emerald_diamond_leggings")))
+                )
+        );
+
+        EMERALD_DIAMOND_BOOTS = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "emerald_diamond_boots"),
+                new Item(new Item.Settings()
+                        .armor(ModMaterial.EMERALD_DIAMOND_ALLOY_INSTANCE, EquipmentType.BOOTS)
+                        .component(DataComponentTypes.UNBREAKABLE, Unit.INSTANCE)
+                        .maxCount(1)
+                        .registryKey(RegistryKey.of(RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "emerald_diamond_boots")))
+                )
+        );
 
         // 注册工具和武器
         METEORICORE_AXE = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "meteoricore_axe"),
@@ -343,7 +397,8 @@ public class ModItems {
         );
         IRON_GOLD_SWORD = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "iron_gold_sword"),
                 new IronGoldSword(new Item.Settings()
-                        .sword(ModMaterial.IRON_GOLD_TOOL_MATERIAL, 49f,-2.2f).maxCount(1)
+                        .sword(ModMaterial.IRON_GOLD_TOOL_MATERIAL, 49f,-2.2f)
+                        .maxCount(1)
                         .component(DataComponentTypes.DEATH_PROTECTION, DeathProtectionComponent.TOTEM_OF_UNDYING)
                         .registryKey(RegistryKey.of(
                                 RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "iron_gold_sword")
@@ -351,12 +406,24 @@ public class ModItems {
                 )
         );
         IRON_GOLD_SWORD_DAMAGED = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "iron_gold_sword_damaged"),
-                new IronGoldSword(new Item.Settings().sword(ModMaterial.IRON_GOLD_TOOL_MATERIAL, 0f,-2.2f).maxCount(1).maxDamage(0).component(DataComponentTypes.UNBREAKABLE, Unit.INSTANCE)
+                new IronGoldSword(new Item.Settings()
+                        .sword(ModMaterial.IRON_GOLD_TOOL_MATERIAL, 0f,-2.2f)
+                        .maxCount(1)
+                        .maxDamage(0)
+                        .component(DataComponentTypes.UNBREAKABLE, Unit.INSTANCE)
                         .registryKey(RegistryKey.of(
                                 RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "iron_gold_sword_damaged")
                         ))
                 )
         );
+
+        EMERALD_DIAMOND_SWORD = registerItem("emerald_diamond_sword",
+                new Item.Settings()
+                        .sword(ModMaterial.EMERALD_DIAMOND_ALLOY_TOOL_MATERIAL, 119, -2.5f)
+                        .maxCount(1)
+                        .component(DataComponentTypes.UNBREAKABLE, Unit.INSTANCE)
+        );
+
         VS_SNIPE = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "vs_snipe"),
                 new VsSnipe(new Item.Settings()
                         .maxCount(1).maxDamage(465).component(DataComponentTypes.CHARGED_PROJECTILES, ChargedProjectilesComponent.DEFAULT).enchantable(1)
@@ -666,6 +733,49 @@ public class ModItems {
         HULKBUSTER_SPAWN_EGG = registerSpawnEggItem(ModEntities.HULKBUSTER, "hulkbuster_spawn_egg");
         SILENCE_PHANTOM_SPAWN_EGG = registerSpawnEggItem(ModEntities.SILENCE_PHANTOM, "silence_phantom_spawn_egg");
         COAL_SILVERFISH_SPAWN_EGG = registerSpawnEggItem(ModEntities.COAL_SILVERFISH, "coal_silverfish_spawn_egg");
+        WARLOCK_BOOK = registerItem("warlock_book", new SummonVexBookItem(
+                registryKey("warlock_book")
+                        .useCooldown(15)
+                        .maxDamage(150)
+                        .maxCount(1),
+                3, 0, 0
+        ));
+
+        GRAND_SUMMON_BOOK = registerItem("grand_summon_book", new SummonVexBookItem(
+                registryKey("grand_summon_book")
+                        .rarity(Rarity.RARE)
+                        .useCooldown(20)
+                        .maxDamage(150)
+                        .maxCount(1),
+                10, 5, 10
+        ));
+
+        GUARDIAN_SEAL = registerItem("guardian_seal", new GuardianSealItem(
+                registryKey("guardian_seal")
+                        .useCooldown(2000)
+                        .maxCount(1)
+        ));
+
+        FINE_KNIFE = registerItem("fine_knife", new FineKnifeItem(
+                registryKey("fine_knife")
+                        .maxDamage(200)
+                        .sword(ToolMaterial.IRON, 0, 0)
+                        .maxCount(1)
+        ));
+
+        SMALL_BACKPACK = registerItem("small_backpack", new BackpackItem(
+                registryKey("small_backpack")
+                        .rarity(Rarity.UNCOMMON)
+                        .maxCount(1),
+                0
+        ));
+
+        LARGE_BACKPACK = registerItem("large_backpack", new BackpackItem(
+                registryKey("large_backpack")
+                        .rarity(Rarity.RARE)
+                        .maxCount(1),
+                6
+        ));
 
         ModEntities.SPAWN_EGG_ENTITIES.forEach((id, entityType) -> {
             @SuppressWarnings("unchecked")
@@ -692,6 +802,22 @@ public class ModItems {
         );
         ITEMS.put(id, item);
         return item;
+    }
+    public static <T extends Item> T registerItem(String id, T item) {
+        Identifier itemId = Identifier.of(Mob_battle.MOD_ID, id);
+        T registered = Registry.register(
+                Registries.ITEM,
+                itemId,
+                item
+        );
+        ITEMS.put(id, registered);
+        return registered;
+    }
+
+    public static Item.Settings registryKey(String id) {
+        Identifier itemId = Identifier.of(Mob_battle.MOD_ID, id);
+        return new Item.Settings()
+                .registryKey(RegistryKey.of(RegistryKeys.ITEM, itemId));
     }
     public static SpawnEggItem registerSpawnEggItem(EntityType<? extends MobEntity> entityType, String id) {
         Identifier itemId = Identifier.of(Mob_battle.MOD_ID, id);

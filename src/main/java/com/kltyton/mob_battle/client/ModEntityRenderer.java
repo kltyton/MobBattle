@@ -8,6 +8,8 @@ import com.kltyton.mob_battle.entity.deepcreature.DeepCreatureEntityRenderer;
 import com.kltyton.mob_battle.entity.drone.attackdrone.AttackDroneEntityRenderer;
 import com.kltyton.mob_battle.entity.drone.treatmentdrone.TreatmentDroneEntityRenderer;
 import com.kltyton.mob_battle.entity.firewall.FireWallEntityRenderer;
+import com.kltyton.mob_battle.entity.general.GeneralEntityModel;
+import com.kltyton.mob_battle.entity.general.GeneralEntityOnlyOneSkill;
 import com.kltyton.mob_battle.entity.general.GeneralEntityRenderer;
 import com.kltyton.mob_battle.entity.hiddeneye.HiddenEyeEntityRenderer;
 import com.kltyton.mob_battle.entity.highbird.adulthood.HighbirdAdulthoodEntityRenderer;
@@ -25,8 +27,8 @@ import com.kltyton.mob_battle.entity.littleperson.giant.LittlePersonGiantEntityR
 import com.kltyton.mob_battle.entity.littleperson.guard.LittlePersonGuardEntityRenderer;
 import com.kltyton.mob_battle.entity.littleperson.king.LittlePersonKingEntityRenderer;
 import com.kltyton.mob_battle.entity.littleperson.militia.LittlePersonMilitiaEntityRenderer;
-import com.kltyton.mob_battle.entity.littleperson.skillentity.BaseSkillLittlePersonEntity;
-import com.kltyton.mob_battle.entity.littleperson.skillentity.BaseSkillLittlePersonEntityRenderer;
+import com.kltyton.mob_battle.entity.littleperson.skillentity.base.BaseSkillLittlePersonEntity;
+import com.kltyton.mob_battle.entity.littleperson.skillentity.base.BaseSkillLittlePersonEntityRenderer;
 import com.kltyton.mob_battle.entity.littleperson.skillentity.ironmanbullet.IronManBulletEntityRenderer;
 import com.kltyton.mob_battle.entity.littleperson.skillentity.poisonousbullet.PoisonousBulletEntityRenderer;
 import com.kltyton.mob_battle.entity.littleperson.skillentity.spearbullet.SpearBulletEntityRenderer;
@@ -48,6 +50,7 @@ import com.kltyton.mob_battle.entity.witherskeletonking.WitherSkeletonKingRender
 import com.kltyton.mob_battle.entity.witherskeletonking.skill.WitherSkullBulletEntityRenderer;
 import com.kltyton.mob_battle.entity.xunsheng.XunShengEntityRenderer;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
+import net.minecraft.client.render.entity.EvokerEntityRenderer;
 import net.minecraft.entity.EntityType;
 
 public class ModEntityRenderer {
@@ -95,13 +98,20 @@ public class ModEntityRenderer {
         EntityRendererRegistry.register(ModEntities.LITTLE_PERSON_KING, LittlePersonKingEntityRenderer::new);
         EntityRendererRegistry.register(ModEntities.VOID_CELL, VoidCellEntityRenderer::new);
         EntityRendererRegistry.register(ModEntities.MISSILE, MissileEntityRenderer::new);
+
         EntityRendererRegistry.register(ModEntities.SILENCE_PHANTOM, ctx -> new GeneralEntityRenderer<>(ctx, "silence_phantom", false));
-        EntityRendererRegistry.register(ModEntities.COAL_SILVERFISH, ctx -> new GeneralEntityRenderer<>(ctx, "coal_silverfish", false));
+        EntityRendererRegistry.register(ModEntities.SHIELD, ctx -> new GeneralEntityRenderer<>(ctx, "shield_force_field", false, GeneralEntityModel.RenderTypes.TRANSLUCENT));
+        EntityRendererRegistry.register(ModEntities.SUPER_EVOKER, EvokerEntityRenderer::new);
 
         ModEntities.LITTLE_PERSON_ENTITIES.forEach((id, entityType) -> {
             @SuppressWarnings("unchecked")
             EntityType<? extends BaseSkillLittlePersonEntity> mobType = (EntityType<? extends BaseSkillLittlePersonEntity>) entityType;
             EntityRendererRegistry.register(mobType, ctx -> new BaseSkillLittlePersonEntityRenderer<>(ctx, id, false));
+        });
+        ModEntities.GENERAL_RENDERERS.forEach((id, entityType) -> {
+            @SuppressWarnings("unchecked")
+            EntityType<? extends GeneralEntityOnlyOneSkill<?>> mobType = (EntityType<? extends GeneralEntityOnlyOneSkill<?>>) entityType;
+            EntityRendererRegistry.register(mobType, ctx -> new GeneralEntityRenderer<>(ctx, id, false));
         });
     }
 }

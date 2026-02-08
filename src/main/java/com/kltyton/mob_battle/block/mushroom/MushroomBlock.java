@@ -40,27 +40,29 @@ public class MushroomBlock extends BlockWithEntity {
         this.setDefaultState(this.stateManager.getDefaultState().with(FACING, Direction.NORTH));
         runShapeCache();
     }
+
     @Override
     protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
+        super.appendProperties(builder);
         builder.add(FACING);
     }
+
+    @Override
     public BlockState getPlacementState(ItemPlacementContext ctx) {
         return this.getDefaultState().with(FACING, ctx.getHorizontalPlayerFacing());
     }
 
     @Override
-    protected MapCodec<? extends BlockWithEntity> getCodec()  {
-        return createCodec(MushroomBlock::new);
-    }
-
-    @Override
-    public @Nullable BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
-        return new MushroomBlockEntity(pos, state);
-    }
-    @Override
     protected BlockState rotate(BlockState state, BlockRotation rotation) {
         return state.with(FACING, rotation.rotate(state.get(FACING)));
     }
+
+    @Override
+    protected BlockState mirror(BlockState state, BlockMirror mirror) {
+        return state.rotate(mirror.getRotation(state.get(FACING)));
+    }
+
+
     private static VoxelShape rotateShape(Direction to, VoxelShape shape) {
         VoxelShape[] buffer = { shape, VoxelShapes.empty() };
         int times = (to.getHorizontalQuarterTurns() - Direction.NORTH.getHorizontalQuarterTurns() + 4) % 4;
@@ -79,12 +81,21 @@ public class MushroomBlock extends BlockWithEntity {
             SHAPES.put(dir, rotateShape(dir, raw));
         }
     }
+
+
     @Override
     public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
         return SHAPES.get(state.get(FACING));
     }
+
+
     @Override
-    protected BlockState mirror(BlockState state, BlockMirror mirror) {
-        return state.rotate(mirror.getRotation(state.get(FACING)));
+    protected MapCodec<? extends BlockWithEntity> getCodec()  {
+        return createCodec(MushroomBlock::new);
+    }
+
+    @Override
+    public @Nullable BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
+        return new MushroomBlockEntity(pos, state);
     }
 }

@@ -7,6 +7,7 @@ import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider;
 import net.minecraft.data.recipe.RecipeExporter;
 import net.minecraft.data.recipe.RecipeGenerator;
 import net.minecraft.item.Item;
+import net.minecraft.item.Items;
 import net.minecraft.recipe.book.RecipeCategory;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.RegistryWrapper;
@@ -29,7 +30,6 @@ public class ModRecipeGenerator extends FabricRecipeProvider {
     @Override
     protected RecipeGenerator getRecipeGenerator(RegistryWrapper.WrapperLookup registryLookup, RecipeExporter exporter) {
         return new RecipeGenerator(registryLookup, exporter) {
-
             @Override
             public void generate() {
                 RegistryWrapper.Impl<Item> itemLookup = registries.getOrThrow(RegistryKeys.ITEM);
@@ -41,6 +41,14 @@ public class ModRecipeGenerator extends FabricRecipeProvider {
                         300, // Cooking time
                         "food" // group
                 );
+                createShaped(RecipeCategory.TOOLS, ModItems.FINE_KNIFE, 1)
+                        .pattern("a")
+                        .pattern("b")
+                        .input('a', Items.IRON_INGOT)
+                        .input('b', Items.GOLD_INGOT)
+                        .group("fine_knife") //将其放入名为“multi_bench”的组中-组显示在配方书的一个槽中
+                        .criterion(hasItem(Items.CRAFTING_TABLE), conditionsFromItem(Items.CRAFTING_TABLE))
+                        .offerTo(exporter);
             }
         };
     }

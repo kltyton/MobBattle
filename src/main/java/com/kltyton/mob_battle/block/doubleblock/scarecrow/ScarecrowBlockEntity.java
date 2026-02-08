@@ -3,6 +3,7 @@ package com.kltyton.mob_battle.block.doubleblock.scarecrow;
 import com.kltyton.mob_battle.block.ModBlockEntities;
 import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.entity.villager.militia.MilitiaWarriorVillager;
+import com.kltyton.mob_battle.utils.EntityUtil;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.Entity;
@@ -52,8 +53,7 @@ public class ScarecrowBlockEntity extends BlockEntity {
             Entity entity = world.getEntity(uuid);
 
             // 如果实体不存在、不是铁傀儡、已死亡、或距离超过64格，则移除
-            if (!(entity instanceof MilitiaWarriorVillager golem) || !golem.isAlive() ||
-                    golem.squaredDistanceTo(pos.toCenterPos()) > RANGE * RANGE) {
+            if (!(entity instanceof MilitiaWarriorVillager golem) || !golem.isAlive()) {
                 iterator.remove();
                 markDirty();
             }
@@ -74,6 +74,7 @@ public class ScarecrowBlockEntity extends BlockEntity {
                 golem.refreshPositionAndAngles(villager.getX(), villager.getY(), villager.getZ(), villager.getYaw(), villager.getPitch());
                 world.spawnEntity(golem);
                 trackedGolems.add(golem.getUuid());
+                EntityUtil.joinSameTeam(golem, villager);
                 villager.discard();
                 markDirty();
             }

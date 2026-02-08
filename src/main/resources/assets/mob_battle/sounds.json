@@ -28,5 +28,25 @@
     "sounds": [
       "mob_battle:meteorite"
     ]
+  },
+  "b_c_dog_jiao": {
+    "sounds": [
+      "mob_battle:b_c_dog_jiao"
+    ]
+  },
+  "b_c_z_dog_jiao": {
+    "sounds": [
+      "mob_battle:b_c_z_dog_jiao"
+    ]
+  },
+  "b_c_bellow_dog_jiao": {
+    "sounds": [
+      "mob_battle:b_c_bellow_dog_jiao"
+    ]
+  },
+  "b_c_debuff_dog_jiao": {
+    "sounds": [
+      "mob_battle:b_c_debuff_dog_jiao"
+    ]
   }
 }

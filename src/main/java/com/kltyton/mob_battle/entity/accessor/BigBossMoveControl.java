@@ -14,65 +14,64 @@ public class BigBossMoveControl extends MoveControl {
     public BigBossMoveControl(MobEntity entity) {
         super(entity);
     }
+
     @Override
     public void tick() {
-        if (this.state == State.STRAFE) {
-            // STRAFE 状态保持原版逻辑不变
-            float f = (float)this.entity.getAttributeValue(EntityAttributes.MOVEMENT_SPEED);
-            float g = (float)this.speed * f;
-            float h = this.forwardMovement;
-            float i = this.sidewaysMovement;
-            float j = MathHelper.sqrt(h * h + i * i);
-            if (j < 1.0F) {
-                j = 1.0F;
-            }
-            j = g / j;
-            h *= j;
-            i *= j;
-            float k = MathHelper.sin(this.entity.getYaw() * (float) (Math.PI / 180.0));
-            float l = MathHelper.cos(this.entity.getYaw() * (float) (Math.PI / 180.0));
-            float m = h * l - i * k;
-            float n = i * l + h * k;
-            if (!this.isPosWalkable(m, n)) {
-                this.forwardMovement = 1.0F;
-                this.sidewaysMovement = 0.0F;
-            }
-            this.entity.setMovementSpeed(g);
-            this.entity.setForwardSpeed(this.forwardMovement);
-            this.entity.setSidewaysSpeed(this.sidewaysMovement);
+        if (this.state == State.MOVE_TO) {
             this.state = State.WAIT;
-        } else if (this.state == State.MOVE_TO) {
-            this.state = State.WAIT;
-            double d = this.targetX - this.entity.getX();
-            double e = this.targetZ - this.entity.getZ();
-            double o = this.targetY - this.entity.getY();
-            double p = d * d + o * o + e * e;
-            if (p < 2.5000003E-7F) {
+            double dx = this.targetX - this.entity.getX();
+            double dz = this.targetZ - this.entity.getZ();
+            double dy = this.targetY - this.entity.getY();
+            double distSq = dx * dx + dy * dy + dz * dz;
+
+            if (distSq < 2.5E-7) {
                 this.entity.setForwardSpeed(0.0F);
                 return;
             }
-            float targetYaw = (float)(MathHelper.atan2(e, d) * 180.0F / (float)Math.PI) - 90.0F;
 
-            // 关键修改：把原版的 90.0F 改成 MAX_TURN_ANGLE
-            this.entity.setYaw(this.wrapDegrees(this.entity.getYaw(), targetYaw, 5.0F));
+            // 计算目标角度
+            float targetYaw = (float) (MathHelper.atan2(dz, dx) * (180.0 / Math.PI)) - 90.0F;
 
-            this.entity.setMovementSpeed((float)(this.speed * this.entity.getAttributeValue(EntityAttributes.MOVEMENT_SPEED)));
+            // 计算当前角度与目标的差值 (-180 到 180)
+            float angleDiff = MathHelper.wrapDegrees(targetYaw - this.entity.getYaw());
+
+            // 1. 动态旋转速度：角度越大转得越快，但最大给到 30-50 度左右
+            // 原版的 5.0F 太小了，建议 Boss 类实体给到 10.0F - 30.0F
+            float maxTurnSpeed = 20.0F;
+            this.entity.setYaw(this.wrapDegrees(this.entity.getYaw(), targetYaw, maxTurnSpeed));
+
+            // 2. 速度惩罚逻辑：转弯半径缩小的关键
+            float movementMultiplier = 1.0F;
+            float absDiff = Math.abs(angleDiff);
+
+            if (absDiff > 70.0F) {
+                // 角度差太大，几乎停止移动，原地转向
+                movementMultiplier = 0.1F;
+            } else if (absDiff > 30.0F) {
+                // 中等角度转向，速度减半
+                movementMultiplier = 0.5F;
+            }
+
+            float baseSpeed = (float) (this.speed * this.entity.getAttributeValue(EntityAttributes.MOVEMENT_SPEED));
+            this.entity.setMovementSpeed(baseSpeed * movementMultiplier);
 
             BlockPos blockPos = this.entity.getBlockPos();
             BlockState blockState = this.entity.getWorld().getBlockState(blockPos);
             VoxelShape voxelShape = blockState.getCollisionShape(this.entity.getWorld(), blockPos);
-            if (o > this.entity.getStepHeight() && d * d + e * e < Math.max(1.0F, this.entity.getWidth())
+            if (dy > this.entity.getStepHeight() && dx * dx + dz * dz < Math.max(1.0F, this.entity.getWidth())
                     || !voxelShape.isEmpty()
-                    && this.entity.getY() < voxelShape.getMax(Direction.Axis.Y) + (double)blockPos.getY()
+                    && this.entity.getY() < voxelShape.getMax(Direction.Axis.Y) + blockPos.getY()
                     && !blockState.isIn(BlockTags.DOORS)
                     && !blockState.isIn(BlockTags.FENCES)) {
                 this.entity.getJumpControl().setActive();
-                this.state = State.JUMPING;
+                this.state = MoveControl.State.JUMPING;
             }
-        } else if (this.state == State.JUMPING) {
+        } else if (this.state == MoveControl.State.STRAFE) {
+            super.tick();
+        } else if (this.state == MoveControl.State.JUMPING) {
             this.entity.setMovementSpeed((float)(this.speed * this.entity.getAttributeValue(EntityAttributes.MOVEMENT_SPEED)));
             if (this.entity.isOnGround() || this.entity.isInFluid() && this.entity.shouldSwimInFluids()) {
-                this.state = State.WAIT;
+                this.state = MoveControl.State.WAIT;
             }
         } else {
             this.entity.setForwardSpeed(0.0F);

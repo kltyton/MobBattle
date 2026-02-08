@@ -1,5 +1,6 @@
 package com.kltyton.mob_battle.entity.vindicatorgeneral;
 
+import com.kltyton.mob_battle.entity.ModSkillEntityType;
 import com.kltyton.mob_battle.entity.accessor.BigBossLookControl;
 import com.kltyton.mob_battle.entity.accessor.BigBossMoveControl;
 import com.kltyton.mob_battle.entity.accessor.BigBossNavigation;
@@ -42,7 +43,7 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 import java.util.Objects;
 import java.util.Optional;
 
-public class VindicatorGeneralEntity extends VindicatorEntity implements GeoEntity {
+public class VindicatorGeneralEntity extends VindicatorEntity implements GeoEntity, ModSkillEntityType {
     private final ServerBossBar bossBar = new ServerBossBar(
             this.getDisplayName(),
             BossBar.Color.PURPLE,
@@ -87,7 +88,7 @@ public class VindicatorGeneralEntity extends VindicatorEntity implements GeoEnti
             if (!hasSkill()) {
                 this.setAiDisabled(false);
             }
-            if (this.age % 20 == 0) this.heal(10);
+            if (this.age % 20 == 0) this.heal(1);
         }
     }
     @Override
@@ -142,6 +143,7 @@ public class VindicatorGeneralEntity extends VindicatorEntity implements GeoEnti
         return tryAttackBaseDamage(world, target, (float)this.getAttributeValue(EntityAttributes.ATTACK_DAMAGE));
     }
     public boolean tryAttackBaseDamage(ServerWorld world, Entity target, float damage) {
+        if (!ModSkillEntityType.canSkill(this)) return false;
         float f = damage;
         ItemStack itemStack = this.getWeaponStack();
         DamageSource damageSource = Optional.ofNullable(itemStack.getItem().getDamageSource(this)).orElse(this.getDamageSources().mobAttack(this));
@@ -220,6 +222,7 @@ public class VindicatorGeneralEntity extends VindicatorEntity implements GeoEnti
         return canSkill() && getMaxAttackSkillCooldown() == 0;
     }
     public boolean canSkill() {
+        if (!ModSkillEntityType.canSkill(this)) return false;
         return !this.getWorld().isClient() && !hasSkill() && getSkillCooldown() == 0 && this.getTarget() != null;
     }
     public boolean hasSkill() {

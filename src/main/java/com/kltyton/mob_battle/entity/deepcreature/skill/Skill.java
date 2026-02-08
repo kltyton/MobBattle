@@ -34,13 +34,14 @@ public class Skill {
         entity.setGrabTargetId(entity.getTarget().getId());
     }
     public static void runCatchDamage(DeepCreatureEntity entity) {
-        if (entity.getGrabTargetId() != -1) {
+        //抓取攻击额外伤害，暂不启用
+/*        if (entity.getGrabTargetId() != -1) {
             ServerWorld sw = (ServerWorld) entity.getWorld();
             LivingEntity player = (LivingEntity) entity.getWorld().getEntityById(entity.getGrabTargetId());
             if (player != null) {
-                player.damage(sw, player.getDamageSources().magic(), 150);
+                player.damage(sw, player.getDamageSources().magic(), 60);
             }
-        }
+        }*/
     }
     public static void stopRunCatch(DeepCreatureEntity entity) {
         if (entity.getGrabTargetId() == -1) {

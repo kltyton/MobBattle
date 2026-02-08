@@ -1,5 +1,6 @@
 package com.kltyton.mob_battle.mixin.silverfishentity;
 
+import com.kltyton.mob_battle.entity.silverfish.silverfish.LongWhipSilverfishEntity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.goal.ActiveTargetGoal;
@@ -12,6 +13,7 @@ import net.minecraft.entity.mob.SilverfishEntity;
 import net.minecraft.entity.mob.WitchEntity;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
@@ -27,5 +29,14 @@ public abstract class SilverfishEntityMixin extends HostileEntity {
     @Redirect(method = "initGoals", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/ai/goal/GoalSelector;add(ILnet/minecraft/entity/ai/goal/Goal;)V", ordinal = 6))
     public void initGoals2(GoalSelector instance, int priority, Goal goal) {
         instance.add(priority, new ActiveTargetGoal<>(this, LivingEntity.class, 10, true, false, (entity, world) -> !(entity instanceof WitchEntity) && !(entity instanceof CreeperEntity) && !(entity instanceof SilverfishEntity)));
+    }
+    /**
+     * @author kltyton
+     * @reason fuck 长鞭魔虫
+     */
+    @Overwrite
+    public void tick() {
+        if (!((Object)this instanceof LongWhipSilverfishEntity)) this.bodyYaw = this.getYaw();
+        super.tick();
     }
 }

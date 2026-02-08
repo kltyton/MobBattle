@@ -73,6 +73,8 @@ public class TeamFightHandler {
                     LivingEntity.class,
                     mob.getBoundingBox().expand(30),
                     e -> !e.isTeammate(mob) &&
+                            !e.isInCreativeMode() &&
+                            !e.isSpectator() &&
                             e.isAlive() &&
                             !e.isRemoved() &&
                             !e.equals(mob)

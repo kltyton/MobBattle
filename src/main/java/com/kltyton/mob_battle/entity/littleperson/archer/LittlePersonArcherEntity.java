@@ -1,10 +1,9 @@
 package com.kltyton.mob_battle.entity.littleperson.archer;
 
+import com.kltyton.mob_battle.entity.ModSkillEntityType;
 import com.kltyton.mob_battle.entity.littleperson.LittlePersonEntity;
 import com.kltyton.mob_battle.entity.littleperson.archer.littlearrow.LittleArrowEntity;
-import com.kltyton.mob_battle.entity.littleperson.militia.LittlePersonMilitiaEntity;
 import com.kltyton.mob_battle.entity.villager.warriorvillager.WarriorVillager;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.RangedAttackMob;
@@ -15,11 +14,10 @@ import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.mob.Monster;
-import net.minecraft.entity.passive.IronGolemEntity;
+import net.minecraft.entity.passive.GolemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.registry.tag.DamageTypeTags;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
@@ -43,28 +41,32 @@ public class LittlePersonArcherEntity extends HostileEntity implements LittlePer
         this.goalSelector.add(7, new WanderAroundFarGoal(this, 1.0)); // 添加远距离游荡目标
         this.goalSelector.add(8, new LookAtEntityGoal(this, PlayerEntity.class, 8.0F)); // 添加看向玩家的目标
         this.goalSelector.add(8, new LookAroundGoal(this)); // 添加环顾四周的目标
-        this.targetSelector.add(3, new ActiveTargetGoal<>(this, IronGolemEntity.class, true)); // 添加攻击铁傀儡目标
+        this.targetSelector.add(3, new ActiveTargetGoal<>(this, GolemEntity.class, true)); // 添加攻击傀儡目标
         this.targetSelector.add(2, new ActiveTargetGoal<>(this, WarriorVillager.class, true));
         this.targetSelector.add(2, new ActiveTargetGoal<>(this, PlayerEntity.class, true)); // 添加主动攻击玩家目标
         this.targetSelector.add(3, new ActiveTargetGoal<>(this, MobEntity.class, 5, false, false, (entity, world) -> entity instanceof Monster && !(entity instanceof LittlePersonEntity)));
     }
     public static DefaultAttributeContainer.Builder createLittlePersonArcherAttributes() {
         return MobEntity.createMobAttributes()
-                .add(EntityAttributes.MAX_HEALTH, 100.0)
+                .add(EntityAttributes.MAX_HEALTH, 10.0)
                 .add(EntityAttributes.FOLLOW_RANGE, 40.0)
                 .add(EntityAttributes.MOVEMENT_SPEED, 0.4)
-                .add(EntityAttributes.ATTACK_DAMAGE, 30.0);
+                .add(EntityAttributes.ATTACK_DAMAGE, 15.0);
+    }
+    @Override
+    public void heal() {
+        this.heal(1.0F);
     }
     @Override
     public void tick() {
         super.tick();
         if (!this.getWorld().isClient) {
-            if (this.age % 20 == 0) this.heal(1.0F);
+            if (this.age % 20 == 0) this.heal();
         }
     }
     @Override
     public boolean damage(ServerWorld world, DamageSource source, float amount) {
-        // 检查伤害是否来自实体直接攻击
+/*        // 检查伤害是否来自实体直接攻击
         if (source.getSource() instanceof Entity &&
                 !source.isIn(DamageTypeTags.IS_FALL) &&
                 !source.isIn(DamageTypeTags.IS_FIRE) &&
@@ -84,7 +86,7 @@ public class LittlePersonArcherEntity extends HostileEntity implements LittlePer
             }
         }
 
-        // 如果不满足条件或者未触发免疫，则正常处理伤害
+        // 如果不满足条件或者未触发免疫，则正常处理伤害*/
         return super.damage(world, source, amount);
     }
     private final AnimatableInstanceCache geoCache = GeckoLibUtil.createInstanceCache(this);
@@ -92,15 +94,17 @@ public class LittlePersonArcherEntity extends HostileEntity implements LittlePer
     protected static final RawAnimation WALK_ANIM = RawAnimation.begin().thenLoop("walk");
     protected static final RawAnimation ATTACK_ANIM = RawAnimation.begin().thenPlay("attack");
     protected static final RawAnimation BLOCK_ANIM = RawAnimation.begin().thenPlay("block");
+    protected static final RawAnimation SKILL_ANIM = RawAnimation.begin().thenPlayAndHold("skill");
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         // 主控制器：负责所有常规状态
         controllers.add(new AnimationController<>("main_controller", 5, this::mainController));
         controllers.add(new AnimationController<>( "attack_controller",animTest -> PlayState.STOP)
                 .triggerableAnim("attack", ATTACK_ANIM)
+                .triggerableAnim("skill", SKILL_ANIM)
                 .triggerableAnim("block", BLOCK_ANIM));
     }
-    private PlayState mainController(final AnimationTest<LittlePersonMilitiaEntity> event) {
+    public PlayState mainController(final AnimationTest<LittlePersonArcherEntity> event) {
         return event.isMoving() ? event.setAndContinue(WALK_ANIM) : event.setAndContinue(IDLE_ANIM);
     }
     @Override
@@ -116,9 +120,14 @@ public class LittlePersonArcherEntity extends HostileEntity implements LittlePer
     public AnimatableInstanceCache getAnimatableInstanceCache() {
         return geoCache;
     }
+    @Override
+    public boolean canSkill() {
+        return ModSkillEntityType.canSkill(this);
+    }
 
     @Override
     public void shootAt(LivingEntity target, float pullProgress) {
+        if (!canSkill()) return;
         double targetX = target.getX() - this.getX();
         double targetY = target.getEyeY() - this.getEyeY(); // 更精确的高度计算
         double targetZ = target.getZ() - this.getZ();

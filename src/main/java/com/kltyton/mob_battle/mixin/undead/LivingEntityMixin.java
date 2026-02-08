@@ -5,6 +5,8 @@ import com.kltyton.mob_battle.accessor.ILead;
 import com.kltyton.mob_battle.effect.ModEffects;
 import com.kltyton.mob_battle.entity.witherskeletonking.skill.WitherSkullKingEntity;
 import com.kltyton.mob_battle.items.ModItems;
+import com.kltyton.mob_battle.items.ModMaterial;
+import com.kltyton.mob_battle.tags.ModTags;
 import com.kltyton.mob_battle.utils.ArmorUtil;
 import net.minecraft.component.type.DeathProtectionComponent;
 import net.minecraft.entity.*;
@@ -71,6 +73,10 @@ public abstract class LivingEntityMixin extends Entity implements Attackable, Se
     }
     @Shadow
     public abstract void heal(float amount);
+
+    @Shadow
+    public abstract boolean isDead();
+
     @Inject(method = "canTarget(Lnet/minecraft/entity/LivingEntity;)Z", at = @At("HEAD"), cancellable = true)
     private void preventTeamTargeting(LivingEntity target, CallbackInfoReturnable<Boolean> cir) {
         LivingEntity self = (LivingEntity) (Object) this;
@@ -133,6 +139,13 @@ public abstract class LivingEntityMixin extends Entity implements Attackable, Se
             cir.cancel();
         }
     }
+    @Inject(method = "damage", at = @At("RETURN"), cancellable = true)
+    public void damageReturn(ServerWorld world, DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
+        Entity attacker = source.getAttacker();
+        if (attacker instanceof LivingEntity livingEntity && attacker.getType().isIn(ModTags.ATTACK_HEAL_ENTITY) && this.isDead()) {
+            livingEntity.heal(5);
+        }
+    }
     @Redirect(method = "applyDamage", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;isInvulnerableTo(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/entity/damage/DamageSource;)Z"))
     public boolean isInvulnerableTo(LivingEntity instance, ServerWorld world, DamageSource source) {
         Entity sourcer = source.getSource();
@@ -155,7 +168,7 @@ public abstract class LivingEntityMixin extends Entity implements Attackable, Se
     public boolean isIronGoldSword = false;
     @Inject(method = "tryUseDeathProtector", at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;copy()Lnet/minecraft/item/ItemStack;"), locals = LocalCapture.CAPTURE_FAILSOFT, cancellable = true)
     public void tryUseDeathProtector(DamageSource source, CallbackInfoReturnable<Boolean> cir, DeathProtectionComponent deathProtectionComponent, ItemStack itemStack2, Hand[] var5, int var6, int var7, Hand hand) {
-        if (itemStack2.isOf(ModItems.IRON_GOLD_SWORD) && (!ArmorUtil.hasFullDiamondArmor((LivingEntity) (Object) this) || itemStack2.getDamage() >= itemStack2.getMaxDamage() - 1)) {
+        if (itemStack2.isOf(ModItems.IRON_GOLD_SWORD) && (!ArmorUtil.hasFullArmor((LivingEntity) (Object) this, ModMaterial.IRON_GOLD_INSTANCE) || itemStack2.getDamage() >= itemStack2.getMaxDamage() - 1)) {
             isIronGoldSword = false;
             cir.cancel();
             cir.setReturnValue(false);

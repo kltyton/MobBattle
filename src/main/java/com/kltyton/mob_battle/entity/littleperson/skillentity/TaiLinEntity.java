@@ -1,6 +1,8 @@
 package com.kltyton.mob_battle.entity.littleperson.skillentity;
 
 import com.kltyton.mob_battle.effect.ModEffects;
+import com.kltyton.mob_battle.entity.ModEntityAttributes;
+import com.kltyton.mob_battle.entity.littleperson.skillentity.base.BaseSkillLittlePersonEntity;
 import com.kltyton.mob_battle.utils.EntityUtil;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -26,8 +28,9 @@ public class TaiLinEntity extends BaseSkillLittlePersonEntity {
     }
     public static DefaultAttributeContainer.Builder createLittlePersonAttributes() {
         return BaseSkillLittlePersonEntity.createAttributes()
-                .add(EntityAttributes.MAX_HEALTH, 5000.0)
-                .add(EntityAttributes.ATTACK_DAMAGE, 70.0);
+                .add(EntityAttributes.MAX_HEALTH, 6000.0)
+                .add(EntityAttributes.ATTACK_DAMAGE, 70.0)
+                .add(ModEntityAttributes.DAMAGE_REDUCTION, 0.5);
     }
     @Override
     public boolean blockAttack(@NotNull DamageSource source, float amount) {

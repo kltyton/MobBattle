@@ -194,14 +194,19 @@ public class IronManBulletEntity extends ProjectileEntity {
     @Override
     public void tick() {
         super.tick();
-        Entity entity = !this.getWorld().isClient() ? LazyEntityReference.resolve(this.target, this.getWorld(), Entity.class) : null;
+        Entity entity = null;
+        if (!this.getWorld().isClient() && this.target != null) {
+            entity = LazyEntityReference.resolve(this.target, this.getWorld(), Entity.class);
+        }
         HitResult hitResult = null;
         if (!this.getWorld().isClient) {
+            // 2. 如果解析出来的 entity 为空，清理引用
             if (entity == null) {
                 this.target = null;
             }
 
-            if (entity == null || !entity.isAlive() || entity instanceof PlayerEntity && entity.isSpectator()) {
+            // 3. 目标不存在或死亡时的逻辑
+            if (entity == null || !entity.isAlive() || (entity instanceof PlayerEntity p && p.isSpectator())) {
                 this.applyGravity();
             } else {
                 this.targetX = MathHelper.clamp(this.targetX * 1.025, -1.0, 1.0);

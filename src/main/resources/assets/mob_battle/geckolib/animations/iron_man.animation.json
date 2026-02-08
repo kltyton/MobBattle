@@ -3788,7 +3788,7 @@
 				}
 			},
 			"timeline": {
-				"0.0417": "runAttack5;"
+				"0.9": "runDie;"
 			}
 		},
 		"block": {

@@ -1,6 +1,7 @@
 package com.kltyton.mob_battle.entity.irongolem.hulkbuster;
 
 import com.kltyton.mob_battle.effect.ModEffects;
+import com.kltyton.mob_battle.entity.ModSkillEntityType;
 import com.kltyton.mob_battle.entity.accessor.BigBossLookControl;
 import com.kltyton.mob_battle.entity.accessor.BigBossMoveControl;
 import com.kltyton.mob_battle.entity.accessor.BigBossNavigation;
@@ -50,7 +51,7 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 import java.util.Objects;
 import java.util.Optional;
 
-public class HulkbusterEntity extends IronGolemEntity implements GeoEntity, ModBaseIronGolemEntity {
+public class HulkbusterEntity extends IronGolemEntity implements GeoEntity, ModBaseIronGolemEntity, ModSkillEntityType {
     public static final int SKILL_COOLDOWN_MAX = 20;
     public static final int SUPER_ATTACK_COOLDOWN_MAX = 8 * 20;
     public static final int MINI_ATTACK_COOLDOWN_MAX = 18 * 20;
@@ -88,6 +89,7 @@ public class HulkbusterEntity extends IronGolemEntity implements GeoEntity, ModB
     public void tick() {
         super.tick();
         if (!this.getWorld().isClient()) {
+            if(this.age % 20 == 0) this.heal(1);
             // 冷却递减
             int cd = getSkillCooldown();
             if (cd > 0) setSkillCooldown(cd - 1);
@@ -154,9 +156,11 @@ public class HulkbusterEntity extends IronGolemEntity implements GeoEntity, ModB
         return attackBox.intersects(entity.getHitbox());
     }
     public boolean tryAttackBase(ServerWorld world, LivingEntity target) {
+        if (!ModSkillEntityType.canSkill(this)) return false;
         return tryAttackBaseDamage(world, target, (float) this.getAttributeValue(EntityAttributes.ATTACK_DAMAGE));
     }
     public boolean tryAttackBaseDamage(ServerWorld world, Entity target, float damage) {
+        if (!ModSkillEntityType.canSkill(this)) return false;
         float f = damage;
         ItemStack itemStack = this.getWeaponStack();
         DamageSource damageSource = Optional.ofNullable(itemStack.getItem().getDamageSource(this)).orElse(this.getDamageSources().mobAttack(this));
@@ -191,6 +195,7 @@ public class HulkbusterEntity extends IronGolemEntity implements GeoEntity, ModB
     }
     @Override
     public boolean tryAttack(ServerWorld world, Entity target) {
+        if (!ModSkillEntityType.canSkill(this)) return false;
         if (this.canMiniAttack()) {
             performMiniAttack();
             return true;
@@ -240,7 +245,7 @@ public class HulkbusterEntity extends IronGolemEntity implements GeoEntity, ModB
         return canSkill() && getMaxAttackSkillCooldown() == 0;
     }
     public boolean canSkill() {
-        return !this.getWorld().isClient() && !hasSkill() && getSkillCooldown() == 0 && this.getTarget() != null;
+        return !this.getWorld().isClient() && !hasSkill() && getSkillCooldown() == 0 && this.getTarget() != null && !ModSkillEntityType.canSkill(this);
     }
     public boolean hasSkill() {
         return getDataTracker().get(HAS_SKILL);

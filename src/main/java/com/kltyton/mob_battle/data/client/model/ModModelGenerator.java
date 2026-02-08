@@ -40,8 +40,22 @@ public class ModModelGenerator extends FabricModelProvider {
                 new Model(Optional.of(Identifier.of(Mob_battle.MOD_ID, "block/nest_block")), Optional.empty()));
         itemModelCollector.register(ModBlocks.MUSHROOM_BLOCK.asItem(),
                 new Model(Optional.of(Identifier.of(Mob_battle.MOD_ID, "block/mushroom_block")), Optional.empty()));*/
+
         itemModelCollector.register(ModItems.LOBSTER_MAIN_COURSE, Models.GENERATED);
         itemModelCollector.register(ModItems.COOKED_HIGHBIRD_EGG, Models.GENERATED);
+        itemModelCollector.register(ModItems.SMALL_BACKPACK, Models.GENERATED);
+        itemModelCollector.register(ModItems.LARGE_BACKPACK, Models.GENERATED);
+        itemModelCollector.register(ModItems.WARLOCK_BOOK, Models.GENERATED);
+        itemModelCollector.register(ModItems.GRAND_SUMMON_BOOK, Models.GENERATED);
+        itemModelCollector.register(ModItems.GUARDIAN_SEAL, Models.GENERATED);
+        itemModelCollector.register(ModItems.FINE_KNIFE, Models.GENERATED);
+
+        itemModelCollector.register(ModItems.EMERALD_DIAMOND_HELMET, Models.GENERATED);
+        itemModelCollector.register(ModItems.EMERALD_DIAMOND_CHESTPLATE, Models.GENERATED);
+        itemModelCollector.register(ModItems.EMERALD_DIAMOND_LEGGINGS, Models.GENERATED);
+        itemModelCollector.register(ModItems.EMERALD_DIAMOND_BOOTS, Models.GENERATED);
+        itemModelCollector.register(ModItems.EMERALD_DIAMOND_SWORD, Models.GENERATED);
+
         for (SpawnEggItem item : ModItems.SPAWN_EGG_ITEMS.values()) {
             itemModelCollector.register(item, CUSTOM_EGG);
         }

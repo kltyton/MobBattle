@@ -1,5 +1,6 @@
 package com.kltyton.mob_battle.entity.drone.attackdrone;
 
+import com.kltyton.mob_battle.entity.ModSkillEntityType;
 import com.kltyton.mob_battle.entity.bullet.BulletEntity;
 import com.kltyton.mob_battle.entity.drone.DroneEntity;
 import com.kltyton.mob_battle.entity.drone.goal.FlyRangedAttackGoal;
@@ -106,6 +107,8 @@ public class AttackDroneEntity extends DroneEntity {
     // 4. 远程攻击实现 (类似骷髅)
     @Override
     public void shootAt(LivingEntity target, float pullProgress) {
+        if (!ModSkillEntityType.canSkill(this)) return;
+
         BulletEntity bullet = new BulletEntity(this.getWorld(), this,
                 new ItemStack(Items.IRON_BLOCK), null);
 

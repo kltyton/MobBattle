@@ -29,6 +29,7 @@ public class SkullMageEntitySkill {
                         skullEntity.setTarget(king.getTarget());
                     }
                     skullEntity.setOwner(king);
+                    EntityUtil.joinSameTeam(skullEntity, king);
                     serverWorld.spawnEntity(skullEntity);
                 }
             }
@@ -45,6 +46,7 @@ public class SkullMageEntitySkill {
                         skullEntity.setTarget(king.getTarget());
                     }
                     skullEntity.setOwner(king);
+                    EntityUtil.joinSameTeam(skullEntity, king);
                     serverWorld.spawnEntity(skullEntity);
                 }
             }

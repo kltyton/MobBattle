@@ -1,5 +1,6 @@
 package com.kltyton.mob_battle.entity.sugarmanscorpion;
 
+import com.kltyton.mob_battle.entity.ModSkillEntityType;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -31,7 +32,7 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 
 import java.util.Optional;
 
-public class SugarManScorpion extends HostileEntity implements GeoEntity {
+public class SugarManScorpion extends HostileEntity implements GeoEntity, ModSkillEntityType {
     protected static final RawAnimation IDEA_ANIM = RawAnimation.begin().thenLoop("idle");
     protected static final RawAnimation WALK_ANIM = RawAnimation.begin().thenLoop("walk");
     protected static final RawAnimation ATTACK_ANIM = RawAnimation.begin().thenPlay("attack");
@@ -76,6 +77,7 @@ public class SugarManScorpion extends HostileEntity implements GeoEntity {
     }
     @Override
     public boolean tryAttack(ServerWorld world, Entity target) {
+        if (!canSkill()) return false;
         float f = (float)this.getAttributeValue(EntityAttributes.ATTACK_DAMAGE);
         ItemStack itemStack = this.getWeaponStack();
         DamageSource damageSource = Optional.ofNullable(itemStack.getItem().getDamageSource(this)).orElse(this.getDamageSources().mobAttack(this));
@@ -132,5 +134,10 @@ public class SugarManScorpion extends HostileEntity implements GeoEntity {
                 .add(EntityAttributes.KNOCKBACK_RESISTANCE, 1.0)
                 .add(EntityAttributes.ATTACK_DAMAGE, 20.0)
                 .add(EntityAttributes.STEP_HEIGHT, 1.0);
+    }
+
+    @Override
+    public boolean canSkill() {
+        return ModSkillEntityType.canSkill(this);
     }
 }

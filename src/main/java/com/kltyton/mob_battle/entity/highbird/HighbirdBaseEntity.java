@@ -1,5 +1,6 @@
 package com.kltyton.mob_battle.entity.highbird;
 
+import com.kltyton.mob_battle.entity.ModSkillEntityType;
 import com.kltyton.mob_battle.entity.highbird.adulthood.HighbirdAdulthoodEntity;
 import com.kltyton.mob_battle.network.packet.HighbirdAttackPayload;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -31,7 +32,7 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 
 import java.util.Optional;
 
-public abstract class HighbirdBaseEntity extends HighbirdAndEggEntity{
+public abstract class HighbirdBaseEntity extends HighbirdAndEggEntity {
 
     /* ---------- 动画定义 ---------- */
     protected static final RawAnimation IDLE_ANIM   = RawAnimation.begin().thenLoop("idle");
@@ -139,6 +140,7 @@ public abstract class HighbirdBaseEntity extends HighbirdAndEggEntity{
 
     // 当实体尝试攻击目标时调用此方法
     public boolean performAttack(ServerWorld world, Entity target) {
+        if (!ModSkillEntityType.canSkill(this)) return false;
         // 获取当前实体的基础攻击力（来自属性系统）
         float f = (float) this.getAttributeValue(EntityAttributes.ATTACK_DAMAGE);
 
@@ -198,6 +200,7 @@ public abstract class HighbirdBaseEntity extends HighbirdAndEggEntity{
     }
     @Override
     public boolean tryAttack(ServerWorld world, Entity target) {
+        if (ModSkillEntityType.canSkill(this)) return false;
         // 如果正在睡觉，先醒来再攻击
         if (isSleeping()) {
             wake();

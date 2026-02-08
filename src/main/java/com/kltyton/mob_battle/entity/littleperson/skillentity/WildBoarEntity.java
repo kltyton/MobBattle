@@ -1,5 +1,6 @@
 package com.kltyton.mob_battle.entity.littleperson.skillentity;
 
+import com.kltyton.mob_battle.entity.littleperson.skillentity.base.BaseSkillLittlePersonEntity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
@@ -12,7 +13,7 @@ public class WildBoarEntity extends BaseSkillLittlePersonEntity {
     }
     public static DefaultAttributeContainer.Builder createLittlePersonAttributes() {
         return BaseSkillLittlePersonEntity.createAttributes()
-                .add(EntityAttributes.MAX_HEALTH, 250.0)
-                .add(EntityAttributes.ATTACK_DAMAGE, 30.00);
+                .add(EntityAttributes.MAX_HEALTH, 20.0)
+                .add(EntityAttributes.ATTACK_DAMAGE, 15.00);
     }
 }

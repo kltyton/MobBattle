@@ -2,6 +2,7 @@ package com.kltyton.mob_battle.mixin.client.render;
 
 import com.kltyton.mob_battle.accessor.ILead;
 import com.kltyton.mob_battle.accessor.ILeadRenderData;
+import com.kltyton.mob_battle.accessor.IModEntityRenderState;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.network.ClientPlayerEntity;
@@ -84,6 +85,15 @@ public abstract class EntityRendererMixin {
         }
 
     }
+
+    @Inject(
+            method = "updateRenderState",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;isInvisible()Z")
+    )
+    private void onUpdateRenderStateTrueInvisible(Entity livingEntity, EntityRenderState livingEntityRenderState, float f, CallbackInfo ci) {
+        ((IModEntityRenderState)livingEntityRenderState).setTrueInvisible(((IModEntityRenderState)livingEntity).isTrueInvisible());
+    }
+
     @Inject(method = "renderLeash", at = @At("HEAD"), cancellable = true)
     private static void renderLeash(MatrixStack matrices, VertexConsumerProvider vertexConsumers, EntityRenderState.LeashData leashData, CallbackInfo ci) {
         if (!((ILeadRenderData)leashData).shouldRender()) {

@@ -1,7 +1,9 @@
 package com.kltyton.mob_battle.entity.villager.militia;
 
 import com.kltyton.mob_battle.block.ModBlocks;
+import com.kltyton.mob_battle.entity.ModSkillEntityType;
 import com.kltyton.mob_battle.entity.bullet.ITrueDamageProjectile;
+import com.kltyton.mob_battle.utils.EntityUtil;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -27,6 +29,9 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.ArrowEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
@@ -38,9 +43,11 @@ import net.minecraft.util.TimeHelper;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.intprovider.UniformIntProvider;
 import net.minecraft.util.math.random.Random;
+import net.minecraft.village.VillagerType;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
+import net.minecraft.world.biome.Biome;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -82,9 +89,22 @@ public class MilitiaArcherVillager extends SnowGolemEntity implements Angerable 
             if (!getHomePos().equals(new BlockPos(0, -9999, 0)) && !this.getWorld().getBlockState(getHomePos()).isOf(ModBlocks.TARGET_BLOCK)) {
                 VillagerEntity villager = EntityType.VILLAGER.create(this.getWorld(), SpawnReason.CONVERSION);
                 if (villager != null) {
+
+                    // 1. 获取实体当前位置的群系注册项
+                    RegistryEntry<Biome> biomeEntry = this.getWorld().getBiome(this.getBlockPos());
+
+                    // 2. 根据群系获取对应的村民类型 (例如：沙漠、雪地、平原等)
+                    RegistryKey<VillagerType> type = VillagerType.forBiome(biomeEntry);
+                    // 3. 设置村民的职业数据，保留默认职业（或设定为无业），但更新外观类型
+                    RegistryEntry<VillagerType> typeEntry = Registries.VILLAGER_TYPE.getOrThrow(type);
+
+                    // RegistryEntry<VillagerType> typeEntry = this.getWorld().getRegistryManager().getOrThrow(RegistryKeys.VILLAGER_TYPE).getOrThrow(type);
+                    villager.setVillagerData(villager.getVillagerData().withType(typeEntry));
+
                     villager.refreshPositionAndAngles(this.getX(), this.getY(), this.getZ(), this.getYaw(), this.getPitch());
                     this.getWorld().spawnEntity(villager);
                     this.setHomePos(new BlockPos(0, -9999, 0));
+                    EntityUtil.joinSameTeam(villager, this);
                     this.discard();
                 }
             }
@@ -134,6 +154,7 @@ public class MilitiaArcherVillager extends SnowGolemEntity implements Angerable 
     }
     @Override
     public void shootAt(LivingEntity target, float pullProgress) {
+        if (!ModSkillEntityType.canSkill(this)) return;
         double targetX = target.getX() - this.getX();
         double targetY = target.getEyeY() - (double)1.1F;
         double targetZ = target.getZ() - this.getZ();
@@ -146,11 +167,8 @@ public class MilitiaArcherVillager extends SnowGolemEntity implements Angerable 
             ((ITrueDamageProjectile) arrowEntity).setTrueDamage(true, false);
             ItemStack itemStack = this.getWeaponStack();
             float f = (float) this.getAttributeValue(EntityAttributes.ATTACK_DAMAGE);
-            System.out.println("Arrow Damage: " + f);
             f = EnchantmentHelper.getDamage(serverWorld, itemStack, target, this.getDamageSources().arrow(arrowEntity, this), f);
-            System.out.println("Arrow Damage: " + f);
             f += itemStack.getItem().getBonusAttackDamage(target, f, this.getDamageSources().arrow(arrowEntity, this));
-            System.out.println("Arrow Damage: " + f);
             // 设置箭的伤害
             arrowEntity.setDamage(f);
             arrowEntity.setOwner(this);

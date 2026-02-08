@@ -1,6 +1,8 @@
 package com.kltyton.mob_battle.utils;
 
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.ai.TargetPredicate;
 import net.minecraft.scoreboard.AbstractTeam;
 import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.scoreboard.Team;
@@ -9,17 +11,13 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 
 public class EntityUtil {
-    public enum TeamFilter {
-        ALL,             // 所有人
-        EXCLUDE_TEAM,    // 排除队友
-        ONLY_TEAM        // 只看队友
-    }
     /**
      * 将实体 targetA 加入到实体 sourceB 所在的队伍中
      * @param targetA 要加入队伍的实体
@@ -42,6 +40,13 @@ public class EntityUtil {
             scoreboard.addScoreHolderToTeam(entryA, team);
         }
     }
+
+    public enum TeamFilter {
+        ALL,             // 所有人
+        EXCLUDE_TEAM,    // 排除队友
+        ONLY_TEAM        // 只看队友
+    }
+
     /**
      * 获取指定实体周围指定范围内的某类实体的数量（球形范围，精确距离）
      *
@@ -55,11 +60,12 @@ public class EntityUtil {
      * @param <T>         实体类型
      * @return 符合条件的实体数量
      */
-    public static <T extends Entity> int getNearbyEntityCount(Entity center, Class<T> clazz, Class<?> filterClass, double radius, boolean includeSelf, TeamFilter teamFilter) {
+    public static <T extends LivingEntity> int getNearbyEntityCount(LivingEntity center, Class<T> clazz, Class<?> filterClass, double radius, boolean includeSelf, TeamFilter teamFilter) {
         List<T> nearbyEntities = getNearbyEntity(center, clazz, filterClass, radius, includeSelf, teamFilter);
         if (nearbyEntities == null) return 0;
         else return nearbyEntities.size();
     }
+
     /**
      * 获取指定实体周围指定范围内的某类实体的集合（球形范围，精确距离）
      *
@@ -72,11 +78,42 @@ public class EntityUtil {
      * @param <T>                  实体类型
      * @return 符合条件的实体列表
      */
-    public static <T extends Entity> List<T> getNearbyEntity(Entity center, Class<T> clazz, Class<?> filterClass, double radius, boolean includeSelf, TeamFilter teamFilter) {
+    public static <T extends LivingEntity> List<T>     /**
+     * 获取指定实体周围指定范围内的某类实体的集合（球形范围，精确距离）
+     *
+     * @param center               中心实体
+     * @param clazz                要统计的实体类
+     * @param filterClass          额外筛选类
+     * @param radius               范围半径
+     * @param includeSelf          是否包含中心实体自身
+     * @param teamFilter           队伍筛选
+     * @param <T>                  实体类型
+     * @return 符合条件的实体列表
+     */getNearbyEntity(LivingEntity center, Class<T> clazz, Class<?> filterClass, double radius, boolean includeSelf, TeamFilter teamFilter) {
+        return getNearbyEntity(center, clazz, filterClass, radius, includeSelf, teamFilter, null, null);
+    }
+
+    /**
+     * 获取指定实体周围指定范围内的某类实体的集合（球形范围，精确距离）
+     *
+     * @param center               中心实体
+     * @param clazz                要统计的实体类
+     * @param radius               范围半径
+     * @param includeSelf          是否包含中心实体自身
+     * @param teamFilter           队伍筛选
+     * @param <T>                  实体类型
+     * @return 符合条件的实体列表
+     */
+    public static <T extends LivingEntity> List<T> getNearbyEntity(LivingEntity center, Class<T> clazz, double radius, boolean includeSelf, TeamFilter teamFilter) {
+        return getNearbyEntity(center, clazz, Object.class, radius, includeSelf, teamFilter);
+    }
+    public static <T extends LivingEntity> List<T> getNearbyEntity(LivingEntity center, Class<T> clazz, Class<?> filterClass, double radius, boolean includeSelf, TeamFilter teamFilter, Predicate<T> extraPredicate, TargetPredicate targetPredicate) {
         World world = center.getWorld();
         if (world.isClient()) {
             return List.of();
         }
+        ServerWorld serverWorld = (ServerWorld) world;
+
         double radiusSq = radius * radius;
         Box box = center.getBoundingBox().expand(radius);
         Predicate<T> predicate = entity -> {
@@ -88,16 +125,62 @@ public class EntityUtil {
             if (teamFilter == TeamFilter.ONLY_TEAM && !isTeammate) return false;
             return entity.squaredDistanceTo(center) <= radiusSq;
         };
-        return world.getEntitiesByClass(clazz, box, predicate);
+
+        if (extraPredicate != null) predicate = predicate.and(extraPredicate);
+        List<T> finalEntities = world.getEntitiesByClass(clazz, box, predicate);
+        if (targetPredicate != null) {
+            finalEntities.removeIf(entity -> !targetPredicate.test(serverWorld, center, entity));
+        }
+
+        return finalEntities;
+    }
+    /**
+     * 获取范围内最近的合法实体 (排除自身)
+     */
+    @Nullable
+    public static <T extends LivingEntity> T getClosestNearbyEntity(LivingEntity center, Class<T> clazz, double radius, TeamFilter teamFilter) {
+        return getClosestNearbyEntity(center, clazz, radius, teamFilter, null, null);
+    }
+    @Nullable
+    public static <T extends LivingEntity> T getClosestNearbyEntity(LivingEntity center, Class<T> clazz, double radius, TeamFilter teamFilter, Predicate<T> extraPredicate, TargetPredicate targetPredicate) {
+        List<T> entities = getNearbyEntity(center, clazz, Object.class, radius, false, teamFilter, extraPredicate, targetPredicate);
+        T closest = null;
+        double minDistanceSq = -1.0;
+
+        for (T entity : entities) {
+            double distSq = entity.squaredDistanceTo(center);
+            if (minDistanceSq == -1.0 || distSq < minDistanceSq) {
+                minDistanceSq = distSq;
+                closest = entity;
+            }
+        }
+        return closest;
     }
 
     /**
+     * 获取视线范围内（扇形/锥形区域）的实体
+     * 适用于横扫攻击或定向抓取
+     */
+    public static <T extends LivingEntity> List<T> getEntitiesInCone(LivingEntity center, Class<T> clazz, double radius, float arcDegrees, TeamFilter teamFilter) {
+        return getEntitiesInCone(center, clazz, radius, arcDegrees, teamFilter, null, null);
+    }
+    public static <T extends LivingEntity> List<T> getEntitiesInCone(LivingEntity center, Class<T> clazz, double radius, float arcDegrees, TeamFilter teamFilter, Predicate<T> extraPredicate, TargetPredicate targetPredicate) {
+        Vec3d lookDir = center.getRotationVec(1.0F);
+        Predicate<T> basePredicate = entity -> {
+            Vec3d toEntity = entity.getPos().subtract(center.getPos()).normalize();
+            double dotProduct = lookDir.dotProduct(toEntity);
+            double angle = Math.acos(dotProduct) * (180.0 / Math.PI);
+            return angle <= (arcDegrees / 2.0);
+        };
+        return getNearbyEntity(center, clazz, Object.class, radius, false, teamFilter, extraPredicate == null ? basePredicate : basePredicate.and(extraPredicate), targetPredicate);
+    }
+    /**
      * 重载版本：默认不包含自身，可自定义范围
      */
-    public static <T extends Entity> int getNearbyEntityCount(Entity center, Class<T> clazz, double radius) {
+    public static <T extends LivingEntity> int getNearbyEntityCount(LivingEntity center, Class<T> clazz, double radius) {
         return getNearbyEntityCount(center, clazz, Object.class, radius, false, TeamFilter.ONLY_TEAM);
     }
-    public static <T extends Entity> int getNearbyEntityCount(Entity center, Class<T> clazz, Class<?> filterClass, double radius) {
+    public static <T extends LivingEntity> int getNearbyEntityCount(LivingEntity center, Class<T> clazz, Class<?> filterClass, double radius) {
         return getNearbyEntityCount(center, clazz, filterClass, radius, false, TeamFilter.ONLY_TEAM);
     }
     /**

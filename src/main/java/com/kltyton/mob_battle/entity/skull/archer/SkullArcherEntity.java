@@ -1,5 +1,6 @@
 package com.kltyton.mob_battle.entity.skull.archer;
 
+import com.kltyton.mob_battle.entity.ModSkillEntityType;
 import com.kltyton.mob_battle.entity.bullet.ITrueDamageProjectile;
 import com.kltyton.mob_battle.entity.skull.IModSkullEntity;
 import com.kltyton.mob_battle.entity.witherskeletonking.WitherSkeletonKingEntity;
@@ -111,6 +112,7 @@ public class SkullArcherEntity extends SkeletonEntity implements GeoEntity, IMod
                 }));
     }
     public void shootAtBase(LivingEntity target, float pullProgress) {
+        if (!ModSkillEntityType.canSkill(this)) return;
         ItemStack bowStack = this.getStackInHand(ProjectileUtil.getHandPossiblyHolding(this, Items.BOW));
         ItemStack arrowStack = this.getProjectileType(bowStack);
         PersistentProjectileEntity projectile = this.createArrowProjectile(arrowStack, pullProgress, bowStack);
@@ -145,6 +147,7 @@ public class SkullArcherEntity extends SkeletonEntity implements GeoEntity, IMod
         this.triggerAnim("skill_controller", "attack");
     }
     public boolean canSkill() {
+        if (!ModSkillEntityType.canSkill(this)) return false;
         return !this.getWorld().isClient() && !hasSkill() && getSkillCooldown() == 0 && this.getTarget() != null;
     }
     public static final TrackedData<Boolean> HAS_SKILL = DataTracker.registerData(SkullArcherEntity.class, TrackedDataHandlerRegistry.BOOLEAN);

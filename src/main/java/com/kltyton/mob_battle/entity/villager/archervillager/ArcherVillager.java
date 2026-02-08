@@ -1,5 +1,6 @@
 package com.kltyton.mob_battle.entity.villager.archervillager;
 
+import com.kltyton.mob_battle.entity.ModSkillEntityType;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.SpawnReason;
@@ -94,6 +95,7 @@ public class ArcherVillager extends SnowGolemEntity implements Angerable, GeoEnt
     }
     @Override
     public void shootAt(LivingEntity target, float pullProgress) {
+        if (!ModSkillEntityType.canSkill(this)) return;
         World world = this.getWorld();
         if (!(world instanceof ServerWorld serverWorld)) return;
 

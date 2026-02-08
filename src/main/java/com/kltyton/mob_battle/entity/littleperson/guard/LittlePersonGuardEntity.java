@@ -1,6 +1,7 @@
 package com.kltyton.mob_battle.entity.littleperson.guard;
 
 import com.kltyton.mob_battle.entity.ModEntityAttributes;
+import com.kltyton.mob_battle.entity.ModSkillEntityType;
 import com.kltyton.mob_battle.entity.littleperson.militia.LittlePersonMilitiaEntity;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -37,7 +38,9 @@ public class LittlePersonGuardEntity extends LittlePersonMilitiaEntity {
         builder.add(SKILL_COOLDOWN, 700);
         builder.add(LIFE, -1);
     }
+    @Override
     public boolean canSkill() {
+        if (!ModSkillEntityType.canSkill(this)) return false;
         return !this.getWorld().isClient() && !hasSkill() && getSkillCooldown() == 0 && this.getTarget() != null;
     }
     public void performSkill() {
@@ -48,6 +51,7 @@ public class LittlePersonGuardEntity extends LittlePersonMilitiaEntity {
     }
     @Override
     public boolean tryAttack(ServerWorld world, Entity target) {
+        if (!ModSkillEntityType.canSkill(this)) return false;
         if (canSkill()) {
             performSkill();
             return true;

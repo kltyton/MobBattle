@@ -2,6 +2,7 @@ package com.kltyton.mob_battle.client.keybinding;
 
 import com.kltyton.mob_battle.client.screen.MasterScepterScreen;
 import com.kltyton.mob_battle.items.ModItems;
+import com.kltyton.mob_battle.network.packet.ShieldSpawnPayload;
 import com.kltyton.mob_battle.network.packet.SummonDronePayload;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
@@ -11,10 +12,12 @@ import net.minecraft.client.util.InputUtil;
 import org.lwjgl.glfw.GLFW;
 
 public class ModKeyBinding {
-    private static KeyBinding keySummon;   // 默认 X
-    private static KeyBinding keyAttackDroneMode; // 默认 C
-    private static KeyBinding keyTreatmentDroneMode;     // 默认 Z
-    private static KeyBinding keyMasterScepter;
+    public static KeyBinding keySummon;   // 默认 X
+    public static KeyBinding keyAttackDroneMode; // 默认 C
+    public static KeyBinding keyTreatmentDroneMode;     // 默认 Z
+    public static KeyBinding keyMasterScepter;
+    public static KeyBinding shieldKey;
+
     public static void init() {
         keySummon = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 "key.mob_battle.summon_drone",           // 翻译键
@@ -42,16 +45,20 @@ public class ModKeyBinding {
                 GLFW.GLFW_KEY_BACKSLASH,
                 "category.mob_battle.general"
         ));
+        shieldKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+                "key.mob_battle.shield",
+                InputUtil.Type.KEYSYM,
+                GLFW.GLFW_KEY_C,
+                "category.mob_battle.general"
+        ));
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             // while ：长按持续触发（类似原版打开背包的行为）
             while (keySummon.wasPressed()) {
                 ClientPlayNetworking.send(new SummonDronePayload(1));
             }
-
             while (keyAttackDroneMode.wasPressed()) {
                 ClientPlayNetworking.send(new SummonDronePayload(2));
             }
-
             while (keyTreatmentDroneMode.wasPressed()) {
                 ClientPlayNetworking.send(new SummonDronePayload(3));
             }
@@ -61,6 +68,9 @@ public class ModKeyBinding {
                             client.setScreen(new MasterScepterScreen())
                     );
                 }
+            }
+            while (shieldKey.wasPressed()) {
+                ClientPlayNetworking.send(new ShieldSpawnPayload());
             }
         });
     }

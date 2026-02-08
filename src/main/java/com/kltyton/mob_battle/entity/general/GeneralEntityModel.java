@@ -1,6 +1,7 @@
 package com.kltyton.mob_battle.entity.general;
 
 import com.kltyton.mob_battle.Mob_battle;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 import software.bernie.geckolib.animatable.GeoAnimatable;
@@ -11,12 +12,18 @@ import software.bernie.geckolib.model.GeoModel;
 import software.bernie.geckolib.renderer.base.GeoRenderState;
 
 public class GeneralEntityModel<T extends GeoAnimatable> extends GeoModel<T> {
+    public enum RenderTypes {
+        TRANSLUCENT,
+        CUTOUT
+    }
     public String name;
     public boolean hasHand;
-    public GeneralEntityModel(String name, boolean hasHand) {
+    public RenderTypes renderLayer;
+    public GeneralEntityModel(String name, boolean hasHand, RenderTypes renderLayer) {
         super();
         this.name = name;
         this.hasHand = hasHand;
+        this.renderLayer = renderLayer;
     }
     @Override
     public Identifier getModelResource(GeoRenderState renderState) {
@@ -46,5 +53,18 @@ public class GeneralEntityModel<T extends GeoAnimatable> extends GeoModel<T> {
                 head.setRotY(-yaw * MathHelper.RADIANS_PER_DEGREE);
             }
         }
+    }
+    public RenderLayer getRenderType(GeoRenderState renderState, Identifier texture) {
+        if (renderLayer != null) {
+            switch (renderLayer) {
+                case TRANSLUCENT -> {
+                    return RenderLayer.getEntityTranslucent(texture);
+                }
+                case CUTOUT -> {
+                    return RenderLayer.getEntityCutoutNoCull(texture);
+                }
+            }
+        }
+        return RenderLayer.getEntityCutoutNoCull(texture);
     }
 }

@@ -1,5 +1,6 @@
 package com.kltyton.mob_battle.entity.witherskeletonking;
 
+import com.kltyton.mob_battle.entity.ModSkillEntityType;
 import com.kltyton.mob_battle.entity.accessor.BigBossLookControl;
 import com.kltyton.mob_battle.entity.accessor.BigBossMoveControl;
 import com.kltyton.mob_battle.entity.accessor.BigBossNavigation;
@@ -55,7 +56,7 @@ import java.time.temporal.ChronoField;
 import java.util.Objects;
 import java.util.Optional;
 
-public class WitherSkeletonKingEntity extends WitherSkeletonEntity  implements GeoEntity {
+public class WitherSkeletonKingEntity extends WitherSkeletonEntity implements GeoEntity, ModSkillEntityType {
 
     private final ServerBossBar bossBar = new ServerBossBar(
             this.getDisplayName(),
@@ -90,7 +91,7 @@ public class WitherSkeletonKingEntity extends WitherSkeletonEntity  implements G
     public void tick() {
         super.tick();
         if (!this.getWorld().isClient()) {
-            if (this.age % 20 == 0) this.heal(10.0F);
+            if (this.age % 20 == 0) this.heal(1.0F);
             if (!hasSkill()) {
                 this.setAiDisabled(false);
                 if (canShotWitherSkull()) performShotWitherSkull();
@@ -215,6 +216,7 @@ public class WitherSkeletonKingEntity extends WitherSkeletonEntity  implements G
     protected void initEquipment(Random random, LocalDifficulty localDifficulty) {
     }
     private boolean tryAttackBase(ServerWorld world, Entity target) {
+        if (!ModSkillEntityType.canSkill(this)) return false;
         float f = 100.0F;
         ItemStack itemStack = this.getWeaponStack();
         DamageSource damageSource = Optional.ofNullable(itemStack.getItem().getDamageSource(this)).orElse(this.getDamageSources().mobAttack(this));
@@ -240,6 +242,7 @@ public class WitherSkeletonKingEntity extends WitherSkeletonEntity  implements G
         return bl;
     }
     public boolean tryAttackBase2(ServerWorld world, Entity target) {
+        if (!ModSkillEntityType.canSkill(this)) return false;
         if (!this.tryAttackBase(world, target)) {
             return false;
         } else {
@@ -255,6 +258,7 @@ public class WitherSkeletonKingEntity extends WitherSkeletonEntity  implements G
     }
     @Override
     public boolean tryAttack(ServerWorld world, Entity target) {
+        if (!ModSkillEntityType.canSkill(this)) return false;
         if (this.canSuperAttack()) {
             performSuperAttack();
             return true;
@@ -317,6 +321,7 @@ public class WitherSkeletonKingEntity extends WitherSkeletonEntity  implements G
         return this.getHealth() <= this.getMaxHealth() * 0.35 && canSkill() && getShotAllWitherSkullCooldown() == 0;
     }
     public boolean canSkill() {
+        if (!ModSkillEntityType.canSkill(this)) return false;
         return !this.getWorld().isClient() && !hasSkill() && getSkillCooldown() == 0 && this.getTarget() != null;
     }
     protected static final RawAnimation IDEA_ANIM = RawAnimation.begin().thenLoop("idle");

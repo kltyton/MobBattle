@@ -126,4 +126,9 @@ public class LittlePersonCivilianEntity extends VillagerEntity implements Little
     public static DefaultAttributeContainer.Builder createLittlePersonCivilianAttributes() {
         return MobEntity.createMobAttributes().add(EntityAttributes.MOVEMENT_SPEED, 0.4).add(EntityAttributes.FOLLOW_RANGE, 40.0);
     }
+
+    @Override
+    public boolean canSkill() {
+        return false;
+    }
 }

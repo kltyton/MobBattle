@@ -1,6 +1,7 @@
 {
   "itemGroup.mob_battle.main": "Mob Battle",
-  "category.mob_battle.general": "Mob Battle",
+
+  "category.mob_battle.general": "Mob Battle Keys",
   "key.mob_battle.summon_drone": "Summon Drone",
   "key.mob_battle.treatment_drone_mode": "Treatment Drone Mode",
   "key.mob_battle.attack_drone_mode": "Attack Drone Mode",

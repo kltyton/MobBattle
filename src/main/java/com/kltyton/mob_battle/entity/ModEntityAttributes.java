@@ -10,6 +10,7 @@ import net.minecraft.util.Identifier;
 
 public class ModEntityAttributes {
     public static RegistryEntry<EntityAttribute> DAMAGE_REDUCTION;
+    public static RegistryEntry<EntityAttribute> MAGIC_DAMAGE;
 
     public static void init() {
         DAMAGE_REDUCTION = Registry.registerReference(
@@ -18,6 +19,14 @@ public class ModEntityAttributes {
                 new ClampedEntityAttribute(
                         "attribute.name.generic.damage_reduction",
                         0.0, 0.0, 1.0
+                ).setTracked(true)
+        );
+        MAGIC_DAMAGE = Registry.registerReference(
+                Registries.ATTRIBUTE,
+                Identifier.of(Mob_battle.MOD_ID, "generic.magic_damage"),
+                new ClampedEntityAttribute(
+                        "attribute.name.generic.magic_damage",
+                        0.0, 0.0, Float.MAX_VALUE
                 ).setTracked(true)
         );
     }

@@ -1,6 +1,7 @@
 package com.kltyton.mob_battle.mixin.boss;
 
 import com.kltyton.mob_battle.entity.deepcreature.DeepCreatureEntity;
+import com.kltyton.mob_battle.entity.evoker.ModEvokerOwner;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.Ownable;
@@ -17,15 +18,25 @@ public abstract class EvokerFangsEntityMixin extends Entity implements Ownable {
     }
     @ModifyArg(method = "damage(Lnet/minecraft/entity/LivingEntity;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;damage(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/entity/damage/DamageSource;F)Z"), index = 2)
     private float modifyDamage(float damage) {
-        if (this.getOwner() != null && this.getOwner() instanceof DeepCreatureEntity) {
-            return 150;
+        if (this.getOwner() != null) {
+            if (this.getOwner() instanceof DeepCreatureEntity) {
+                return 150;
+            }
+            if (this.getOwner() instanceof ModEvokerOwner modEvokerOwner) {
+                return damage + modEvokerOwner.getEvokerDamage();
+            }
         }
         return damage;
     }
     @ModifyArg(method = "damage(Lnet/minecraft/entity/LivingEntity;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;serverDamage(Lnet/minecraft/entity/damage/DamageSource;F)V"), index = 1)
     private float modifyDamage2(float damage) {
-        if (this.getOwner() != null && this.getOwner() instanceof DeepCreatureEntity) {
-            return 150;
+        if (this.getOwner() != null) {
+            if (this.getOwner() instanceof DeepCreatureEntity) {
+                return 150;
+            }
+            if (this.getOwner() instanceof ModEvokerOwner modEvokerOwner) {
+                return damage + modEvokerOwner.getEvokerDamage();
+            }
         }
         return damage;
     }

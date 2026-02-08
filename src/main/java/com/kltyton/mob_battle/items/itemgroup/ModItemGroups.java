@@ -98,6 +98,7 @@ public class ModItemGroups {
                 ItemStack enchantedChestplate = new ItemStack(ModItems.IRON_GOLD_CHESTPLATE);
                 ItemStack enchantedLeggings = new ItemStack(ModItems.IRON_GOLD_LEGGINGS);
                 ItemStack enchantedBoots = new ItemStack(ModItems.IRON_GOLD_BOOTS);
+
                 enchantedHelmet.addEnchantment(new EnchantmentLevelEntry(lookup.getOrThrow(Enchantments.PROTECTION), 5).enchantment(), 5);
                 enchantedChestplate.addEnchantment(new EnchantmentLevelEntry(lookup.getOrThrow(Enchantments.PROTECTION), 5).enchantment(), 5);
                 enchantedLeggings.addEnchantment(new EnchantmentLevelEntry(lookup.getOrThrow(Enchantments.PROTECTION), 5).enchantment(), 5);
@@ -107,14 +108,43 @@ public class ModItemGroups {
                 enchantedLeggings.addEnchantment(new EnchantmentLevelEntry(lookup.getOrThrow(ModEnchantments.MAGIC_PROTECTION), 3).enchantment(), 3);
                 enchantedBoots.addEnchantment(new EnchantmentLevelEntry(lookup.getOrThrow(ModEnchantments.MAGIC_PROTECTION), 1).enchantment(), 1);
                 enchantedChestplate.addEnchantment(new EnchantmentLevelEntry(lookup.getOrThrow(Enchantments.FIRE_PROTECTION), 1).enchantment(), 1);
+
                 ModMaterial.createArmor(enchantedHelmet, ModMaterial.IRON_GOLD_INSTANCE, "iron_gold_helmet", EquipmentType.HELMET);
                 ModMaterial.createArmor(enchantedChestplate, ModMaterial.IRON_GOLD_INSTANCE, "iron_gold_chestplate", EquipmentType.CHESTPLATE);
                 ModMaterial.createArmor(enchantedLeggings, ModMaterial.IRON_GOLD_INSTANCE, "iron_gold_leggings", EquipmentType.LEGGINGS);
                 ModMaterial.createArmor(enchantedBoots, ModMaterial.IRON_GOLD_INSTANCE, "iron_gold_boots", EquipmentType.BOOTS);
+
                 entries.add(enchantedHelmet);
                 entries.add(enchantedChestplate);
                 entries.add(enchantedLeggings);
                 entries.add(enchantedBoots);
+
+                ItemStack edHelmet = new ItemStack(ModItems.EMERALD_DIAMOND_HELMET);
+                ItemStack edChestplate = new ItemStack(ModItems.EMERALD_DIAMOND_CHESTPLATE);
+                ItemStack edLeggings = new ItemStack(ModItems.EMERALD_DIAMOND_LEGGINGS);
+                ItemStack edBoots = new ItemStack(ModItems.EMERALD_DIAMOND_BOOTS);
+// 附魔
+                edHelmet.addEnchantment(new EnchantmentLevelEntry(lookup.getOrThrow(Enchantments.PROTECTION), 5).enchantment(), 5);
+                edHelmet.addEnchantment(new EnchantmentLevelEntry(lookup.getOrThrow(ModEnchantments.MAGIC_PROTECTION), 2).enchantment(), 2);
+
+                edChestplate.addEnchantment(new EnchantmentLevelEntry(lookup.getOrThrow(Enchantments.PROTECTION), 6).enchantment(), 6);
+                edChestplate.addEnchantment(new EnchantmentLevelEntry(lookup.getOrThrow(ModEnchantments.MAGIC_PROTECTION), 3).enchantment(), 3);
+
+                edLeggings.addEnchantment(new EnchantmentLevelEntry(lookup.getOrThrow(Enchantments.PROTECTION), 6).enchantment(), 6);
+                edLeggings.addEnchantment(new EnchantmentLevelEntry(lookup.getOrThrow(ModEnchantments.MAGIC_PROTECTION), 2).enchantment(), 2);
+
+                edBoots.addEnchantment(new EnchantmentLevelEntry(lookup.getOrThrow(Enchantments.PROTECTION), 5).enchantment(), 5);
+                edBoots.addEnchantment(new EnchantmentLevelEntry(lookup.getOrThrow(ModEnchantments.MAGIC_PROTECTION), 2).enchantment(), 2);
+
+                ModMaterial.createArmor(edHelmet, ModMaterial.EMERALD_DIAMOND_ALLOY_INSTANCE, "emerald_diamond_helmet", EquipmentType.HELMET);
+                ModMaterial.createArmor(edChestplate, ModMaterial.EMERALD_DIAMOND_ALLOY_INSTANCE, "emerald_diamond_chestplate", EquipmentType.CHESTPLATE);
+                ModMaterial.createArmor(edLeggings, ModMaterial.EMERALD_DIAMOND_ALLOY_INSTANCE, "emerald_diamond_leggings", EquipmentType.LEGGINGS);
+                ModMaterial.createArmor(edBoots, ModMaterial.EMERALD_DIAMOND_ALLOY_INSTANCE, "emerald_diamond_boots", EquipmentType.BOOTS);
+
+                entries.add(edHelmet);
+                entries.add(edChestplate);
+                entries.add(edLeggings);
+                entries.add(edBoots);
 
                 entries.add(ModItems.ECREDCULTIST_HELMET);
                 entries.add(ModItems.ECREDCULTIST_CHESTPLATE);

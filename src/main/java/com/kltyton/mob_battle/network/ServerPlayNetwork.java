@@ -1,9 +1,11 @@
 package com.kltyton.mob_battle.network;
 
 import com.kltyton.mob_battle.Mob_battle;
+import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.entity.deepcreature.DeepCreatureEntity;
 import com.kltyton.mob_battle.entity.deepcreature.skill.Skill;
 import com.kltyton.mob_battle.entity.drone.DroneManager;
+import com.kltyton.mob_battle.entity.general.GeneralEntity;
 import com.kltyton.mob_battle.entity.general.GeneralEntityOnlyOneSkill;
 import com.kltyton.mob_battle.entity.general.GeneralEntitySkillHelper;
 import com.kltyton.mob_battle.entity.highbird.HighbirdBaseEntity;
@@ -17,7 +19,8 @@ import com.kltyton.mob_battle.entity.littleperson.guard.LittlePersonGuardEntity;
 import com.kltyton.mob_battle.entity.littleperson.guard.skill.LittlePersonGuardSkill;
 import com.kltyton.mob_battle.entity.littleperson.king.LittlePersonKingEntity;
 import com.kltyton.mob_battle.entity.littleperson.king.skill.LittlePersonKingSkill;
-import com.kltyton.mob_battle.entity.littleperson.skillentity.BaseSkillLittlePersonEntity;
+import com.kltyton.mob_battle.entity.littleperson.skillentity.base.BaseSkillLittlePersonEntity;
+import com.kltyton.mob_battle.entity.misc.shield.ShieldEntity;
 import com.kltyton.mob_battle.entity.skull.archer.SkullArcherEntity;
 import com.kltyton.mob_battle.entity.skull.archer.SkullArcherEntitySkill;
 import com.kltyton.mob_battle.entity.skull.king.SkullKingEntity;
@@ -31,6 +34,7 @@ import com.kltyton.mob_battle.entity.vindicatorgeneral.VindicatorGeneralEntitySk
 import com.kltyton.mob_battle.entity.witherskeletonking.WitherSkeletonKingEntity;
 import com.kltyton.mob_battle.entity.witherskeletonking.skill.WitherSkeletonKingEntitySkill;
 import com.kltyton.mob_battle.event.masterscepter.MasterScepterManager;
+import com.kltyton.mob_battle.items.ModMaterial;
 import com.kltyton.mob_battle.network.packet.*;
 import com.kltyton.mob_battle.utils.ArmorUtil;
 import com.kltyton.mob_battle.utils.EnchantmentUtil;
@@ -39,10 +43,13 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvents;
 
 public class ServerPlayNetwork {
     public static void init() {
@@ -97,6 +104,7 @@ public class ServerPlayNetwork {
                                     }
                                     case "kill" -> deepCreature.remove(Entity.RemovalReason.KILLED);
                                     case "catch" -> Skill.runCatch(deepCreature);
+                                    case "catch_damage" -> Skill.runCatchDamage(deepCreature);
                                     case "catch_end" -> Skill.runCatchEnd(deepCreature);
                                     case "stop_run_catch" -> Skill.stopRunCatch(deepCreature);
                                     case "damage" -> Skill.runDamage(deepCreature);
@@ -176,6 +184,12 @@ public class ServerPlayNetwork {
                                     case "attack4" -> baseSkillLittlePersonEntity.runSkill_4(baseSkillLittlePersonEntity);
                                     case "attack5" -> baseSkillLittlePersonEntity.runSkill_5(baseSkillLittlePersonEntity);
                                     case "attack6" -> baseSkillLittlePersonEntity.runSkill_6(baseSkillLittlePersonEntity);
+                                    case "attack7" -> baseSkillLittlePersonEntity.runSkill_7(baseSkillLittlePersonEntity);
+                                    case "attack8" -> baseSkillLittlePersonEntity.runSkill_8(baseSkillLittlePersonEntity);
+                                    case "attack9" -> baseSkillLittlePersonEntity.runSkill_9(baseSkillLittlePersonEntity);
+                                    case "attack10" -> baseSkillLittlePersonEntity.runSkill_10(baseSkillLittlePersonEntity);
+                                    case "attack11" -> baseSkillLittlePersonEntity.runSkill_11(baseSkillLittlePersonEntity);
+                                    case "die" -> baseSkillLittlePersonEntity.deathTime = 400;
                                     case "stop_ai" -> baseSkillLittlePersonEntity.setAiDisabled(true);
                                     case "start_ai" -> baseSkillLittlePersonEntity.setAiDisabled(false);
                                     case "stop" -> {
@@ -262,10 +276,12 @@ public class ServerPlayNetwork {
                                 }
                             }
 
-                            case null -> Mob_battle.LOGGER.warn("实体不存在");
+                            case null -> Mob_battle.LOGGER.warn("实体不存在或者已死亡");
 
                             default -> {
                                 if (entity instanceof GeneralEntityOnlyOneSkill<?> skillInterface) {
+                                    GeneralEntitySkillHelper.handleSkillPayload(skillInterface, payload);
+                                } else if (entity instanceof GeneralEntity<?> skillInterface) {
                                     GeneralEntitySkillHelper.handleSkillPayload(skillInterface, payload);
                                 } else {
                                     Mob_battle.LOGGER.warn("没有找到实体：'{}' 的技能：{}", entity.getDisplayName(), payload.skillName());
@@ -296,7 +312,7 @@ public class ServerPlayNetwork {
             ServerPlayerEntity player = context.player();
             context.server().execute(() -> {
                 int type = payload.type();
-                if (!ArmorUtil.hasFullDiamondArmor(player)) {
+                if (!ArmorUtil.hasFullArmor(player, ModMaterial.IRON_GOLD_INSTANCE)) {
                     return;
                 }
                 if (type == 1) DroneManager.handleSummonRequest(player);
@@ -313,6 +329,23 @@ public class ServerPlayNetwork {
                 ServerPlayerEntity player = context.player();
                 String command = payload.id();
                 MasterScepterManager.runCommand(player, command);
+            });
+        });
+        ServerPlayNetworking.registerGlobalReceiver(ShieldSpawnPayload.ID, (payload, context) -> {
+            ServerPlayerEntity player = context.player();
+            ServerWorld world = player.getWorld();
+            context.server().execute(() -> {
+                if (ArmorUtil.hasFullArmor(player, ModMaterial.EMERALD_DIAMOND_ALLOY_INSTANCE)) {
+                    ItemStack cooldownItem = Items.AIR.getDefaultStack();
+                    if (player.getItemCooldownManager().isCoolingDown(cooldownItem)) return;
+                    ShieldEntity shield = new ShieldEntity(ModEntities.SHIELD, world);
+                    shield.setPosition(player.getX(), player.getY(), player.getZ());
+                    shield.setOwner(player);
+                    world.spawnEntity(shield);
+                    player.getItemCooldownManager().set(cooldownItem, 1300);
+                    world.playSound(null, player.getX(), player.getY(), player.getZ(),
+                            SoundEvents.ITEM_ARMOR_EQUIP_DIAMOND, SoundCategory.PLAYERS, 1.0F, 1.2F);
+                }
             });
         });
     }

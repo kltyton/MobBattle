@@ -1,6 +1,9 @@
 package com.kltyton.mob_battle.entity.littleperson.skillentity;
 
+import com.kltyton.mob_battle.entity.ModEntityAttributes;
+import com.kltyton.mob_battle.entity.littleperson.skillentity.base.BaseSkillLittlePersonEntity;
 import com.kltyton.mob_battle.entity.littleperson.skillentity.ironmanbullet.IronManBulletEntity;
+import com.kltyton.mob_battle.utils.EntityUtil;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -26,8 +29,9 @@ public class IronManTrueEntity extends BaseSkillLittlePersonEntity {
     }
     public static DefaultAttributeContainer.Builder createLittlePersonAttributes() {
         return BaseSkillLittlePersonEntity.createAttributes()
-                .add(EntityAttributes.MAX_HEALTH, 2000.0)
-                .add(EntityAttributes.ATTACK_DAMAGE, 65.0);
+                .add(EntityAttributes.MAX_HEALTH, 2500.0)
+                .add(EntityAttributes.ATTACK_DAMAGE, 65.0)
+                .add(ModEntityAttributes.DAMAGE_REDUCTION, 0.5);
     }
     @Override
     public int blockProbability() {
@@ -66,7 +70,8 @@ public class IronManTrueEntity extends BaseSkillLittlePersonEntity {
     @Override
     public void runSkill_3(BaseSkillLittlePersonEntity entity) {
         if (entity.getTarget() != null) {
-            entity.getTarget().damage((ServerWorld) entity.getWorld(), entity.getDamageSources().mobAttack(entity), 90);
+            List<LivingEntity> targets = EntityUtil.getNearbyEntity(entity,LivingEntity.class, Object.class,4, false, EntityUtil.TeamFilter.EXCLUDE_TEAM);
+            for (LivingEntity livingEntity : targets) livingEntity.damage((ServerWorld) entity.getWorld(), entity.getDamageSources().mobAttack(entity), 90);
         }
     }
     @Override

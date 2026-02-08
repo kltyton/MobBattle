@@ -41,6 +41,10 @@ public class ModPackets {
                 MasterScepterPayload.ID,
                 MasterScepterPayload.CODEC
         );
+        PayloadTypeRegistry.playC2S().register(
+                ShieldSpawnPayload.ID,
+                ShieldSpawnPayload.CODEC
+        );
         PayloadTypeRegistry.playS2C().register(
                 ItemGroupPayload.ID,
                 ItemGroupPayload.CODEC

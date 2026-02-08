@@ -1,14 +1,24 @@
 package com.kltyton.mob_battle.entity.littleperson.skillentity;
 
 import com.kltyton.mob_battle.entity.ModEntities;
+import com.kltyton.mob_battle.entity.littleperson.LittlePersonEntity;
 import com.kltyton.mob_battle.entity.littleperson.archer.littlearrow.LittleArrowEntity;
+import com.kltyton.mob_battle.entity.littleperson.skillentity.base.BaseSkillLittlePersonEntity;
+import com.kltyton.mob_battle.entity.villager.warriorvillager.WarriorVillager;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.SpawnReason;
+import net.minecraft.entity.ai.RangedAttackMob;
+import net.minecraft.entity.ai.goal.*;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.mob.HostileEntity;
+import net.minecraft.entity.mob.MobEntity;
+import net.minecraft.entity.mob.Monster;
+import net.minecraft.entity.passive.GolemEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.server.world.ServerWorld;
@@ -17,7 +27,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 
-public class WildManEntity extends BaseSkillLittlePersonEntity {
+public class WildManEntity extends BaseSkillLittlePersonEntity implements RangedAttackMob {
     public WildManEntity(EntityType<? extends HostileEntity> entityType, World world) {
         super(entityType, world, 3);
         COOL_DOWN_TIME_1 = 20 * 20;
@@ -25,9 +35,20 @@ public class WildManEntity extends BaseSkillLittlePersonEntity {
         COOL_DOWN_TIME_3 = 10 * 20;
         init();
     }
+    @Override
+    protected void initGoals() {
+        this.goalSelector.add(2, new ProjectileAttackGoal(this, 1.0D, 20, 6.0F));
+        this.goalSelector.add(7, new WanderAroundFarGoal(this, 1.0)); // 添加远距离游荡目标
+        this.goalSelector.add(8, new LookAtEntityGoal(this, PlayerEntity.class, 8.0F)); // 添加看向玩家的目标
+        this.goalSelector.add(8, new LookAroundGoal(this)); // 添加环顾四周的目标
+        this.targetSelector.add(3, new ActiveTargetGoal<>(this, GolemEntity.class, true)); // 添加攻击傀儡目标
+        this.targetSelector.add(2, new ActiveTargetGoal<>(this, WarriorVillager.class, true));
+        this.targetSelector.add(2, new ActiveTargetGoal<>(this, PlayerEntity.class, true)); // 添加主动攻击玩家目标
+        this.targetSelector.add(3, new ActiveTargetGoal<>(this, MobEntity.class, 5, false, false, (entity, world) -> entity instanceof Monster && !(entity instanceof LittlePersonEntity)));
+    }
     public static DefaultAttributeContainer.Builder createLittlePersonAttributes() {
         return BaseSkillLittlePersonEntity.createAttributes()
-                .add(EntityAttributes.MAX_HEALTH, 2100.0)
+                .add(EntityAttributes.MAX_HEALTH, 2000.0)
                 .add(EntityAttributes.ATTACK_DAMAGE, 45.00);
     }
     @Override
@@ -38,27 +59,29 @@ public class WildManEntity extends BaseSkillLittlePersonEntity {
     public void tick() {
         super.tick();
         if (!this.getWorld().isClient()) {
-            if (this.canSkill("attack2")) performSkill("attack2");
             if (this.canSkill("attack4")) performSkill("attack4");
+            if (this.canSkill("attack3") && this.getTarget() != null && this.getTarget().distanceTo(this) <= 2) {
+                performSkill("attack3");
+            }
         }
     }
     @Override
     public void runSkill_2(BaseSkillLittlePersonEntity entity) {
         if (entity.getTarget() != null) {
-            shootAt(this, entity.getTarget(), 200);
+            shootAt(this, entity.getTarget(), 25);
         }
     }
 
     @Override
     public void runSkill_3(BaseSkillLittlePersonEntity entity) {
         if (entity.getTarget() != null) {
-            entity.getTarget().damage((ServerWorld) entity.getWorld(), entity.getDamageSources().mobAttack(entity), 90);
+            entity.getTarget().damage((ServerWorld) entity.getWorld(), entity.getDamageSources().mobAttack(entity), 35);
         }
     }
     @Override
     public void runSkill_5(BaseSkillLittlePersonEntity entity) {
         if (entity.getTarget() != null) {
-            entity.getTarget().damage((ServerWorld) entity.getWorld(), entity.getDamageSources().mobAttack(entity), 100);
+            entity.getTarget().damage((ServerWorld) entity.getWorld(), entity.getDamageSources().mobAttack(entity), 35);
         }
     }
 
@@ -81,6 +104,16 @@ public class WildManEntity extends BaseSkillLittlePersonEntity {
             }
         }
     }
+    @Override
+    public void shootAt(LivingEntity target, float pullProgress) {
+        performSkill("attack2");
+    }
+
+    @Override
+    public boolean tryAttack(ServerWorld world, Entity target) {
+        return true;
+    }
+
     public static void shootAt(WildManEntity wildManEntity, LivingEntity target, float damage) {
         double targetX = target.getX() - wildManEntity.getX();
         double targetY = target.getEyeY() - wildManEntity.getEyeY(); // 更精确的高度计算

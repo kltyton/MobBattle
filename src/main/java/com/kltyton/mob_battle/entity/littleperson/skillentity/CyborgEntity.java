@@ -1,7 +1,9 @@
 package com.kltyton.mob_battle.entity.littleperson.skillentity;
 
 import com.kltyton.mob_battle.entity.ModEntities;
+import com.kltyton.mob_battle.entity.ModEntityAttributes;
 import com.kltyton.mob_battle.entity.littleperson.archer.littlearrow.LittleArrowEntity;
+import com.kltyton.mob_battle.entity.littleperson.skillentity.base.BaseSkillLittlePersonEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -30,8 +32,9 @@ public class CyborgEntity extends BaseSkillLittlePersonEntity {
     }
     public static DefaultAttributeContainer.Builder createLittlePersonAttributes() {
         return BaseSkillLittlePersonEntity.createAttributes()
-                .add(EntityAttributes.MAX_HEALTH, 2600.0)
-                .add(EntityAttributes.ATTACK_DAMAGE, 50.0);
+                .add(EntityAttributes.MAX_HEALTH, 3600.0)
+                .add(EntityAttributes.ATTACK_DAMAGE, 50.0)
+                .add(ModEntityAttributes.DAMAGE_REDUCTION, 0.5);
     }
     @Override
     public boolean tryAttack(ServerWorld world, Entity target) {
@@ -106,7 +109,7 @@ public class CyborgEntity extends BaseSkillLittlePersonEntity {
                             livingEntity.getPitch()
                     );
                     double originalMaxHealth = livingEntity.getAttributeValue(EntityAttributes.MAX_HEALTH);
-                    double newMaxHealth = originalMaxHealth + 500.0;
+                    double newMaxHealth = originalMaxHealth + 10;
                     cyborg.getAttributeInstance(EntityAttributes.MAX_HEALTH).setBaseValue(newMaxHealth);
                     cyborg.setHealth((float) newMaxHealth);
                     serverWorld.spawnEntity(cyborg);

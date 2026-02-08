@@ -22,3 +22,5 @@ accessible class net/minecraft/entity/mob/PhantomEntity$PhantomMovementType
 accessible field net/minecraft/entity/mob/PhantomEntity circlingCenter Lnet/minecraft/util/math/BlockPos;
 accessible field net/minecraft/entity/mob/PhantomEntity targetPosition Lnet/minecraft/util/math/Vec3d;
 accessible class net/minecraft/entity/mob/PhantomEntity$MovementGoal
+accessible method net/minecraft/entity/mob/EvokerEntity setWololoTarget (Lnet/minecraft/entity/passive/SheepEntity;)V
+accessible method net/minecraft/entity/mob/EvokerEntity getWololoTarget ()Lnet/minecraft/entity/passive/SheepEntity;

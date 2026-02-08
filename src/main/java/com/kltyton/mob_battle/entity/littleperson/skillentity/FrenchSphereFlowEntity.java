@@ -1,7 +1,10 @@
 package com.kltyton.mob_battle.entity.littleperson.skillentity;
 
+import com.kltyton.mob_battle.effect.ModEffects;
 import com.kltyton.mob_battle.entity.littleperson.LittlePersonEntity;
+import com.kltyton.mob_battle.entity.littleperson.skillentity.base.BaseSkillLittlePersonEntity;
 import com.kltyton.mob_battle.utils.EntityUtil;
+import com.kltyton.mob_battle.utils.TaskSchedulerUtil;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
@@ -20,11 +23,13 @@ public class FrenchSphereFlowEntity extends BaseSkillLittlePersonEntity {
         COOL_DOWN_TIME_1 = 15 * 20;
         COOL_DOWN_TIME_2 = 20 * 20;
         COOL_DOWN_TIME_3 = 25 * 20;
+        COOL_DOWN_TIME_4 = 25 * 20;
+        COOL_DOWN_TIME_5 = 80 * 20;
         init();
     }
     public static DefaultAttributeContainer.Builder createLittlePersonAttributes() {
         return BaseSkillLittlePersonEntity.createAttributes()
-                .add(EntityAttributes.MAX_HEALTH, 3200.0)
+                .add(EntityAttributes.MAX_HEALTH, 3700.0)
                 .add(EntityAttributes.ATTACK_DAMAGE, 20.0);
     }
     @Override
@@ -61,5 +66,29 @@ public class FrenchSphereFlowEntity extends BaseSkillLittlePersonEntity {
         for (LivingEntity livingEntity : EntityUtil.getNearbyEntity(entity, LivingEntity.class, Object.class, 10, false, EntityUtil.TeamFilter.EXCLUDE_TEAM)) {
             livingEntity.addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS, 5 * 20, 9));
         }
+    }
+    @Override
+    public void runSkill_5(BaseSkillLittlePersonEntity entity) {
+        for (LivingEntity livingEntity : EntityUtil.getNearbyEntity(entity, LivingEntity.class, Object.class, 10, false, EntityUtil.TeamFilter.EXCLUDE_TEAM)) {
+            livingEntity.addStatusEffect(new StatusEffectInstance(ModEffects.ARMOR_PIERCING_ENTRY, 10 * 20, 1));
+        }
+    }
+    @Override
+    public void runSkill_6(BaseSkillLittlePersonEntity entity) {
+        for (LivingEntity livingEntity : EntityUtil.getNearbyEntity(entity, LivingEntity.class, Object.class, 10, false, EntityUtil.TeamFilter.EXCLUDE_TEAM)) {
+            livingEntity.addStatusEffect(new StatusEffectInstance(ModEffects.ARMOR_PIERCING_ENTRY, 10 * 20, 2));
+            livingEntity.addStatusEffect(new StatusEffectInstance(ModEffects.STUN_ENTRY, 20, 0));
+        }
+        for (LivingEntity livingEntity : EntityUtil.getNearbyEntity(entity, LivingEntity.class, LittlePersonEntity.class, 10, true, EntityUtil.TeamFilter.ONLY_TEAM)) {
+            livingEntity.addStatusEffect(new StatusEffectInstance(StatusEffects.RESISTANCE, 20 * 20, 1));
+            livingEntity.heal(100f);
+        }
+        TaskSchedulerUtil.runLater(40, () -> {
+            if (entity.getTarget() != null) {
+                entity.getTarget().damage((ServerWorld) entity.getWorld(), entity.getTarget().getDamageSources().explosion(entity, entity), 200);
+                entity.getTarget().damage((ServerWorld) entity.getWorld(), entity.getTarget().getDamageSources().indirectMagic(entity, entity), 70);
+            }
+
+        });
     }
 }

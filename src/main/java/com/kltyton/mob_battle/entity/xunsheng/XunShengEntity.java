@@ -1,5 +1,6 @@
 package com.kltyton.mob_battle.entity.xunsheng;
 
+import com.kltyton.mob_battle.entity.ModSkillEntityType;
 import net.minecraft.block.BlockState;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
@@ -156,26 +157,28 @@ public class XunShengEntity extends HostileEntity implements GeoEntity {
     // 尝试攻击时的处理
     @Override
     public boolean tryAttack(ServerWorld world, Entity target) {
-            // 如果处于冷却状态，取消攻击
-            if (isAttackCooldown()) {
-                return false;
-            }
+        if (!ModSkillEntityType.canSkill(this)) return false;
+        // 如果处于冷却状态，取消攻击
+        if (isAttackCooldown()) {
+            return false;
+        }
 
-            boolean bl = mobTryAttack(world,target);
-            if (bl) {
-                // 触发攻击冷却
-                cooldownTicks = 20; // 20刻冷却
-                this.getDataTracker().set(ATTACK_COOLDOWN, true);
-                float f = this.getWorld().getLocalDifficulty(this.getBlockPos()).getLocalDifficulty();
-                if (this.getMainHandStack().isEmpty() && this.isOnFire() && this.random.nextFloat() < f * 0.3F) {
-                    target.setOnFireFor(2 * (int)f);
-                }
+        boolean bl = mobTryAttack(world,target);
+        if (bl) {
+            // 触发攻击冷却
+            cooldownTicks = 20; // 20刻冷却
+            this.getDataTracker().set(ATTACK_COOLDOWN, true);
+            float f = this.getWorld().getLocalDifficulty(this.getBlockPos()).getLocalDifficulty();
+            if (this.getMainHandStack().isEmpty() && this.isOnFire() && this.random.nextFloat() < f * 0.3F) {
+                target.setOnFireFor(2 * (int)f);
             }
-            return bl;
+        }
+        return bl;
     }
 
     // 定义一个名为 mobTryAttack 的方法，该方法在 ServerWorld 环境下执行，对目标实体进行攻击尝试，返回一个布尔值表示攻击是否成功
     public boolean mobTryAttack(ServerWorld world, Entity target) {
+        if (!ModSkillEntityType.canSkill(this)) return false;
         // 获取当前实体的攻击伤害属性值，并将其转换为 float 类型
         float f = (float)this.getAttributeValue(EntityAttributes.ATTACK_DAMAGE);
         // 获取当前实体所持有的武器栈（ItemStack 对象，表示武器）

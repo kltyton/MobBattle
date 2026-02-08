@@ -1,5 +1,6 @@
 package com.kltyton.mob_battle.entity.skull.king;
 
+import com.kltyton.mob_battle.entity.ModSkillEntityType;
 import com.kltyton.mob_battle.entity.accessor.BigBossLookControl;
 import com.kltyton.mob_battle.entity.accessor.BigBossMoveControl;
 import com.kltyton.mob_battle.entity.accessor.BigBossNavigation;
@@ -172,6 +173,7 @@ public class SkullKingEntity extends WitherSkeletonEntity implements GeoEntity, 
         this.navigation = new BigBossNavigation(this, world);
     }
     public boolean tryAttackBase(ServerWorld world, Entity target) {
+        if (!ModSkillEntityType.canSkill(this)) return false;
         float f = 90.0F;
         ItemStack itemStack = this.getWeaponStack();
         DamageSource damageSource = Optional.ofNullable(itemStack.getItem().getDamageSource(this)).orElse(this.getDamageSources().mobAttack(this));
@@ -197,6 +199,7 @@ public class SkullKingEntity extends WitherSkeletonEntity implements GeoEntity, 
     }
     @Override
     public boolean tryAttack(ServerWorld world, Entity target) {
+        if (!ModSkillEntityType.canSkill(this)) return false;
         if (this.canSuperAttack()) {
             performSuperAttack();
             return true;
@@ -234,6 +237,7 @@ public class SkullKingEntity extends WitherSkeletonEntity implements GeoEntity, 
         return count < 60 && canSkill() && getSummonSkullCooldown() == 0;
     }
     public boolean canSkill() {
+        if (!ModSkillEntityType.canSkill(this)) return false;
         return !this.getWorld().isClient() && !hasSkill() && getSkillCooldown() == 0 && this.getTarget() != null;
     }
     protected static final RawAnimation IDEA_ANIM = RawAnimation.begin().thenLoop("idle");
@@ -293,7 +297,8 @@ public class SkullKingEntity extends WitherSkeletonEntity implements GeoEntity, 
                 .add(EntityAttributes.MAX_HEALTH, 3500.0D)
                 .add(EntityAttributes.MOVEMENT_SPEED, 0.3D)
                 .add(EntityAttributes.ATTACK_DAMAGE, 90.0D)
-                .add(EntityAttributes.FOLLOW_RANGE, 24.0D);
+                .add(EntityAttributes.FOLLOW_RANGE, 24.0D)
+                .add(EntityAttributes.STEP_HEIGHT, 3.0);
     }
     public boolean hasSkill() {
         return getDataTracker().get(HAS_SKILL);

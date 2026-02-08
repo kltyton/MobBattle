@@ -1,6 +1,7 @@
 package com.kltyton.mob_battle.event;
 
 import com.kltyton.mob_battle.effect.ModEffects;
+import com.kltyton.mob_battle.explosion.EffectExplosionBehavior;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
@@ -27,7 +28,7 @@ public class SelfDestructEffectEvent {
         world.createExplosion(
                 entity,
                 null,
-                null,
+                new EffectExplosionBehavior(entity),
                 pos.x, pos.y, pos.z,
                 power,
                 false,

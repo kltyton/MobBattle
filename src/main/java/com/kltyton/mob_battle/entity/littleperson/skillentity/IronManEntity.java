@@ -1,6 +1,7 @@
 package com.kltyton.mob_battle.entity.littleperson.skillentity;
 
 import com.kltyton.mob_battle.entity.ModEntities;
+import com.kltyton.mob_battle.entity.littleperson.skillentity.base.BaseSkillLittlePersonEntity;
 import com.kltyton.mob_battle.entity.littleperson.skillentity.ironmanbullet.IronManBulletEntity;
 import com.kltyton.mob_battle.utils.EntityUtil;
 import net.minecraft.entity.EntityType;
@@ -25,7 +26,7 @@ public class IronManEntity extends BaseSkillLittlePersonEntity {
     }
     public static DefaultAttributeContainer.Builder createLittlePersonAttributes() {
         return BaseSkillLittlePersonEntity.createAttributes()
-                .add(EntityAttributes.MAX_HEALTH, 2500.0)
+                .add(EntityAttributes.MAX_HEALTH, 3000.0)
                 .add(EntityAttributes.ATTACK_DAMAGE, 50.0)
                 .add(EntityAttributes.ARMOR, 10)
                 .add(EntityAttributes.ARMOR_TOUGHNESS, 20);
@@ -33,9 +34,12 @@ public class IronManEntity extends BaseSkillLittlePersonEntity {
     @Override
     public void tick() {
         super.tick();
-        if (!this.getWorld().isClient() && this.endDamage) {
-            for (LivingEntity entity : EntityUtil.getNearbyEntity(this, LivingEntity.class, Object.class, 2, false, EntityUtil.TeamFilter.EXCLUDE_TEAM)) {
-                entity.damage((ServerWorld) this.getWorld(), this.getDamageSources().mobAttack(this), 65);
+        if (!this.getWorld().isClient()) {
+            if (canSkill("attack3")) performSkill("attack3");
+            if (this.endDamage) {
+                for (LivingEntity entity : EntityUtil.getNearbyEntity(this, LivingEntity.class, Object.class, 2, false, EntityUtil.TeamFilter.EXCLUDE_TEAM)) {
+                    entity.damage((ServerWorld) this.getWorld(), this.getDamageSources().mobAttack(this), 65);
+                }
             }
         }
     }
@@ -77,7 +81,7 @@ public class IronManEntity extends BaseSkillLittlePersonEntity {
         entity.endDamage = true;
     }
     @Override
-    public void runSkill_5(BaseSkillLittlePersonEntity entity) {
+    public void die(BaseSkillLittlePersonEntity entity) {
         if (entity.getWorld() instanceof ServerWorld serverWorld) {
             IronManTrueEntity ironManTrue = ModEntities.IRON_MAN_TRUE.create(this.getWorld(), SpawnReason.CONVERSION);
             if (ironManTrue != null) {

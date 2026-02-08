@@ -1,12 +1,12 @@
 package com.kltyton.mob_battle.entity.littleperson;
 
+import com.kltyton.mob_battle.entity.ModSkillEntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
 import software.bernie.geckolib.animatable.GeoEntity;
 
-public interface LittlePersonEntity extends GeoEntity {
+public interface LittlePersonEntity extends GeoEntity, ModSkillEntityType {
     default void heal() {
-
     }
     default boolean blockAttack(DamageSource source, float amount) {
         return false;

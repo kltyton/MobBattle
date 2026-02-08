@@ -1,7 +1,9 @@
 package com.kltyton.mob_battle.entity.silencephantom;
 
+import com.kltyton.mob_battle.entity.ModSkillEntityType;
 import com.kltyton.mob_battle.entity.general.GeneralEntityOnlyOneSkill;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
+import com.kltyton.mob_battle.tags.ModTags;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -24,7 +26,6 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.Heightmap;
 import net.minecraft.world.World;
-import software.bernie.geckolib.animatable.GeoEntity;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.animatable.manager.AnimatableManager;
 import software.bernie.geckolib.animatable.processing.AnimationController;
@@ -37,12 +38,17 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 import java.util.Comparator;
 import java.util.List;
 
-public class SilencePhantomEntity extends PhantomEntity implements GeoEntity, GeneralEntityOnlyOneSkill<SilencePhantomEntity> {
+public class SilencePhantomEntity extends PhantomEntity implements  GeneralEntityOnlyOneSkill<SilencePhantomEntity> {
     public static final TrackedData<Boolean> HAS_SKILL = DataTracker.registerData(SilencePhantomEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
     public SilencePhantomEntity(EntityType<? extends PhantomEntity> entityType, World world) {
         super(entityType, world);
         this.setAiDisabled(false);
         this.setHasSkill(false);
+    }
+    @Override
+    public boolean tryAttack(ServerWorld world, Entity target) {
+        if (!ModSkillEntityType.canSkill(this)) return false;
+        return super.tryAttack(world, target);
     }
     @Override
     public boolean hasSkill() {
@@ -53,7 +59,9 @@ public class SilencePhantomEntity extends PhantomEntity implements GeoEntity, Ge
         getDataTracker().set(HAS_SKILL, hasSkill);
     }
 
+    @Override
     public boolean canSkill() {
+        if (!ModSkillEntityType.canSkill(this)) return false;
         return !this.getWorld().isClient() && !hasSkill() && this.getTarget() != null;
     }
     public void performSkill() {
@@ -204,7 +212,7 @@ public class SilencePhantomEntity extends PhantomEntity implements GeoEntity, Ge
         }
     }
     public class FindTargetGoal extends Goal {
-        private final TargetPredicate PLAYERS_IN_RANGE_PREDICATE = TargetPredicate.createAttackable().setBaseMaxDistance(64.0F);
+        private final TargetPredicate PLAYERS_IN_RANGE_PREDICATE = TargetPredicate.createAttackable().setBaseMaxDistance(64.0F).setPredicate((entity, world) -> !entity.getType().isIn(ModTags.SILENCE_PHANTOM_CANNOT_ATTACK));
         private int delay = toGoalTicks(20);
 
         FindTargetGoal() {
@@ -216,18 +224,16 @@ public class SilencePhantomEntity extends PhantomEntity implements GeoEntity, Ge
             } else {
                 this.delay = toGoalTicks(60);
                 ServerWorld serverWorld = castToServerWorld(SilencePhantomEntity.this.getWorld());
-                List<PlayerEntity> list = serverWorld.getPlayers(this.PLAYERS_IN_RANGE_PREDICATE, SilencePhantomEntity.this, SilencePhantomEntity.this.getBoundingBox().expand(16.0F, 64.0F, 16.0F));
+                List<? extends LivingEntity> list = serverWorld.getTargets(LivingEntity.class, this.PLAYERS_IN_RANGE_PREDICATE, SilencePhantomEntity.this, SilencePhantomEntity.this.getBoundingBox().expand(16.0F, 64.0F, 16.0F));
                 if (!list.isEmpty()) {
                     list.sort(Comparator.comparing(Entity::getY).reversed());
-
-                    for(PlayerEntity playerEntity : list) {
+                    for(LivingEntity playerEntity : list) {
                         if (SilencePhantomEntity.this.testTargetPredicate(serverWorld, playerEntity, TargetPredicate.DEFAULT)) {
                             SilencePhantomEntity.this.setTarget(playerEntity);
                             return true;
                         }
                     }
                 }
-
             }
             return false;
         }

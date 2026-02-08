@@ -1,5 +1,6 @@
 package com.kltyton.mob_battle.entity.deepcreature;
 
+import com.kltyton.mob_battle.entity.ModSkillEntityType;
 import com.kltyton.mob_battle.entity.deepcreature.goal.DeepCreatureEntityNavigation;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -47,7 +48,7 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 import java.util.List;
 import java.util.Objects;
 
-public class DeepCreatureEntity extends HostileEntity implements GeoEntity {
+public class DeepCreatureEntity extends HostileEntity implements GeoEntity, ModSkillEntityType {
 
     private final ServerBossBar bossBar = new ServerBossBar(
             this.getDisplayName(),
@@ -356,10 +357,12 @@ public class DeepCreatureEntity extends HostileEntity implements GeoEntity {
         super.tick();
         if (!this.getWorld().isClient()) {
             if (getGrabTargetId() != -1 && this.age % 20 == 0) {
-                this.getTarget().damage((ServerWorld) this.getWorld(), this.getTarget().getDamageSources().magic(), 150F);
+                //抓取攻击
+                if (this.getTarget() != null)
+                    this.getTarget().damage((ServerWorld) this.getWorld(), this.getTarget().getDamageSources().indirectMagic(this, this), 60F);
             }
             if (isAiDisabled()) {
-                this.setInvulnerable(true);
+                //this.setInvulnerable(true);
                 if (stuckCooldown > 0) {
                     stuckCooldown--;
                 } else {
@@ -367,17 +370,17 @@ public class DeepCreatureEntity extends HostileEntity implements GeoEntity {
                     stuckCooldown = 200;
                 }
             } else {
-                this.setInvulnerable(false);
+                //this.setInvulnerable(false);
                 stuckCooldown = 200;
             }
             if (catchCooldown > 0) {
                 catchCooldown--;
             }
-            if (catchCooldown == 0 && this.isSpawnAnimEnd() && !hasSkill() && getSkillCooldown() == 0) {
+            if (catchCooldown == 0 && canSkill()) {
                 performCatchSkill();
                 catchCooldown = 600;
             }
-            if (chargeTicksLeft > 0 && this.isSpawnAnimEnd() && !hasSkill() && getSkillCooldown() == 0) {
+            if (chargeTicksLeft > 0 && canSkill()) {
                 // 1. 倒计时
                 chargeTicksLeft--;
                 // 2. 保持朝向
@@ -413,9 +416,7 @@ public class DeepCreatureEntity extends HostileEntity implements GeoEntity {
             }
             if (this.getTarget() != null
                     && this.getTarget().distanceTo(this) >= 16
-                    && this.isSpawnAnimEnd()
-                    && !hasSkill()
-                    && getSkillCooldown() == 0
+                    && canSkill()
                     && remoteCooldown <= 0) {
                 if (this.getRandom().nextBoolean()) {
                     this.performSonicBoomSkill();
@@ -460,7 +461,7 @@ public class DeepCreatureEntity extends HostileEntity implements GeoEntity {
     }
     @Override
     public boolean tryAttack(ServerWorld world, Entity target) {
-        if (!this.getWorld().isClient() && !hasSkill() && getSkillCooldown() == 0) {
+        if (!this.getWorld().isClient() && canSkill()) {
             setHasSkill(true);
             int index = this.getRandom().nextInt(skills.size());
             skills.get(index).run();
@@ -572,5 +573,11 @@ public class DeepCreatureEntity extends HostileEntity implements GeoEntity {
     }
     public void setSkillCooldown(int cooldown) {
         getDataTracker().set(SKILL_COOLDOWN, cooldown);
+    }
+
+    @Override
+    public boolean canSkill() {
+        if (!ModSkillEntityType.canSkill(this)) return false;
+        return this.isSpawnAnimEnd() && !hasSkill() && getSkillCooldown() == 0;
     }
 }

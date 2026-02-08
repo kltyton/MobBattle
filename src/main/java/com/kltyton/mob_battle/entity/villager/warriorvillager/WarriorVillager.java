@@ -1,5 +1,6 @@
 package com.kltyton.mob_battle.entity.villager.warriorvillager;
 
+import com.kltyton.mob_battle.entity.ModSkillEntityType;
 import com.kltyton.mob_battle.entity.irongolem.ModBaseIronGolemEntity;
 import net.minecraft.block.BlockState;
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -40,6 +41,7 @@ public class WarriorVillager extends IronGolemEntity implements GeoEntity, ModBa
     }
     @Override
     public boolean tryAttack(ServerWorld world, Entity target) {
+        if (!ModSkillEntityType.canSkill(this)) return false;
         this.attackTicksLeft = 10;
         world.sendEntityStatus(this, EntityStatuses.PLAY_ATTACK_SOUND);
         float f = this.getAttackDamage();
