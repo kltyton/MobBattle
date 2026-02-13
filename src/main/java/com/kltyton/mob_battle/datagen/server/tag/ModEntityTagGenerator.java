@@ -1,4 +1,4 @@
-package com.kltyton.mob_battle.data.server.tag;
+package com.kltyton.mob_battle.datagen.server.tag;
 
 import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.tags.ModTags;
@@ -6,6 +6,7 @@ import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagProvider;
 import net.minecraft.entity.EntityType;
 import net.minecraft.registry.RegistryWrapper;
+import net.minecraft.registry.tag.EntityTypeTags;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -28,5 +29,13 @@ public class ModEntityTagGenerator extends FabricTagProvider.EntityTypeTagProvid
                 .add(ModEntities.WITHER_SKELETON_KING)
                 .add(ModEntities.VINDICATOR_GENERAL)
                 .add(ModEntities.HULKBUSTER);
+        valueLookupBuilder(EntityTypeTags.UNDEAD).add(
+                ModEntities.WITHER_SKELETON_KING,
+                ModEntities.SKULL_KING,
+                ModEntities.SKULL_ARCHER,
+                ModEntities.SKULL_MAGE,
+                ModEntities.SKULL_WARRIOR
+        );
     }
 }
+

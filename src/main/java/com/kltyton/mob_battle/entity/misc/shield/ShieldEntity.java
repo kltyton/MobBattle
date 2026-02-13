@@ -139,6 +139,12 @@ public class ShieldEntity extends Entity implements GeoEntity {
     }
 
     private void repulseEntity(Entity entity, double radius) {
+        if (entity instanceof LivingEntity living && !this.getWorld().isClient()) {
+            living.damage((ServerWorld) this.getWorld(),
+                    this.getDamageSources().indirectMagic(this, this.getOwner() == null ? this : getWorld().getEntity(ownerUuid)),
+                    10f
+            );
+        }
         Vec3d center = this.getPos();
         Vec3d toEntity = entity.getPos().subtract(center);
         double dist = toEntity.length();

@@ -1,6 +1,7 @@
 package com.kltyton.mob_battle.entity.villager.archervillager;
 
 import com.kltyton.mob_battle.entity.ModSkillEntityType;
+import com.kltyton.mob_battle.entity.ai.goal.GeneralProtectionVillagerGoal;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.SpawnReason;
@@ -66,6 +67,7 @@ public class ArcherVillager extends SnowGolemEntity implements Angerable, GeoEnt
         super.initGoals();
         this.goalSelector.add(0, new SwimGoal(this)); // 添加游泳AI
         this.targetSelector.add(2, new RevengeGoal(this));
+        this.targetSelector.add(1, new GeneralProtectionVillagerGoal(this));
         this.targetSelector.add(2, new ActiveTargetGoal<>(this, net.minecraft.entity.mob.PhantomEntity.class, true));
         this.targetSelector.add(2, new ActiveTargetGoal<>(this, PlayerEntity.class, 10, true, false, this::shouldAngerAt));
         this.targetSelector.add(2, new UniversalAngerGoal<>(this, false));

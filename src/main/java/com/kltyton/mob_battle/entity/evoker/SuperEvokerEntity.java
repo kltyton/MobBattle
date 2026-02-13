@@ -186,9 +186,14 @@ public class SuperEvokerEntity extends EvokerEntity implements ModEvokerOwner {
                     }
                 }
             } else {
-                // 原版加强：超长直线
-                for (int i = 0; i < 24; i++) {
-                    createEnhancedFang(SuperEvokerEntity.this.getX() + MathHelper.cos(angle) * i, SuperEvokerEntity.this.getZ() + MathHelper.sin(angle) * i, d, e, angle, i);
+                for (int i = 0; i < 48; i++) {
+                    double distance = 1.25 * (i + 1);
+                    int warmup = i;
+                    createEnhancedFang(
+                            SuperEvokerEntity.this.getX() + MathHelper.cos(angle) * distance,
+                            SuperEvokerEntity.this.getZ() + MathHelper.sin(angle) * distance,
+                            d, e, angle, warmup
+                    );
                 }
             }
         }

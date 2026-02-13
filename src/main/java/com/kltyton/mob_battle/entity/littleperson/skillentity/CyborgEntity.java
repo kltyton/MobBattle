@@ -30,11 +30,16 @@ public class CyborgEntity extends BaseSkillLittlePersonEntity {
         COOL_DOWN_TIME_3 = 18 * 20;
         init();
     }
+    @Override
+    public void heal() {
+        this.heal(3.0F);
+    }
+
     public static DefaultAttributeContainer.Builder createLittlePersonAttributes() {
         return BaseSkillLittlePersonEntity.createAttributes()
                 .add(EntityAttributes.MAX_HEALTH, 3600.0)
                 .add(EntityAttributes.ATTACK_DAMAGE, 50.0)
-                .add(ModEntityAttributes.DAMAGE_REDUCTION, 0.5);
+                .add(ModEntityAttributes.DAMAGE_REDUCTION, 0.0);
     }
     @Override
     public boolean tryAttack(ServerWorld world, Entity target) {

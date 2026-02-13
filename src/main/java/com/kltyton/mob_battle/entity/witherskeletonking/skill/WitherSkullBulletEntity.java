@@ -194,7 +194,10 @@ public class WitherSkullBulletEntity extends ProjectileEntity {
     @Override
     public void tick() {
         super.tick();
-        Entity entity = !this.getWorld().isClient() ? LazyEntityReference.resolve(this.target, this.getWorld(), Entity.class) : null;
+        Entity entity = null;
+        if (!this.getWorld().isClient() && this.target != null) {
+            entity = LazyEntityReference.resolve(this.target, this.getWorld(), Entity.class);
+        }
         HitResult hitResult = null;
         if (!this.getWorld().isClient) {
             if (entity == null) {

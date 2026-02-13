@@ -94,7 +94,7 @@ public class ModMaterial {
             15,
             SoundEvents.ITEM_ARMOR_EQUIP_IRON,
             5f,
-            1f,
+            0.1F,
             ModTags.IRON_GOLD_REPAIRABLE,
             IRON_GOLD_KEY
     );
@@ -115,7 +115,7 @@ public class ModMaterial {
             1,
             SoundEvents.ITEM_ARMOR_EQUIP_IRON,
             1f,
-            1f,
+            0.1F,
             ModTags.IRON_GOLD_REPAIRABLE,
             ECREDCULTIST_KEY
     );
@@ -131,7 +131,7 @@ public class ModMaterial {
             30,
             SoundEvents.ITEM_ARMOR_EQUIP_DIAMOND,
             5.0F,
-            1.0F,
+            0.1F,
             ItemTags.BEACON_PAYMENT_ITEMS,
             EMERALD_DIAMOND_ALLOY_KEY
     );
@@ -201,6 +201,20 @@ public class ModMaterial {
                 updated = updated.with(
                         EntityAttributes.STEP_HEIGHT,
                         new EntityAttributeModifier(Identifier.of(Mob_battle.MOD_ID, "step_" + id), 2, EntityAttributeModifier.Operation.ADD_VALUE),
+                        slot
+                );
+                updated = updated.with(
+                        EntityAttributes.SWEEPING_DAMAGE_RATIO,
+                        new EntityAttributeModifier(Identifier.of(Mob_battle.MOD_ID, "swipe_" + id), 1.0, EntityAttributeModifier.Operation.ADD_VALUE),
+                        slot
+                );
+                return updated;
+            });
+        } else if (toolMaterial == EMERALD_DIAMOND_ALLOY_TOOL_MATERIAL) {
+            sword.apply(DataComponentTypes.ATTRIBUTE_MODIFIERS, current, updated -> {
+                updated = updated.with(
+                        EntityAttributes.SWEEPING_DAMAGE_RATIO,
+                        new EntityAttributeModifier(Identifier.of(Mob_battle.MOD_ID, "swipe_" + id), 1.0, EntityAttributeModifier.Operation.ADD_VALUE),
                         slot
                 );
                 return updated;

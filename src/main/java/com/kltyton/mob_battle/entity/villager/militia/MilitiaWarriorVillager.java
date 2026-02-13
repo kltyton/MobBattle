@@ -2,6 +2,7 @@ package com.kltyton.mob_battle.entity.villager.militia;
 
 import com.kltyton.mob_battle.block.ModBlocks;
 import com.kltyton.mob_battle.entity.ModSkillEntityType;
+import com.kltyton.mob_battle.entity.ai.goal.GeneralProtectionVillagerGoal;
 import com.kltyton.mob_battle.entity.irongolem.ModBaseIronGolemEntity;
 import com.kltyton.mob_battle.utils.EntityUtil;
 import net.minecraft.block.BlockState;
@@ -198,6 +199,7 @@ public class MilitiaWarriorVillager extends IronGolemEntity implements ModBaseIr
         this.goalSelector.add(7, new LookAtEntityGoal(this, PlayerEntity.class, 6.0F));
         this.goalSelector.add(8, new LookAroundGoal(this));
         this.targetSelector.add(1, new TrackIronGolemTargetGoal(this));
+        this.targetSelector.add(1, new GeneralProtectionVillagerGoal(this));
         this.targetSelector.add(2, new RevengeGoal(this));
         this.targetSelector.add(3, new ActiveTargetGoal<>(this, PlayerEntity.class, 10, true, false, this::shouldAngerAt));
         this.targetSelector.add(3, new ActiveTargetGoal<>(this, MobEntity.class, 5, false, false, (entity, world) -> entity instanceof Monster));

@@ -1,4 +1,4 @@
-package com.kltyton.mob_battle.data.client.model;
+package com.kltyton.mob_battle.datagen.client.model;
 
 import com.kltyton.mob_battle.Mob_battle;
 import com.kltyton.mob_battle.block.ModBlocks;
@@ -54,7 +54,7 @@ public class ModModelGenerator extends FabricModelProvider {
         itemModelCollector.register(ModItems.EMERALD_DIAMOND_CHESTPLATE, Models.GENERATED);
         itemModelCollector.register(ModItems.EMERALD_DIAMOND_LEGGINGS, Models.GENERATED);
         itemModelCollector.register(ModItems.EMERALD_DIAMOND_BOOTS, Models.GENERATED);
-        itemModelCollector.register(ModItems.EMERALD_DIAMOND_SWORD, Models.GENERATED);
+        itemModelCollector.register(ModItems.EMERALD_DIAMOND_SWORD, Models.HANDHELD);
 
         for (SpawnEggItem item : ModItems.SPAWN_EGG_ITEMS.values()) {
             itemModelCollector.register(item, CUSTOM_EGG);

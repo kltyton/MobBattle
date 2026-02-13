@@ -1,6 +1,7 @@
 package com.kltyton.mob_battle.entity.villager.warriorvillager;
 
 import com.kltyton.mob_battle.entity.ModSkillEntityType;
+import com.kltyton.mob_battle.entity.ai.goal.GeneralProtectionVillagerGoal;
 import com.kltyton.mob_battle.entity.irongolem.ModBaseIronGolemEntity;
 import net.minecraft.block.BlockState;
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -73,6 +74,7 @@ public class WarriorVillager extends IronGolemEntity implements GeoEntity, ModBa
         }
         return bl;
     }
+
     private void alertOthers(LivingEntity attacker) {
         // 获取64格范围内所有铁傀儡
         List<IronGolemEntity> golems = this.getWorld().getEntitiesByClass(
@@ -139,6 +141,7 @@ public class WarriorVillager extends IronGolemEntity implements GeoEntity, ModBa
     protected void initGoals() {
         super.initGoals();
         this.goalSelector.add(0, new SwimGoal(this)); // 添加游泳AI
+        this.targetSelector.add(1, new GeneralProtectionVillagerGoal(this));
     }
     @Override
     protected EntityNavigation createNavigation(World world) {

@@ -397,7 +397,7 @@ public class ModItems {
         );
         IRON_GOLD_SWORD = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "iron_gold_sword"),
                 new IronGoldSword(new Item.Settings()
-                        .sword(ModMaterial.IRON_GOLD_TOOL_MATERIAL, 49f,-2.2f)
+                        .sword(ModMaterial.IRON_GOLD_TOOL_MATERIAL, 69f, 1024)
                         .maxCount(1)
                         .component(DataComponentTypes.DEATH_PROTECTION, DeathProtectionComponent.TOTEM_OF_UNDYING)
                         .registryKey(RegistryKey.of(
@@ -419,9 +419,10 @@ public class ModItems {
 
         EMERALD_DIAMOND_SWORD = registerItem("emerald_diamond_sword",
                 new Item.Settings()
-                        .sword(ModMaterial.EMERALD_DIAMOND_ALLOY_TOOL_MATERIAL, 119, -2.5f)
+                        .sword(ModMaterial.EMERALD_DIAMOND_ALLOY_TOOL_MATERIAL, 149, -2f)
                         .maxCount(1)
-                        .component(DataComponentTypes.UNBREAKABLE, Unit.INSTANCE)
+                        .component(DataComponentTypes.UNBREAKABLE, Unit.INSTANCE),
+                false
         );
 
         VS_SNIPE = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "vs_snipe"),
@@ -767,14 +768,14 @@ public class ModItems {
                 registryKey("small_backpack")
                         .rarity(Rarity.UNCOMMON)
                         .maxCount(1),
-                0
+                false
         ));
 
         LARGE_BACKPACK = registerItem("large_backpack", new BackpackItem(
                 registryKey("large_backpack")
                         .rarity(Rarity.RARE)
                         .maxCount(1),
-                6
+                true
         ));
 
         ModEntities.SPAWN_EGG_ENTITIES.forEach((id, entityType) -> {
@@ -792,6 +793,9 @@ public class ModItems {
         return item;
     }
     public static Item registerItem(String id, Item.Settings settings) {
+        return registerItem(id, settings, true);
+    }
+    public static Item registerItem(String id, Item.Settings settings, boolean registerGroup) {
         Identifier itemId = Identifier.of(Mob_battle.MOD_ID, id);
         Item.Settings finalsettings = settings
                 .registryKey(RegistryKey.of(RegistryKeys.ITEM, itemId));
@@ -800,7 +804,7 @@ public class ModItems {
                 itemId,
                 new Item(finalsettings)
         );
-        ITEMS.put(id, item);
+        if (registerGroup) ITEMS.put(id, item);
         return item;
     }
     public static <T extends Item> T registerItem(String id, T item) {

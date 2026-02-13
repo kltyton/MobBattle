@@ -53,14 +53,28 @@ public class ModKeyBinding {
         ));
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             // while ：长按持续触发（类似原版打开背包的行为）
+/*            while (keyAttackDroneMode.wasPressed()) {
+                client.execute(() ->
+                        ClientPlayNetworking.send(new SummonDronePayload(2))
+                );
+                一个 Tick连点了 3 下，if(wasPressed)是3个tick执行三次操作，while(wasPressed)就是1个tick执行三次操作,if(isPressed)就是油门
+            }*/
+
             while (keySummon.wasPressed()) {
-                ClientPlayNetworking.send(new SummonDronePayload(1));
+                client.execute(() ->
+                        ClientPlayNetworking.send(new SummonDronePayload(1))
+                );
             }
             while (keyAttackDroneMode.wasPressed()) {
-                ClientPlayNetworking.send(new SummonDronePayload(2));
+                client.execute(() ->
+                        ClientPlayNetworking.send(new SummonDronePayload(2))
+                );
+
             }
             while (keyTreatmentDroneMode.wasPressed()) {
-                ClientPlayNetworking.send(new SummonDronePayload(3));
+                client.execute(() ->
+                        ClientPlayNetworking.send(new SummonDronePayload(3))
+                );
             }
             while (keyMasterScepter.wasPressed()) {
                 if (client.player != null && (client.player.getMainHandStack().isOf(ModItems.MASTER_SCEPTER) || client.player.getOffHandStack().isOf(ModItems.MASTER_SCEPTER))) {
@@ -70,7 +84,9 @@ public class ModKeyBinding {
                 }
             }
             while (shieldKey.wasPressed()) {
-                ClientPlayNetworking.send(new ShieldSpawnPayload());
+                client.execute(() ->
+                        ClientPlayNetworking.send(new ShieldSpawnPayload())
+                );
             }
         });
     }

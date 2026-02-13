@@ -227,13 +227,11 @@ public class LongWhipSilverfishEntity extends SilverfishEntity implements Genera
                                 ));
                             }
                             if ("runAttack3;".equals(s.keyframeData().getInstructions())) {
-                                this.playSound(ModSounds.B_C_BELLOW_DOG_JIAO_SOUND_EVENT);
                                 ClientPlayNetworking.send(new SkillPayload(
                                         "attack3", this.getId()
                                 ));
                             }
                             if ("runAttack4;".equals(s.keyframeData().getInstructions())) {
-                                this.playSound(ModSounds.B_C_DEBUFF_DOG_JIAO_SOUND_EVENT);
                                 ClientPlayNetworking.send(new SkillPayload(
                                         "attack4", this.getId()
                                 ));
@@ -244,7 +242,7 @@ public class LongWhipSilverfishEntity extends SilverfishEntity implements Genera
                                 ));
                             }
                             if ("runAttack6;".equals(s.keyframeData().getInstructions())) {
-                                this.playSound(ModSounds.B_C_Z_DOG_JIAO_SOUND_EVENT);
+
                                 ClientPlayNetworking.send(new SkillPayload(
                                         "attack6", this.getId()
                                 ));
@@ -276,6 +274,7 @@ public class LongWhipSilverfishEntity extends SilverfishEntity implements Genera
     }
     @Override
     public void runSkill_3(LongWhipSilverfishEntity entity) {
+        this.playSound(ModSounds.B_C_BELLOW_DOG_JIAO_SOUND_EVENT);
         EntityUtil.getNearbyEntity(entity, LivingEntity.class, Object.class, 7, false, EntityUtil.TeamFilter.EXCLUDE_TEAM).forEach(livingEntity -> {
             livingEntity.addStatusEffect(new StatusEffectInstance(ModEffects.DISARM_ENTRY, 160, 0));
             livingEntity.damage((ServerWorld) this.getWorld(), this.getDamageSources().indirectMagic(this, this), 10);
@@ -283,6 +282,7 @@ public class LongWhipSilverfishEntity extends SilverfishEntity implements Genera
     }
     @Override
     public void runSkill_4(LongWhipSilverfishEntity entity) {
+        this.playSound(ModSounds.B_C_DEBUFF_DOG_JIAO_SOUND_EVENT);
         EntityUtil.getNearbyEntity(entity, LivingEntity.class, Object.class, 6, false, EntityUtil.TeamFilter.EXCLUDE_TEAM).forEach(livingEntity -> {
             livingEntity.addStatusEffect(new StatusEffectInstance(ModEffects.INFESTATION_ENTRY, 100, 0));
         });
@@ -302,10 +302,10 @@ public class LongWhipSilverfishEntity extends SilverfishEntity implements Genera
         if (this.getWorld().isClient) return;
         Entity target = entity.getWorld().getEntityById(this.getGrabbedEntityId());
         if (target instanceof LivingEntity livingEntity) {
+            this.playSound(ModSounds.B_C_Z_DOG_JIAO_SOUND_EVENT);
             livingEntity.damage((ServerWorld) entity.getWorld(), entity.getDamageSources().indirectMagic(entity, entity), 50);
             entity.heal(100);
             entity.addStatusEffect(new StatusEffectInstance(StatusEffects.ABSORPTION, 15 * 20, 29));
-
             TaskSchedulerUtil.runLater(24, () -> {
                 entity.setGrabbedEntityId(-1);
             });

@@ -65,7 +65,7 @@ public class SbFb {
 
                 Vec3d lookVec = player.getRotationVec(1.0F);
                 Vec3d spreadVec = lookVec.addRandom(player.getRandom(), 0.1F);
-                float speed = 1.2F;
+                float speed = 1.2F * 2;
                 fireball.setVelocity(
                         spreadVec.x * speed,
                         spreadVec.y * speed,

@@ -34,6 +34,7 @@
     "invisibility.EntityMixin",
     "invisibility.LivingEntityMixin",
     "irongold.AnvilScreenHandlerMixin",
+    "irongold.AttributeModifiersComponentMixin",
     "irongold.ItemStackMixin",
     "leashable.EntityMixin",
     "leashable.LeashableMixin",
@@ -45,8 +46,11 @@
     "world.WorldViewMixin"
   ],
   "client": [
+    "accessor.keybind.BoundKeyAccessor",
+    "accessor.keybind.TimesPressedAccessor",
     "armor.EcredcultistGlowArmorRenderer",
     "client.render.AbstractClientPlayerEntityMixin",
+    "client.render.EntityRenderDispatcherMixin",
     "client.render.EntityRendererMixin",
     "client.render.EntityRenderStateMixin",
     "crossbow.HeldItemRendererMixin",
@@ -56,6 +60,7 @@
     "invisibility.HeldItemFeatureRendererMixin",
     "invisibility.MinecraftClientMixin",
     "itemgroup.ItemGroupMixin",
+    "keybind.KeybindingMixin",
     "sound.MinecraftClientMixin",
     "sound.MixinMusicTracker"
   ],

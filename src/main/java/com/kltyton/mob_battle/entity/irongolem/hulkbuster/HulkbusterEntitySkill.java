@@ -13,7 +13,7 @@ import net.minecraft.world.World;
 
 public class HulkbusterEntitySkill {
     public static void runAttackSkill(HulkbusterEntity hulkbusterEntity) {
-        double range = 3.0D;
+        double range = 5.0D;
         World world = hulkbusterEntity.getWorld();
         if (hulkbusterEntity.tryAttackBase((ServerWorld)world, hulkbusterEntity.getTarget())) {
             Box damageBox = hulkbusterEntity.getBoundingBox().expand(range, range, range);
@@ -30,7 +30,7 @@ public class HulkbusterEntitySkill {
         }
     }
     public static void runSuperAttackSkill(HulkbusterEntity hulkbusterEntity) {
-        double range = 3.0D;
+        double range = 5.0D;
         World world = hulkbusterEntity.getWorld();
         Box damageBox = hulkbusterEntity.getBoundingBox().expand(range, range, range);
         world.getOtherEntities(hulkbusterEntity, damageBox).stream()
@@ -84,12 +84,14 @@ public class HulkbusterEntitySkill {
         World world = hulkbusterEntity.getWorld();
         Vec3d lookVec = hulkbusterEntity.getRotationVec(1.0f);
         double speed = 1.5;
+
         Vec3d velocity = lookVec.multiply(speed);
-        MissileEntity left_meteorite = new MissileEntity(ModEntities.MISSILE, world, hulkbusterEntity, 5.0f, false, 0);
+        MissileEntity left_meteorite = new MissileEntity(ModEntities.MISSILE, world, hulkbusterEntity, 5.0f, false, 0, 400);
         Vec3d left_spawnPos = hulkbusterEntity.leftMuzzle;
         left_meteorite.refreshPositionAndAngles(left_spawnPos.x, left_spawnPos.y, left_spawnPos.z, hulkbusterEntity.getYaw(), hulkbusterEntity.getPitch());
         left_meteorite.setVelocity(velocity);
-        MissileEntity right_meteorite = new MissileEntity(ModEntities.MISSILE, world, hulkbusterEntity, 5.0f, false, 0);
+
+        MissileEntity right_meteorite = new MissileEntity(ModEntities.MISSILE, world, hulkbusterEntity, 5.0f, false, 0, 400);
         Vec3d right_spawnPos = hulkbusterEntity.rightMuzzle;
         right_meteorite.refreshPositionAndAngles(right_spawnPos.x, right_spawnPos.y, right_spawnPos.z, hulkbusterEntity.getYaw(), hulkbusterEntity.getPitch());
         right_meteorite.setVelocity(velocity);

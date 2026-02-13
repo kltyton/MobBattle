@@ -1,4 +1,4 @@
-package com.kltyton.mob_battle.data.server.loot;
+package com.kltyton.mob_battle.datagen.server.loot;
 
 import com.kltyton.mob_battle.block.ModBlocks;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;

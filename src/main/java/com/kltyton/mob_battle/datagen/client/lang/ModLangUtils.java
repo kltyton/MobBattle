@@ -1,4 +1,4 @@
-package com.kltyton.mob_battle.data.client.lang;
+package com.kltyton.mob_battle.datagen.client.lang;
 
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricLanguageProvider;
 import net.minecraft.block.Block;

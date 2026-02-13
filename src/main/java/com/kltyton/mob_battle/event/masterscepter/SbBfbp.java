@@ -18,7 +18,7 @@ public class SbBfbp {
         if (!world.isClient) {
             Vec3d eyePos = user.getEyePos();
             Vec3d lookVec = user.getRotationVec(1.0F);
-            float speed = 1.5F; // 发射速度
+            float speed = 1.5F * 2; // 发射速度
             Vec3d speedVec = new Vec3d(lookVec.x * speed, lookVec.y * speed, lookVec.z * speed);
             // 创建自定义火球
             CustomSuperBigFireballEntity fireball = new CustomSuperBigFireballEntity(ModEntities.BIG_CUSTOM_FIREBALL, world, user, 5.5F, true, 70.0F, speedVec, true);

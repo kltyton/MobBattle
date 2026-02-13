@@ -3,6 +3,7 @@ package com.kltyton.mob_battle;
 import com.kltyton.mob_battle.attributer.ModAttributer;
 import com.kltyton.mob_battle.block.ModBlockEntities;
 import com.kltyton.mob_battle.block.ModBlocks;
+import com.kltyton.mob_battle.client.screen.ModScreenHandlers;
 import com.kltyton.mob_battle.command.ModCommands;
 import com.kltyton.mob_battle.effect.ModEffects;
 import com.kltyton.mob_battle.enchantment.ModEnchantments;
@@ -49,5 +50,6 @@ public class Mob_battle implements ModInitializer {
         DroneManager.init();
         ModItemGroups.init();
         ClearItemEvent.init();
+        ModScreenHandlers.init();
     }
 }

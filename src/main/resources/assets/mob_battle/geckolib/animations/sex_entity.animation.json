@@ -249,6 +249,9 @@
 		"die": {
 			"loop": true
 		},
+		"idle": {
+			"loop": true
+		},
 		"attack": {
 			"animation_length": 0.6667,
 			"bones": {
@@ -1480,6 +1483,9 @@
 						"vector": [1, 1, 1]
 					}
 				}
+			},
+			"timeline": {
+				"0.2917": "runAttack6;"
 			}
 		},
 		"attack6_1": {
@@ -2650,9 +2656,6 @@
 			"timeline": {
 				"0.0767": "runAttack7;"
 			}
-		},
-		"idle": {
-			"loop": true
 		}
 	},
 	"geckolib_format_version": 2

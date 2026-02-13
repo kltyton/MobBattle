@@ -58,7 +58,7 @@ public class GeneralEntityModel<T extends GeoAnimatable> extends GeoModel<T> {
         if (renderLayer != null) {
             switch (renderLayer) {
                 case TRANSLUCENT -> {
-                    return RenderLayer.getEntityTranslucent(texture);
+                    return RenderLayer.getEntityTranslucentEmissive(texture);
                 }
                 case CUTOUT -> {
                     return RenderLayer.getEntityCutoutNoCull(texture);

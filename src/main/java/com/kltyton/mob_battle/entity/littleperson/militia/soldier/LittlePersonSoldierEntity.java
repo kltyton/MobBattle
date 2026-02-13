@@ -1,6 +1,5 @@
 package com.kltyton.mob_battle.entity.littleperson.militia.soldier;
 
-import com.kltyton.mob_battle.effect.ModEffects;
 import com.kltyton.mob_battle.entity.ModEntityAttributes;
 import com.kltyton.mob_battle.entity.ModSkillEntityType;
 import com.kltyton.mob_battle.entity.general.GeneralEntityOnlyOneSkill;
@@ -8,6 +7,7 @@ import com.kltyton.mob_battle.entity.littleperson.LittlePersonEntity;
 import com.kltyton.mob_battle.entity.villager.warriorvillager.WarriorVillager;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -19,16 +19,17 @@ import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
-import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.mob.Monster;
 import net.minecraft.entity.passive.GolemEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.Box;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
@@ -40,6 +41,7 @@ import software.bernie.geckolib.animation.RawAnimation;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 import java.util.List;
+import java.util.Optional;
 
 public class LittlePersonSoldierEntity extends HostileEntity implements LittlePersonEntity, GeneralEntityOnlyOneSkill<LittlePersonSoldierEntity> {
     public int getCooldownTime() {
@@ -140,6 +142,7 @@ public class LittlePersonSoldierEntity extends HostileEntity implements LittlePe
      * 每帧执行的冲锋位移和伤害检测
      */
     private void performChargeMovement() {
+        if (this.getWorld().isClient) return;
         // 锁定冲锋速度，例如每 Tick 移动 0.5 格 (相当于 10格/秒)
         Vec3d lookDir = this.getRotationVector();
         Vec3d velocity = new Vec3d(lookDir.x, 0, lookDir.z).normalize().multiply(0.5);
@@ -152,11 +155,34 @@ public class LittlePersonSoldierEntity extends HostileEntity implements LittlePe
 
         float damageAmount = (float) this.getAttributeValue(EntityAttributes.ATTACK_DAMAGE);
         for (Entity target : targets) {
-            target.damage((ServerWorld) this.getWorld(), this.getDamageSources().mobAttack(this), damageAmount);
-            if (target instanceof LivingEntity livingEntity) {
-                livingEntity.addStatusEffect(new StatusEffectInstance(ModEffects.ARMOR_PIERCING_ENTRY, 100, 0));
-            }
+            tryAttackBaseDamage((ServerWorld) getWorld(), target, damageAmount);
         }
+    }
+    public boolean tryAttackBaseDamage(ServerWorld world, Entity target, float damage) {
+        if (!ModSkillEntityType.canSkill(this)) return false;
+        float f = damage;
+        ItemStack itemStack = this.getWeaponStack();
+        DamageSource damageSource = Optional.ofNullable(itemStack.getItem().getDamageSource(this)).orElse(this.getDamageSources().mobAttack(this));
+        f = EnchantmentHelper.getDamage(world, itemStack, target, damageSource, f);
+        f += itemStack.getItem().getBonusAttackDamage(target, f, damageSource);
+        boolean bl = target.damage(world, damageSource, f);
+        if (bl) {
+            float g = this.getAttackKnockbackAgainst(target, damageSource);
+            if (g > 0.0F && target instanceof LivingEntity livingEntity) {
+                livingEntity.takeKnockback(g * 0.5F, MathHelper.sin(this.getYaw() * (float) (Math.PI / 180.0)), -MathHelper.cos(this.getYaw() * (float) (Math.PI / 180.0)));
+                this.setVelocity(this.getVelocity().multiply(0.6, 1.0, 0.6));
+            }
+
+            if (target instanceof LivingEntity livingEntity) {
+                itemStack.postHit(livingEntity, this);
+            }
+
+            EnchantmentHelper.onTargetDamaged(world, target, damageSource);
+            this.onAttacking(target);
+            this.playAttackSound();
+        }
+
+        return bl;
     }
     // 4. 修改 runSkill，只作为启动器
     @Override

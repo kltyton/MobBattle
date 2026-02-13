@@ -3,12 +3,14 @@ package com.kltyton.mob_battle.entity.littleperson.skillentity.base;
 import com.kltyton.mob_battle.entity.ModEntityAttributes;
 import com.kltyton.mob_battle.entity.ModSkillEntityType;
 import com.kltyton.mob_battle.entity.littleperson.militia.LittlePersonMilitiaEntity;
+import com.kltyton.mob_battle.entity.littleperson.skillentity.IronManEntity;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityStatuses;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
+import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
@@ -256,7 +258,7 @@ public class BaseSkillLittlePersonEntity extends LittlePersonMilitiaEntity imple
     public AnimationController<?> skillController = new AnimationController<>( "skill_controller", animTest -> {
         if (animTest.controller().getAnimationState() == AnimationController.State.STOPPED) {
             if (this.hasSkill()) ClientPlayNetworking.send(new SkillPayload("stop", this.getId()));
-            if (animTest.isCurrentAnimation(DIE_ANIM)) {
+            if (animTest.isCurrentAnimation(DIE_ANIM) && this instanceof IronManEntity) {
                 this.deathTime = 400;
                 ClientPlayNetworking.send(new SkillPayload(
                         "die", this.getId()
@@ -389,15 +391,20 @@ public class BaseSkillLittlePersonEntity extends LittlePersonMilitiaEntity imple
 
     }
     protected void updatePostDeath() {
-        this.deathTime++;
-        if (this.deathTime >= 400 && !this.getWorld().isClient() && !this.isRemoved()) {
-            die(this);
-            this.getWorld().sendEntityStatus(this, EntityStatuses.ADD_DEATH_PARTICLES);
-            this.remove(Entity.RemovalReason.KILLED);
+        if (this instanceof IronManEntity) {
+            this.deathTime++;
+            if (this.deathTime >= 400 && !this.getWorld().isClient() && !this.isRemoved()) {
+                die(this);
+                this.getWorld().sendEntityStatus(this, EntityStatuses.ADD_DEATH_PARTICLES);
+                this.remove(Entity.RemovalReason.KILLED);
+            }
+        } else {
+            super.updatePostDeath();
         }
     }
     public static DefaultAttributeContainer.Builder createAttributes() {
         return MobEntity.createMobAttributes()
+                .add(EntityAttributes.FOLLOW_RANGE, 40.0)
                 .add(ModEntityAttributes.DAMAGE_REDUCTION, 0);
     }
 

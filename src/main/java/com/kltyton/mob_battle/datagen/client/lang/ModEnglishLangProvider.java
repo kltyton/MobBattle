@@ -1,4 +1,4 @@
-package com.kltyton.mob_battle.data.client.lang;
+package com.kltyton.mob_battle.datagen.client.lang;
 
 import com.kltyton.mob_battle.block.ModBlocks;
 import com.kltyton.mob_battle.client.keybinding.ModKeyBinding;

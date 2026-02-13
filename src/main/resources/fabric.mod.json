@@ -11,7 +11,7 @@
   "environment": "*",
   "entrypoints": {
     "fabric-datagen": [
-      "com.kltyton.mob_battle.data.Mob_battleDataGenerator"
+      "com.kltyton.mob_battle.datagen.Mob_battleDataGenerator"
     ],
     "client": [
       "com.kltyton.mob_battle.client.Mob_battleClient"

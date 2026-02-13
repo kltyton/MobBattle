@@ -30,7 +30,11 @@ public class TaiLinEntity extends BaseSkillLittlePersonEntity {
         return BaseSkillLittlePersonEntity.createAttributes()
                 .add(EntityAttributes.MAX_HEALTH, 6000.0)
                 .add(EntityAttributes.ATTACK_DAMAGE, 70.0)
-                .add(ModEntityAttributes.DAMAGE_REDUCTION, 0.5);
+                .add(ModEntityAttributes.DAMAGE_REDUCTION, 0.0);
+    }
+    @Override
+    public void heal() {
+        this.heal(3.0F);
     }
     @Override
     public boolean blockAttack(@NotNull DamageSource source, float amount) {

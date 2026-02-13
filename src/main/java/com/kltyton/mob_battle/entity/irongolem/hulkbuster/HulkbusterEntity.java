@@ -152,7 +152,7 @@ public class HulkbusterEntity extends IronGolemEntity implements GeoEntity, ModB
     }
     @Override
     public boolean isInAttackRange(LivingEntity entity) {
-        Box attackBox = this.getAttackBox().expand(1.25);
+        Box attackBox = this.getAttackBox().expand(1.05);
         return attackBox.intersects(entity.getHitbox());
     }
     public boolean tryAttackBase(ServerWorld world, LivingEntity target) {
@@ -245,7 +245,8 @@ public class HulkbusterEntity extends IronGolemEntity implements GeoEntity, ModB
         return canSkill() && getMaxAttackSkillCooldown() == 0;
     }
     public boolean canSkill() {
-        return !this.getWorld().isClient() && !hasSkill() && getSkillCooldown() == 0 && this.getTarget() != null && !ModSkillEntityType.canSkill(this);
+        if (!ModSkillEntityType.canSkill(this)) return false;
+        return !this.getWorld().isClient() && !hasSkill() && getSkillCooldown() == 0 && this.getTarget() != null;
     }
     public boolean hasSkill() {
         return getDataTracker().get(HAS_SKILL);
@@ -279,7 +280,7 @@ public class HulkbusterEntity extends IronGolemEntity implements GeoEntity, ModB
     }
     public static DefaultAttributeContainer.Builder addAttributes() {
         return HostileEntity.createHostileAttributes()
-                .add(EntityAttributes.MAX_HEALTH, 20000.0D)
+                .add(EntityAttributes.MAX_HEALTH, 30000.0D)
                 .add(EntityAttributes.MOVEMENT_SPEED, 0.3D)
                 .add(EntityAttributes.KNOCKBACK_RESISTANCE, 1.0D)
                 .add(EntityAttributes.ATTACK_DAMAGE, 150.0D)

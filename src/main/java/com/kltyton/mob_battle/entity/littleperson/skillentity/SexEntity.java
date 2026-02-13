@@ -1,7 +1,6 @@
 package com.kltyton.mob_battle.entity.littleperson.skillentity;
 
 import com.kltyton.mob_battle.Mob_battle;
-import com.kltyton.mob_battle.effect.ModEffects;
 import com.kltyton.mob_battle.entity.ModEntityAttributes;
 import com.kltyton.mob_battle.entity.littleperson.militia.LittlePersonMilitiaEntity;
 import com.kltyton.mob_battle.entity.littleperson.skillentity.base.BaseSkillLittlePersonEntity;
@@ -18,7 +17,6 @@ import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
-import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
@@ -183,7 +181,6 @@ public class SexEntity extends BaseSkillLittlePersonEntity {
             if (this.endDamage) {
                 for (LivingEntity entity : EntityUtil.getNearbyEntity(this, LivingEntity.class, Object.class, 2, false, EntityUtil.TeamFilter.EXCLUDE_TEAM)) {
                     entity.damage((ServerWorld) this.getWorld(), this.getDamageSources().mobAttack(this), 85);
-                    entity.addStatusEffect(new StatusEffectInstance(ModEffects.STUN_ENTRY, 2, 0));
                 }
             }
             int grabbedId = this.getGrabbedEntityId();
@@ -244,7 +241,6 @@ public class SexEntity extends BaseSkillLittlePersonEntity {
                 .add(EntityAttributes.MAX_HEALTH, 10000.0)
                 .add(EntityAttributes.ATTACK_DAMAGE, 75.0)
                 .add(EntityAttributes.MOVEMENT_SPEED, 0.25)
-                .add(EntityAttributes.FOLLOW_RANGE, 40.0)
                 .add(EntityAttributes.KNOCKBACK_RESISTANCE, 0.5)
                 .add(ModEntityAttributes.DAMAGE_REDUCTION, 0.0);
     }
@@ -313,7 +309,7 @@ public class SexEntity extends BaseSkillLittlePersonEntity {
     @Override
     public void runSkill_6(BaseSkillLittlePersonEntity entity) {
         if (this.getWorld().isClient) return;
-        LivingEntity target = EntityUtil.getClosestNearbyEntity(entity, LivingEntity.class, 3, EntityUtil.TeamFilter.EXCLUDE_TEAM);
+        LivingEntity target = EntityUtil.getClosestNearbyEntity(entity, LivingEntity.class, 5, EntityUtil.TeamFilter.EXCLUDE_TEAM);
         // 2. 如果找到了目标，设置 ID
         if (target != null) {
             this.setGrabbedEntityId(target.getId());

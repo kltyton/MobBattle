@@ -49,6 +49,11 @@ public class FrenchSphereFlowEntity extends BaseSkillLittlePersonEntity {
             if (this.canSkill("attack4")) performSkill("attack4");
         }
     }
+
+    @Override
+    public void heal() {
+        this.heal(3.0F);
+    }
     @Override
     public void runSkill_2(BaseSkillLittlePersonEntity entity) {
         for (LivingEntity livingEntity : EntityUtil.getNearbyEntity(entity, LivingEntity.class, LittlePersonEntity.class, 10, true, EntityUtil.TeamFilter.ALL)) {
@@ -58,7 +63,7 @@ public class FrenchSphereFlowEntity extends BaseSkillLittlePersonEntity {
     @Override
     public void runSkill_3(BaseSkillLittlePersonEntity entity) {
         for (LivingEntity livingEntity : EntityUtil.getNearbyEntity(entity, LivingEntity.class, LittlePersonEntity.class, 10, true, EntityUtil.TeamFilter.ALL)) {
-            livingEntity.addStatusEffect(new StatusEffectInstance(StatusEffects.INSTANT_HEALTH, 20, 6));
+            livingEntity.heal(200f);
         }
     }
     @Override

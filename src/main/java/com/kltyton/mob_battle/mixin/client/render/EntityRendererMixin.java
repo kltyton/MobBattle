@@ -3,6 +3,7 @@ package com.kltyton.mob_battle.mixin.client.render;
 import com.kltyton.mob_battle.accessor.ILead;
 import com.kltyton.mob_battle.accessor.ILeadRenderData;
 import com.kltyton.mob_battle.accessor.IModEntityRenderState;
+import com.kltyton.mob_battle.entity.drone.DroneEntity;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.network.ClientPlayerEntity;
@@ -106,9 +107,13 @@ public abstract class EntityRendererMixin {
     )
     private void renderHealthBar(EntityRenderState state, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, CallbackInfo ci) {
         ClientPlayerEntity player = MinecraftClient.getInstance().player;
-        // 仅创造模式可见检查
-        if (player == null || !(player.isCreative() || player.isSpectator()) || targetEntity == player) return;
         if (targetEntity == null) return;
+        boolean canNotRender = player == null || !(player.isCreative() || player.isSpectator()) || targetEntity == player;
+        if (targetEntity instanceof DroneEntity drone) {
+            if (drone.getOwner() == player) canNotRender = false;
+        }
+        // 仅创造模式可见检查
+        if (canNotRender) return;
         //if (targetEntity.isInvisibleTo(player)) return;
         // 计算血条位置（基于实体碰撞箱）
         float yOffset = targetEntity.getHeight() + 0.65F;

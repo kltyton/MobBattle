@@ -1,13 +1,13 @@
-package com.kltyton.mob_battle.data;
+package com.kltyton.mob_battle.datagen;
 
-import com.kltyton.mob_battle.data.client.lang.ModChineseLangProvider;
-import com.kltyton.mob_battle.data.client.lang.ModEnglishLangProvider;
-import com.kltyton.mob_battle.data.client.model.ModModelGenerator;
-import com.kltyton.mob_battle.data.server.loot.ModLootTableGenerator;
-import com.kltyton.mob_battle.data.server.recipe.ModRecipeGenerator;
-import com.kltyton.mob_battle.data.server.tag.ModBlockTagGenerator;
-import com.kltyton.mob_battle.data.server.tag.ModEntityTagGenerator;
-import com.kltyton.mob_battle.data.server.tag.ModItemTagGenerator;
+import com.kltyton.mob_battle.datagen.client.lang.ModChineseLangProvider;
+import com.kltyton.mob_battle.datagen.client.lang.ModEnglishLangProvider;
+import com.kltyton.mob_battle.datagen.client.model.ModModelGenerator;
+import com.kltyton.mob_battle.datagen.server.loot.ModLootTableGenerator;
+import com.kltyton.mob_battle.datagen.server.recipe.ModRecipeGenerator;
+import com.kltyton.mob_battle.datagen.server.tag.ModBlockTagGenerator;
+import com.kltyton.mob_battle.datagen.server.tag.ModEntityTagGenerator;
+import com.kltyton.mob_battle.datagen.server.tag.ModItemTagGenerator;
 import net.fabricmc.fabric.api.datagen.v1.DataGeneratorEntrypoint;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataGenerator;
 

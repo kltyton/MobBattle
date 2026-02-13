@@ -2,6 +2,8 @@ package com.kltyton.mob_battle.entity.drone;
 
 import com.kltyton.mob_battle.entity.drone.goal.FlyFollowOwnerGoal;
 import com.kltyton.mob_battle.entity.drone.goal.FlyWanderAroundFarGoal;
+import com.kltyton.mob_battle.items.ModMaterial;
+import com.kltyton.mob_battle.utils.ArmorUtil;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.LeavesBlock;
 import net.minecraft.entity.EntityType;
@@ -76,7 +78,9 @@ public abstract class DroneEntity extends TameableEntity implements RangedAttack
 
         if (!this.getWorld().isClient) {
             LivingEntity owner = this.getOwner();
-            if (owner instanceof ServerPlayerEntity player && !DroneManager.isPlayersDrone(this, player)) this.discard();
+            if (owner instanceof ServerPlayerEntity player && (!DroneManager.isPlayersDrone(this, player) || !ArmorUtil.hasFullArmor(owner, ModMaterial.IRON_GOLD_INSTANCE))) {
+                this.discard();
+            }
             if (this.age % 20 == 0) this.heal(10.0F);
             if (owner == null || owner.isRemoved() || !owner.isAlive()) {
                 this.ownerMissingTicks++;

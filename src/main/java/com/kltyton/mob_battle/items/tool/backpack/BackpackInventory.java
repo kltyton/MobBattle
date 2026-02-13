@@ -4,25 +4,27 @@ import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.ContainerComponent;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.collection.DefaultedList;
 
 public class BackpackInventory extends SimpleInventory {
     private final ItemStack stack;
+    public static final int PAGE_SIZE = 54;
+    public static final int MAX_PAGES = 50;
+    public static final int PAGED_TOTAL_SLOTS = PAGE_SIZE * MAX_PAGES;
 
-    public BackpackInventory(ItemStack stack, int size) {
-        super(size);
+    public BackpackInventory(ItemStack stack, int slotCount) {
+        super(slotCount);
         this.stack = stack;
-
-        // 从物品组件读取数据
         ContainerComponent component = stack.get(DataComponentTypes.CONTAINER);
         if (component != null) {
-            component.copyTo(this.getHeldStacks());
+            DefaultedList<ItemStack> heldStacks = this.getHeldStacks();
+            component.copyTo(heldStacks);
         }
     }
 
     @Override
     public void markDirty() {
         super.markDirty();
-        // 当界面关闭或数据变动时，写回物品组件
         stack.set(DataComponentTypes.CONTAINER, ContainerComponent.fromStacks(this.getHeldStacks()));
     }
 }

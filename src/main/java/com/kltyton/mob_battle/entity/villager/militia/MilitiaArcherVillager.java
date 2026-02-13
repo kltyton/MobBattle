@@ -2,6 +2,7 @@ package com.kltyton.mob_battle.entity.villager.militia;
 
 import com.kltyton.mob_battle.block.ModBlocks;
 import com.kltyton.mob_battle.entity.ModSkillEntityType;
+import com.kltyton.mob_battle.entity.ai.goal.GeneralProtectionVillagerGoal;
 import com.kltyton.mob_battle.entity.bullet.ITrueDamageProjectile;
 import com.kltyton.mob_battle.utils.EntityUtil;
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -124,6 +125,7 @@ public class MilitiaArcherVillager extends SnowGolemEntity implements Angerable 
     protected void initGoals() {
         super.initGoals();
         this.goalSelector.add(0, new SwimGoal(this)); // 添加游泳AI
+        this.targetSelector.add(1, new GeneralProtectionVillagerGoal(this));
         this.targetSelector.add(2, new RevengeGoal(this));
         this.targetSelector.add(2, new ActiveTargetGoal<>(this, PlayerEntity.class, 10, true, false, this::shouldAngerAt));
         this.targetSelector.add(2, new UniversalAngerGoal<>(this, false));

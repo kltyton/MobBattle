@@ -32,6 +32,11 @@ public class IronManEntity extends BaseSkillLittlePersonEntity {
                 .add(EntityAttributes.ARMOR_TOUGHNESS, 20);
     }
     @Override
+    public void heal() {
+        this.heal(3.0F);
+    }
+
+    @Override
     public void tick() {
         super.tick();
         if (!this.getWorld().isClient()) {

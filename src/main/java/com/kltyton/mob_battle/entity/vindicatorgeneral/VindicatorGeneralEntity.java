@@ -5,8 +5,10 @@ import com.kltyton.mob_battle.entity.accessor.BigBossLookControl;
 import com.kltyton.mob_battle.entity.accessor.BigBossMoveControl;
 import com.kltyton.mob_battle.entity.accessor.BigBossNavigation;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
+import com.kltyton.mob_battle.utils.EnchantmentUtil;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -146,6 +148,9 @@ public class VindicatorGeneralEntity extends VindicatorEntity implements GeoEnti
         if (!ModSkillEntityType.canSkill(this)) return false;
         float f = damage;
         ItemStack itemStack = this.getWeaponStack();
+
+        EnchantmentUtil.addEnchantment(world, itemStack, Enchantments.BREACH, 1);
+
         DamageSource damageSource = Optional.ofNullable(itemStack.getItem().getDamageSource(this)).orElse(this.getDamageSources().mobAttack(this));
         f = EnchantmentHelper.getDamage(world, itemStack, target, damageSource, f);
         f += itemStack.getItem().getBonusAttackDamage(target, f, damageSource);
@@ -257,7 +262,7 @@ public class VindicatorGeneralEntity extends VindicatorEntity implements GeoEnti
     }
     public static DefaultAttributeContainer.Builder addAttributes() {
         return HostileEntity.createHostileAttributes()
-                .add(EntityAttributes.MAX_HEALTH, 20000.0D)
+                .add(EntityAttributes.MAX_HEALTH, 30000.0D)
                 .add(EntityAttributes.MOVEMENT_SPEED, 0.3D)
                 .add(EntityAttributes.KNOCKBACK_RESISTANCE, 1.0D)
                 .add(EntityAttributes.ATTACK_DAMAGE, 80.0D)

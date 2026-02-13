@@ -400,7 +400,7 @@ public class WitherSkeletonKingEntity extends WitherSkeletonEntity implements Ge
     }
     public static DefaultAttributeContainer.Builder addAttributes() {
         return HostileEntity.createHostileAttributes()
-                .add(EntityAttributes.MAX_HEALTH, 20000.0D)
+                .add(EntityAttributes.MAX_HEALTH, 30000.0D)
                 .add(EntityAttributes.MOVEMENT_SPEED, 0.3D)
                 .add(EntityAttributes.KNOCKBACK_RESISTANCE, 1.0D)
                 .add(EntityAttributes.ATTACK_KNOCKBACK, 1.5D)

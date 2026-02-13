@@ -2,7 +2,6 @@ package com.kltyton.mob_battle.items.food;
 
 import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.entity.meteorite.MeteoriteEntity;
-import com.kltyton.mob_battle.items.ModItems;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.UseRemainderComponent;
 import net.minecraft.entity.LivingEntity;
@@ -20,12 +19,21 @@ public class ThousandBlossomedImmortalFruit extends Item {
     }
     public ActionResult use(World world, PlayerEntity user, Hand hand) {
         ItemStack itemStack = user.getStackInHand(hand);
-        itemStack.set(DataComponentTypes.USE_REMAINDER,  new UseRemainderComponent(new ItemStack(ModItems.THOUSAND_BLOSSOMED_IMMORTAL_FRUIT)));
+
+        // --- 核心修改点 ---
+        // 1. 复制一份当前的物品堆（包含所有 Data Components，如自定义名称、附魔等）
+        ItemStack remainder = itemStack.copy();
+        // 2. 确保返还的物品数量为 1（防止吃一个变一组）
+        remainder.setCount(1);
+        // 3. 将这个带有属性的副本设为该物品堆的“剩余物品”组件
+        itemStack.set(DataComponentTypes.USE_REMAINDER, new UseRemainderComponent(remainder));
+
         return super.use(world, user, hand);
     }
     @Override
     public ItemStack finishUsing(ItemStack stack, World world, LivingEntity user) {
         if (!world.isClient) {
+            // ------------------
             // 在玩家上方 30 格生成陨石
             MeteoriteEntity meteorite = new MeteoriteEntity(ModEntities.METEORITE, world, user, 5.0f, false, 0);
             Vec3d spawnPos = user.getPos().add(0, 30, 0);

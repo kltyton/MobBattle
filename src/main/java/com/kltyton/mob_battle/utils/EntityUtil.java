@@ -41,6 +41,8 @@ public class EntityUtil {
         }
     }
 
+
+
     public enum TeamFilter {
         ALL,             // 所有人
         EXCLUDE_TEAM,    // 排除队友
@@ -78,19 +80,12 @@ public class EntityUtil {
      * @param <T>                  实体类型
      * @return 符合条件的实体列表
      */
-    public static <T extends LivingEntity> List<T>     /**
-     * 获取指定实体周围指定范围内的某类实体的集合（球形范围，精确距离）
-     *
-     * @param center               中心实体
-     * @param clazz                要统计的实体类
-     * @param filterClass          额外筛选类
-     * @param radius               范围半径
-     * @param includeSelf          是否包含中心实体自身
-     * @param teamFilter           队伍筛选
-     * @param <T>                  实体类型
-     * @return 符合条件的实体列表
-     */getNearbyEntity(LivingEntity center, Class<T> clazz, Class<?> filterClass, double radius, boolean includeSelf, TeamFilter teamFilter) {
+    public static <T extends LivingEntity> List<T> getNearbyEntity(LivingEntity center, Class<T> clazz, Class<?> filterClass, double radius, boolean includeSelf, TeamFilter teamFilter) {
         return getNearbyEntity(center, clazz, filterClass, radius, includeSelf, teamFilter, null, null);
+    }
+
+    public static <T extends LivingEntity> List<T> getNearbyEntity(LivingEntity center, Class<T> clazz, Class<?> filterClass, Box box, boolean includeSelf, TeamFilter teamFilter, TargetPredicate targetPredicate) {
+        return getNearbyEntity(center, clazz, filterClass,1, box, includeSelf, teamFilter, null, targetPredicate);
     }
 
     /**
@@ -107,15 +102,25 @@ public class EntityUtil {
     public static <T extends LivingEntity> List<T> getNearbyEntity(LivingEntity center, Class<T> clazz, double radius, boolean includeSelf, TeamFilter teamFilter) {
         return getNearbyEntity(center, clazz, Object.class, radius, includeSelf, teamFilter);
     }
+
+    public static <T extends LivingEntity> List<T> getNearbyEntity(LivingEntity center, Class<T> clazz, double radius, boolean includeSelf, TeamFilter teamFilter, TargetPredicate targetPredicate) {
+        return getNearbyEntity(center, clazz, Object.class, radius, includeSelf, teamFilter, null, targetPredicate);
+    }
+
+    public static <T extends LivingEntity> List<T> getNearbyEntity(LivingEntity center, Class<T> clazz, double radius, boolean includeSelf, TeamFilter teamFilter, Predicate<T> extraPredicate) {
+        return getNearbyEntity(center, clazz, Object.class, radius, includeSelf, teamFilter, extraPredicate, null);
+    }
     public static <T extends LivingEntity> List<T> getNearbyEntity(LivingEntity center, Class<T> clazz, Class<?> filterClass, double radius, boolean includeSelf, TeamFilter teamFilter, Predicate<T> extraPredicate, TargetPredicate targetPredicate) {
+        return EntityUtil.getNearbyEntity(center, clazz, filterClass, radius, null, includeSelf, teamFilter, extraPredicate, targetPredicate);
+    }
+    public static <T extends LivingEntity> List<T> getNearbyEntity(LivingEntity center, Class<T> clazz, Class<?> filterClass, double radius, Box box, boolean includeSelf, TeamFilter teamFilter, Predicate<T> extraPredicate, TargetPredicate targetPredicate) {
         World world = center.getWorld();
         if (world.isClient()) {
             return List.of();
         }
         ServerWorld serverWorld = (ServerWorld) world;
-
         double radiusSq = radius * radius;
-        Box box = center.getBoundingBox().expand(radius);
+        if (box == null) box = center.getBoundingBox().expand(radius);
         Predicate<T> predicate = entity -> {
             if (!entity.isAlive()) return false;
             if (!includeSelf && entity == center) return false;

@@ -1,6 +1,7 @@
 package com.kltyton.mob_battle.entity.irongolem;
 
 import com.kltyton.mob_battle.entity.ModSkillEntityType;
+import com.kltyton.mob_battle.entity.ai.goal.GeneralProtectionVillagerGoal;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -48,6 +49,7 @@ public class VillagerIronGolemEntity extends IronGolemEntity implements GeoEntit
         this.goalSelector.add(7, new LookAtEntityGoal(this, PlayerEntity.class, 6.0F));
         this.goalSelector.add(8, new LookAroundGoal(this));
         this.targetSelector.add(1, new TrackIronGolemTargetGoal(this));
+        this.targetSelector.add(1, new GeneralProtectionVillagerGoal(this));
         this.targetSelector.add(2, new RevengeGoal(this));
         this.targetSelector.add(3, new ActiveTargetGoal<>(this, PlayerEntity.class, 10, true, false, this::shouldAngerAt));
         this.targetSelector.add(3, new ActiveTargetGoal<>(this, MobEntity.class, 5, false, false, (entity, world) -> entity instanceof Monster));

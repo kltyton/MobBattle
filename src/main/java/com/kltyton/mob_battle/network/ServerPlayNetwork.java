@@ -50,6 +50,8 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 
 public class ServerPlayNetwork {
     public static void init() {
@@ -331,13 +333,25 @@ public class ServerPlayNetwork {
                 MasterScepterManager.runCommand(player, command);
             });
         });
+
         ServerPlayNetworking.registerGlobalReceiver(ShieldSpawnPayload.ID, (payload, context) -> {
+            //翠绿套装护盾效果
             ServerPlayerEntity player = context.player();
             ServerWorld world = player.getWorld();
             context.server().execute(() -> {
                 if (ArmorUtil.hasFullArmor(player, ModMaterial.EMERALD_DIAMOND_ALLOY_INSTANCE)) {
                     ItemStack cooldownItem = Items.AIR.getDefaultStack();
-                    if (player.getItemCooldownManager().isCoolingDown(cooldownItem)) return;
+                    if (player.getItemCooldownManager().isCoolingDown(cooldownItem)) {
+                        // 获取剩余冷却进度 (0.0 到 1.0 之间的浮点数)
+                        float progress = player.getItemCooldownManager().getCooldownProgress(cooldownItem, 0);
+                        float remainingSeconds = (progress * 1300) / 20.0F;
+                        player.sendMessage(
+                                Text.literal("护盾冷却中！还需等待 " + String.format("%.1f", remainingSeconds) + " 秒")
+                                        .formatted(Formatting.RED),
+                                true
+                        );
+                        return;
+                    }
                     ShieldEntity shield = new ShieldEntity(ModEntities.SHIELD, world);
                     shield.setPosition(player.getX(), player.getY(), player.getZ());
                     shield.setOwner(player);

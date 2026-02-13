@@ -103,10 +103,10 @@ public class ModItemGroups {
                 enchantedChestplate.addEnchantment(new EnchantmentLevelEntry(lookup.getOrThrow(Enchantments.PROTECTION), 5).enchantment(), 5);
                 enchantedLeggings.addEnchantment(new EnchantmentLevelEntry(lookup.getOrThrow(Enchantments.PROTECTION), 5).enchantment(), 5);
                 enchantedBoots.addEnchantment(new EnchantmentLevelEntry(lookup.getOrThrow(Enchantments.PROTECTION), 5).enchantment(), 5);
-                enchantedHelmet.addEnchantment(new EnchantmentLevelEntry(lookup.getOrThrow(ModEnchantments.MAGIC_PROTECTION), 3).enchantment(), 3);
-                enchantedChestplate.addEnchantment(new EnchantmentLevelEntry(lookup.getOrThrow(ModEnchantments.MAGIC_PROTECTION), 3).enchantment(), 3);
-                enchantedLeggings.addEnchantment(new EnchantmentLevelEntry(lookup.getOrThrow(ModEnchantments.MAGIC_PROTECTION), 3).enchantment(), 3);
-                enchantedBoots.addEnchantment(new EnchantmentLevelEntry(lookup.getOrThrow(ModEnchantments.MAGIC_PROTECTION), 1).enchantment(), 1);
+                enchantedHelmet.addEnchantment(new EnchantmentLevelEntry(lookup.getOrThrow(ModEnchantments.MAGIC_PROTECTION), 2).enchantment(), 2);
+                enchantedChestplate.addEnchantment(new EnchantmentLevelEntry(lookup.getOrThrow(ModEnchantments.MAGIC_PROTECTION), 2).enchantment(), 2);
+                enchantedLeggings.addEnchantment(new EnchantmentLevelEntry(lookup.getOrThrow(ModEnchantments.MAGIC_PROTECTION), 2).enchantment(), 2);
+                enchantedBoots.addEnchantment(new EnchantmentLevelEntry(lookup.getOrThrow(ModEnchantments.MAGIC_PROTECTION), 2).enchantment(), 2);
                 enchantedChestplate.addEnchantment(new EnchantmentLevelEntry(lookup.getOrThrow(Enchantments.FIRE_PROTECTION), 1).enchantment(), 1);
 
                 ModMaterial.createArmor(enchantedHelmet, ModMaterial.IRON_GOLD_INSTANCE, "iron_gold_helmet", EquipmentType.HELMET);
@@ -156,10 +156,14 @@ public class ModItemGroups {
                 entries.add(ModItems.METEORICORE_BOW);
                 entries.add(ModItems.METEORICORE_SWORD);
 
-                ItemStack enchantedSword = new ItemStack(ModItems.IRON_GOLD_SWORD);
-                enchantedSword.addEnchantment(new EnchantmentLevelEntry(lookup.getOrThrow(Enchantments.SWEEPING_EDGE), 1).enchantment(), 1);
-                ModMaterial.createSword(enchantedSword, ModMaterial.IRON_GOLD_TOOL_MATERIAL, "iron_gold_sword", AttributeModifierSlot.MAINHAND);
-                entries.add(enchantedSword);
+                ItemStack ironSword = new ItemStack(ModItems.IRON_GOLD_SWORD);
+                //enchantedSword.addEnchantment(new EnchantmentLevelEntry(lookup.getOrThrow(Enchantments.SWEEPING_EDGE), 1).enchantment(), 1);
+                ModMaterial.createSword(ironSword, ModMaterial.IRON_GOLD_TOOL_MATERIAL, "iron_gold_sword", AttributeModifierSlot.MAINHAND);
+                entries.add(ironSword);
+
+                ItemStack emeraldSword = new ItemStack(ModItems.EMERALD_DIAMOND_SWORD);
+                ModMaterial.createSword(emeraldSword, ModMaterial.IRON_GOLD_TOOL_MATERIAL, "emerald_diamond_sword", AttributeModifierSlot.MAINHAND);
+                entries.add(emeraldSword);
 
                 entries.add(ModItems.VS_SNIPE);
                 //添加基础物品

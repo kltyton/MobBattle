@@ -27,6 +27,10 @@ public class PoisonousSlashEntity extends BaseSkillLittlePersonEntity {
                 .add(EntityAttributes.ATTACK_DAMAGE, 55.0);
     }
     @Override
+    public void heal() {
+        this.heal(3.0F);
+    }
+    @Override
     public void attackAdditional(LivingEntity target) {
         target.addStatusEffect(
                 new StatusEffectInstance(StatusEffects.POISON, 30 * 60 * 20, 2)

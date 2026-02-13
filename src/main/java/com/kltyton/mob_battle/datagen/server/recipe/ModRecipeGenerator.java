@@ -1,4 +1,4 @@
-package com.kltyton.mob_battle.data.server.recipe;
+package com.kltyton.mob_battle.datagen.server.recipe;
 
 import com.kltyton.mob_battle.Mob_battle;
 import com.kltyton.mob_battle.items.ModItems;
@@ -33,6 +33,7 @@ public class ModRecipeGenerator extends FabricRecipeProvider {
             @Override
             public void generate() {
                 RegistryWrapper.Impl<Item> itemLookup = registries.getOrThrow(RegistryKeys.ITEM);
+
                 offerSmelting(
                         List.of(ModItems.INCUBATION_EGG), // Inputs
                         RecipeCategory.FOOD, // Category
@@ -47,6 +48,16 @@ public class ModRecipeGenerator extends FabricRecipeProvider {
                         .input('a', Items.IRON_INGOT)
                         .input('b', Items.GOLD_INGOT)
                         .group("fine_knife") //将其放入名为“multi_bench”的组中-组显示在配方书的一个槽中
+                        .criterion(hasItem(Items.CRAFTING_TABLE), conditionsFromItem(Items.CRAFTING_TABLE))
+                        .offerTo(exporter);
+
+                createShaped(RecipeCategory.TOOLS, ModItems.HEART_STONE, 1)
+                        .pattern(" a ")
+                        .pattern("aba")
+                        .pattern(" a ")
+                        .input('a', Items.REDSTONE)
+                        .input('b', Items.COBBLESTONE)
+                        .group("heart_stone")
                         .criterion(hasItem(Items.CRAFTING_TABLE), conditionsFromItem(Items.CRAFTING_TABLE))
                         .offerTo(exporter);
             }
