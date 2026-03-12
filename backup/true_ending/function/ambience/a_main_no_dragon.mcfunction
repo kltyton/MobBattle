@@ -1,2 +1,0 @@
-
-execute if predicate true_ending:chance/2_percent run function true_ending:ambience/dragon_entity_summon_small_spread
