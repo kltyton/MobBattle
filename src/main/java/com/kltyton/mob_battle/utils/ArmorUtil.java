@@ -35,6 +35,12 @@ public class ArmorUtil {
                 legs.isOf(ModItems.EMERALD_DIAMOND_LEGGINGS) &&
                 feet.isOf(ModItems.EMERALD_DIAMOND_BOOTS);
 
+        if (material == ModMaterial.ZIJIN_ARMOR_INSTANCE) return
+                head.isOf(ModItems.ZIJIN_HELMET) &&
+                chest.isOf(ModItems.ZIJIN_CHESTPLATE) &&
+                legs.isOf(ModItems.ZIJIN_LEGGINGS) &&
+                feet.isOf(ModItems.ZIJIN_BOOTS);
+
         return false;
     }
     public static int getMagicProtectionLevel(LivingEntity entity) {

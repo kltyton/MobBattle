@@ -60,6 +60,15 @@ public class ModRecipeGenerator extends FabricRecipeProvider {
                         .group("heart_stone")
                         .criterion(hasItem(Items.CRAFTING_TABLE), conditionsFromItem(Items.CRAFTING_TABLE))
                         .offerTo(exporter);
+
+                createShaped(RecipeCategory.TOOLS, ModItems.SMALL_BACKPACK, 1)
+                        .pattern("xxx")
+                        .pattern("x x")
+                        .pattern("xxx")
+                        .input('x', Items.RABBIT_HIDE)
+                        .group("backpack") //将其放入名为“multi_bench”的组中-组显示在配方书的一个槽中
+                        .criterion(hasItem(Items.CRAFTING_TABLE), conditionsFromItem(Items.CRAFTING_TABLE))
+                        .offerTo(exporter);
             }
         };
     }

@@ -47,7 +47,7 @@ public class MeteoriteEntity extends CustomFireballEntity {
     @Override
     protected void onEntityHit(EntityHitResult entityHitResult) {
     }
-    private void explodeAndApplyEffects() {
+    protected void explodeAndApplyEffects() {
         World world = this.getWorld();
         // 1. 播放音效
         world.playSound(null, this.getX(), this.getY(), this.getZ(),

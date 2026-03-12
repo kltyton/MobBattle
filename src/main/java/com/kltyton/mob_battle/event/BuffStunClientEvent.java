@@ -19,10 +19,8 @@ public class BuffStunClientEvent {
     public static void ClientInit() {
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             PlayerEntity player = client.player;
-            if (player == null) return;
-
+            if (player == null || player.isCreative() || player.isSpectator()) return;
             UUID id = player.getUuid();
-
             // 被眩晕中
             if (player.hasStatusEffect(ModEffects.STUN_ENTRY)) {
                 if (!STUN_MAP.containsKey(id)) {

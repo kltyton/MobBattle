@@ -29,8 +29,10 @@ import com.kltyton.mob_battle.entity.littleperson.militia.LittlePersonMilitiaEnt
 import com.kltyton.mob_battle.entity.littleperson.militia.soldier.LittlePersonSoldierEntity;
 import com.kltyton.mob_battle.entity.littleperson.skillentity.*;
 import com.kltyton.mob_battle.entity.littleperson.skillentity.ironmanbullet.IronManBulletEntity;
+import com.kltyton.mob_battle.entity.meteorite.EnderDragonMeteoriteEntity;
 import com.kltyton.mob_battle.entity.meteorite.MeteoriteEntity;
 import com.kltyton.mob_battle.entity.min.YoungMinEntity;
+import com.kltyton.mob_battle.entity.misc.ModifiedDragonBreathCloud;
 import com.kltyton.mob_battle.entity.misc.PoisonousBeachEntity;
 import com.kltyton.mob_battle.entity.misc.shield.ShieldEntity;
 import com.kltyton.mob_battle.entity.silencephantom.SilencePhantomEntity;
@@ -747,6 +749,7 @@ public class ModEntities {
             false,
             false
     );
+
     public static final EntityType<PoisonousBeachEntity> POISONOUS_BEACH = createEntityType(
             "poisonous_beach",
             EntityType.Builder.create(PoisonousBeachEntity::new, SpawnGroup.MISC)
@@ -757,6 +760,27 @@ public class ModEntities {
             true
     );
 
+    public static final EntityType<ModifiedDragonBreathCloud> MODIFIED_DRAGON_BREATH_CLOUD = createEntityType(
+            "modified_dragon_breath_cloud",
+            EntityType.Builder.<ModifiedDragonBreathCloud>create(ModifiedDragonBreathCloud::new, SpawnGroup.MISC)
+                    .dropsNothing()
+                    .makeFireImmune()
+                    .dimensions(6.0F, 0.5F)
+                    .maxTrackingRange(10)
+                    .trackingTickInterval(Integer.MAX_VALUE),
+            false,
+            false
+    );
+    public static final EntityType<EnderDragonMeteoriteEntity> ENDER_DRAGON_METEORITE = createEntityType(
+            "ender_dragon_meteorite",
+            EntityType.Builder.<EnderDragonMeteoriteEntity>create(EnderDragonMeteoriteEntity::new, SpawnGroup.MISC)
+                    .dropsNothing()
+                    .dimensions(1.0F, 1.0F)
+                    .maxTrackingRange(4)
+                    .trackingTickInterval(10),
+            false,
+            false
+    );
     public static void init() {
         Registry.register(Registries.ENTITY_TYPE, militia_warrior_villager, MILITIA_WARRIOR_VILLAGER);
         Registry.register(Registries.ENTITY_TYPE, militia_archer_villager, MILITIA_ARCHER_VILLAGER);

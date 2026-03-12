@@ -3,9 +3,11 @@ package com.kltyton.mob_battle.mixin.client.render;
 import com.kltyton.mob_battle.items.tool.BaseBow;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
+import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -29,5 +31,9 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity {
         if (firstPerson && this.isUsingSpyglass()) {
             cir.setReturnValue(0.1f);
         }
+    }
+    @Redirect(method = "getFovMultiplier", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/AbstractClientPlayerEntity;getAttributeValue(Lnet/minecraft/registry/entry/RegistryEntry;)D"))
+    public double getFovMultiplier(AbstractClientPlayerEntity instance, RegistryEntry<EntityAttribute> registryEntry) {
+        return Math.min(instance.getAttributeValue(registryEntry), 0.16f);
     }
 }

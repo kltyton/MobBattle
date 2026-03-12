@@ -1,6 +1,7 @@
 package com.kltyton.mob_battle.network;
 
 import com.kltyton.mob_battle.Mob_battle;
+import com.kltyton.mob_battle.effect.ModEffects;
 import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.entity.deepcreature.DeepCreatureEntity;
 import com.kltyton.mob_battle.entity.deepcreature.skill.Skill;
@@ -21,6 +22,7 @@ import com.kltyton.mob_battle.entity.littleperson.king.LittlePersonKingEntity;
 import com.kltyton.mob_battle.entity.littleperson.king.skill.LittlePersonKingSkill;
 import com.kltyton.mob_battle.entity.littleperson.skillentity.base.BaseSkillLittlePersonEntity;
 import com.kltyton.mob_battle.entity.misc.shield.ShieldEntity;
+import com.kltyton.mob_battle.entity.player.PlayerEntitySkill;
 import com.kltyton.mob_battle.entity.skull.archer.SkullArcherEntity;
 import com.kltyton.mob_battle.entity.skull.archer.SkullArcherEntitySkill;
 import com.kltyton.mob_battle.entity.skull.king.SkullKingEntity;
@@ -38,12 +40,16 @@ import com.kltyton.mob_battle.items.ModMaterial;
 import com.kltyton.mob_battle.network.packet.*;
 import com.kltyton.mob_battle.utils.ArmorUtil;
 import com.kltyton.mob_battle.utils.EnchantmentUtil;
+import com.kltyton.mob_battle.utils.EntityUtil;
 import com.kltyton.mob_battle.utils.LeftClickUtil;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.particle.ParticleTypes;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -52,6 +58,8 @@ import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+
+import java.util.List;
 
 public class ServerPlayNetwork {
     public static void init() {
@@ -294,6 +302,48 @@ public class ServerPlayNetwork {
                     });
                 }
         );
+        ServerPlayNetworking.registerGlobalReceiver(PlayerSkillPayload.ID,
+                (payload, context) -> {
+                    MinecraftServer server = context.server();
+                    ServerPlayerEntity player = context.player();
+                    server.execute(() -> {
+                        switch (payload.skillName()) {
+                            case "attack" -> PlayerEntitySkill.runAttackSkill(player);
+
+                            case "attack2" -> PlayerEntitySkill.runAttackSkill_2(player);
+                            case "attack2_run" -> PlayerEntitySkill.runAttackSkill_2Run(player);
+
+                            case "left_whip" -> PlayerEntitySkill.runLeftWhipSkill(player);
+                            case "left_whip_run" -> PlayerEntitySkill.runLeftWhipSkillRun(player);
+
+                            case "top_knee" -> PlayerEntitySkill.runTopKneeSkill(player);
+                            case "upper_hook" -> PlayerEntitySkill.runUpperHookSkill(player);
+                            case "top_knee_run" -> PlayerEntitySkill.runTopKneeSkillRun(player);
+
+                            case "collision_run" -> PlayerEntitySkill.runCollisionSkillRun(player);
+                            case "collision_start" -> PlayerEntitySkill.startCollisionSkillState(player);
+                            case "collision_end" -> PlayerEntitySkill.stopCollisionSkillState(player);
+
+                            case "run_collision_run" -> PlayerEntitySkill.runRunCollisionSkillRun(player);
+                            case "run_collision" -> PlayerEntitySkill.runRunCollisionSkill(player);
+
+                            case "smashing_the_ground_run" -> PlayerEntitySkill.runSmashGroundSkillRun(player);
+                            case "run_jump" -> PlayerEntitySkill.runJumpSkill(player);
+                            case "smashing_the_ground" -> PlayerEntitySkill.runSmashGroundSkill(player);
+
+                            case "scraping" -> PlayerEntitySkill.runScraping(player);
+                            case "scraping_run" -> PlayerEntitySkill.runScrapingRun(player);
+                            case "scraping_attack" -> PlayerEntitySkill.runScrapingAttack(player);
+                            case "scraping_end" -> PlayerEntitySkill.runScrapingEnd(player);
+
+                            case "retreat_step" -> PlayerEntitySkill.runRetreatStepRunSkill(player);
+
+                            case "stop" -> PlayerEntitySkill.stopSkill(player);
+                            case "can_move" -> PlayerEntitySkill.canMove(player);
+                        }
+                    });
+                }
+        );
         ServerPlayNetworking.registerGlobalReceiver(LeftClickPacket.ID,
                 (payload, context) -> {
                     ServerPlayerEntity player = context.player();
@@ -359,6 +409,52 @@ public class ServerPlayNetwork {
                     player.getItemCooldownManager().set(cooldownItem, 1300);
                     world.playSound(null, player.getX(), player.getY(), player.getZ(),
                             SoundEvents.ITEM_ARMOR_EQUIP_DIAMOND, SoundCategory.PLAYERS, 1.0F, 1.2F);
+                }
+            });
+        });
+        ServerPlayNetworking.registerGlobalReceiver(ZiJinPayload.ID, (payload, context) -> {
+            //紫金套装效果
+            ServerPlayerEntity player = context.player();
+            ServerWorld world = player.getWorld();
+            context.server().execute(() -> {
+                if (ArmorUtil.hasFullArmor(player, ModMaterial.ZIJIN_ARMOR_INSTANCE)) {
+                    ItemStack cooldownItem = Items.AIR.getDefaultStack();
+                    if (player.getItemCooldownManager().isCoolingDown(cooldownItem)) {
+                        // 获取剩余冷却进度 (0.0 到 1.0 之间的浮点数)
+                        float progress = player.getItemCooldownManager().getCooldownProgress(cooldownItem, 0);
+                        float remainingSeconds = (progress * 700) / 20.0F;
+                        player.sendMessage(
+                                Text.literal("套装技能冷却中！还需等待 " + String.format("%.1f", remainingSeconds) + " 秒")
+                                        .formatted(Formatting.RED),
+                                true
+                        );
+                        return;
+                    }
+                    List<LivingEntity> firstRangeTargets = EntityUtil.getNearbyEntity(player, LivingEntity.class, 5.0, false, EntityUtil.TeamFilter.EXCLUDE_TEAM);
+                    for (LivingEntity target : firstRangeTargets) {
+                        int currentAmplifier = -1; // -1 表示当前没有该效果
+                        if (target.hasStatusEffect(ModEffects.PIG_SPIRIT_MARK_ENTRY)) {
+                            currentAmplifier = target.getStatusEffect(ModEffects.PIG_SPIRIT_MARK_ENTRY).getAmplifier();
+                        }
+                        int newAmplifier = Math.min(currentAmplifier + 5, 79);
+                        target.addStatusEffect(new StatusEffectInstance(ModEffects.PIG_SPIRIT_MARK_ENTRY, 160, newAmplifier, false,  false));
+                    }
+
+                    List<LivingEntity> secondRangeTargets = EntityUtil.getNearbyEntity(player, LivingEntity.class, 20.0, false, EntityUtil.TeamFilter.EXCLUDE_TEAM);
+                    for (LivingEntity target : secondRangeTargets) {
+                        if (target.hasStatusEffect(ModEffects.PIG_SPIRIT_MARK_ENTRY)) {
+                            StatusEffectInstance effect = target.getStatusEffect(ModEffects.PIG_SPIRIT_MARK_ENTRY);
+                            int level = effect.getAmplifier() + 1;
+                            // 造成魔法伤害 (等同于等级)
+                            target.damage(world, player.getDamageSources().indirectMagic(player, player), (float) level);
+                            // 造成攻击伤害 (等级的 5 倍)
+                            // 使用 playerAttack 确保伤害来源被计入玩家
+                            target.damage(world, player.getDamageSources().playerAttack(player), (float) (level * 5));
+                            target.removeStatusEffect(ModEffects.PIG_SPIRIT_MARK_ENTRY);
+                        }
+                    }
+                    world.spawnParticles(ParticleTypes.EXPLOSION, player.getX(), player.getY(), player.getZ(), 1, 0, 0, 0, 0);
+                    player.getItemCooldownManager().set(cooldownItem, 700);
                 }
             });
         });

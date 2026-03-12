@@ -4,6 +4,7 @@ import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.entity.ModEntityAttributes;
 import com.kltyton.mob_battle.entity.littleperson.archer.littlearrow.LittleArrowEntity;
 import com.kltyton.mob_battle.entity.littleperson.skillentity.base.BaseSkillLittlePersonEntity;
+import com.kltyton.mob_battle.utils.EntityUtil;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -118,6 +119,7 @@ public class CyborgEntity extends BaseSkillLittlePersonEntity {
                     cyborg.getAttributeInstance(EntityAttributes.MAX_HEALTH).setBaseValue(newMaxHealth);
                     cyborg.setHealth((float) newMaxHealth);
                     serverWorld.spawnEntity(cyborg);
+                    EntityUtil.joinSameTeam(cyborg, livingEntity);
                 }
             }
         }

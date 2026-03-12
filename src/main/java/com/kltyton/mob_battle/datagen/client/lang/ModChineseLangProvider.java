@@ -101,12 +101,30 @@ public class ModChineseLangProvider extends FabricLanguageProvider {
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.WARLOCK_BOOK), "术士之书");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.GRAND_SUMMON_BOOK), "唤魔大书");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.GUARDIAN_SEAL), "守护法印");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.FILLING_SEAL), "充盈法印");
 
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.EMERALD_DIAMOND_HELMET), "翠钻合金头盔");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.EMERALD_DIAMOND_CHESTPLATE), "翠钻合金胸甲");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.EMERALD_DIAMOND_LEGGINGS), "翠钻合金护腿");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.EMERALD_DIAMOND_BOOTS), "翠钻合金靴子");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.EMERALD_DIAMOND_SWORD), "翠钻合金剑");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.ZIJIN_SWORD), "紫金剑");
+
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.ZIJIN_HELMET), "紫金头盔");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.ZIJIN_CHESTPLATE), "紫金胸甲");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.ZIJIN_LEGGINGS), "紫金护腿");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.ZIJIN_BOOTS), "紫金靴子");
+
         translationBuilder.add(ModLangUtils.getTranslationKey(ModKeyBinding.shieldKey), "召唤盾牌");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModKeyBinding.keyPlayerRetreatStepRun), "后撤步");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModKeyBinding.keyPlayerAttack2Run), "左拳大摆拳");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModKeyBinding.keyPlayerLeftWhipRun), "左鞭腿");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModKeyBinding.keyPlayerTopKneeRun), "顶膝随后上勾拳");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModKeyBinding.keyPlayerCollisionRun), "冲锋冲撞");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModKeyBinding.keyPlayerRunCollisionRun), "起跑向下砸");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModKeyBinding.keyPlayerSmashingTheGroundRun), "跳起砸地");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModKeyBinding.keyPlayerScrapingRun), "抓取");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.CARDIOTONIC_INJECTION), "强心注射剂");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModKeyBinding.keyZiJin), "激活紫金套装奖励");
     }
 }

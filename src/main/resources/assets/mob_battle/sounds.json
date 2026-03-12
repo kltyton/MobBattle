@@ -48,5 +48,30 @@
     "sounds": [
       "mob_battle:b_c_debuff_dog_jiao"
     ]
+  },
+  "ender_dragon_skill4": {
+    "sounds": [
+      "mob_battle:ender_dragon_skill4"
+    ]
+  },
+  "dragon_bgm_normal": {
+    "sounds": [
+      "mob_battle:dragon_bgm_normal"
+    ]
+  },
+  "dragon_bgm_half": {
+    "sounds": [
+      "mob_battle:dragon_bgm_half"
+    ]
+  },
+  "player_attack": {
+    "sounds": [
+      "mob_battle:player_attack"
+    ]
+  },
+  "player_attack_4": {
+    "sounds": [
+      "mob_battle:player_attack_4"
+    ]
   }
 }

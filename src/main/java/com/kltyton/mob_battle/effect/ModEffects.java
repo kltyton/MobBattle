@@ -24,6 +24,8 @@ public class ModEffects {
     public static HeartEaterStatusEffect HEART_EATER;
     public static InfestationEffect INFESTATION;
     public static DisarmEffect DISARM;
+    public static SuperRegenerationStatusEffect SUPER_REGENERATION;
+    public static PigSpiritMarkEffect PIG_SPIRIT_MARK;
 
     public static RegistryEntry<StatusEffect> STUN_ENTRY;
     public static RegistryEntry<StatusEffect> INSECT_BITE_ENTRY;
@@ -39,6 +41,8 @@ public class ModEffects {
     public static RegistryEntry<StatusEffect> HEART_EATER_ENTRY;
     public static RegistryEntry<StatusEffect> INFESTATION_ENTRY;
     public static RegistryEntry<StatusEffect> DISARM_ENTRY;
+    public static RegistryEntry<StatusEffect> SUPER_REGENERATION_ENTRY;
+    public static RegistryEntry<StatusEffect> PIG_SPIRIT_MARK_ENTRY;
 
     public static void init() {
         INSECT_BITE = Registry.register(Registries.STATUS_EFFECT, Identifier.of(Mob_battle.MOD_ID, "insect_bite"),
@@ -69,6 +73,10 @@ public class ModEffects {
                 new InfestationEffect());
         DISARM = Registry.register(Registries.STATUS_EFFECT, Identifier.of(Mob_battle.MOD_ID, "disarm"),
                 new DisarmEffect());
+        SUPER_REGENERATION = Registry.register(Registries.STATUS_EFFECT, Identifier.of(Mob_battle.MOD_ID, "super_regeneration"),
+                new SuperRegenerationStatusEffect());
+        PIG_SPIRIT_MARK = Registry.register(Registries.STATUS_EFFECT, Identifier.of(Mob_battle.MOD_ID, "pig_spirit_mark"),
+                new PigSpiritMarkEffect());
 
 
         INSECT_BITE_ENTRY = Registries.STATUS_EFFECT.getEntry(Identifier.of(Mob_battle.MOD_ID, "insect_bite")).orElseThrow(() ->
@@ -98,6 +106,10 @@ public class ModEffects {
         INFESTATION_ENTRY = Registries.STATUS_EFFECT.getEntry(Identifier.of(Mob_battle.MOD_ID, "infestation")).orElseThrow(() ->
                 new IllegalStateException("未能获得效果的注册表项"));
         DISARM_ENTRY = Registries.STATUS_EFFECT.getEntry(Identifier.of(Mob_battle.MOD_ID, "disarm")).orElseThrow(() ->
+                new IllegalStateException("未能获得效果的注册表项"));
+        SUPER_REGENERATION_ENTRY = Registries.STATUS_EFFECT.getEntry(Identifier.of(Mob_battle.MOD_ID, "super_regeneration")).orElseThrow(() ->
+                new IllegalStateException("未能获得效果的注册表项"));
+        PIG_SPIRIT_MARK_ENTRY = Registries.STATUS_EFFECT.getEntry(Identifier.of(Mob_battle.MOD_ID, "pig_spirit_mark")).orElseThrow(() ->
                 new IllegalStateException("未能获得效果的注册表项"));
     }
 }

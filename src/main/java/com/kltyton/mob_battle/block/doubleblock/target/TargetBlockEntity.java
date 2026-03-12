@@ -51,7 +51,6 @@ public class TargetBlockEntity extends BlockEntity {
         while (iterator.hasNext()) {
             UUID uuid = iterator.next();
             Entity entity = world.getEntity(uuid);
-
             // 如果实体不存在、不是铁傀儡、已死亡、或距离超过64格，则移除
             if (!(entity instanceof MilitiaArcherVillager golem) || !golem.isAlive()) {
                 iterator.remove();
@@ -67,7 +66,6 @@ public class TargetBlockEntity extends BlockEntity {
 
         if (!villagers.isEmpty()) {
             VillagerEntity villager = villagers.getFirst();
-
             // 转化
             MilitiaArcherVillager golem = ModEntities.MILITIA_ARCHER_VILLAGER.create(world, SpawnReason.CONVERSION);
             if (golem != null) {
@@ -81,7 +79,21 @@ public class TargetBlockEntity extends BlockEntity {
             }
         }
     }
+    public void killTrackedGolems(ServerWorld world) {
+        if (trackedGolems.isEmpty()) {
+            return;
+        }
 
+        for (UUID uuid : trackedGolems) {
+            Entity entity = world.getEntity(uuid);
+            if (entity instanceof MilitiaArcherVillager warrior && warrior.isAlive()) {
+                warrior.setHomePos(new BlockPos(0, 9999, 0));
+            }
+        }
+
+        trackedGolems.clear();
+        markDirty();
+    }
     public void applyGlowingToTracked(ServerWorld world, PlayerEntity player) {
         if (trackedGolems.isEmpty()) {
             return;

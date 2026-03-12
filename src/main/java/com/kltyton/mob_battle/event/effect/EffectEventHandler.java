@@ -1,6 +1,7 @@
 package com.kltyton.mob_battle.event.effect;
 
 import com.kltyton.mob_battle.effect.ModEffects;
+import com.kltyton.mob_battle.entity.player.IPlayerEntityAccessor;
 import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
 import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
 import net.minecraft.util.ActionResult;
@@ -11,6 +12,11 @@ public class EffectEventHandler {
             if (player.hasStatusEffect(ModEffects.DISARM_ENTRY)) {
                 return ActionResult.FAIL;
             }
+            if (((IPlayerEntityAccessor)player).isUsingGeckoLib()) {
+                if (!player.getMainHandStack().isEmpty()) {
+                    return ActionResult.FAIL;
+                }
+            }
             return ActionResult.PASS;
         });
 
@@ -18,6 +24,11 @@ public class EffectEventHandler {
         AttackBlockCallback.EVENT.register((player, world, hand, pos, direction) -> {
             if (player.hasStatusEffect(ModEffects.DISARM_ENTRY)) {
                 return ActionResult.FAIL;
+            }
+            if (((IPlayerEntityAccessor)player).isUsingGeckoLib()) {
+                if (!player.getMainHandStack().isEmpty()) {
+                    return ActionResult.FAIL;
+                }
             }
             return ActionResult.PASS;
         });

@@ -100,13 +100,22 @@ public class ModEnglishLangProvider extends FabricLanguageProvider {
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.WARLOCK_BOOK), "Warlock Book");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.GRAND_SUMMON_BOOK), "Grand Summon Book");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.GUARDIAN_SEAL), "Guardian Seal");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.FILLING_SEAL), "Filling Seal");
 
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.EMERALD_DIAMOND_HELMET), "Emerald Diamond Helmet");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.EMERALD_DIAMOND_CHESTPLATE), "Emerald Diamond Chestplate");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.EMERALD_DIAMOND_LEGGINGS), "Emerald Diamond Leggings");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.EMERALD_DIAMOND_BOOTS), "Emerald Diamond Boots");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.EMERALD_DIAMOND_SWORD), "Emerald Diamond Sword");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.ZIJIN_SWORD), "Zijin Sword");
+
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.ZIJIN_HELMET), "Zijin Helmet");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.ZIJIN_CHESTPLATE), "Zijin Chestplate");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.ZIJIN_LEGGINGS), "Zijin Leggings");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.ZIJIN_BOOTS), "Zijin Boots");
+
         translationBuilder.add(ModLangUtils.getTranslationKey(ModKeyBinding.shieldKey), "Spawn Shield");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.CARDIOTONIC_INJECTION), "Cardiotic Injection");
     }
 }
 

@@ -10,7 +10,7 @@ public class BuffStunEvent {
     public static void init() {
         // 阻止攻击
         AttackEntityCallback.EVENT.register((player, world, hand, entity, hitResult) -> {
-            if (player.hasStatusEffect(ModEffects.STUN_ENTRY)) {
+            if (player.hasStatusEffect(ModEffects.STUN_ENTRY) && !player.isCreative() && !player.isSpectator()) {
                 return ActionResult.FAIL;
             }
             return ActionResult.PASS;
@@ -18,7 +18,7 @@ public class BuffStunEvent {
 
         // 阻止使用物品
         UseItemCallback.EVENT.register((player, world, hand) -> {
-            if (player.hasStatusEffect(ModEffects.STUN_ENTRY)) {
+            if (player.hasStatusEffect(ModEffects.STUN_ENTRY) && !player.isCreative() && !player.isSpectator()) {
                 return ActionResult.FAIL;
             }
             return ActionResult.PASS;
@@ -26,7 +26,7 @@ public class BuffStunEvent {
 
         // 阻止与实体交互（例如右键村民）
         UseEntityCallback.EVENT.register((player, world, hand, entity, hitResult) -> {
-            if (player.hasStatusEffect(ModEffects.STUN_ENTRY)) {
+            if (player.hasStatusEffect(ModEffects.STUN_ENTRY) && !player.isCreative() && !player.isSpectator()) {
                 return ActionResult.FAIL;
             }
             return ActionResult.PASS;

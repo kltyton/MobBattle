@@ -8,6 +8,7 @@ import com.kltyton.mob_battle.items.ModItems;
 import com.kltyton.mob_battle.items.ModMaterial;
 import com.kltyton.mob_battle.tags.ModTags;
 import com.kltyton.mob_battle.utils.ArmorUtil;
+import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.component.type.DeathProtectionComponent;
 import net.minecraft.entity.*;
 import net.minecraft.entity.damage.DamageSource;
@@ -17,6 +18,7 @@ import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.entity.mob.AbstractPiglinEntity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
@@ -97,10 +99,42 @@ public abstract class LivingEntityMixin extends Entity implements Attackable, Se
             return instance.damage(world, source, amount);
         }
     }
+    //猪灵印记
+    @Unique
+    private long lastPigSpiritAbsorptionTime = -200L;
+    @Inject(method = "damage", at = @At("RETURN"))
+    private void pigDamage(ServerWorld world, DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
+        LivingEntity target = (LivingEntity) (Object) this;
+        Entity attacker = source.getAttacker();
+        if (attacker instanceof LivingEntity livingAttacker) {
+            if (livingAttacker.hasStatusEffect(ModEffects.PIG_SPIRIT_MARK_ENTRY)) {
+                if (target instanceof AbstractPiglinEntity piglin) {
+                    StatusEffectInstance effect = livingAttacker.getStatusEffect(ModEffects.PIG_SPIRIT_MARK_ENTRY);
+                    int amplifier = effect != null ? effect.getAmplifier() : 0;
+                    long currentTime = target.getWorld().getTime();
+                    if (currentTime - lastPigSpiritAbsorptionTime >= 200L) {
+                        float absorptionAmount = 2.0f * (amplifier + 1);
+                        piglin.setAbsorptionAmount(piglin.getAbsorptionAmount() + absorptionAmount);
+                        lastPigSpiritAbsorptionTime = currentTime;
+                    }
+                } else if (target instanceof PlayerEntity player && ArmorUtil.hasFullArmor(player, ModMaterial.ZIJIN_ARMOR_INSTANCE)){
+                    StatusEffectInstance effect = livingAttacker.getStatusEffect(ModEffects.PIG_SPIRIT_MARK_ENTRY);
+                    int amplifier = effect != null ? effect.getAmplifier() : 0;
+                    long currentTime = target.getWorld().getTime();
+                    if (currentTime - lastPigSpiritAbsorptionTime >= 200L) {
+                        float absorptionAmount = 2.0f * (amplifier + 1);
+                        player.setAbsorptionAmount(player.getAbsorptionAmount() + absorptionAmount);
+                        lastPigSpiritAbsorptionTime = currentTime;
+                    }
+                }
+            }
+        }
+    }
     @Redirect(method = "damage", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/damage/DamageSource;isIn(Lnet/minecraft/registry/tag/TagKey;)Z", ordinal = 3))
     private boolean cancelDamage(DamageSource instance, TagKey<DamageType> tag) {
         Entity sourcer = instance.getSource();
         Entity attacker = instance.getAttacker();
+
         if (sourcer instanceof WitherSkullKingEntity && attacker instanceof WitherSkullKingEntity) {
             return true;
         }
@@ -124,11 +158,26 @@ public abstract class LivingEntityMixin extends Entity implements Attackable, Se
             index = 3,
             argsOnly = true
     )
-    private float modifyDamageArgument(float damage) {
+    private float modifyDamageArgument(float damage, @Local(argsOnly = true) DamageSource source) {
+        LivingEntity target = (LivingEntity) (Object) this;
+        // --- 逻辑2：拥有印记的生物受到来自猪灵的额外伤害 ---
+        if (target.hasStatusEffect(ModEffects.PIG_SPIRIT_MARK_ENTRY)) {
+            if (source.getAttacker() instanceof AbstractPiglinEntity) {
+                StatusEffectInstance effect = target.getStatusEffect(ModEffects.PIG_SPIRIT_MARK_ENTRY);
+                int amplifier = effect != null ? effect.getAmplifier() : 0;
+                float extraDamage = (float) (amplifier + 1);
+                damage += extraDamage;
+            } else if (target instanceof PlayerEntity player && ArmorUtil.hasFullArmor(player, ModMaterial.ZIJIN_ARMOR_INSTANCE)) {
+                StatusEffectInstance effect = target.getStatusEffect(ModEffects.PIG_SPIRIT_MARK_ENTRY);
+                int amplifier = effect != null ? effect.getAmplifier() : 0;
+                float extraDamage = (float) (amplifier + 1);
+                damage += extraDamage;
+            }
+        }
         int level = ArmorUtil.getMagicProtectionLevel((LivingEntity) (Object) this);
         if (isMagic && level > 0) {
             float reductionPercentage = Math.min(level * 0.04f, 0.80f);
-            return damage * (1.0f - reductionPercentage);
+            damage *= 1.0f - reductionPercentage;
         }
         return damage;
     }
@@ -139,18 +188,19 @@ public abstract class LivingEntityMixin extends Entity implements Attackable, Se
             cir.cancel();
         }
     }
-    @Inject(method = "damage", at = @At("RETURN"), cancellable = true)
+    @Inject(method = "damage", at = @At("RETURN"))
     public void damageReturn(ServerWorld world, DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
         Entity attacker = source.getAttacker();
         if (attacker instanceof LivingEntity livingEntity && attacker.getType().isIn(ModTags.ATTACK_HEAL_ENTITY) && this.isDead()) {
             livingEntity.heal(5);
         }
     }
+    //无敌帧
     @Redirect(method = "applyDamage", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;isInvulnerableTo(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/entity/damage/DamageSource;)Z"))
     public boolean isInvulnerableTo(LivingEntity instance, ServerWorld world, DamageSource source) {
         Entity sourcer = source.getSource();
         Entity attacker = source.getAttacker();
-        if (sourcer instanceof WitherSkullKingEntity && attacker instanceof WitherSkullKingEntity) {
+        if ((sourcer instanceof WitherSkullKingEntity && attacker instanceof WitherSkullKingEntity) || source.isOf(DamageTypes.THORNS) || (source.isOf(DamageTypes.ON_FIRE) && !this.isFireImmune())) {
             instance.timeUntilRegen = 0;
             return false;
         }

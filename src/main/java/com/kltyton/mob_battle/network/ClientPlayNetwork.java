@@ -4,10 +4,12 @@ import com.kltyton.mob_battle.accessor.ILead;
 import com.kltyton.mob_battle.items.itemgroup.ClientTagManager;
 import com.kltyton.mob_battle.network.packet.ILeadUpdatePayload;
 import com.kltyton.mob_battle.network.packet.ItemGroupPayload;
+import com.kltyton.mob_battle.network.packet.PlayerSkillUtilPayload;
 import com.kltyton.mob_battle.network.packet.SoundPayload;
 import com.kltyton.mob_battle.sounds.bgm.ClientBgmManager;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.option.Perspective;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.Identifier;
 
@@ -57,6 +59,18 @@ public class ClientPlayNetwork {
                 if (entity != null) {
                     if (iLead_1 != 3) ((ILead) entity).setIsUniversalLeadEnyity(iLead_1 == 1);
                     if (iLead_2 != 3) ((ILead) entity).setIsInvisibleUniversalLeadEnyity(iLead_2 == 1);
+                }
+            });
+        });
+        ClientPlayNetworking.registerGlobalReceiver(PlayerSkillUtilPayload.ID, (payload, context) -> {
+            MinecraftClient client = context.client();
+            client.execute(() -> {
+                if (client.player != null) {
+                    switch (payload.name()) {
+                        case "setPerson_1" -> client.options.setPerspective(Perspective.FIRST_PERSON);
+                        case "setPerson_2" -> client.options.setPerspective(Perspective.THIRD_PERSON_BACK);
+                        case "setPerson_3" -> client.options.setPerspective(Perspective.THIRD_PERSON_FRONT);
+                    }
                 }
             });
         });

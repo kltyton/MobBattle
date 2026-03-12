@@ -94,6 +94,9 @@ public class MissileEntity extends CustomFireballEntity {
         }
     }
     private void spawnSubMissile() {
+        if (!this.isAlive() || !(this.getOwner() instanceof LivingEntity)) {
+            return;
+        }
         // 创建一个新的导弹实例
         // 注意：这里假设你有对应的 EntityType 引用。如果没有，可以使用 this.getType()
         MissileEntity subMissile = new MissileEntity(ModEntities.MISSILE, this.getWorld(), (LivingEntity) this.getOwner(), 5.0f, false, 0, 200);

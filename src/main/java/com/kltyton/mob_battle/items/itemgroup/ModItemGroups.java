@@ -50,7 +50,7 @@ public class ModItemGroups {
                 entries.add(ModItems.HEART_STONE);
                 entries.add(ModItems.THOUSAND_BLOSSOMED_IMMORTAL_FRUIT);
                 // 添加刷怪蛋
-                entries.add(ModItems.HIGHBIRD_BABY_SPAWN_EGG);
+/*                entries.add(ModItems.HIGHBIRD_BABY_SPAWN_EGG);
                 entries.add(ModItems.HIGHBIRD_TEENAGE_SPAWN_EGG);
                 entries.add(ModItems.HIGHBIRD_EGG_SPAWN_EGG);
                 entries.add(ModItems.HIGHBIRD_ADULT_SPAWN_EGG);
@@ -76,7 +76,7 @@ public class ModItemGroups {
                 entries.add(ModItems.SKULL_MAGE_SPAWN_EGG);
                 entries.add(ModItems.YOUNG_MIN_SPAWN_EGG);
                 entries.add(ModItems.HIDDEN_EYE_SPAWN_EGG);
-                entries.add(ModItems.VINDICATOR_GENERAL_SPAWN_EGG);
+                entries.add(ModItems.VINDICATOR_GENERAL_SPAWN_EGG);*/
 
                 for (SpawnEggItem item : ModItems.SPAWN_EGG_ITEMS.values()) {
                     entries.add(item);
@@ -119,6 +119,8 @@ public class ModItemGroups {
                 entries.add(enchantedLeggings);
                 entries.add(enchantedBoots);
 
+
+
                 ItemStack edHelmet = new ItemStack(ModItems.EMERALD_DIAMOND_HELMET);
                 ItemStack edChestplate = new ItemStack(ModItems.EMERALD_DIAMOND_CHESTPLATE);
                 ItemStack edLeggings = new ItemStack(ModItems.EMERALD_DIAMOND_LEGGINGS);
@@ -140,6 +142,30 @@ public class ModItemGroups {
                 ModMaterial.createArmor(edChestplate, ModMaterial.EMERALD_DIAMOND_ALLOY_INSTANCE, "emerald_diamond_chestplate", EquipmentType.CHESTPLATE);
                 ModMaterial.createArmor(edLeggings, ModMaterial.EMERALD_DIAMOND_ALLOY_INSTANCE, "emerald_diamond_leggings", EquipmentType.LEGGINGS);
                 ModMaterial.createArmor(edBoots, ModMaterial.EMERALD_DIAMOND_ALLOY_INSTANCE, "emerald_diamond_boots", EquipmentType.BOOTS);
+
+                ItemStack ziJinHelmet = new ItemStack(ModItems.ZIJIN_HELMET);
+                ItemStack ziJinChestplate = new ItemStack(ModItems.ZIJIN_CHESTPLATE);
+                ItemStack ziJinLeggings = new ItemStack(ModItems.ZIJIN_LEGGINGS);
+                ItemStack ziJinBoots = new ItemStack(ModItems.ZIJIN_BOOTS);
+
+                ziJinHelmet.addEnchantment(new EnchantmentLevelEntry(lookup.getOrThrow(Enchantments.PROTECTION), 5).enchantment(), 5);
+                ziJinHelmet.addEnchantment(new EnchantmentLevelEntry(lookup.getOrThrow(ModEnchantments.MAGIC_PROTECTION), 2).enchantment(), 2);
+                ziJinChestplate.addEnchantment(new EnchantmentLevelEntry(lookup.getOrThrow(Enchantments.PROTECTION), 5).enchantment(), 5);
+                ziJinChestplate.addEnchantment(new EnchantmentLevelEntry(lookup.getOrThrow(ModEnchantments.MAGIC_PROTECTION), 2).enchantment(), 2);
+                ziJinLeggings.addEnchantment(new EnchantmentLevelEntry(lookup.getOrThrow(Enchantments.PROTECTION), 5).enchantment(), 5);
+                ziJinLeggings.addEnchantment(new EnchantmentLevelEntry(lookup.getOrThrow(ModEnchantments.MAGIC_PROTECTION), 2).enchantment(), 2);
+                ziJinBoots.addEnchantment(new EnchantmentLevelEntry(lookup.getOrThrow(Enchantments.PROTECTION), 5).enchantment(), 5);
+                ziJinBoots.addEnchantment(new EnchantmentLevelEntry(lookup.getOrThrow(ModEnchantments.MAGIC_PROTECTION), 2).enchantment(), 2);
+
+                ModMaterial.createArmor(ziJinHelmet, ModMaterial.ZIJIN_ARMOR_INSTANCE, "zijin_helmet", EquipmentType.HELMET);
+                ModMaterial.createArmor(ziJinChestplate, ModMaterial.ZIJIN_ARMOR_INSTANCE, "zijin_chestplate", EquipmentType.CHESTPLATE);
+                ModMaterial.createArmor(ziJinLeggings, ModMaterial.ZIJIN_ARMOR_INSTANCE, "zijin_leggings", EquipmentType.LEGGINGS);
+                ModMaterial.createArmor(ziJinBoots, ModMaterial.ZIJIN_ARMOR_INSTANCE, "zijin_boots", EquipmentType.BOOTS);
+
+                entries.add(ziJinHelmet);
+                entries.add(ziJinChestplate);
+                entries.add(ziJinLeggings);
+                entries.add(ziJinBoots);
 
                 entries.add(edHelmet);
                 entries.add(edChestplate);
@@ -164,6 +190,10 @@ public class ModItemGroups {
                 ItemStack emeraldSword = new ItemStack(ModItems.EMERALD_DIAMOND_SWORD);
                 ModMaterial.createSword(emeraldSword, ModMaterial.IRON_GOLD_TOOL_MATERIAL, "emerald_diamond_sword", AttributeModifierSlot.MAINHAND);
                 entries.add(emeraldSword);
+
+                ItemStack ziJinSword = new ItemStack(ModItems.ZIJIN_SWORD);
+                ModMaterial.createSword(ziJinSword, ModMaterial.ZIJIN_ARMOR_TOOL_MATERIAL, "zijin_sword", AttributeModifierSlot.MAINHAND);
+                entries.add(ziJinSword);
 
                 entries.add(ModItems.VS_SNIPE);
                 //添加基础物品

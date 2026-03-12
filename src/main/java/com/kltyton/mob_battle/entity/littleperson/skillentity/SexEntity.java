@@ -14,27 +14,79 @@ import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributeInstance;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.attribute.EntityAttributes;
+import net.minecraft.entity.boss.BossBar;
+import net.minecraft.entity.boss.ServerBossBar;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.storage.ReadView;
+import net.minecraft.storage.WriteView;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib.animatable.processing.AnimationController;
 import software.bernie.geckolib.animatable.processing.AnimationTest;
 import software.bernie.geckolib.animation.PlayState;
 import software.bernie.geckolib.animation.RawAnimation;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class SexEntity extends BaseSkillLittlePersonEntity {
     private static final TrackedData<Integer> GRABBED_ENTITY_ID = DataTracker.registerData(SexEntity.class, TrackedDataHandlerRegistry.INTEGER);
     private final List<LivingEntity> knockedTargets = new ArrayList<>();
     protected static final RawAnimation RUN_ANIM = RawAnimation.begin().thenLoop("run");
     protected static final RawAnimation SEX_ATTACK_ANIM_5 = RawAnimation.begin().thenPlay("attack5").thenPlay("attack5_1");
+
+    private final ServerBossBar bossBar = new ServerBossBar(
+            this.getDisplayName(),
+            BossBar.Color.PURPLE,
+            BossBar.Style.PROGRESS
+    );
+    @Override
+    public void setCustomName(@Nullable Text name) {
+        super.setCustomName(name);
+        this.bossBar.setName(Objects.requireNonNull(this.getDisplayName()).copy().append(" | " + (int)this.getHealth() + "/" + (int)this.getMaxHealth()));
+    }
+    @Override
+    public void onStartedTrackingBy(ServerPlayerEntity player) {
+        super.onStartedTrackingBy(player);
+        this.bossBar.addPlayer(player);
+    }
+    @Override
+    public void onStoppedTrackingBy(ServerPlayerEntity player) {
+        super.onStoppedTrackingBy(player);
+        this.bossBar.removePlayer(player);
+    }
+    @Override
+    protected void mobTick(ServerWorld world) {
+        super.mobTick(world);
+        this.bossBar.setPercent(this.getHealth() / this.getMaxHealth());
+        this.bossBar.setName(Objects.requireNonNull(this.getDisplayName()).copy().append(" | " + (int)this.getHealth() + "/" + (int)this.getMaxHealth()));
+    }
+
+    @Override
+    public void readCustomData(ReadView nbt) {
+        super.readCustomData(nbt);
+        if (this.hasCustomName()) {
+            this.bossBar.setName(Objects.requireNonNull(this.getDisplayName()).copy().append(" | " + (int)this.getHealth() + "/" + (int)this.getMaxHealth()));
+        }
+    }
+    @Override
+    public void writeCustomData(WriteView nbt) {
+        super.writeCustomData(nbt);
+    }
+    @Override
+    public void setHealth(float health) {
+        super.setHealth(health);
+        if (this.bossBar != null) {
+            this.bossBar.setPercent(health / this.getMaxHealth());
+            this.bossBar.setName(Objects.requireNonNull(this.getDisplayName()).copy().append(" | " + (int)this.getHealth() + "/" + (int)this.getMaxHealth()));
+        }
+    }
+
     @Override
     protected void initDataTracker(DataTracker.Builder builder) {
         super.initDataTracker(builder);
@@ -164,7 +216,7 @@ public class SexEntity extends BaseSkillLittlePersonEntity {
     }
     @Override
     public void heal() {
-        this.heal(15f);
+        this.heal(20f);
     }
     @Override
     public int blockProbability() {
@@ -238,7 +290,7 @@ public class SexEntity extends BaseSkillLittlePersonEntity {
     }
     public static DefaultAttributeContainer.Builder createLittlePersonAttributes() {
         return BaseSkillLittlePersonEntity.createAttributes()
-                .add(EntityAttributes.MAX_HEALTH, 10000.0)
+                .add(EntityAttributes.MAX_HEALTH, 12000.0)
                 .add(EntityAttributes.ATTACK_DAMAGE, 75.0)
                 .add(EntityAttributes.MOVEMENT_SPEED, 0.25)
                 .add(EntityAttributes.KNOCKBACK_RESISTANCE, 0.5)
@@ -247,20 +299,20 @@ public class SexEntity extends BaseSkillLittlePersonEntity {
     @Override
     public void runSkill_2(BaseSkillLittlePersonEntity entity) {
         EntityUtil.getNearbyEntity(entity, LivingEntity.class, 5, false, EntityUtil.TeamFilter.EXCLUDE_TEAM).forEach(livingEntity -> {
-            livingEntity.damage((ServerWorld) entity.getWorld(), entity.getDamageSources().mobAttack(entity), 80);
+            livingEntity.damage((ServerWorld) entity.getWorld(), entity.getDamageSources().mobAttack(entity), 120);
         });
     }
     @Override
     public void runSkill_3(BaseSkillLittlePersonEntity entity) {
         EntityUtil.getNearbyEntity(entity, LivingEntity.class, 5, false, EntityUtil.TeamFilter.EXCLUDE_TEAM).forEach(livingEntity -> {
-            livingEntity.damage((ServerWorld) entity.getWorld(), entity.getDamageSources().mobAttack(entity), 90);
+            livingEntity.damage((ServerWorld) entity.getWorld(), entity.getDamageSources().mobAttack(entity), 145);
         });
     }
     @Override
     public void runSkill_4(BaseSkillLittlePersonEntity entity) {
         LivingEntity livingEntity = entity.getTarget();
         if (livingEntity != null) {
-            boolean result = livingEntity.damage((ServerWorld) entity.getWorld(), entity.getDamageSources().mobAttack(entity), 100);
+            boolean result = livingEntity.damage((ServerWorld) entity.getWorld(), entity.getDamageSources().mobAttack(entity), 180);
             if (result) {
                 double d = livingEntity.getAttributeValue(EntityAttributes.KNOCKBACK_RESISTANCE);
                 double e = Math.max(0.0, 1.0 - d);
@@ -284,7 +336,7 @@ public class SexEntity extends BaseSkillLittlePersonEntity {
     public void runSkill_5(BaseSkillLittlePersonEntity entity) {
         LivingEntity livingEntity = entity.getTarget();
         if (livingEntity != null) {
-            boolean result = livingEntity.damage((ServerWorld) entity.getWorld(), entity.getDamageSources().mobAttack(entity), 100);
+            boolean result = livingEntity.damage((ServerWorld) entity.getWorld(), entity.getDamageSources().mobAttack(entity), 150);
             if (result) {
                 double d = livingEntity.getAttributeValue(EntityAttributes.KNOCKBACK_RESISTANCE);
                 double e = Math.max(0.0, 1.0 - d);
@@ -297,10 +349,10 @@ public class SexEntity extends BaseSkillLittlePersonEntity {
     public void runSkill_8(BaseSkillLittlePersonEntity entity) {
         LivingEntity livingEntity = entity.getTarget();
         if (livingEntity != null) {
-            boolean result = livingEntity.damage((ServerWorld) entity.getWorld(), entity.getDamageSources().mobAttack(entity), 100);
+            boolean result = livingEntity.damage((ServerWorld) entity.getWorld(), entity.getDamageSources().mobAttack(entity), 150);
             if (result) {
                 EntityUtil.getNearbyEntity(entity, LivingEntity.class, 5, false, EntityUtil.TeamFilter.EXCLUDE_TEAM).forEach(livingEntity1 -> {
-                    livingEntity1.damage((ServerWorld) entity.getWorld(), entity.getDamageSources().mobAttack(entity), 90);
+                    livingEntity1.damage((ServerWorld) entity.getWorld(), entity.getDamageSources().mobAttack(entity), 120);
                 });
             }
         }
@@ -321,7 +373,7 @@ public class SexEntity extends BaseSkillLittlePersonEntity {
         if (this.getWorld().isClient) return;
         Entity target = entity.getWorld().getEntityById(this.getGrabbedEntityId());
         if (target instanceof LivingEntity livingEntity) {
-            livingEntity.damage((ServerWorld) entity.getWorld(), entity.getDamageSources().indirectMagic(entity, entity), 80);
+            livingEntity.damage((ServerWorld) entity.getWorld(), entity.getDamageSources().indirectMagic(entity, entity), 100);
 
         }
     }

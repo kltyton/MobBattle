@@ -1,6 +1,5 @@
 package com.kltyton.mob_battle.entity.villager.militia;
 
-import com.kltyton.mob_battle.block.ModBlocks;
 import com.kltyton.mob_battle.entity.ModSkillEntityType;
 import com.kltyton.mob_battle.entity.ai.goal.GeneralProtectionVillagerGoal;
 import com.kltyton.mob_battle.entity.bullet.ITrueDamageProjectile;
@@ -87,24 +86,19 @@ public class MilitiaArcherVillager extends SnowGolemEntity implements Angerable 
         super.tick();
         if (!this.getWorld().isClient() && this.age % 20 == 0) {
             this.heal(1f);
-            if (!getHomePos().equals(new BlockPos(0, -9999, 0)) && !this.getWorld().getBlockState(getHomePos()).isOf(ModBlocks.TARGET_BLOCK)) {
+            if (getHomePos().equals(new BlockPos(0, 9999, 0))) {
                 VillagerEntity villager = EntityType.VILLAGER.create(this.getWorld(), SpawnReason.CONVERSION);
                 if (villager != null) {
-
                     // 1. 获取实体当前位置的群系注册项
                     RegistryEntry<Biome> biomeEntry = this.getWorld().getBiome(this.getBlockPos());
-
                     // 2. 根据群系获取对应的村民类型 (例如：沙漠、雪地、平原等)
                     RegistryKey<VillagerType> type = VillagerType.forBiome(biomeEntry);
                     // 3. 设置村民的职业数据，保留默认职业（或设定为无业），但更新外观类型
                     RegistryEntry<VillagerType> typeEntry = Registries.VILLAGER_TYPE.getOrThrow(type);
-
-                    // RegistryEntry<VillagerType> typeEntry = this.getWorld().getRegistryManager().getOrThrow(RegistryKeys.VILLAGER_TYPE).getOrThrow(type);
+                    // RegistryEntry<VillagerType> typeEntry = this.getWorld().getRegistryManager().getOrThrow(RegistryKeys.VILLAGER_TYPE).getOrThrow(type);(另一种写法)
                     villager.setVillagerData(villager.getVillagerData().withType(typeEntry));
-
                     villager.refreshPositionAndAngles(this.getX(), this.getY(), this.getZ(), this.getYaw(), this.getPitch());
                     this.getWorld().spawnEntity(villager);
-                    this.setHomePos(new BlockPos(0, -9999, 0));
                     EntityUtil.joinSameTeam(villager, this);
                     this.discard();
                 }

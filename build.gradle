@@ -23,6 +23,9 @@ repositories {
             includeGroup('software.bernie.geckolib')
         }
     }
+    maven {
+        url "https://cursemaven.com"
+    }
 }
 loom {
     accessWidenerPath = file("src/main/resources/kltyton.accesswidener")
@@ -37,6 +40,8 @@ dependencies {
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
     modImplementation "software.bernie.geckolib:geckolib-fabric-${minecraft_version}:${geckolib_version}"
+    include(modImplementation "curse.maven:xxl-packets-962921:5485536")
+    include(modImplementation "curse.maven:packet-fixer-689467:7221528")
 }
 
 processResources {

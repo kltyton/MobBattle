@@ -1,5 +1,6 @@
 package com.kltyton.mob_battle.entity.littleperson.archer.soldier;
 
+import com.kltyton.mob_battle.entity.littleperson.LittlePersonEntity;
 import com.kltyton.mob_battle.entity.littleperson.archer.LittlePersonArcherEntity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -8,7 +9,6 @@ import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.mob.HostileEntity;
-import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.Vec3d;
@@ -23,7 +23,7 @@ public class LittlePersonSoldierArcherEntity extends LittlePersonArcherEntity {
         super(entityType, world);
     }
     public static DefaultAttributeContainer.Builder createLittlePersonAttributes() {
-        return MobEntity.createMobAttributes()
+        return LittlePersonEntity.createLittlePersonAttributes()
                 .add(EntityAttributes.MAX_HEALTH, 300.0)
                 .add(EntityAttributes.FOLLOW_RANGE, 40.0)
                 .add(EntityAttributes.MOVEMENT_SPEED, 0.4)

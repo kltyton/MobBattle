@@ -15,6 +15,7 @@ import com.kltyton.mob_battle.items.tool.irongold.IronGoldSword;
 import com.kltyton.mob_battle.items.tool.meteorite.MeteoriteSword;
 import com.kltyton.mob_battle.items.tool.snipe.VsSnipe;
 import com.kltyton.mob_battle.items.tool.sword.FineKnifeItem;
+import com.kltyton.mob_battle.items.tool.zijin.ZiJinSword;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.ChargedProjectilesComponent;
 import net.minecraft.component.type.DeathProtectionComponent;
@@ -54,6 +55,7 @@ public class ModItems {
     public static SummonVexBookItem WARLOCK_BOOK;
     public static SummonVexBookItem GRAND_SUMMON_BOOK;
     public static GuardianSealItem GUARDIAN_SEAL;
+    public static GuardianSealItem FILLING_SEAL;
     public static FineKnifeItem FINE_KNIFE;
     public static BackpackItem SMALL_BACKPACK;
     public static BackpackItem LARGE_BACKPACK;
@@ -67,8 +69,8 @@ public class ModItems {
     public static SpawnEggItem HIGHBIRD_BABY_SPAWN_EGG;
     public static SpawnEggItem HIGHBIRD_TEENAGE_SPAWN_EGG;
     public static SpawnEggItem HIGHBIRD_EGG_SPAWN_EGG;
-    public static SpawnEggItem HIGHBIRD_ADULT_SPAWN_EGG;
-    public static SpawnEggItem XU_SHENG_SPAWN_EGG;
+    public static SpawnEggItem HIGHBIRD_ADULTHOOD_SPAWN_EGG;
+    public static SpawnEggItem XUN_SHENG_SPAWN_EGG;
     public static SpawnEggItem DEEP_CREATURE_SPAWN_EGG;
     public static SpawnEggItem WITHER_SKELETON_KING_SPAWN_EGG;
     public static SpawnEggItem VILLAGER_KING_SPAWN_EGG;
@@ -123,15 +125,22 @@ public class ModItems {
     public static ModBaseArmorItem ECREDCULTIST_LEGGINGS;
     public static ModBaseArmorItem ECREDCULTIST_BOOTS;
 
+    public static Item ZIJIN_HELMET;
+    public static Item ZIJIN_CHESTPLATE;
+    public static Item ZIJIN_LEGGINGS;
+    public static Item ZIJIN_BOOTS;
     //工具以及武器
     public static Item METEORICORE_AXE;
     public static Item METEORICORE_BOW;
     public static Item METEORICORE_SWORD;
     public static Item IRON_GOLD_SWORD;
     public static Item EMERALD_DIAMOND_SWORD;
+    public static Item ZIJIN_SWORD;
     public static Item IRON_GOLD_SWORD_DAMAGED;
 
     public static VsSnipe VS_SNIPE;
+
+    public static CardiotonicInjectionItem CARDIOTONIC_INJECTION;
 
     public static void init() {
         BaseItems.init();
@@ -264,6 +273,7 @@ public class ModItems {
                                 ))
                 )
         );
+
         ECREDCULTIST_HELMET = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "ecredcultist_helmet"),
                 new ModBaseArmorItem(new Item.Settings().armor(ModMaterial.ECREDCULTIST_INSTANCE, EquipmentType.HELMET)
                         .maxDamage(1).maxCount(1).component(DataComponentTypes.UNBREAKABLE, Unit.INSTANCE)
@@ -301,7 +311,6 @@ public class ModItems {
                         ModMaterial.ECREDCULTIST_INSTANCE
                 )
         );
-
         IRON_GOLD_HELMET = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "iron_gold_helmet"),
                 new Item(new Item.Settings().armor(ModMaterial.IRON_GOLD_INSTANCE, EquipmentType.HELMET)
                                 .maxDamage(512).maxCount(1).component(DataComponentTypes.UNBREAKABLE, Unit.INSTANCE)
@@ -371,6 +380,41 @@ public class ModItems {
                 )
         );
 
+        ZIJIN_HELMET = registerItem(
+                "zijin_helmet",
+                new Item.Settings()
+                        .armor(ModMaterial.ZIJIN_ARMOR_INSTANCE, EquipmentType.HELMET)
+                        .component(DataComponentTypes.UNBREAKABLE, Unit.INSTANCE)
+                        .maxCount(1),
+                false
+        );
+
+        ZIJIN_CHESTPLATE = registerItem(
+                "zijin_chestplate",
+                new Item.Settings()
+                        .armor(ModMaterial.ZIJIN_ARMOR_INSTANCE, EquipmentType.CHESTPLATE)
+                        .component(DataComponentTypes.UNBREAKABLE, Unit.INSTANCE)
+                        .maxCount(1),
+                false
+        );
+
+        ZIJIN_LEGGINGS = registerItem(
+                "zijin_leggings",
+                new Item.Settings()
+                        .armor(ModMaterial.ZIJIN_ARMOR_INSTANCE, EquipmentType.LEGGINGS)
+                        .component(DataComponentTypes.UNBREAKABLE, Unit.INSTANCE)
+                        .maxCount(1),
+                false
+        );
+
+        ZIJIN_BOOTS = registerItem("zijin_boots",
+                new Item.Settings()
+                        .armor(ModMaterial.ZIJIN_ARMOR_INSTANCE, EquipmentType.BOOTS)
+                        .component(DataComponentTypes.UNBREAKABLE, Unit.INSTANCE)
+                        .maxCount(1),
+                false
+        );
+
         // 注册工具和武器
         METEORICORE_AXE = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "meteoricore_axe"),
                 new BaseAxe(new Item.Settings()
@@ -397,7 +441,7 @@ public class ModItems {
         );
         IRON_GOLD_SWORD = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "iron_gold_sword"),
                 new IronGoldSword(new Item.Settings()
-                        .sword(ModMaterial.IRON_GOLD_TOOL_MATERIAL, 69f, 1024)
+                        .sword(ModMaterial.IRON_GOLD_TOOL_MATERIAL, 84f, 1024)
                         .maxCount(1)
                         .component(DataComponentTypes.DEATH_PROTECTION, DeathProtectionComponent.TOTEM_OF_UNDYING)
                         .registryKey(RegistryKey.of(
@@ -405,6 +449,7 @@ public class ModItems {
                         ))
                 )
         );
+
         IRON_GOLD_SWORD_DAMAGED = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "iron_gold_sword_damaged"),
                 new IronGoldSword(new Item.Settings()
                         .sword(ModMaterial.IRON_GOLD_TOOL_MATERIAL, 0f,-2.2f)
@@ -425,6 +470,15 @@ public class ModItems {
                 false
         );
 
+        ZIJIN_SWORD = registerItem("zijin_sword",
+                new ZiJinSword(
+                        registryKey("zijin_sword")
+                        .sword(ModMaterial.ZIJIN_ARMOR_TOOL_MATERIAL, 99, 0f)
+                        .maxCount(1)
+                        .component(DataComponentTypes.UNBREAKABLE, Unit.INSTANCE)
+                )
+        );
+
         VS_SNIPE = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "vs_snipe"),
                 new VsSnipe(new Item.Settings()
                         .maxCount(1).maxDamage(465).component(DataComponentTypes.CHARGED_PROJECTILES, ChargedProjectilesComponent.DEFAULT).enchantable(1)
@@ -433,203 +487,40 @@ public class ModItems {
                         ))
                 )
         );
-        SKULL_KING_SPAWN_EGG = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "skull_king_spawn_egg"),
-                new SpawnEggItem(
-                        ModEntities.SKULL_KING,
-                        new Item.Settings()
-                                .registryKey(RegistryKey.of(
-                                        RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "skull_king_spawn_egg")
-                                ))
-                )
-        );
-        SKULL_ARCHER_SPAWN_EGG = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "skull_archer_spawn_egg"),
-                new SpawnEggItem(
-                        ModEntities.SKULL_ARCHER,
-                        new Item.Settings()
-                                .registryKey(RegistryKey.of(
-                                        RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "skull_archer_spawn_egg")
-                                ))
-                )
-        );
-        SKULL_WARRIOR_SPAWN_EGG = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "skull_warrior_spawn_egg"),
-                new SpawnEggItem(
-                        ModEntities.SKULL_WARRIOR,
-                        new Item.Settings()
-                                .registryKey(RegistryKey.of(
-                                        RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "skull_warrior_spawn_egg")
-                                ))
-                )
-        );
-        SKULL_MAGE_SPAWN_EGG = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "skull_mage_spawn_egg"),
-                new SpawnEggItem(
-                        ModEntities.SKULL_MAGE,
-                        new Item.Settings()
-                                .registryKey(RegistryKey.of(
-                                        RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "skull_mage_spawn_egg")
-                                ))
-                )
-        );
-        VOID_CELL_SPAWN_EGG = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "void_cell_spawn_egg"),
-                new SpawnEggItem(
-                        ModEntities.VOID_CELL,
-                        new Item.Settings()
-                                .registryKey(RegistryKey.of(
-                                        RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "void_cell_spawn_egg")
-                                ))
-                )
-        );
-        YOUNG_MIN_SPAWN_EGG = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "young_min_spawn_egg"),
-                new SpawnEggItem(
-                        ModEntities.YOUNG_MIN,
-                        new Item.Settings()
-                                .registryKey(RegistryKey.of(
-                                        RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "young_min_spawn_egg")
-                                ))
-                )
-        );
-        HIDDEN_EYE_SPAWN_EGG = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "hidden_eye_spawn_egg"),
-                new SpawnEggItem(
-                        ModEntities.HIDDEN_EYE,
-                        new Item.Settings()
-                                .registryKey(RegistryKey.of(
-                                        RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "hidden_eye_spawn_egg")
-                                ))
-                )
-        );
+        SKULL_KING_SPAWN_EGG = registerSpawnEggItem(ModEntities.SKULL_KING, "skull_king_spawn_egg");
+        SKULL_ARCHER_SPAWN_EGG = registerSpawnEggItem(ModEntities.SKULL_ARCHER, "skull_archer_spawn_egg");
+        SKULL_WARRIOR_SPAWN_EGG = registerSpawnEggItem(ModEntities.SKULL_WARRIOR, "skull_warrior_spawn_egg");
+        SKULL_MAGE_SPAWN_EGG = registerSpawnEggItem(ModEntities.SKULL_MAGE, "skull_mage_spawn_egg");
+        VOID_CELL_SPAWN_EGG = registerSpawnEggItem(ModEntities.VOID_CELL, "void_cell_spawn_egg");
+        YOUNG_MIN_SPAWN_EGG = registerSpawnEggItem(ModEntities.YOUNG_MIN, "young_min_spawn_egg");
+        HIDDEN_EYE_SPAWN_EGG = registerSpawnEggItem(ModEntities.HIDDEN_EYE, "hidden_eye_spawn_egg");
         // 注册高脚鸟刷怪蛋
-        HIGHBIRD_BABY_SPAWN_EGG = Registry.register(Registries.ITEM,
-                Identifier.of(Mob_battle.MOD_ID, "highbird_baby_spawn_egg"),
-                new SpawnEggItem(
-                        ModEntities.HIGHBIRD_BABY,
-                        new Item.Settings()
-                                .registryKey(RegistryKey.of(
-                                        RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "highbird_baby_spawn_egg")
-                                ))
-                )
-        );
+        HIGHBIRD_BABY_SPAWN_EGG = registerSpawnEggItem(ModEntities.HIGHBIRD_BABY, "highbird_baby_spawn_egg");
+        HIGHBIRD_TEENAGE_SPAWN_EGG = registerSpawnEggItem(ModEntities.HIGHBIRD_TEENAGE, "highbird_teenage_spawn_egg");
+        HIGHBIRD_ADULTHOOD_SPAWN_EGG = registerSpawnEggItem(ModEntities.HIGHBIRD_ADULTHOOD, "highbird_adulthood_spawn_egg");
+        HIGHBIRD_EGG_SPAWN_EGG = registerSpawnEggItem(ModEntities.HIGHBIRD_EGG, "highbird_egg_spawn_egg");
+        XUN_SHENG_SPAWN_EGG = registerSpawnEggItem(ModEntities.XUN_SHENG, "xun_sheng_spawn_egg");
+        DEEP_CREATURE_SPAWN_EGG = registerSpawnEggItem(ModEntities.DEEP_CREATURE, "deep_creature_spawn_egg");
+        WITHER_SKELETON_KING_SPAWN_EGG = registerSpawnEggItem(ModEntities.WITHER_SKELETON_KING, "wither_skeleton_king_spawn_egg");
+        MILITIA_ARCHER_VILLAGER_SPAWN_EGG = registerSpawnEggItem(ModEntities.MILITIA_ARCHER_VILLAGER, "militia_archer_villager_spawn_egg");
+        MILITIA_WARRIOR_VILLAGER_SPAWN_EGG = registerSpawnEggItem(ModEntities.MILITIA_WARRIOR_VILLAGER, "militia_warrior_villager_spawn_egg");
+        ARCHER_VILLAGER_SPAWN_EGG = registerSpawnEggItem(ModEntities.ARCHER_VILLAGER, "archer_villager_spawn_egg");
+        WARRIOR_VILLAGER_SPAWN_EGG = registerSpawnEggItem(ModEntities.WARRIOR_VILLAGER, "warrior_villager_spawn_egg");
+        BLUE_IRON_GOLEM_SPAWN_EGG = registerSpawnEggItem(ModEntities.BLUE_IRON_GOLEM, "blue_iron_golem_spawn_egg");
+        SUGAR_MAN_SCORPION_SPAWN_EGG = registerSpawnEggItem(ModEntities.SUGAR_MAN_SCORPION, "sugar_man_scorpion_spawn_egg");
+        IRON_GOLEM_SPAWN_EGG = registerSpawnEggItem(ModEntities.VILLAGER_IRON_GOLEM_ENTITY, "iron_golem_spawn_egg");
+        LITTLE_PERSON_CIVILIAN_SPAWN_EGG = registerSpawnEggItem(ModEntities.LITTLE_PERSON_CIVILIAN, "little_person_civilian_spawn_egg");
+        LITTLE_PERSON_MILITIA_SPAWN_EGG = registerSpawnEggItem(ModEntities.LITTLE_PERSON_MILITIA, "little_person_militia_spawn_egg");
+        LITTLE_PERSON_ARCHER_SPAWN_EGG = registerSpawnEggItem(ModEntities.LITTLE_PERSON_ARCHER, "little_person_archer_spawn_egg");
+        LITTLE_PERSON_GIANT_SPAWN_EGG = registerSpawnEggItem(ModEntities.LITTLE_PERSON_GIANT, "little_person_giant_spawn_egg");
+        LITTLE_PERSON_GUARD_SPAWN_EGG = registerSpawnEggItem(ModEntities.LITTLE_PERSON_GUARD, "little_person_guard_spawn_egg");
+        LITTLE_PERSON_KING_SPAWN_EGG = registerSpawnEggItem(ModEntities.LITTLE_PERSON_KING, "little_person_king_spawn_egg");
+        VILLAGER_KING_SPAWN_EGG = registerSpawnEggItem(ModEntities.VILLAGER_KING_ENTITY, "villager_king_spawn_egg");
+        VINDICATOR_GENERAL_SPAWN_EGG = registerSpawnEggItem(ModEntities.VINDICATOR_GENERAL, "vindicator_general_spawn_egg");
 
-        HIGHBIRD_TEENAGE_SPAWN_EGG = Registry.register(Registries.ITEM,
-                Identifier.of(Mob_battle.MOD_ID, "highbird_teenage_spawn_egg"),
-                new SpawnEggItem(
-                        ModEntities.HIGHBIRD_TEENAGE,
-                        new Item.Settings()
-                                .registryKey(RegistryKey.of(
-                                        RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "highbird_teenage_spawn_egg")
-                                ))
-                )
-        );
-        HIGHBIRD_ADULT_SPAWN_EGG = Registry.register(Registries.ITEM,
-                Identifier.of(Mob_battle.MOD_ID, "highbird_adulthood_spawn_egg"),
-                new SpawnEggItem(
-                        ModEntities.HIGHBIRD_ADULTHOOD,
-                        new Item.Settings()
-                                .registryKey(RegistryKey.of(
-                                        RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "highbird_adulthood_spawn_egg")
-                                ))
-                )
-        );
-
-        HIGHBIRD_EGG_SPAWN_EGG = Registry.register(Registries.ITEM,
-                Identifier.of(Mob_battle.MOD_ID, "highbird_egg_spawn_egg"),
-                new SpawnEggItem(
-                        ModEntities.HIGHBIRD_EGG,
-                        new Item.Settings()
-                                .registryKey(RegistryKey.of(
-                                        RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "highbird_egg_spawn_egg")
-                                ))
-                )
-        );
-
-        XU_SHENG_SPAWN_EGG = Registry.register(Registries.ITEM,
-                Identifier.of(Mob_battle.MOD_ID, "xun_sheng_spawn_egg"),
-                new SpawnEggItem(
-                        ModEntities.XUN_SHENG,
-                        new Item.Settings()
-                                .registryKey(RegistryKey.of(
-                                        RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "xun_sheng_spawn_egg")
-                                ))
-                )
-        );
-        DEEP_CREATURE_SPAWN_EGG = Registry.register(Registries.ITEM,
-                Identifier.of(Mob_battle.MOD_ID, "deep_creature_spawn_egg"),
-                new SpawnEggItem(
-                        ModEntities.DEEP_CREATURE,
-                        new Item.Settings()
-                                .registryKey(RegistryKey.of(
-                                        RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "deep_creature_spawn_egg")
-                                ))
-                )
-        );
-        WITHER_SKELETON_KING_SPAWN_EGG = Registry.register(Registries.ITEM,
-                Identifier.of(Mob_battle.MOD_ID, "wither_skeleton_king_spawn_egg"),
-                new SpawnEggItem(
-                        ModEntities.WITHER_SKELETON_KING,
-                        new Item.Settings()
-                                .registryKey(RegistryKey.of(
-                                        RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "wither_skeleton_king_spawn_egg")
-                                ))
-                )
-        );
-        MILITIA_ARCHER_VILLAGER_SPAWN_EGG = Registry.register(Registries.ITEM,
-                Identifier.of(Mob_battle.MOD_ID, "militia_archer_villager_spawn_egg"),
-                new SpawnEggItem(
-                        ModEntities.MILITIA_ARCHER_VILLAGER,
-                        new Item.Settings()
-                                .registryKey(RegistryKey.of(
-                                        RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "militia_archer_villager_spawn_egg")
-                                ))
-                )
-        );
-        MILITIA_WARRIOR_VILLAGER_SPAWN_EGG = Registry.register(Registries.ITEM,
-                Identifier.of(Mob_battle.MOD_ID, "militia_warrior_villager_spawn_egg"),
-                new SpawnEggItem(
-                        ModEntities.MILITIA_WARRIOR_VILLAGER,
-                        new Item.Settings()
-                                .registryKey(RegistryKey.of(
-                                        RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "militia_warrior_villager_spawn_egg")
-                                ))
-                )
-        );
-        ARCHER_VILLAGER_SPAWN_EGG = Registry.register(Registries.ITEM,
-                Identifier.of(Mob_battle.MOD_ID, "archer_villager_spawn_egg"),
-                new SpawnEggItem(
-                        ModEntities.ARCHER_VILLAGER,
-                        new Item.Settings()
-                                .registryKey(RegistryKey.of(
-                                        RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "archer_villager_spawn_egg")
-                                ))
-                )
-        );
-        WARRIOR_VILLAGER_SPAWN_EGG = Registry.register(Registries.ITEM,
-                Identifier.of(Mob_battle.MOD_ID, "warrior_villager_spawn_egg"),
-                new SpawnEggItem(
-                        ModEntities.WARRIOR_VILLAGER,
-                        new Item.Settings()
-                                .registryKey(RegistryKey.of(
-                                        RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "warrior_villager_spawn_egg")
-                                ))
-                )
-        );
-        BLUE_IRON_GOLEM_SPAWN_EGG = Registry.register(Registries.ITEM,
-                Identifier.of(Mob_battle.MOD_ID, "blue_iron_golem_spawn_egg"),
-                new SpawnEggItem(
-                        ModEntities.BLUE_IRON_GOLEM,
-                        new Item.Settings()
-                                .registryKey(RegistryKey.of(
-                                        RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "blue_iron_golem_spawn_egg")
-                                ))
-                )
-        );
-        SUGAR_MAN_SCORPION_SPAWN_EGG = Registry.register(Registries.ITEM,
-                Identifier.of(Mob_battle.MOD_ID, "sugar_man_scorpion_spawn_egg"),
-                new SpawnEggItem(
-                        ModEntities.SUGAR_MAN_SCORPION,
-                        new Item.Settings()
-                                .registryKey(RegistryKey.of(
-                                        RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "sugar_man_scorpion_spawn_egg")
-                                ))
-                )
-        );
+        HULKBUSTER_SPAWN_EGG = registerSpawnEggItem(ModEntities.HULKBUSTER, "hulkbuster_spawn_egg");
+        SILENCE_PHANTOM_SPAWN_EGG = registerSpawnEggItem(ModEntities.SILENCE_PHANTOM, "silence_phantom_spawn_egg");
+        COAL_SILVERFISH_SPAWN_EGG = registerSpawnEggItem(ModEntities.COAL_SILVERFISH, "coal_silverfish_spawn_egg");
 
         INCUBATION_EGG = Registry.register(Registries.ITEM,
                 Identifier.of(Mob_battle.MOD_ID, "incubation_egg"),
@@ -641,99 +532,7 @@ public class ModItems {
                                 ))
                 )
         );
-        IRON_GOLEM_SPAWN_EGG = Registry.register(Registries.ITEM,
-                Identifier.of(Mob_battle.MOD_ID, "iron_golem_spawn_egg"),
-                new SpawnEggItem(
-                        ModEntities.VILLAGER_IRON_GOLEM_ENTITY,
-                        new Item.Settings()
-                                .registryKey(RegistryKey.of(
-                                        RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "iron_golem_spawn_egg")
-                                ))
-                )
-        );
-        LITTLE_PERSON_CIVILIAN_SPAWN_EGG = Registry.register(Registries.ITEM,
-                Identifier.of(Mob_battle.MOD_ID, "little_person_civilian_spawn_egg"),
-                new SpawnEggItem(
-                        ModEntities.LITTLE_PERSON_CIVILIAN,
-                        new Item.Settings()
-                                .registryKey(RegistryKey.of(
-                                        RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "little_person_civilian_spawn_egg")
-                                ))
-                )
-        );
-        LITTLE_PERSON_MILITIA_SPAWN_EGG = Registry.register(Registries.ITEM,
-                Identifier.of(Mob_battle.MOD_ID, "little_person_militia_spawn_egg"),
-                new SpawnEggItem(
-                        ModEntities.LITTLE_PERSON_MILITIA,
-                        new Item.Settings()
-                                .registryKey(RegistryKey.of(
-                                        RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "little_person_militia_spawn_egg")
-                                ))
-                )
-        );
-        LITTLE_PERSON_ARCHER_SPAWN_EGG = Registry.register(Registries.ITEM,
-                Identifier.of(Mob_battle.MOD_ID, "little_person_archer_spawn_egg"),
-                new SpawnEggItem(
-                        ModEntities.LITTLE_PERSON_ARCHER,
-                        new Item.Settings()
-                                .registryKey(RegistryKey.of(
-                                        RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "little_person_archer_spawn_egg")
-                                ))
-                )
-        );
-        LITTLE_PERSON_GIANT_SPAWN_EGG = Registry.register(Registries.ITEM,
-                Identifier.of(Mob_battle.MOD_ID, "little_person_giant_spawn_egg"),
-                new SpawnEggItem(
-                        ModEntities.LITTLE_PERSON_GIANT,
-                        new Item.Settings()
-                                .registryKey(RegistryKey.of(
-                                        RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "little_person_giant_spawn_egg")
-                                ))
-                )
-        );
-        LITTLE_PERSON_GUARD_SPAWN_EGG = Registry.register(Registries.ITEM,
-                Identifier.of(Mob_battle.MOD_ID, "little_person_guard_spawn_egg"),
-                new SpawnEggItem(
-                        ModEntities.LITTLE_PERSON_GUARD,
-                        new Item.Settings()
-                                .registryKey(RegistryKey.of(
-                                        RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "little_person_guard_spawn_egg")
-                                ))
-                )
-        );
-        LITTLE_PERSON_KING_SPAWN_EGG = Registry.register(Registries.ITEM,
-                Identifier.of(Mob_battle.MOD_ID, "little_person_king_spawn_egg"),
-                new SpawnEggItem(
-                        ModEntities.LITTLE_PERSON_KING,
-                        new Item.Settings()
-                                .registryKey(RegistryKey.of(
-                                        RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "little_person_king_spawn_egg")
-                                ))
-                )
-        );
-        VILLAGER_KING_SPAWN_EGG = Registry.register(Registries.ITEM,
-                Identifier.of(Mob_battle.MOD_ID, "villager_king_spawn_egg"),
-                new SpawnEggItem(
-                        ModEntities.VILLAGER_KING_ENTITY,
-                        new Item.Settings()
-                                .registryKey(RegistryKey.of(
-                                        RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "villager_king_spawn_egg")
-                                ))
-                )
-        );
-        VINDICATOR_GENERAL_SPAWN_EGG = Registry.register(Registries.ITEM,
-                Identifier.of(Mob_battle.MOD_ID, "vindicator_general_spawn_egg"),
-                new SpawnEggItem(
-                        ModEntities.VINDICATOR_GENERAL,
-                        new Item.Settings()
-                                .registryKey(RegistryKey.of(
-                                        RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "vindicator_general_spawn_egg")
-                                ))
-                )
-        );
-        HULKBUSTER_SPAWN_EGG = registerSpawnEggItem(ModEntities.HULKBUSTER, "hulkbuster_spawn_egg");
-        SILENCE_PHANTOM_SPAWN_EGG = registerSpawnEggItem(ModEntities.SILENCE_PHANTOM, "silence_phantom_spawn_egg");
-        COAL_SILVERFISH_SPAWN_EGG = registerSpawnEggItem(ModEntities.COAL_SILVERFISH, "coal_silverfish_spawn_egg");
+
         WARLOCK_BOOK = registerItem("warlock_book", new SummonVexBookItem(
                 registryKey("warlock_book")
                         .useCooldown(15)
@@ -754,7 +553,14 @@ public class ModItems {
         GUARDIAN_SEAL = registerItem("guardian_seal", new GuardianSealItem(
                 registryKey("guardian_seal")
                         .useCooldown(2000)
-                        .maxCount(1)
+                        .maxCount(1),
+                false
+        ));
+
+        FILLING_SEAL = registerItem("filling_seal", new GuardianSealItem(
+                registryKey("filling_seal")
+                        .maxCount(1),
+                true
         ));
 
         FINE_KNIFE = registerItem("fine_knife", new FineKnifeItem(
@@ -776,6 +582,11 @@ public class ModItems {
                         .rarity(Rarity.RARE)
                         .maxCount(1),
                 true
+        ));
+
+        CARDIOTONIC_INJECTION = registerItem("cardiotonic_injection", new CardiotonicInjectionItem(
+                registryKey("cardiotonic_injection")
+                        .maxCount(1)
         ));
 
         ModEntities.SPAWN_EGG_ENTITIES.forEach((id, entityType) -> {

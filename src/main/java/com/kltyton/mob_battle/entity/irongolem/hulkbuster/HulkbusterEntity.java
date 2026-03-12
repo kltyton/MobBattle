@@ -286,6 +286,7 @@ public class HulkbusterEntity extends IronGolemEntity implements GeoEntity, ModB
                 .add(EntityAttributes.ATTACK_DAMAGE, 150.0D)
                 .add(EntityAttributes.FOLLOW_RANGE, 24.0D)
                 .add(EntityAttributes.ARMOR, 25.0D)
+                .add(EntityAttributes.STEP_HEIGHT, 3)
                 .add(EntityAttributes.ARMOR_TOUGHNESS, 20.0D);
     }
     @Override

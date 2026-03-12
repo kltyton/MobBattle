@@ -58,6 +58,7 @@ public class SkullWarriorEntity extends WitherSkeletonEntity implements GeoEntit
     public void tick() {
         super.tick();
         if (!this.getWorld().isClient()) {
+            killSlave();
             if (!hasSkill()) {
                 this.setAiDisabled(false);
                 // 冷却递减

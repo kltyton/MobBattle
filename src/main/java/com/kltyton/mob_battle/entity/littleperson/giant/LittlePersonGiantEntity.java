@@ -2,6 +2,7 @@ package com.kltyton.mob_battle.entity.littleperson.giant;
 
 import com.kltyton.mob_battle.entity.ModEntityAttributes;
 import com.kltyton.mob_battle.entity.ModSkillEntityType;
+import com.kltyton.mob_battle.entity.littleperson.LittlePersonEntity;
 import com.kltyton.mob_battle.entity.littleperson.militia.LittlePersonMilitiaEntity;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -14,7 +15,6 @@ import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.mob.HostileEntity;
-import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.world.World;
@@ -182,7 +182,7 @@ public class LittlePersonGiantEntity extends LittlePersonMilitiaEntity {
         );
     }
     public static DefaultAttributeContainer.Builder createLittlePersonGiantAttributes() {
-        return MobEntity.createMobAttributes()
+        return LittlePersonEntity.createLittlePersonAttributes()
                 .add(EntityAttributes.MAX_HEALTH, 1300.0)
                 .add(EntityAttributes.FOLLOW_RANGE, 40.0)
                 .add(EntityAttributes.MOVEMENT_SPEED, 0.3)

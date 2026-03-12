@@ -9,6 +9,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.screen.HopperScreenHandler;
 import net.minecraft.screen.NamedScreenHandlerFactory;
 import net.minecraft.screen.ScreenHandler;
+import net.minecraft.screen.slot.Slot;
+import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
@@ -36,9 +38,35 @@ public class BackpackItem extends Item {
 
                     @Override
                     public ScreenHandler createMenu(int syncId, PlayerInventory playerInventory, PlayerEntity player) {
-                        // 漏斗背包：5 格
-                        return new HopperScreenHandler(syncId, playerInventory,
-                                new BackpackInventory(stack, 5));
+                        return new HopperScreenHandler(syncId, playerInventory, new BackpackInventory(stack, 5)) {
+                            @Override
+                            public ItemStack quickMove(PlayerEntity player, int slot) {
+                                Slot slot2 = this.slots.get(slot);
+                                if (slot2.hasStack()) {
+                                    ItemStack itemStack = slot2.getStack();
+                                    if (itemStack.getItem() instanceof BackpackItem) return ItemStack.EMPTY;
+                                }
+
+                                return super.quickMove(player, slot);
+                            }
+                            @Override
+                            protected boolean insertItem(ItemStack stack, int startIndex, int endIndex, boolean fromLast) {
+                                 if (stack.getItem() instanceof BackpackItem) return false;
+                                 return super.insertItem(stack, startIndex, endIndex, fromLast);
+                            }
+                            @Override
+                            public void onSlotClick(int slotId, int button, SlotActionType actionType, PlayerEntity player) {
+                                // 只处理普通点击
+                                if (slotId >= 0 && slotId < this.slots.size()) {
+                                    Slot slot = this.slots.get(slotId);
+                                    ItemStack cursorStack = slot.getStack();
+                                    if (cursorStack.getItem() instanceof BackpackItem) {
+                                        return; // 取消操作
+                                    }
+                                }
+                                super.onSlotClick(slotId, button, actionType, player);
+                            }
+                        };
                     }
 
                 });
@@ -52,7 +80,36 @@ public class BackpackItem extends Item {
                     @Override
                     public PagedBackpackScreenHandler createMenu(int syncId, PlayerInventory playerInventory, PlayerEntity player) {
                         BackpackInventory inventory = new BackpackInventory(stack, BackpackInventory.PAGED_TOTAL_SLOTS);
-                        return new PagedBackpackScreenHandler(syncId, playerInventory, inventory);
+                        return new PagedBackpackScreenHandler(syncId, playerInventory, inventory) {
+                            @Override
+                            public ItemStack quickMove(PlayerEntity player, int slot) {
+                                Slot slot2 = this.slots.get(slot);
+                                if (slot2.hasStack()) {
+                                    ItemStack itemStack = slot2.getStack();
+                                    if (itemStack.getItem() instanceof BackpackItem) return ItemStack.EMPTY;
+                                }
+
+                                return super.quickMove(player, slot);
+                            }
+                            @Override
+                            protected boolean insertItem(ItemStack stack, int startIndex, int endIndex, boolean fromLast) {
+                                if (stack.getItem() instanceof BackpackItem) return false;
+                                return super.insertItem(stack, startIndex, endIndex, fromLast);
+                            }
+                            @Override
+                            public void onSlotClick(int slotId, int button, SlotActionType actionType, PlayerEntity player) {
+                                // 只处理普通点击
+                                if (slotId >= 0 && slotId < this.slots.size()) {
+                                    Slot slot = this.slots.get(slotId);
+                                    ItemStack cursorStack = slot.getStack();
+                                    if (cursorStack.getItem() instanceof BackpackItem) {
+                                        return; // 取消操作
+                                    }
+                                }
+
+                                super.onSlotClick(slotId, button, actionType, player);
+                            }
+                        };
                     }
 
                     @Override

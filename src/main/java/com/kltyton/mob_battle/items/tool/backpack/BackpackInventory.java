@@ -21,7 +21,11 @@ public class BackpackInventory extends SimpleInventory {
             component.copyTo(heldStacks);
         }
     }
-
+    @Override
+    public boolean canInsert(ItemStack stack) {
+        if (stack.getItem() instanceof BackpackItem) return false;
+        return super.canInsert(stack);
+    }
     @Override
     public void markDirty() {
         super.markDirty();

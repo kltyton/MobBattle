@@ -14,6 +14,10 @@ public class ModPackets {
                 SkillPayload.CODEC
         );
         PayloadTypeRegistry.playC2S().register(
+                PlayerSkillPayload.ID,
+                PlayerSkillPayload.CODEC
+        );
+        PayloadTypeRegistry.playC2S().register(
                 LeftClickPacket.ID,
                 LeftClickPacket.CODEC
         );
@@ -24,6 +28,10 @@ public class ModPackets {
         PayloadTypeRegistry.playS2C().register(
                 SoundPayload.ID,
                 SoundPayload.CODEC
+        );
+        PayloadTypeRegistry.playS2C().register(
+                PlayerSkillUtilPayload.ID,
+                PlayerSkillUtilPayload.CODEC
         );
         PayloadTypeRegistry.playC2S().register(
                 EnchantmentPayload.ID,
@@ -44,6 +52,10 @@ public class ModPackets {
         PayloadTypeRegistry.playC2S().register(
                 ShieldSpawnPayload.ID,
                 ShieldSpawnPayload.CODEC
+        );
+        PayloadTypeRegistry.playC2S().register(
+                ZiJinPayload.ID,
+                ZiJinPayload.CODEC
         );
         PayloadTypeRegistry.playS2C().register(
                 ItemGroupPayload.ID,

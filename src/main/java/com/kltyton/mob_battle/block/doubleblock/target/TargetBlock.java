@@ -69,6 +69,19 @@ public class TargetBlock extends DoubleBlock {
         return null;
     }
     @Override
+    protected void onStateReplaced(BlockState state, ServerWorld world, BlockPos pos, boolean moved) {
+        // 只在下半部分被替换/移除时处理，避免重复执行
+        if (state.get(HALF) == DoubleBlockHalf.LOWER) {
+            BlockEntity be = world.getBlockEntity(pos);
+            if (be instanceof TargetBlockEntity targetBlockEntity) {
+                targetBlockEntity.killTrackedGolems(world);
+            }
+        }
+
+        super.onStateReplaced(state, world, pos, moved);
+    }
+
+    @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
         return world.isClient() ? null : validateTicker(type, ModBlockEntities.TARGET_ENTITY, TargetBlockEntity::tick);
     }

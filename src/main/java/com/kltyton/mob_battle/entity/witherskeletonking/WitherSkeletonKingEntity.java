@@ -406,6 +406,7 @@ public class WitherSkeletonKingEntity extends WitherSkeletonEntity implements Ge
                 .add(EntityAttributes.ATTACK_KNOCKBACK, 1.5D)
                 .add(EntityAttributes.ATTACK_DAMAGE, 100.0D)
                 .add(EntityAttributes.FOLLOW_RANGE, 24.0D)
+                .add(EntityAttributes.STEP_HEIGHT, 3)
                 .add(EntityAttributes.ARMOR, 25.0D)
                 .add(EntityAttributes.ARMOR_TOUGHNESS, 20.0D);
     }

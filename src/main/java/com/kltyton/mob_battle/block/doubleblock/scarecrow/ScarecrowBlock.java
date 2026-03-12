@@ -61,7 +61,18 @@ public class ScarecrowBlock extends DoubleBlock {
 
         return ActionResult.PASS;
     }
+    @Override
+    protected void onStateReplaced(BlockState state, ServerWorld world, BlockPos pos, boolean moved) {
+        // 只在下半部分被替换/移除时处理，避免重复执行
+        if (state.get(HALF) == DoubleBlockHalf.LOWER) {
+            BlockEntity be = world.getBlockEntity(pos);
+            if (be instanceof ScarecrowBlockEntity scarecrowBlockEntity) {
+                scarecrowBlockEntity.killTrackedGolems(world);
+            }
+        }
 
+        super.onStateReplaced(state, world, pos, moved);
+    }
     private static final VoxelShape LOWER_SHAPE = VoxelShapes.union(
             Block.createCuboidShape(6, 1, 6, 10, 13, 10),
             Block.createCuboidShape(1, 0, 1, 15, 1, 15),

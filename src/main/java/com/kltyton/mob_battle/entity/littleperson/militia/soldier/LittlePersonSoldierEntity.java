@@ -98,7 +98,7 @@ public class LittlePersonSoldierEntity extends HostileEntity implements LittlePe
         this.targetSelector.add(3, new ActiveTargetGoal<>(this, MobEntity.class, 5, false, false, (entity, world) -> entity instanceof Monster && !(entity instanceof LittlePersonEntity)));
     }
     public static DefaultAttributeContainer.Builder createLittlePersonMilitiaAttributes() {
-        return MobEntity.createMobAttributes()
+        return LittlePersonEntity.createLittlePersonAttributes()
                 .add(EntityAttributes.MAX_HEALTH, 300.0)
                 .add(EntityAttributes.FOLLOW_RANGE, 40.0)
                 .add(EntityAttributes.MOVEMENT_SPEED, 0.25)

@@ -24,3 +24,15 @@ accessible field net/minecraft/entity/mob/PhantomEntity targetPosition Lnet/mine
 accessible class net/minecraft/entity/mob/PhantomEntity$MovementGoal
 accessible method net/minecraft/entity/mob/EvokerEntity setWololoTarget (Lnet/minecraft/entity/passive/SheepEntity;)V
 accessible method net/minecraft/entity/mob/EvokerEntity getWololoTarget ()Lnet/minecraft/entity/passive/SheepEntity;
+accessible field net/minecraft/screen/HopperScreenHandler inventory Lnet/minecraft/inventory/Inventory;
+accessible field net/minecraft/entity/boss/dragon/EnderDragonEntity rightWing Lnet/minecraft/entity/boss/dragon/EnderDragonPart;
+accessible field net/minecraft/entity/boss/dragon/EnderDragonEntity leftWing Lnet/minecraft/entity/boss/dragon/EnderDragonPart;
+accessible field net/minecraft/entity/boss/dragon/EnderDragonEntity CLOSE_PLAYER_PREDICATE Lnet/minecraft/entity/ai/TargetPredicate;
+accessible field net/minecraft/entity/boss/dragon/EnderDragonEntity body Lnet/minecraft/entity/boss/dragon/EnderDragonPart;
+accessible field net/minecraft/client/render/entity/EntityRenderer state Lnet/minecraft/client/render/entity/state/EntityRenderState;
+mutable field net/minecraft/client/render/entity/EntityRenderer state Lnet/minecraft/client/render/entity/state/EntityRenderState;
+extendable method net/minecraft/client/render/entity/EntityRenderer getAndUpdateRenderState (Lnet/minecraft/entity/Entity;F)Lnet/minecraft/client/render/entity/state/EntityRenderState;
+accessible method net/minecraft/client/render/entity/LivingEntityRenderer clampBodyYaw (Lnet/minecraft/entity/LivingEntity;FF)F
+extendable class net/minecraft/entity/effect/RegenerationStatusEffect
+accessible field net/minecraft/client/gui/hud/BossBarHud bossBars Ljava/util/Map;
+accessible method net/minecraft/client/render/entity/feature/ArmorFeatureRenderer renderArmor (Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;Lnet/minecraft/item/ItemStack;Lnet/minecraft/entity/EquipmentSlot;ILnet/minecraft/client/render/entity/model/BipedEntityModel;)V

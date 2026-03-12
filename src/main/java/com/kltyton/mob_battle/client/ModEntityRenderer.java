@@ -50,6 +50,7 @@ import com.kltyton.mob_battle.entity.witherskeletonking.WitherSkeletonKingRender
 import com.kltyton.mob_battle.entity.witherskeletonking.skill.WitherSkullBulletEntityRenderer;
 import com.kltyton.mob_battle.entity.xunsheng.XunShengEntityRenderer;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
+import net.minecraft.client.render.entity.EmptyEntityRenderer;
 import net.minecraft.client.render.entity.EvokerEntityRenderer;
 import net.minecraft.entity.EntityType;
 
@@ -98,10 +99,12 @@ public class ModEntityRenderer {
         EntityRendererRegistry.register(ModEntities.LITTLE_PERSON_KING, LittlePersonKingEntityRenderer::new);
         EntityRendererRegistry.register(ModEntities.VOID_CELL, VoidCellEntityRenderer::new);
         EntityRendererRegistry.register(ModEntities.MISSILE, MissileEntityRenderer::new);
-
+        EntityRendererRegistry.register(ModEntities.MODIFIED_DRAGON_BREATH_CLOUD, EmptyEntityRenderer::new);
+        EntityRendererRegistry.register(ModEntities.COAL_SILVERFISH, ctx -> new GeneralEntityRenderer<>(ctx, "coal_silverfish", false));
         EntityRendererRegistry.register(ModEntities.SILENCE_PHANTOM, ctx -> new GeneralEntityRenderer<>(ctx, "silence_phantom", false));
         EntityRendererRegistry.register(ModEntities.SHIELD, ctx -> new GeneralEntityRenderer<>(ctx, "shield_force_field", false, GeneralEntityModel.RenderTypes.TRANSLUCENT));
         EntityRendererRegistry.register(ModEntities.SUPER_EVOKER, EvokerEntityRenderer::new);
+        EntityRendererRegistry.register(ModEntities.ENDER_DRAGON_METEORITE, ctx -> new GeneralEntityRenderer<>(ctx, "ender_dragon_meteorite", false));
 
         ModEntities.LITTLE_PERSON_ENTITIES.forEach((id, entityType) -> {
             @SuppressWarnings("unchecked")

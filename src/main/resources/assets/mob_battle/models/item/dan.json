@@ -1,7 +1,7 @@
 {
   "parent": "item/generated",
   "textures": {
-    "layer0": "mob_battle:item/dan"
+    "layer0": "mob_battle:item/dan/dan"
   },
   "display": {
     "head": {

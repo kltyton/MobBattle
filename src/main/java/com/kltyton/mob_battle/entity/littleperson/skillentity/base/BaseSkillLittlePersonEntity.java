@@ -2,6 +2,7 @@ package com.kltyton.mob_battle.entity.littleperson.skillentity.base;
 
 import com.kltyton.mob_battle.entity.ModEntityAttributes;
 import com.kltyton.mob_battle.entity.ModSkillEntityType;
+import com.kltyton.mob_battle.entity.littleperson.LittlePersonEntity;
 import com.kltyton.mob_battle.entity.littleperson.militia.LittlePersonMilitiaEntity;
 import com.kltyton.mob_battle.entity.littleperson.skillentity.IronManEntity;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
@@ -15,7 +16,6 @@ import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.mob.HostileEntity;
-import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.World;
 import software.bernie.geckolib.animatable.manager.AnimatableManager;
@@ -403,7 +403,7 @@ public class BaseSkillLittlePersonEntity extends LittlePersonMilitiaEntity imple
         }
     }
     public static DefaultAttributeContainer.Builder createAttributes() {
-        return MobEntity.createMobAttributes()
+        return LittlePersonEntity.createLittlePersonAttributes()
                 .add(EntityAttributes.FOLLOW_RANGE, 40.0)
                 .add(ModEntityAttributes.DAMAGE_REDUCTION, 0);
     }

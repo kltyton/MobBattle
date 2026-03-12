@@ -14,7 +14,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin({ArmorFeatureRenderer.class, ArmorFeatureRenderer.class})
 public abstract class FeatureRendererMixin<S extends EntityRenderState, M extends EntityModel<? super S>> {
-
     @Inject(method = "render(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;ILnet/minecraft/client/render/entity/state/BipedEntityRenderState;FF)V",
             at = @At("HEAD"),
             cancellable = true)

@@ -76,6 +76,7 @@ public class SkullKingEntity extends WitherSkeletonEntity implements GeoEntity, 
     public void tick() {
         super.tick();
         if (!this.getWorld().isClient()) {
+            killSlave();
             if (!hasSkill()) {
                 this.setAiDisabled(false);
                 if (canSummonSkull()) performSummonSkull();

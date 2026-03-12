@@ -32,7 +32,8 @@ public class ModMaterial {
             RegistryKey.of(EquipmentAssetKeys.REGISTRY_KEY, Identifier.of(Mob_battle.MOD_ID, "ecredcultist"));
     public static final RegistryKey<EquipmentAsset> EMERALD_DIAMOND_ALLOY_KEY =
             RegistryKey.of(EquipmentAssetKeys.REGISTRY_KEY, Identifier.of(Mob_battle.MOD_ID, "emerald_diamond_alloy"));
-
+    public static final RegistryKey<EquipmentAsset> ZIJIN_ARMOR_MATERIAL_KEY =
+            RegistryKey.of(EquipmentAssetKeys.REGISTRY_KEY, Identifier.of(Mob_battle.MOD_ID, "zijin"));
 
     public static final ArmorMaterial HELL_ARMOR_INSTANCE_1 = new ArmorMaterial(
             Integer.MAX_VALUE,
@@ -98,6 +99,7 @@ public class ModMaterial {
             ModTags.IRON_GOLD_REPAIRABLE,
             IRON_GOLD_KEY
     );
+
     public static final ArmorMaterial ECREDCULTIST_INSTANCE = new ArmorMaterial(
             1,
             Map.of(
@@ -119,6 +121,7 @@ public class ModMaterial {
             ModTags.IRON_GOLD_REPAIRABLE,
             ECREDCULTIST_KEY
     );
+
     public static final ArmorMaterial EMERALD_DIAMOND_ALLOY_INSTANCE = new ArmorMaterial(
             Integer.MAX_VALUE,
             Map.of(
@@ -135,6 +138,24 @@ public class ModMaterial {
             ItemTags.BEACON_PAYMENT_ITEMS,
             EMERALD_DIAMOND_ALLOY_KEY
     );
+
+    public static final ArmorMaterial ZIJIN_ARMOR_INSTANCE = new ArmorMaterial(
+            Integer.MAX_VALUE,
+            Map.of(
+                    EquipmentType.HELMET, 7,
+                    EquipmentType.CHESTPLATE, 10,
+                    EquipmentType.LEGGINGS, 8,
+                    EquipmentType.BOOTS, 5,
+                    EquipmentType.BODY, 0
+            ),
+            30,
+            SoundEvents.ITEM_ARMOR_EQUIP_DIAMOND,
+            0F,
+            0.1F,
+            ItemTags.BEACON_PAYMENT_ITEMS,
+            ZIJIN_ARMOR_MATERIAL_KEY
+    );
+
     public static final ToolMaterial KLTYTON_TOOL_MATERIAL = new ToolMaterial(
             BlockTags.INCORRECT_FOR_WOODEN_TOOL,
             1561,
@@ -152,6 +173,14 @@ public class ModMaterial {
             ModTags.IRON_GOLD_REPAIRABLE
     );
     public static final ToolMaterial EMERALD_DIAMOND_ALLOY_TOOL_MATERIAL = new ToolMaterial(
+            BlockTags.INCORRECT_FOR_NETHERITE_TOOL,
+            20000,
+            8.0F,
+            0.0F,
+            10,
+            ItemTags.BEACON_PAYMENT_ITEMS
+    );
+    public static final ToolMaterial ZIJIN_ARMOR_TOOL_MATERIAL = new ToolMaterial(
             BlockTags.INCORRECT_FOR_NETHERITE_TOOL,
             20000,
             8.0F,
@@ -185,6 +214,29 @@ public class ModMaterial {
                 //最大生命值 +20.0
                 builder = builder.with(EntityAttributes.MAX_HEALTH,
                         new EntityAttributeModifier(Identifier.of(Mob_battle.MOD_ID, "health_" + id), 20, EntityAttributeModifier.Operation.ADD_VALUE), slot);
+                if (type == EquipmentType.BOOTS)
+                    builder = builder.with(EntityAttributes.STEP_HEIGHT,
+                            new EntityAttributeModifier(Identifier.of(Mob_battle.MOD_ID, "step_" + id), 2, EntityAttributeModifier.Operation.ADD_VALUE), slot);
+                return builder;
+            });
+        }
+        if (armorMaterial == ZIJIN_ARMOR_INSTANCE) {
+            armor.apply(DataComponentTypes.ATTRIBUTE_MODIFIERS, current, builder -> {
+                //最大生命值 +7.0
+                builder = builder.with(EntityAttributes.MAX_HEALTH,
+                        new EntityAttributeModifier(Identifier.of(Mob_battle.MOD_ID, "health_" + id), 10.0, EntityAttributeModifier.Operation.ADD_VALUE), slot);
+                if (type == EquipmentType.HELMET)
+                    builder = builder.with(EntityAttributes.ARMOR_TOUGHNESS,
+                        new EntityAttributeModifier(Identifier.of(Mob_battle.MOD_ID, "armor_toughness_" + id), 5.0, EntityAttributeModifier.Operation.ADD_VALUE), slot);
+                if (type == EquipmentType.CHESTPLATE)
+                    builder = builder.with(EntityAttributes.ARMOR_TOUGHNESS,
+                        new EntityAttributeModifier(Identifier.of(Mob_battle.MOD_ID, "armor_toughness_" + id), 6.0, EntityAttributeModifier.Operation.ADD_VALUE), slot);
+                if (type == EquipmentType.LEGGINGS)
+                    builder = builder.with(EntityAttributes.ARMOR_TOUGHNESS,
+                        new EntityAttributeModifier(Identifier.of(Mob_battle.MOD_ID, "armor_toughness_" + id), 6.0, EntityAttributeModifier.Operation.ADD_VALUE), slot);
+                if (type == EquipmentType.BOOTS)
+                    builder = builder.with(EntityAttributes.ARMOR_TOUGHNESS,
+                        new EntityAttributeModifier(Identifier.of(Mob_battle.MOD_ID, "armor_toughness_" + id), 3.0, EntityAttributeModifier.Operation.ADD_VALUE), slot);
                 return builder;
             });
         }
@@ -215,6 +267,15 @@ public class ModMaterial {
                 updated = updated.with(
                         EntityAttributes.SWEEPING_DAMAGE_RATIO,
                         new EntityAttributeModifier(Identifier.of(Mob_battle.MOD_ID, "swipe_" + id), 1.0, EntityAttributeModifier.Operation.ADD_VALUE),
+                        slot
+                );
+                return updated;
+            });
+        } else if (toolMaterial == ZIJIN_ARMOR_TOOL_MATERIAL) {
+            sword.apply(DataComponentTypes.ATTRIBUTE_MODIFIERS, current, updated -> {
+                updated = updated.with(
+                        EntityAttributes.ENTITY_INTERACTION_RANGE,
+                        new EntityAttributeModifier(Identifier.of(Mob_battle.MOD_ID, "range_" + id), 1.0, EntityAttributeModifier.Operation.ADD_VALUE),
                         slot
                 );
                 return updated;

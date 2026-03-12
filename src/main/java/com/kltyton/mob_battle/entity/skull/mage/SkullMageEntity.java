@@ -61,6 +61,7 @@ public class SkullMageEntity extends SkeletonEntity implements GeoEntity, IModSk
     public void tick() {
         super.tick();   // 调用父类 AI、移动等更新
         if (!this.getWorld().isClient()) {
+            killSlave();
             if (!hasSkill()) {
                 this.setAiDisabled(false);
                 // 冷却递减

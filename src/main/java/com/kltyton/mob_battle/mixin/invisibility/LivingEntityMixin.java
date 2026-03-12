@@ -49,11 +49,11 @@ public abstract class LivingEntityMixin extends Entity implements Attackable, Se
     protected void initCustomDataTracker(DataTracker.Builder builder, CallbackInfo ci) {
         builder.add(TRUE_INVISIBLE, false);
     }
-    @Inject(method = "updatePotionVisibility", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;setInvisible(Z)V", ordinal = 1, shift = At.Shift.AFTER))
+    @Inject(method = "updatePotionVisibility", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;updatePotionSwirls()V"))
     protected void updatePotionVisibility(CallbackInfo ci) {
         this.custom$setTrueInvisible(this.hasStatusEffect(ModEffects.TRUE_INVISIBLE_ENTRY));
-
     }
+
     @ModifyArg(
             method = "updatePotionVisibility",
             at = @At(
@@ -65,9 +65,10 @@ public abstract class LivingEntityMixin extends Entity implements Attackable, Se
         return invisible || this.hasStatusEffect(ModEffects.TRUE_INVISIBLE_ENTRY);
     }
     @ModifyVariable(
-            method = "applyDamage",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;setHealth(F)V"),
-            argsOnly = true
+            method = "damage",
+            at = @At("HEAD"),
+            argsOnly = true,
+            index = 3
     )
     private float applyBlockEffectReduction(float amount) {
         LivingEntity entity = (LivingEntity) (Object) this;
@@ -77,7 +78,6 @@ public abstract class LivingEntityMixin extends Entity implements Attackable, Se
             int reduction = amplifier + 1;
             amount = Math.max(0, amount - reduction);
         }
-
         return amount;
     }
 

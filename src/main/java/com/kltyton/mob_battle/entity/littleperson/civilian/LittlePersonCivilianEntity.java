@@ -12,7 +12,6 @@ import net.minecraft.entity.ai.brain.sensor.Sensor;
 import net.minecraft.entity.ai.brain.sensor.SensorType;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.ActionResult;
@@ -124,7 +123,7 @@ public class LittlePersonCivilianEntity extends VillagerEntity implements Little
         return geoCache;
     }
     public static DefaultAttributeContainer.Builder createLittlePersonCivilianAttributes() {
-        return MobEntity.createMobAttributes().add(EntityAttributes.MOVEMENT_SPEED, 0.4).add(EntityAttributes.FOLLOW_RANGE, 40.0);
+        return LittlePersonEntity.createLittlePersonAttributes().add(EntityAttributes.MOVEMENT_SPEED, 0.4).add(EntityAttributes.FOLLOW_RANGE, 40.0);
     }
 
     @Override

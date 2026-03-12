@@ -80,7 +80,21 @@ public class ScarecrowBlockEntity extends BlockEntity {
             }
         }
     }
+    public void killTrackedGolems(ServerWorld world) {
+        if (trackedGolems.isEmpty()) {
+            return;
+        }
 
+        for (UUID uuid : trackedGolems) {
+            Entity entity = world.getEntity(uuid);
+            if (entity instanceof MilitiaWarriorVillager warrior && warrior.isAlive()) {
+                warrior.setHomePos(new BlockPos(0, 9999, 0));
+            }
+        }
+
+        trackedGolems.clear();
+        markDirty();
+    }
     public void applyGlowingToTracked(ServerWorld world, PlayerEntity player) {
         if (trackedGolems.isEmpty()) {
             return;

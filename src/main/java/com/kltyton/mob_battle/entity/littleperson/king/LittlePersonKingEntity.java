@@ -2,6 +2,7 @@ package com.kltyton.mob_battle.entity.littleperson.king;
 
 import com.kltyton.mob_battle.entity.ModEntityAttributes;
 import com.kltyton.mob_battle.entity.ModSkillEntityType;
+import com.kltyton.mob_battle.entity.littleperson.LittlePersonEntity;
 import com.kltyton.mob_battle.entity.littleperson.guard.LittlePersonGuardEntity;
 import com.kltyton.mob_battle.entity.littleperson.king.skill.LittlePersonKingSkill;
 import com.kltyton.mob_battle.entity.littleperson.militia.LittlePersonMilitiaEntity;
@@ -17,7 +18,6 @@ import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.mob.HostileEntity;
-import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.world.World;
@@ -216,7 +216,7 @@ public class LittlePersonKingEntity extends LittlePersonMilitiaEntity {
         return false;
     }
     public static DefaultAttributeContainer.Builder createLittlePersonKingAttributes() {
-        return MobEntity.createMobAttributes()
+        return LittlePersonEntity.createLittlePersonAttributes()
                 .add(EntityAttributes.MAX_HEALTH, 2000.0)
                 .add(EntityAttributes.FOLLOW_RANGE, 40.0)
                 .add(EntityAttributes.MOVEMENT_SPEED, 0.3)

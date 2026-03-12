@@ -15,7 +15,7 @@ public class ModItemTagGenerator extends FabricTagProvider.ItemTagProvider {
 
     @Override
     protected void configure(RegistryWrapper.WrapperLookup wrapperLookup) {
-        valueLookupBuilder(ItemTags.SWORDS).add(ModItems.EMERALD_DIAMOND_SWORD, ModItems.IRON_GOLD_SWORD, ModItems.METEORICORE_SWORD);
+        valueLookupBuilder(ItemTags.SWORDS).add(ModItems.EMERALD_DIAMOND_SWORD, ModItems.IRON_GOLD_SWORD, ModItems.METEORICORE_SWORD, ModItems.ZIJIN_SWORD);
         /*
         valueLookupBuilder(ItemTags.WOODEN_SLABS)  // 创建一个标签构建器，用于处理WOODEN_SLABS标签
             .add(Items.SLIME_BALL)                 // 将SLIME_BALL物品添加到当前标签中
