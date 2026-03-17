@@ -1,7 +1,7 @@
 package com.kltyton.mob_battle.items.tool.irongold;
 
 import com.kltyton.mob_battle.Mob_battle;
-import com.kltyton.mob_battle.items.FabricItem;
+import com.kltyton.mob_battle.items.ModFabricItem;
 import com.kltyton.mob_battle.items.ModMaterial;
 import com.kltyton.mob_battle.items.tool.BaseSword;
 import com.kltyton.mob_battle.utils.ArmorUtil;
@@ -21,7 +21,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 
-public class IronGoldSword extends BaseSword implements FabricItem {
+public class IronGoldSword extends BaseSword implements ModFabricItem {
     private static final Identifier BONUS_ID = Identifier.of(Mob_battle.MOD_ID, "iron_gold_full_attack_bonus");
     private static final EntityAttributeModifier BONUS_MODIFIER =
             new EntityAttributeModifier(BONUS_ID, 30, EntityAttributeModifier.Operation.ADD_VALUE);

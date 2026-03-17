@@ -35,6 +35,7 @@ public abstract class PersistentProjectileEntityMixin extends ProjectileEntity{
     )
     private boolean cancelDamage(Entity instance, DamageSource source, float amount) {
         if ((PersistentProjectileEntity) (Object) this instanceof ITrueDamageProjectile trueDamageProjectile && trueDamageProjectile.isTrueDamage()) {
+            trueDamageProjectile.additionalDamage(instance);
             return instance.sidedDamage(source, (float) this.damage);
         } else {
             return instance.sidedDamage(source, amount);

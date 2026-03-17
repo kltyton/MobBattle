@@ -57,6 +57,10 @@ public class ModPackets {
                 ZiJinPayload.ID,
                 ZiJinPayload.CODEC
         );
+        PayloadTypeRegistry.playC2S().register(
+                PiglinCannonModePayload.ID,
+                PiglinCannonModePayload.CODEC
+        );
         PayloadTypeRegistry.playS2C().register(
                 ItemGroupPayload.ID,
                 ItemGroupPayload.CODEC

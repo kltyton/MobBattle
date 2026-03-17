@@ -13,10 +13,16 @@ public class EntityRenderStateMixin {
     @Unique
     private boolean trueInvisible;
     @Unique
+    private int iceAmplifier = -1;
+    public void custom$setIceAmplifier(int amplifier) {
+        this.iceAmplifier = amplifier;
+    }
+    public int custom$getIceAmplifier() {
+        return iceAmplifier;
+    }
     public boolean custom$isTrueInvisible() {
         return trueInvisible;
     }
-    @Unique
     public void custom$setTrueInvisible(boolean invisible) {
         this.trueInvisible = invisible;
     }

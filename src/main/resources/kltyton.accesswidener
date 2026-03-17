@@ -36,3 +36,5 @@ accessible method net/minecraft/client/render/entity/LivingEntityRenderer clampB
 extendable class net/minecraft/entity/effect/RegenerationStatusEffect
 accessible field net/minecraft/client/gui/hud/BossBarHud bossBars Ljava/util/Map;
 accessible method net/minecraft/client/render/entity/feature/ArmorFeatureRenderer renderArmor (Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;Lnet/minecraft/item/ItemStack;Lnet/minecraft/entity/EquipmentSlot;ILnet/minecraft/client/render/entity/model/BipedEntityModel;)V
+accessible method net/minecraft/entity/projectile/PersistentProjectileEntity setPierceLevel (B)V
+accessible field net/minecraft/entity/ai/control/JumpControl active Z

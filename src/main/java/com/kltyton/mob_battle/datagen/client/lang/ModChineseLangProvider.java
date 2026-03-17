@@ -86,6 +86,8 @@ public class ModChineseLangProvider extends FabricLanguageProvider {
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.SPAWN_EGG_ITEMS.get("magic_man")), "魔法人刷怪蛋");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModEntities.HEAVEN_CRIPPLED_FEET), "天残脚");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.SPAWN_EGG_ITEMS.get("heaven_crippled_feet")), "天残脚刷怪蛋");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.SPAWN_EGG_ITEMS.get("lobster_entity")), "龙虾刷怪蛋");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.SPAWN_EGG_ITEMS.get("magma_lobster_entity")), "熔岩龙虾刷怪蛋");
 
 
 
@@ -126,5 +128,29 @@ public class ModChineseLangProvider extends FabricLanguageProvider {
         translationBuilder.add(ModLangUtils.getTranslationKey(ModKeyBinding.keyPlayerScrapingRun), "抓取");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.CARDIOTONIC_INJECTION), "强心注射剂");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModKeyBinding.keyZiJin), "激活紫金套装奖励");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.COMPRESSED_COPPER_INGOT), "压缩铜锭");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.COMPRESSED_IRON_INGOT), "压缩铁锭");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.COMPRESSED_GOLD_INGOT), "压缩金锭");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.COMPRESSED_DIAMOND), "压缩钻石");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.COMPRESSED_NETHERITE_INGOT), "压缩下界合金锭");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.COMPRESSED_REDSTONE), "压缩红石");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.COMPRESSED_LAPIS_LAZULI), "压缩青金石");
+
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.LOBSTER), "龙虾");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.MAGMA_LOBSTER), "岩浆龙虾");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.OBSIDIAN_LOBSTER), "黑曜石龙虾");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.BURST_OBSIDIAN_LOBSTER), "爆开的黑曜石龙虾");
+
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.ICE_BOW), "寒冰弓");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.ICE_ARROW_ITEM), "寒冰箭");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModEffects.ICE), "冰冻");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.TRAIN_BULLET), "特质子弹");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.AREA_GRAVITY_DEVICE_ITEM), "区域重力装置");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.PIGLIN_CANNON), "猪灵炮");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModKeyBinding.keyPiglinCannonItemMode), "切换猪灵炮模式");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModEntities.MAGMA_LOBBER_BIG_FIREBALL), "火球");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModEntities.MAGMA_LOBSTER), "熔岩龙虾");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModEntities.LOBSTER), "龙虾");
+
     }
 }

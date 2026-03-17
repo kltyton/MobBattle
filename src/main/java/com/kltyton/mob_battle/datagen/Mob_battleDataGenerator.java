@@ -3,7 +3,8 @@ package com.kltyton.mob_battle.datagen;
 import com.kltyton.mob_battle.datagen.client.lang.ModChineseLangProvider;
 import com.kltyton.mob_battle.datagen.client.lang.ModEnglishLangProvider;
 import com.kltyton.mob_battle.datagen.client.model.ModModelGenerator;
-import com.kltyton.mob_battle.datagen.server.loot.ModLootTableGenerator;
+import com.kltyton.mob_battle.datagen.server.loot.ModBlockLootTableGenerator;
+import com.kltyton.mob_battle.datagen.server.loot.ModEntityLootTableGenerator;
 import com.kltyton.mob_battle.datagen.server.recipe.ModRecipeGenerator;
 import com.kltyton.mob_battle.datagen.server.tag.ModBlockTagGenerator;
 import com.kltyton.mob_battle.datagen.server.tag.ModEntityTagGenerator;
@@ -26,7 +27,8 @@ public class Mob_battleDataGenerator implements DataGeneratorEntrypoint {
         pack.addProvider(ModItemTagGenerator::new);
         pack.addProvider(ModEntityTagGenerator::new);
 
-        pack.addProvider(ModLootTableGenerator::new);
+        pack.addProvider(ModBlockLootTableGenerator::new);
+        pack.addProvider(ModEntityLootTableGenerator::new);
         pack.addProvider(ModRecipeGenerator::new);
     }
 

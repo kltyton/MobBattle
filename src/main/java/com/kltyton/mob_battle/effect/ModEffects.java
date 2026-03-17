@@ -24,6 +24,7 @@ public class ModEffects {
     public static HeartEaterStatusEffect HEART_EATER;
     public static InfestationEffect INFESTATION;
     public static DisarmEffect DISARM;
+    public static IceEffect ICE;
     public static SuperRegenerationStatusEffect SUPER_REGENERATION;
     public static PigSpiritMarkEffect PIG_SPIRIT_MARK;
 
@@ -43,6 +44,7 @@ public class ModEffects {
     public static RegistryEntry<StatusEffect> DISARM_ENTRY;
     public static RegistryEntry<StatusEffect> SUPER_REGENERATION_ENTRY;
     public static RegistryEntry<StatusEffect> PIG_SPIRIT_MARK_ENTRY;
+    public static RegistryEntry<StatusEffect> ICE_ENTRY;
 
     public static void init() {
         INSECT_BITE = Registry.register(Registries.STATUS_EFFECT, Identifier.of(Mob_battle.MOD_ID, "insect_bite"),
@@ -77,6 +79,8 @@ public class ModEffects {
                 new SuperRegenerationStatusEffect());
         PIG_SPIRIT_MARK = Registry.register(Registries.STATUS_EFFECT, Identifier.of(Mob_battle.MOD_ID, "pig_spirit_mark"),
                 new PigSpiritMarkEffect());
+        ICE = Registry.register(Registries.STATUS_EFFECT, Identifier.of(Mob_battle.MOD_ID, "ice"),
+                new IceEffect());
 
 
         INSECT_BITE_ENTRY = Registries.STATUS_EFFECT.getEntry(Identifier.of(Mob_battle.MOD_ID, "insect_bite")).orElseThrow(() ->
@@ -110,6 +114,8 @@ public class ModEffects {
         SUPER_REGENERATION_ENTRY = Registries.STATUS_EFFECT.getEntry(Identifier.of(Mob_battle.MOD_ID, "super_regeneration")).orElseThrow(() ->
                 new IllegalStateException("未能获得效果的注册表项"));
         PIG_SPIRIT_MARK_ENTRY = Registries.STATUS_EFFECT.getEntry(Identifier.of(Mob_battle.MOD_ID, "pig_spirit_mark")).orElseThrow(() ->
+                new IllegalStateException("未能获得效果的注册表项"));
+        ICE_ENTRY = Registries.STATUS_EFFECT.getEntry(Identifier.of(Mob_battle.MOD_ID, "ice")).orElseThrow(() ->
                 new IllegalStateException("未能获得效果的注册表项"));
     }
 }

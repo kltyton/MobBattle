@@ -36,7 +36,9 @@ import com.kltyton.mob_battle.entity.vindicatorgeneral.VindicatorGeneralEntitySk
 import com.kltyton.mob_battle.entity.witherskeletonking.WitherSkeletonKingEntity;
 import com.kltyton.mob_battle.entity.witherskeletonking.skill.WitherSkeletonKingEntitySkill;
 import com.kltyton.mob_battle.event.masterscepter.MasterScepterManager;
+import com.kltyton.mob_battle.items.ModItems;
 import com.kltyton.mob_battle.items.ModMaterial;
+import com.kltyton.mob_battle.items.tool.piglin.PiglinCannonModeUtil;
 import com.kltyton.mob_battle.network.packet.*;
 import com.kltyton.mob_battle.utils.ArmorUtil;
 import com.kltyton.mob_battle.utils.EnchantmentUtil;
@@ -455,6 +457,19 @@ public class ServerPlayNetwork {
                     }
                     world.spawnParticles(ParticleTypes.EXPLOSION, player.getX(), player.getY(), player.getZ(), 1, 0, 0, 0, 0);
                     player.getItemCooldownManager().set(cooldownItem, 700);
+                }
+            });
+        });
+        ServerPlayNetworking.registerGlobalReceiver(PiglinCannonModePayload.ID, (payload, context) -> {
+            //紫金套装效果
+            ServerPlayerEntity player = context.player();
+            ServerWorld world = player.getWorld();
+            context.server().execute(() -> {
+                if (player.getMainHandStack().isOf(ModItems.PIGLIN_CANNON)) {
+                    PiglinCannonModeUtil.Mode mode = PiglinCannonModeUtil.toggleMode(player.getMainHandStack());
+                    if (!world.isClient) {
+                        player.sendMessage(Text.literal(mode == PiglinCannonModeUtil.Mode.FAST_FIRE ? "切换为速射形态" : "切换为重击模式"), true);
+                    }
                 }
             });
         });

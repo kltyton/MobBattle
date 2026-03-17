@@ -24,7 +24,9 @@ public class ModifiedDragonBreathCloud extends AreaEffectCloudEntity {
         super.tick();
 
         if (this.getWorld().isClient) return;
-
+        if (this.age >= 200) {
+            this.discard();
+        }
         // 每4 tick 造成一次伤害（性能好）
         if (this.age % 4 == 0) {
             ServerWorld serverWorld = (ServerWorld) this.getWorld();

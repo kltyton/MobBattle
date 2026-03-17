@@ -38,6 +38,11 @@ public abstract class DragonFireballMixin extends ExplosiveProjectileEntity {
     @Override
     public void tick() {
         super.tick();
+        if (!this.getWorld().isClient) {
+            if (this.age >= 200) {
+                this.discard();
+            }
+        }
         DragonFireballEntity self = (DragonFireballEntity)(Object)this;
 
         double x = self.getX();

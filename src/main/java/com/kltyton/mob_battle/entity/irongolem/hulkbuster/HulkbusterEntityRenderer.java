@@ -15,6 +15,7 @@ import software.bernie.geckolib.cache.object.BakedGeoModel;
 import software.bernie.geckolib.constant.dataticket.DataTicket;
 import software.bernie.geckolib.renderer.GeoEntityRenderer;
 import software.bernie.geckolib.renderer.base.GeoRenderState;
+import software.bernie.geckolib.renderer.layer.AutoGlowingGeoLayer;
 import software.bernie.geckolib.util.ClientUtil;
 
 import java.util.UUID;
@@ -22,6 +23,7 @@ import java.util.UUID;
 public class HulkbusterEntityRenderer<R extends LivingEntityRenderState & GeoRenderState> extends GeoEntityRenderer<HulkbusterEntity, R> {
     public HulkbusterEntityRenderer(EntityRendererFactory.Context context) {
         super(context, new HulkbusterEntityModel());
+        this.addRenderLayer(new AutoGlowingGeoLayer<>(this));
     }
     public static final DataTicket<UUID> ENTITY_ID = DataTicket.create("entity_id", UUID.class);
     public static final DataTicket<Boolean> SYNC_CATCH = DataTicket.create("sync_catch", Boolean.class);

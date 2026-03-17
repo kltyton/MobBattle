@@ -3,7 +3,10 @@ package com.kltyton.mob_battle.entity;
 import com.kltyton.mob_battle.Mob_battle;
 import com.kltyton.mob_battle.entity.blueirongolem.BlueIronGolemEntity;
 import com.kltyton.mob_battle.entity.bullet.BulletEntity;
+import com.kltyton.mob_battle.entity.bullet.GoldenTrailProjectile;
+import com.kltyton.mob_battle.entity.bullet.IceArrowEntity;
 import com.kltyton.mob_battle.entity.customfireball.CustomSuperBigFireballEntity;
+import com.kltyton.mob_battle.entity.customfireball.MagmaLobsterBigFireballEntity;
 import com.kltyton.mob_battle.entity.deepcreature.DeepCreatureEntity;
 import com.kltyton.mob_battle.entity.drone.attackdrone.AttackDroneEntity;
 import com.kltyton.mob_battle.entity.drone.treatmentdrone.TreatmentDroneEntity;
@@ -29,6 +32,8 @@ import com.kltyton.mob_battle.entity.littleperson.militia.LittlePersonMilitiaEnt
 import com.kltyton.mob_battle.entity.littleperson.militia.soldier.LittlePersonSoldierEntity;
 import com.kltyton.mob_battle.entity.littleperson.skillentity.*;
 import com.kltyton.mob_battle.entity.littleperson.skillentity.ironmanbullet.IronManBulletEntity;
+import com.kltyton.mob_battle.entity.lobster.LobsterEntity;
+import com.kltyton.mob_battle.entity.lobster.MagmaLobsterEntity;
 import com.kltyton.mob_battle.entity.meteorite.EnderDragonMeteoriteEntity;
 import com.kltyton.mob_battle.entity.meteorite.MeteoriteEntity;
 import com.kltyton.mob_battle.entity.min.YoungMinEntity;
@@ -779,6 +784,66 @@ public class ModEntities {
                     .maxTrackingRange(4)
                     .trackingTickInterval(10),
             false,
+            false
+    );
+
+    public static final EntityType<MagmaLobsterBigFireballEntity> MAGMA_LOBBER_BIG_FIREBALL = createEntityType(
+            "magma_lobber_big_fireball",
+            EntityType.Builder.<MagmaLobsterBigFireballEntity>create(MagmaLobsterBigFireballEntity::new, SpawnGroup.MISC)
+                    .dropsNothing()
+                    .dimensions(1.0F, 1.0F)
+                    .maxTrackingRange(4)
+                    .trackingTickInterval(10),
+            false,
+            false
+    );
+    public static final EntityType<IceArrowEntity> ICE_ARROW = createEntityType(
+            "ice_arrow",
+            EntityType.Builder.<IceArrowEntity>create(IceArrowEntity::new, SpawnGroup.MISC)
+                    .dropsNothing()
+                    .dimensions(0.5F, 0.5F)
+                    .eyeHeight(0.13F)
+                    .maxTrackingRange(4)
+                    .trackingTickInterval(20),
+            false,
+            false
+    );
+    public static final EntityType<GoldenTrailProjectile> GOLDEN_TRAIL_PROJECTILE = createEntityType(
+            "golden_trail_projectile",
+            EntityType.Builder.<GoldenTrailProjectile>create(GoldenTrailProjectile::new, SpawnGroup.MISC)
+                    .dropsNothing()
+                    .dimensions(0.5F, 0.5F)
+                    .eyeHeight(0.13F)
+                    .maxTrackingRange(4)
+                    .trackingTickInterval(20),
+            false,
+            false
+    );
+    public static final EntityType<LobsterEntity> LOBSTER = createEntityType(
+            "lobster_entity",
+            FabricEntityType.Builder.createMob(LobsterEntity::new, SpawnGroup.CREATURE,
+                            (mob) -> mob.defaultAttributes(LobsterEntity::createAttributes)
+                                    .spawnRestriction(SpawnLocationTypes.ON_GROUND,
+                                            Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,
+                                            (type, world, reason, pos, random) -> false))
+                    .dimensions(2F, 0.7F)
+                    .eyeHeight(0.25F)
+                    .maxTrackingRange(8),
+            true,
+            false
+    );
+    public static final EntityType<MagmaLobsterEntity> MAGMA_LOBSTER = createEntityType(
+            "magma_lobster_entity",
+            FabricEntityType.Builder.createMob(MagmaLobsterEntity::new, SpawnGroup.CREATURE,
+                            (mob) -> mob.defaultAttributes(MagmaLobsterEntity::createAttributes)
+                                    .spawnRestriction(SpawnLocationTypes.ON_GROUND,
+                                            Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,
+                                            (type, world, reason, pos, random) -> false))
+                    .dimensions(2F, 0.7F)
+                    .eyeHeight(0.25F)
+                    .maxTrackingRange(8)
+                    .makeFireImmune(),
+            true,
             false
     );
     public static void init() {

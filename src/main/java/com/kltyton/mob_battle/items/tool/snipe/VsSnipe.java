@@ -1,20 +1,25 @@
 package com.kltyton.mob_battle.items.tool.snipe;
 
 import com.kltyton.mob_battle.entity.bullet.BulletEntity;
-import com.kltyton.mob_battle.items.FabricItem;
+import com.kltyton.mob_battle.entity.bullet.ITrueDamageProjectile;
+import com.kltyton.mob_battle.items.ModFabricItem;
 import com.kltyton.mob_battle.sounds.ModSounds;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.fabricmc.fabric.api.item.v1.EnchantingContext;
 import net.minecraft.advancement.criterion.Criteria;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.ChargedProjectilesComponent;
+import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.item.*;
 import net.minecraft.item.consume.UseAction;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -37,9 +42,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 
-public class VsSnipe extends RangedWeaponItem implements FabricItem {
+public class VsSnipe extends RangedWeaponItem implements ModFabricItem {
     private boolean charged = false;
     private boolean loaded = false;
+
     private static final CrossbowItem.LoadingSounds DEFAULT_LOADING_SOUNDS = new CrossbowItem.LoadingSounds(
             Optional.of(ModSounds.GUN_RELOAD_SOUND_EVENT_REFERENCE),
             null,
@@ -60,12 +66,35 @@ public class VsSnipe extends RangedWeaponItem implements FabricItem {
         return stack -> stack.isOf(Items.IRON_BLOCK);
     }
 
+    /**
+     * Fabric 1.21.x 里用于控制“这个物品是否接受某个附魔”的核心入口。
+     * 这里放行：
+     * - 弓：力量 / 冲击 / 火矢
+     * - 弩：快速装填 / 多重射击 / 穿透
+     * 明确排除：无限
+     *
+     * 如果你本地 Yarn 映射的方法名不是 canBeEnchantedWith，而是 supportsEnchantment，
+     * 只需要把这个 override 的方法名改成你环境里的那个即可，方法体不变。
+     */
+    @Override
+    public boolean canBeEnchantedWith(ItemStack stack, RegistryEntry<Enchantment> enchantment, EnchantingContext context) {
+        if (isInfinity(enchantment)) {
+            return false;
+        }
+
+        if (isSupportedBowOrCrossbowEnchantment(enchantment)) {
+            return true;
+        }
+
+        return super.canBeEnchantedWith(stack, enchantment, context);
+    }
+
     @Override
     public ActionResult use(World world, PlayerEntity user, Hand hand) {
         ItemStack itemStack = user.getStackInHand(hand);
         ChargedProjectilesComponent chargedProjectilesComponent = itemStack.get(DataComponentTypes.CHARGED_PROJECTILES);
         if (chargedProjectilesComponent != null && !chargedProjectilesComponent.isEmpty()) {
-            this.shootAll(world, user, hand, itemStack, getSpeed(chargedProjectilesComponent), 1.0F, null);
+            this.shootAll(world, user, hand, itemStack, getSpeed(chargedProjectilesComponent) * 2.5f, 1.0F, null);
             return ActionResult.CONSUME;
         } else if (!user.getProjectileType(itemStack).isEmpty()) {
             this.charged = false;
@@ -113,12 +142,14 @@ public class VsSnipe extends RangedWeaponItem implements FabricItem {
             vector3f = calcVelocity(shooter, new Vec3d(d, g, e), yaw);
         } else {
             Vec3d vec3d = shooter.getOppositeRotationVector(1.0F);
-            Quaternionf quaternionf = new Quaternionf().setAngleAxis((double)(yaw * (float) (Math.PI / 180.0)), vec3d.x, vec3d.y, vec3d.z);
+            Quaternionf quaternionf = new Quaternionf().setAngleAxis((yaw * (float) (Math.PI / 180.0)), vec3d.x, vec3d.y, vec3d.z);
             Vec3d vec3d2 = shooter.getRotationVec(1.0F);
             vector3f = vec3d2.toVector3f().rotate(quaternionf);
         }
+
         projectile.setVelocity(vector3f.x(), vector3f.y(), vector3f.z(), speed, divergence);
         projectile.setNoGravity(true);
+
         float h = getSoundPitch(shooter.getRandom(), index);
         shooter.getWorld().playSound(null, shooter.getX(), shooter.getY(), shooter.getZ(), ModSounds.GUN_SHOT_SOUND_EVENT, shooter.getSoundCategory(), 1.0F, h);
     }
@@ -135,29 +166,55 @@ public class VsSnipe extends RangedWeaponItem implements FabricItem {
         return new Vector3f(vector3f).rotateAxis(yaw * (float) (Math.PI / 180.0), vector3f3.x, vector3f3.y, vector3f3.z);
     }
     protected ProjectileEntity createArrowEntityBase(World world, LivingEntity shooter, ItemStack weaponStack, ItemStack projectileStack, boolean critical) {
-        PersistentProjectileEntity persistentProjectileEntity =  new BulletEntity(world, shooter, projectileStack.copyWithCount(1), weaponStack);
+        PersistentProjectileEntity persistentProjectileEntity = new BulletEntity(world, shooter, projectileStack.copyWithCount(1), weaponStack);
         if (critical) {
             persistentProjectileEntity.setCritical(true);
         }
         persistentProjectileEntity.setNoGravity(true);
         return persistentProjectileEntity;
     }
+
     @Override
     protected ProjectileEntity createArrowEntity(World world, LivingEntity shooter, ItemStack weaponStack, ItemStack projectileStack, boolean critical) {
         ProjectileEntity projectileEntity = createArrowEntityBase(world, shooter, weaponStack, projectileStack, critical);
+
         if (projectileEntity instanceof PersistentProjectileEntity persistentProjectileEntity) {
             persistentProjectileEntity.setSound(SoundEvents.ITEM_CROSSBOW_HIT);
-            persistentProjectileEntity.setDamage(80D);
+            persistentProjectileEntity.setNoGravity(true);
+
+            // 基础伤害
+            double damage = 500.0D;
+
+            // 力量（弓附魔）
+            int powerLevel = getEnchantmentLevel(world, weaponStack, Enchantments.POWER);
+            if (powerLevel > 0) {
+                damage += powerLevel * 0.5D + 0.5D;
+            }
+            ((ITrueDamageProjectile) persistentProjectileEntity).setTrueDamage(true, false);
+            persistentProjectileEntity.setDamage(damage);
+
+/*            // 冲击（弓附魔）
+            int punchLevel = getEnchantmentLevel(world, weaponStack, Enchantments.PUNCH);
+            if (punchLevel > 0) {
+                persistentProjectileEntity.setPunch(punchLevel);
+            }*/
+
+            // 火矢（弓附魔）
+            int flameLevel = getEnchantmentLevel(world, weaponStack, Enchantments.FLAME);
+            if (flameLevel > 0) {
+                persistentProjectileEntity.setOnFireFor(100);
+            }
+
+            // 穿透（弩附魔）
+            int piercingLevel = getEnchantmentLevel(world, weaponStack, Enchantments.PIERCING);
+            if (piercingLevel > 0) {
+                persistentProjectileEntity.setPierceLevel((byte) piercingLevel);
+            }
         }
+
         projectileEntity.setNoGravity(true);
         return projectileEntity;
     }
-
-    @Override
-    protected int getWeaponStackDamage(ItemStack projectile) {
-        return 1; // 固定耐久消耗
-    }
-
 
     public void shootAll(World world, LivingEntity shooter, Hand hand, ItemStack stack, float speed, float divergence, @Nullable LivingEntity target) {
         if (world instanceof ServerWorld serverWorld) {
@@ -194,7 +251,7 @@ public class VsSnipe extends RangedWeaponItem implements FabricItem {
             if (f >= 0.2F && !this.charged) {
                 this.charged = true;
                 loadingSounds.start()
-                        .ifPresent(sound -> world.playSound(null, user.getX(), user.getY(), user.getZ(), (SoundEvent)sound.value(), SoundCategory.PLAYERS, 0.5F, 1.0F));
+                        .ifPresent(sound -> world.playSound(null, user.getX(), user.getY(), user.getZ(), sound.value(), SoundCategory.PLAYERS, 0.5F, 1.0F));
             }
 
             if (f >= 0.5F && !this.loaded) {
@@ -266,10 +323,33 @@ public class VsSnipe extends RangedWeaponItem implements FabricItem {
             isLeftClick = true;
         }
     }
+
+    @Override
     public void onLeftClickStop(PlayerEntity player, ItemStack stack, boolean isServer) {
         isLeftClick = false;
         player.playSound(SoundEvents.ITEM_SPYGLASS_STOP_USING, 1.0F, 1.0F);
     }
+
+    private static boolean isSupportedBowOrCrossbowEnchantment(RegistryEntry<Enchantment> enchantment) {
+        return enchantment.matchesKey(Enchantments.POWER)
+                || enchantment.matchesKey(Enchantments.PUNCH)
+                || enchantment.matchesKey(Enchantments.FLAME)
+                || enchantment.matchesKey(Enchantments.QUICK_CHARGE)
+                || enchantment.matchesKey(Enchantments.MULTISHOT)
+                || enchantment.matchesKey(Enchantments.PIERCING);
+    }
+
+    private static boolean isInfinity(RegistryEntry<Enchantment> enchantment) {
+        return enchantment.matchesKey(Enchantments.INFINITY);
+    }
+
+    private static int getEnchantmentLevel(World world, ItemStack stack, net.minecraft.registry.RegistryKey<Enchantment> key) {
+        RegistryEntry<Enchantment> entry = world.getRegistryManager()
+                .getOrThrow(RegistryKeys.ENCHANTMENT)
+                .getOrThrow(key);
+        return EnchantmentHelper.getLevel(entry, stack);
+    }
+
     public static enum ChargeType implements StringIdentifiable {
         NONE("none"),
         ARROW("arrow"),

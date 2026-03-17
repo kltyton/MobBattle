@@ -4,25 +4,30 @@ import com.kltyton.mob_battle.Mob_battle;
 import com.kltyton.mob_battle.components.ModConsumableComponents;
 import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.items.armor.ModBaseArmorItem;
+import com.kltyton.mob_battle.items.food.MagmaLobsterItemMod;
 import com.kltyton.mob_battle.items.food.ThousandBlossomedImmortalFruit;
 import com.kltyton.mob_battle.items.misc.*;
 import com.kltyton.mob_battle.items.scroll.*;
 import com.kltyton.mob_battle.items.tool.BaseAxe;
-import com.kltyton.mob_battle.items.tool.BaseBow;
 import com.kltyton.mob_battle.items.tool.MasterScepterItem;
 import com.kltyton.mob_battle.items.tool.backpack.BackpackItem;
+import com.kltyton.mob_battle.items.tool.bow.IceBowItem;
+import com.kltyton.mob_battle.items.tool.bow.MeteoricoreBowItem;
 import com.kltyton.mob_battle.items.tool.irongold.IronGoldSword;
 import com.kltyton.mob_battle.items.tool.meteorite.MeteoriteSword;
+import com.kltyton.mob_battle.items.tool.piglin.PiglinCannonItem;
 import com.kltyton.mob_battle.items.tool.snipe.VsSnipe;
 import com.kltyton.mob_battle.items.tool.sword.FineKnifeItem;
-import com.kltyton.mob_battle.items.tool.zijin.ZiJinSword;
+import com.kltyton.mob_battle.items.tool.sword.zijin.ZiJinSword;
 import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.BlocksAttacksComponent;
 import net.minecraft.component.type.ChargedProjectilesComponent;
 import net.minecraft.component.type.DeathProtectionComponent;
 import net.minecraft.component.type.FoodComponent;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.item.Item;
+import net.minecraft.item.ShieldItem;
 import net.minecraft.item.SpawnEggItem;
 import net.minecraft.item.ToolMaterial;
 import net.minecraft.item.equipment.EquipmentType;
@@ -30,16 +35,22 @@ import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.tag.DamageTypeTags;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Rarity;
 import net.minecraft.util.Unit;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public class ModItems {
     public static final Map<String, Item> ITEMS = new HashMap<>();
     public static final Map<String, SpawnEggItem> SPAWN_EGG_ITEMS = new HashMap<>();
+    public static final Map<String, Item> GENERATED_ITEMS = new HashMap<>();
+
 
     // 杂项物品
     public static MutualAttackStickItem MUTUAL_ATTACK_STICK;
@@ -59,12 +70,32 @@ public class ModItems {
     public static FineKnifeItem FINE_KNIFE;
     public static BackpackItem SMALL_BACKPACK;
     public static BackpackItem LARGE_BACKPACK;
-
+    public static Item ICE_ARROW_ITEM;
 
     public static HeartStoneItem HEART_STONE;
     public static ThousandBlossomedImmortalFruit THOUSAND_BLOSSOMED_IMMORTAL_FRUIT;
     public static Item LOBSTER_MAIN_COURSE;
     public static Item COOKED_HIGHBIRD_EGG;
+
+    // 压缩材料
+    public static Item COMPRESSED_COPPER_INGOT;
+    public static Item COMPRESSED_IRON_INGOT;
+    public static Item COMPRESSED_GOLD_INGOT;
+    public static Item COMPRESSED_DIAMOND;
+    public static Item COMPRESSED_NETHERITE_INGOT;
+    public static Item COMPRESSED_REDSTONE;
+    public static Item COMPRESSED_LAPIS_LAZULI;
+
+    // 龙虾系列
+    public static Item LOBSTER;
+    public static Item MAGMA_LOBSTER;
+    public static Item OBSIDIAN_LOBSTER;
+    public static Item BURST_OBSIDIAN_LOBSTER;
+
+    // 弓
+    public static Item ICE_BOW;
+    public static Item PIGLIN_CANNON;
+
     // 刷怪蛋
     public static SpawnEggItem HIGHBIRD_BABY_SPAWN_EGG;
     public static SpawnEggItem HIGHBIRD_TEENAGE_SPAWN_EGG;
@@ -139,6 +170,10 @@ public class ModItems {
     public static Item IRON_GOLD_SWORD_DAMAGED;
 
     public static VsSnipe VS_SNIPE;
+    public static Item TRAIN_BULLET;
+    public static Item AREA_GRAVITY_DEVICE_ITEM;
+    public static Item WIRE;
+    public static Item ELECTRONIC_COMPONENTS;
 
     public static CardiotonicInjectionItem CARDIOTONIC_INJECTION;
 
@@ -192,13 +227,92 @@ public class ModItems {
                         .registryKey(RegistryKey.of(
                                 RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "thousand_blossomed_immortal_fruit")))));
         LOBSTER_MAIN_COURSE = registerItem("lobster_main_course",
-                new Item.Settings().food(
+                registryBaseItemSettings("lobster_main_course").food(
                         new FoodComponent.Builder().nutrition(10).saturationModifier(0.3F).build()
                 )
         );
+        COMPRESSED_COPPER_INGOT = registerItem("compressed_copper_ingot");
+        COMPRESSED_IRON_INGOT = registerItem("compressed_iron_ingot");
+        COMPRESSED_GOLD_INGOT = registerItem("compressed_gold_ingot");
+        COMPRESSED_DIAMOND = registerItem("compressed_diamond");
+        COMPRESSED_NETHERITE_INGOT = registerItem("compressed_netherite_ingot");
+        COMPRESSED_REDSTONE = registerItem("compressed_redstone");
+        COMPRESSED_LAPIS_LAZULI = registerItem("compressed_lapis_lazuli");
+
+        // 龙虾系列
+        LOBSTER = registerItem("lobster",
+                registryBaseItemSettings("lobster").food(
+                        new FoodComponent.Builder()
+                                .nutrition(2)
+                                .saturationModifier(4.0F)
+                                .alwaysEdible()
+                                .build(),
+                        ModConsumableComponents.LOBSTER
+                )
+        );
+        // 岩浆龙虾：
+        // 1. 吃下着火
+        // 2. 扔到水里变黑曜石龙虾并播放冷却音效
+        MAGMA_LOBSTER = registerItem("magma_lobster",
+                new MagmaLobsterItemMod(
+                        registryBaseItemSettings("magma_lobster").food(
+                                new FoodComponent.Builder()
+                                        .nutrition(3)
+                                        .saturationModifier(4.0F)
+                                        .alwaysEdible()
+                                        .build(),
+                                ModConsumableComponents.MAGMA_LOBSTER
+                        )
+                )
+        );
+
+        // 黑曜石龙虾：
+        // 右键当盾牌，1500耐久，不能附魔
+        OBSIDIAN_LOBSTER = registerItem("obsidian_lobster",
+                new ShieldItem(
+                        registryBaseItemSettings("obsidian_lobster")
+                                .maxCount(1)
+                                .maxDamage(1500)
+                                .component(DataComponentTypes.BLOCKS_ATTACKS,
+                                        new BlocksAttacksComponent(
+                                                0.25F,
+                                                1.0F,
+                                                List.of(new BlocksAttacksComponent.DamageReduction(90.0F, Optional.empty(), 0.0F, 1.0F)),
+                                                new BlocksAttacksComponent.ItemDamage(3.0F, 1.0F, 1.0F),
+                                                Optional.of(DamageTypeTags.BYPASSES_SHIELD),
+                                                Optional.of(SoundEvents.ITEM_SHIELD_BLOCK),
+                                                Optional.of(SoundEvents.ITEM_SHIELD_BREAK)
+                                        )
+                                )
+                                .component(DataComponentTypes.BREAK_SOUND, SoundEvents.ITEM_SHIELD_BREAK)
+                )
+        );
+
+        // 爆开的黑曜石龙虾
+        BURST_OBSIDIAN_LOBSTER = registerItem("burst_obsidian_lobster",
+                registryBaseItemSettings("burst_obsidian_lobster").food(
+                        new FoodComponent.Builder()
+                                .nutrition(6)
+                                .saturationModifier(8.0F)
+                                .alwaysEdible()
+                                .build(),
+                        ModConsumableComponents.BURST_OBSIDIAN_LOBSTER
+                )
+        );
+
+        // 寒冰弓
+        ICE_BOW = registerItem("ice_bow",
+                new IceBowItem(
+                        registryBaseItemSettings("ice_bow")
+                                .rarity(Rarity.EPIC)
+                                .maxDamage(25000)
+                                .maxCount(1)
+                ),
+                 false
+        );
 
         COOKED_HIGHBIRD_EGG = registerItem("cooked_highbird_egg",
-                new Item.Settings().food(
+                registryBaseItemSettings("cooked_highbird_egg").food(
                         new FoodComponent.Builder().nutrition(20).saturationModifier(20).alwaysEdible().build(),
                         ModConsumableComponents.COOKED_HIGHBIRD_EGG
                 )
@@ -382,37 +496,33 @@ public class ModItems {
 
         ZIJIN_HELMET = registerItem(
                 "zijin_helmet",
-                new Item.Settings()
+                registryBaseItemSettings("zijin_helmet")
                         .armor(ModMaterial.ZIJIN_ARMOR_INSTANCE, EquipmentType.HELMET)
                         .component(DataComponentTypes.UNBREAKABLE, Unit.INSTANCE)
-                        .maxCount(1),
-                false
+                        .maxCount(1)
         );
 
         ZIJIN_CHESTPLATE = registerItem(
                 "zijin_chestplate",
-                new Item.Settings()
+                registryBaseItemSettings("zijin_chestplate")
                         .armor(ModMaterial.ZIJIN_ARMOR_INSTANCE, EquipmentType.CHESTPLATE)
                         .component(DataComponentTypes.UNBREAKABLE, Unit.INSTANCE)
-                        .maxCount(1),
-                false
+                        .maxCount(1)
         );
 
         ZIJIN_LEGGINGS = registerItem(
                 "zijin_leggings",
-                new Item.Settings()
+                registryBaseItemSettings("zijin_leggings")
                         .armor(ModMaterial.ZIJIN_ARMOR_INSTANCE, EquipmentType.LEGGINGS)
                         .component(DataComponentTypes.UNBREAKABLE, Unit.INSTANCE)
-                        .maxCount(1),
-                false
+                        .maxCount(1)
         );
 
         ZIJIN_BOOTS = registerItem("zijin_boots",
-                new Item.Settings()
+                registryBaseItemSettings("zijin_boots")
                         .armor(ModMaterial.ZIJIN_ARMOR_INSTANCE, EquipmentType.BOOTS)
                         .component(DataComponentTypes.UNBREAKABLE, Unit.INSTANCE)
-                        .maxCount(1),
-                false
+                        .maxCount(1)
         );
 
         // 注册工具和武器
@@ -425,7 +535,7 @@ public class ModItems {
         );
 
         METEORICORE_BOW = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "meteoricore_bow"),
-                new BaseBow(new Item.Settings()
+                new MeteoricoreBowItem(new Item.Settings()
                         .registryKey(RegistryKey.of(
                                 RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "meteoricore_bow")
                         ))
@@ -463,7 +573,7 @@ public class ModItems {
         );
 
         EMERALD_DIAMOND_SWORD = registerItem("emerald_diamond_sword",
-                new Item.Settings()
+                registryBaseItemSettings("emerald_diamond_sword")
                         .sword(ModMaterial.EMERALD_DIAMOND_ALLOY_TOOL_MATERIAL, 149, -2f)
                         .maxCount(1)
                         .component(DataComponentTypes.UNBREAKABLE, Unit.INSTANCE),
@@ -472,11 +582,12 @@ public class ModItems {
 
         ZIJIN_SWORD = registerItem("zijin_sword",
                 new ZiJinSword(
-                        registryKey("zijin_sword")
+                        registryBaseItemSettings("zijin_sword")
                         .sword(ModMaterial.ZIJIN_ARMOR_TOOL_MATERIAL, 99, 0f)
                         .maxCount(1)
                         .component(DataComponentTypes.UNBREAKABLE, Unit.INSTANCE)
-                )
+                ),
+                false
         );
 
         VS_SNIPE = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "vs_snipe"),
@@ -534,118 +645,125 @@ public class ModItems {
         );
 
         WARLOCK_BOOK = registerItem("warlock_book", new SummonVexBookItem(
-                registryKey("warlock_book")
+                registryBaseItemSettings("warlock_book")
                         .useCooldown(15)
                         .maxDamage(150)
                         .maxCount(1),
-                3, 0, 0
-        ));
+                3, 0, 0)
+        );
 
         GRAND_SUMMON_BOOK = registerItem("grand_summon_book", new SummonVexBookItem(
-                registryKey("grand_summon_book")
+                registryBaseItemSettings("grand_summon_book")
                         .rarity(Rarity.RARE)
                         .useCooldown(20)
                         .maxDamage(150)
                         .maxCount(1),
-                10, 5, 10
-        ));
+                10, 5, 10)
+        );
 
         GUARDIAN_SEAL = registerItem("guardian_seal", new GuardianSealItem(
-                registryKey("guardian_seal")
+                registryBaseItemSettings("guardian_seal")
                         .useCooldown(2000)
                         .maxCount(1),
-                false
-        ));
+                false)
+        );
 
         FILLING_SEAL = registerItem("filling_seal", new GuardianSealItem(
-                registryKey("filling_seal")
+                registryBaseItemSettings("filling_seal")
                         .maxCount(1),
-                true
-        ));
+                true)
+        );
 
         FINE_KNIFE = registerItem("fine_knife", new FineKnifeItem(
-                registryKey("fine_knife")
+                registryBaseItemSettings("fine_knife")
                         .maxDamage(200)
                         .sword(ToolMaterial.IRON, 0, 0)
-                        .maxCount(1)
-        ));
+                        .maxCount(1)),
+                false
+        );
 
         SMALL_BACKPACK = registerItem("small_backpack", new BackpackItem(
-                registryKey("small_backpack")
+                registryBaseItemSettings("small_backpack")
                         .rarity(Rarity.UNCOMMON)
                         .maxCount(1),
-                false
-        ));
+                false)
+        );
 
         LARGE_BACKPACK = registerItem("large_backpack", new BackpackItem(
-                registryKey("large_backpack")
+                registryBaseItemSettings("large_backpack")
                         .rarity(Rarity.RARE)
                         .maxCount(1),
-                true
-        ));
+                true)
+        );
 
         CARDIOTONIC_INJECTION = registerItem("cardiotonic_injection", new CardiotonicInjectionItem(
-                registryKey("cardiotonic_injection")
-                        .maxCount(1)
-        ));
+                registryBaseItemSettings("cardiotonic_injection")
+                        .maxCount(1)),
+                false
+        );
 
+        ICE_ARROW_ITEM = registerItem("ice_arrow_item", registryBaseItemSettings("ice_arrow_item").maxCount(64));
+        TRAIN_BULLET = registerItem("train_bullet", registryBaseItemSettings("train_bullet").maxCount(64));
+        AREA_GRAVITY_DEVICE_ITEM = registerItem("area_gravity_device_item", new AreaGravityDeviceItem(
+                registryBaseItemSettings("area_gravity_device_item")
+                        .maxCount(1)
+                        .useCooldown(70)
+                        .component(DataComponentTypes.UNBREAKABLE, Unit.INSTANCE)
+
+        ));
+        PIGLIN_CANNON = registerItem("piglin_cannon",
+                new PiglinCannonItem(
+                        registryBaseItemSettings("piglin_cannon")
+                                .rarity(Rarity.RARE)
+                                .maxCount(1)
+                                .component(DataComponentTypes.UNBREAKABLE, Unit.INSTANCE)
+                )
+        );
+        WIRE = registerItem("wire");
+        ELECTRONIC_COMPONENTS = registerItem("electronic_components");
         ModEntities.SPAWN_EGG_ENTITIES.forEach((id, entityType) -> {
             @SuppressWarnings("unchecked")
             EntityType<? extends MobEntity> mobType = (EntityType<? extends MobEntity>) entityType;
             registerSpawnEggItem(mobType, id);
         });
     }
-    private static Item registerItem(String id) {
+
+    public static Item.Settings registryBaseItemSettings(String id) {
         Identifier itemId = Identifier.of(Mob_battle.MOD_ID, id);
-        Item.Settings settings = new Item.Settings()
+        return new Item.Settings()
                 .registryKey(RegistryKey.of(RegistryKeys.ITEM, itemId));
-        Item item = Registry.register(Registries.ITEM, itemId, new Item(settings));
-        ITEMS.put(id, item);
-        return item;
+    }
+    public static Item registerItem(String id) {
+        return registerItem(id, registryBaseItemSettings(id));
+    }
+    public static <T extends Item> T registerItem(String id, T item) {
+        return registerItem(id, item, true);
     }
     public static Item registerItem(String id, Item.Settings settings) {
         return registerItem(id, settings, true);
     }
-    public static Item registerItem(String id, Item.Settings settings, boolean registerGroup) {
-        Identifier itemId = Identifier.of(Mob_battle.MOD_ID, id);
-        Item.Settings finalsettings = settings
-                .registryKey(RegistryKey.of(RegistryKeys.ITEM, itemId));
-        Item item = Registry.register(
-                Registries.ITEM,
-                itemId,
-                new Item(finalsettings)
-        );
-        if (registerGroup) ITEMS.put(id, item);
-        return item;
+    public static Item registerItem(String id, Item.Settings settings, boolean isGenerated) {
+        return registerItem(id, settings, true, isGenerated);
     }
-    public static <T extends Item> T registerItem(String id, T item) {
+    public static Item registerItem(String id, Item.Settings settings, boolean registerGroup, boolean isGenerated) {
+        return registerItem(id, new Item(settings), registerGroup, isGenerated);
+    }
+    public static <T extends Item> T registerItem(String id, T item, boolean isGenerated) {
+        return registerItem(id, item, true, isGenerated);
+    }
+    public static <T extends Item> T registerItem(String id, T item, boolean registerGroup, boolean isGenerated) {
         Identifier itemId = Identifier.of(Mob_battle.MOD_ID, id);
         T registered = Registry.register(
                 Registries.ITEM,
                 itemId,
                 item
         );
-        ITEMS.put(id, registered);
+        if (registerGroup) ITEMS.put(id, registered);
+        if (isGenerated) GENERATED_ITEMS.put(id, registered);
         return registered;
     }
-
-    public static Item.Settings registryKey(String id) {
-        Identifier itemId = Identifier.of(Mob_battle.MOD_ID, id);
-        return new Item.Settings()
-                .registryKey(RegistryKey.of(RegistryKeys.ITEM, itemId));
-    }
     public static SpawnEggItem registerSpawnEggItem(EntityType<? extends MobEntity> entityType, String id) {
-        Identifier itemId = Identifier.of(Mob_battle.MOD_ID, id);
-        Item.Settings finalsettings = new Item.Settings()
-                .registryKey(RegistryKey.of(RegistryKeys.ITEM, itemId));
-        SpawnEggItem item = Registry.register(
-                Registries.ITEM,
-                itemId,
-                new SpawnEggItem(
-                        entityType,
-                        finalsettings
-                )
-        );
+        SpawnEggItem item = registerItem(id, new SpawnEggItem(entityType, registryBaseItemSettings(id)), false, false);
         SPAWN_EGG_ITEMS.put(id, item);
         return item;
     }

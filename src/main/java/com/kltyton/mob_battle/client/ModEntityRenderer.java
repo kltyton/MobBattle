@@ -3,6 +3,8 @@ package com.kltyton.mob_battle.client;
 import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.entity.blueirongolem.BlueIronGolemEntityRenderer;
 import com.kltyton.mob_battle.entity.bullet.BulletEntityRenderer;
+import com.kltyton.mob_battle.entity.bullet.GoldenTrailProjectileRenderer;
+import com.kltyton.mob_battle.entity.bullet.IceArrowEntityRenderer;
 import com.kltyton.mob_battle.entity.customfireball.render.CustomSuperBigFireballEntityRenderer;
 import com.kltyton.mob_battle.entity.deepcreature.DeepCreatureEntityRenderer;
 import com.kltyton.mob_battle.entity.drone.attackdrone.AttackDroneEntityRenderer;
@@ -32,6 +34,8 @@ import com.kltyton.mob_battle.entity.littleperson.skillentity.base.BaseSkillLitt
 import com.kltyton.mob_battle.entity.littleperson.skillentity.ironmanbullet.IronManBulletEntityRenderer;
 import com.kltyton.mob_battle.entity.littleperson.skillentity.poisonousbullet.PoisonousBulletEntityRenderer;
 import com.kltyton.mob_battle.entity.littleperson.skillentity.spearbullet.SpearBulletEntityRenderer;
+import com.kltyton.mob_battle.entity.lobster.LobsterEntityRenderer;
+import com.kltyton.mob_battle.entity.lobster.MagmaLobsterEntityRenderer;
 import com.kltyton.mob_battle.entity.meteorite.MeteoriteEntityRender;
 import com.kltyton.mob_battle.entity.min.YoungMinEntityRenderer;
 import com.kltyton.mob_battle.entity.skull.archer.SkullArcherEntityRenderer;
@@ -56,6 +60,11 @@ import net.minecraft.entity.EntityType;
 
 public class ModEntityRenderer {
     public static void init() {
+/*        LivingEntityFeatureRendererRegistrationCallback.EVENT.register((entityType, entityRenderer, registrationHelper, context) -> {
+            @SuppressWarnings({"unchecked"})
+            FeatureRendererContext<LivingEntityRenderState, EntityModel<LivingEntityRenderState>> featureContext = (FeatureRendererContext<LivingEntityRenderState, EntityModel<LivingEntityRenderState>>) entityRenderer;
+            registrationHelper.register(new IceChestBlockFeatureRenderer<>(featureContext));
+        });*/
         EntityRendererRegistry.register(ModEntities.MILITIA_WARRIOR_VILLAGER, MilitiaWarriorVillagerRenderer::new);
         EntityRendererRegistry.register(ModEntities.MILITIA_ARCHER_VILLAGER, MilitiaArcherVillagerRenderer::new);
         EntityRendererRegistry.register(ModEntities.WARRIOR_VILLAGER, WarriorVillagerRenderer::new);
@@ -99,12 +108,17 @@ public class ModEntityRenderer {
         EntityRendererRegistry.register(ModEntities.LITTLE_PERSON_KING, LittlePersonKingEntityRenderer::new);
         EntityRendererRegistry.register(ModEntities.VOID_CELL, VoidCellEntityRenderer::new);
         EntityRendererRegistry.register(ModEntities.MISSILE, MissileEntityRenderer::new);
+        EntityRendererRegistry.register(ModEntities.ICE_ARROW, IceArrowEntityRenderer::new);
+        EntityRendererRegistry.register(ModEntities.GOLDEN_TRAIL_PROJECTILE, GoldenTrailProjectileRenderer::new);
         EntityRendererRegistry.register(ModEntities.MODIFIED_DRAGON_BREATH_CLOUD, EmptyEntityRenderer::new);
         EntityRendererRegistry.register(ModEntities.COAL_SILVERFISH, ctx -> new GeneralEntityRenderer<>(ctx, "coal_silverfish", false));
         EntityRendererRegistry.register(ModEntities.SILENCE_PHANTOM, ctx -> new GeneralEntityRenderer<>(ctx, "silence_phantom", false));
         EntityRendererRegistry.register(ModEntities.SHIELD, ctx -> new GeneralEntityRenderer<>(ctx, "shield_force_field", false, GeneralEntityModel.RenderTypes.TRANSLUCENT));
         EntityRendererRegistry.register(ModEntities.SUPER_EVOKER, EvokerEntityRenderer::new);
+        EntityRendererRegistry.register(ModEntities.LOBSTER, LobsterEntityRenderer::new);
+        EntityRendererRegistry.register(ModEntities.MAGMA_LOBSTER, MagmaLobsterEntityRenderer::new);
         EntityRendererRegistry.register(ModEntities.ENDER_DRAGON_METEORITE, ctx -> new GeneralEntityRenderer<>(ctx, "ender_dragon_meteorite", false));
+        EntityRendererRegistry.register(ModEntities.MAGMA_LOBBER_BIG_FIREBALL, ctx -> new GeneralEntityRenderer<>(ctx, "magma_lobber_big_fireball", false));
 
         ModEntities.LITTLE_PERSON_ENTITIES.forEach((id, entityType) -> {
             @SuppressWarnings("unchecked")

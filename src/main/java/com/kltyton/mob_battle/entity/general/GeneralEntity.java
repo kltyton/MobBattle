@@ -148,6 +148,7 @@ public interface GeneralEntity<T extends MobEntity> extends ModSkillEntityType, 
                 return true;
             }
         }
+        this.triggerAnim("skill_controller", "attack");
         return false;
     }
     default void decrementCooldownIfPositive(TrackedData<Integer> cooldownField) {
@@ -172,6 +173,7 @@ public interface GeneralEntity<T extends MobEntity> extends ModSkillEntityType, 
                     }
                     return PlayState.STOP;
                 })
+                        .triggerableAnim("attack", ATTACK_ANIM)
                         .triggerableAnim("attack2", ATTACK_ANIM_2)
                         .triggerableAnim("attack3", ATTACK_ANIM_3)
                         .triggerableAnim("attack4", ATTACK_ANIM_4)

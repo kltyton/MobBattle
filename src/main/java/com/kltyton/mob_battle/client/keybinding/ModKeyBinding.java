@@ -5,10 +5,7 @@ import com.kltyton.mob_battle.entity.player.IPlayerEntityAccessor;
 import com.kltyton.mob_battle.entity.player.IPlayerSkillAccessor;
 import com.kltyton.mob_battle.entity.player.PlayerEntitySkill;
 import com.kltyton.mob_battle.items.ModItems;
-import com.kltyton.mob_battle.network.packet.PlayerSkillPayload;
-import com.kltyton.mob_battle.network.packet.ShieldSpawnPayload;
-import com.kltyton.mob_battle.network.packet.SummonDronePayload;
-import com.kltyton.mob_battle.network.packet.ZiJinPayload;
+import com.kltyton.mob_battle.network.packet.*;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -32,6 +29,7 @@ public class ModKeyBinding {
     public static KeyBinding keyPlayerRunCollisionRun;
     public static KeyBinding keyPlayerSmashingTheGroundRun;
     public static KeyBinding keyPlayerScrapingRun;
+    public static KeyBinding keyPiglinCannonItemMode;
 
     public static void init() {
         keySummon = KeyBindingHelper.registerKeyBinding(new KeyBinding(
@@ -118,6 +116,12 @@ public class ModKeyBinding {
                 "key.mob_battle.scraping_run",
                 InputUtil.Type.KEYSYM,
                 GLFW.GLFW_KEY_T,
+                "category.mob_battle.general"
+        ));
+        keyPiglinCannonItemMode = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+                "key.mob_battle.piglin_cannon_item_mode",
+                InputUtil.Type.KEYSYM,
+                GLFW.GLFW_KEY_V,
                 "category.mob_battle.general"
         ));
 
@@ -217,6 +221,11 @@ public class ModKeyBinding {
             while (keyZiJin.wasPressed()) {
                 client.execute(() ->
                         ClientPlayNetworking.send(new ZiJinPayload())
+                );
+            }
+            while (keyPiglinCannonItemMode.wasPressed()) {
+                client.execute(() ->
+                        ClientPlayNetworking.send(new PiglinCannonModePayload())
                 );
             }
         });

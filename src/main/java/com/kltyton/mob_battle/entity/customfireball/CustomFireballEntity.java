@@ -22,10 +22,10 @@ public class CustomFireballEntity extends FireballEntity {
     public float damage;
     public float power;
     public boolean isExplosive;
-    public CustomFireballEntity(EntityType<? extends CustomFireballEntity> entityType, World world) {
+    public CustomFireballEntity(EntityType<? extends FireballEntity> entityType, World world) {
         super(entityType, world);
     }
-    public CustomFireballEntity(EntityType<? extends CustomFireballEntity> entityType, World world, LivingEntity owner, float power, boolean createFire, float damage) {
+    public CustomFireballEntity(EntityType<? extends FireballEntity> entityType, World world, LivingEntity owner, float power, boolean createFire, float damage) {
         super(entityType, world);
 
         this.refreshPositionAndAngles(owner.getX(), owner.getY(), owner.getZ(), this.getYaw(), this.getPitch());

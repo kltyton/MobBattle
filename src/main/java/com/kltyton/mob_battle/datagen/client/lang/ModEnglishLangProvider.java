@@ -81,8 +81,8 @@ public class ModEnglishLangProvider extends FabricLanguageProvider {
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.SPAWN_EGG_ITEMS.get("little_person_soldier")), "Little Person Soldier Spawn Egg");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModEntities.LITTLE_PERSON_SOLDIER_ARCHER), "Little Person Soldier Archer");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.SPAWN_EGG_ITEMS.get("little_person_soldier_archer")), "Little Person Soldier Archer Spawn Egg");
-        translationBuilder.add(ModLangUtils.getTranslationKey(ModEntities.BLOODY_BLADE), "Bloddy Blade");
-        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.SPAWN_EGG_ITEMS.get("bloody_blade")), "Bloddy Blade Spawn Egg");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModEntities.BLOODY_BLADE), "Bloody Blade");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.SPAWN_EGG_ITEMS.get("bloody_blade")), "Bloody Blade Spawn Egg");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModEntities.MAGIC_MAN), "Magic Man");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.SPAWN_EGG_ITEMS.get("magic_man")), "Magic Man Spawn Egg");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModEntities.HEAVEN_CRIPPLED_FEET), "Heaven Crippled Feet");
@@ -115,7 +115,23 @@ public class ModEnglishLangProvider extends FabricLanguageProvider {
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.ZIJIN_BOOTS), "Zijin Boots");
 
         translationBuilder.add(ModLangUtils.getTranslationKey(ModKeyBinding.shieldKey), "Spawn Shield");
-        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.CARDIOTONIC_INJECTION), "Cardiotic Injection");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.CARDIOTONIC_INJECTION), "Cardiotonic Injection");
+
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.COMPRESSED_COPPER_INGOT), "Compressed Copper Ingot");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.COMPRESSED_IRON_INGOT), "Compressed Iron Ingot");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.COMPRESSED_GOLD_INGOT), "Compressed Gold Ingot");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.COMPRESSED_DIAMOND), "Compressed Diamond");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.COMPRESSED_NETHERITE_INGOT), "Compressed Netherite Ingot");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.COMPRESSED_REDSTONE), "Compressed Redstone");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.COMPRESSED_LAPIS_LAZULI), "Compressed Lapis Lazuli");
+
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.LOBSTER), "Lobster");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.MAGMA_LOBSTER), "Magma Lobster");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.OBSIDIAN_LOBSTER), "Obsidian Lobster");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.BURST_OBSIDIAN_LOBSTER), "Burst Obsidian Lobster");
+
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.ICE_BOW), "Ice Bow");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.ICE_ARROW_ITEM), "Ice Arrow");
     }
 }
 

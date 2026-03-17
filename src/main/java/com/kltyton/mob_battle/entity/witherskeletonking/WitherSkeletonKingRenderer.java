@@ -10,11 +10,13 @@ import software.bernie.geckolib.cache.object.BakedGeoModel;
 import software.bernie.geckolib.constant.dataticket.DataTicket;
 import software.bernie.geckolib.renderer.GeoEntityRenderer;
 import software.bernie.geckolib.renderer.base.GeoRenderState;
+import software.bernie.geckolib.renderer.layer.AutoGlowingGeoLayer;
 
 public class WitherSkeletonKingRenderer<R extends LivingEntityRenderState & GeoRenderState> extends GeoEntityRenderer<WitherSkeletonKingEntity, R> {
     public static final DataTicket<Boolean> CAN_HALO = DataTicket.create("can_halo", Boolean.class);
     public WitherSkeletonKingRenderer(EntityRendererFactory.Context context) {
         super(context, new WitherSkeletonKingEntityModel());
+        this.addRenderLayer(new AutoGlowingGeoLayer<>(this));
     }
     @Override
     public void renderFinal(R renderState, MatrixStack poseStack, BakedGeoModel model, VertexConsumerProvider bufferSource, @Nullable VertexConsumer buffer,

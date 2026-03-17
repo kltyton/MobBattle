@@ -28,14 +28,15 @@ import org.slf4j.LoggerFactory;
 public class Mob_battle implements ModInitializer {
     public static final String MOD_ID = "mob_battle";
     public static final Logger LOGGER = LoggerFactory.getLogger(Mob_battle.class);
+    public static int MAX_STACK_SIZE = 1024;
     public static MinecraftServer SERVER;
     @Override
     public void onInitialize() {
         ModTrackedDataHandler.init();
         ModSensorTypes.init();
         ModEntityAttributes.init();
-        ModItems.init();
         ModEffects.init();
+        ModItems.init();
         ModEnchantments.init();
         ModCommands.init();
         ModEvents.init();

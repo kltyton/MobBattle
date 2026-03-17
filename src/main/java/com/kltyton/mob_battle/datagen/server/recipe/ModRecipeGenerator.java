@@ -69,6 +69,81 @@ public class ModRecipeGenerator extends FabricRecipeProvider {
                         .group("backpack") //将其放入名为“multi_bench”的组中-组显示在配方书的一个槽中
                         .criterion(hasItem(Items.CRAFTING_TABLE), conditionsFromItem(Items.CRAFTING_TABLE))
                         .offerTo(exporter);
+
+                createShaped(RecipeCategory.MISC, ModItems.TRAIN_BULLET, 1)
+                        .pattern("a")
+                        .pattern("b")
+                        .input('a', Items.IRON_INGOT)
+                        .input('b', Items.GOLD_INGOT)
+                        .group("bullet") //将其放入名为“multi_bench”的组中-组显示在配方书的一个槽中
+                        .criterion(hasItem(Items.CRAFTING_TABLE), conditionsFromItem(Items.CRAFTING_TABLE))
+                        .offerTo(exporter);
+
+                createShaped(RecipeCategory.MISC, ModItems.WIRE, 1)
+                        .pattern(" c ")
+                        .pattern("aba")
+                        .pattern(" c ")
+                        .input('a', Items.REDSTONE)
+                        .input('b', Items.COPPER_INGOT)
+                        .input('c', Items.RESIN_CLUMP)
+                        .group("wire") //将其放入名为“multi_bench”的组中-组显示在配方书的一个槽中
+                        .criterion(hasItem(Items.CRAFTING_TABLE), conditionsFromItem(Items.CRAFTING_TABLE))
+                        .offerTo(exporter);
+
+                createShaped(RecipeCategory.MISC, ModItems.ELECTRONIC_COMPONENTS, 1)
+                        .pattern("dad")
+                        .pattern("cbc")
+                        .pattern("dad")
+                        .input('a', Items.GOLD_BLOCK)
+                        .input('b', Items.CRAFTING_TABLE)
+                        .input('c', Items.REDSTONE_BLOCK)
+                        .input('d', ModItems.WIRE)
+                        .group("electronic_components") //将其放入名为“multi_bench”的组中-组显示在配方书的一个槽中
+                        .criterion(hasItem(Items.CRAFTING_TABLE), conditionsFromItem(Items.CRAFTING_TABLE))
+                        .offerTo(exporter);
+
+                offerReversibleCompactingRecipes(
+                        RecipeCategory.MISC,
+                        Items.DIAMOND_BLOCK,
+                        RecipeCategory.BUILDING_BLOCKS,
+                        ModItems.COMPRESSED_DIAMOND
+                );
+                offerReversibleCompactingRecipes(
+                        RecipeCategory.MISC,
+                        Items.IRON_BLOCK,
+                        RecipeCategory.BUILDING_BLOCKS,
+                        ModItems.COMPRESSED_IRON_INGOT
+                );
+                offerReversibleCompactingRecipes(
+                        RecipeCategory.MISC,
+                        Items.GOLD_BLOCK,
+                        RecipeCategory.BUILDING_BLOCKS,
+                        ModItems.COMPRESSED_GOLD_INGOT
+                );
+                offerReversibleCompactingRecipes(
+                        RecipeCategory.MISC,
+                        Items.COPPER_BLOCK,
+                        RecipeCategory.BUILDING_BLOCKS,
+                        ModItems.COMPRESSED_COPPER_INGOT
+                );
+                offerReversibleCompactingRecipes(
+                        RecipeCategory.MISC,
+                        Items.NETHERITE_BLOCK,
+                        RecipeCategory.BUILDING_BLOCKS,
+                        ModItems.COMPRESSED_NETHERITE_INGOT
+                );
+                offerReversibleCompactingRecipes(
+                        RecipeCategory.MISC,
+                        Items.REDSTONE_BLOCK,
+                        RecipeCategory.BUILDING_BLOCKS,
+                        ModItems.COMPRESSED_REDSTONE
+                );
+                offerReversibleCompactingRecipes(
+                        RecipeCategory.MISC,
+                        Items.LAPIS_BLOCK,
+                        RecipeCategory.BUILDING_BLOCKS,
+                        ModItems.COMPRESSED_LAPIS_LAZULI
+                );
             }
         };
     }

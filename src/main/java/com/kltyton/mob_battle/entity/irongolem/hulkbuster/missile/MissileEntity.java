@@ -22,6 +22,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 public class MissileEntity extends CustomFireballEntity {
+    public int splits = 0;
     public float extraDamage;
     // --- 新增字段 ---
     private Vec3d lastSplitPos; // 记录上次分裂的位置
@@ -63,6 +64,7 @@ public class MissileEntity extends CustomFireballEntity {
         super.tick();
         // 仅在服务端处理逻辑
         if (!this.getWorld().isClient) {
+            if (this.age >= 100 || splits >= 5) this.discard();
             // 2. 处理分裂逻辑
             if (this.canSplit) {
                 handleSplitting();
@@ -110,6 +112,7 @@ public class MissileEntity extends CustomFireballEntity {
         subMissile.setCanSplit(false);
         // 设置向下飞行的速度 (0, -1, 0)
         subMissile.setVelocity(0, -0.8, 0);
+        subMissile.splits++;
         // 生成实体
         this.getWorld().spawnEntity(subMissile);
     }

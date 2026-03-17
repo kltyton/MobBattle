@@ -6,6 +6,7 @@ import com.kltyton.mob_battle.items.ModItems;
 import net.fabricmc.fabric.api.client.datagen.v1.provider.FabricModelProvider;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.minecraft.client.data.*;
+import net.minecraft.item.Item;
 import net.minecraft.item.SpawnEggItem;
 import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
@@ -49,32 +50,24 @@ public class ModModelGenerator extends FabricModelProvider {
                 new Model(Optional.of(Identifier.of(Mob_battle.MOD_ID, "block/nest_block")), Optional.empty()));
         itemModelCollector.register(ModBlocks.MUSHROOM_BLOCK.asItem(),
                 new Model(Optional.of(Identifier.of(Mob_battle.MOD_ID, "block/mushroom_block")), Optional.empty()));*/
-
-        itemModelCollector.register(ModItems.LOBSTER_MAIN_COURSE, Models.GENERATED);
-        itemModelCollector.register(ModItems.COOKED_HIGHBIRD_EGG, Models.GENERATED);
-        itemModelCollector.register(ModItems.SMALL_BACKPACK, Models.GENERATED);
-        itemModelCollector.register(ModItems.LARGE_BACKPACK, Models.GENERATED);
-        itemModelCollector.register(ModItems.WARLOCK_BOOK, Models.GENERATED);
-        itemModelCollector.register(ModItems.GRAND_SUMMON_BOOK, Models.GENERATED);
-        itemModelCollector.register(ModItems.GUARDIAN_SEAL, Models.GENERATED);
-        itemModelCollector.register(ModItems.FILLING_SEAL, Models.GENERATED);
-        itemModelCollector.register(ModItems.FINE_KNIFE, Models.GENERATED);
+        itemModelCollector.register(ModItems.FINE_KNIFE, Models.HANDHELD);
 
         itemModelCollector.register(ModItems.EMERALD_DIAMOND_HELMET, Models.GENERATED);
         itemModelCollector.register(ModItems.EMERALD_DIAMOND_CHESTPLATE, Models.GENERATED);
         itemModelCollector.register(ModItems.EMERALD_DIAMOND_LEGGINGS, Models.GENERATED);
         itemModelCollector.register(ModItems.EMERALD_DIAMOND_BOOTS, Models.GENERATED);
+
         itemModelCollector.register(ModItems.EMERALD_DIAMOND_SWORD, Models.HANDHELD);
         itemModelCollector.register(ModItems.ZIJIN_SWORD, Models.HANDHELD);
 
-        itemModelCollector.register(ModItems.ZIJIN_HELMET, Models.GENERATED);
-        itemModelCollector.register(ModItems.ZIJIN_CHESTPLATE, Models.GENERATED);
-        itemModelCollector.register(ModItems.ZIJIN_LEGGINGS, Models.GENERATED);
-        itemModelCollector.register(ModItems.ZIJIN_BOOTS, Models.GENERATED);
-
-        //itemModelCollector.register(ModItems.EMERALD_DIAMOND_SWORD, Models.HANDHELD);
-
         itemModelCollector.register(ModItems.CARDIOTONIC_INJECTION, STICK_TEMPLATE);
+
+        itemModelCollector.upload(ModItems.ICE_BOW, Models.BOW);
+        itemModelCollector.registerBow(ModItems.ICE_BOW);
+
+        for (Item item : ModItems.GENERATED_ITEMS.values()) {
+            itemModelCollector.register(item, Models.GENERATED);
+        }
 
         // 动态生成蛋的模型
         for (SpawnEggItem item : ModItems.SPAWN_EGG_ITEMS.values()) {

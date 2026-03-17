@@ -4,15 +4,15 @@ import com.kltyton.mob_battle.accessor.ILead;
 import com.kltyton.mob_battle.accessor.ILeadRenderData;
 import com.kltyton.mob_battle.accessor.IModEntityRenderState;
 import com.kltyton.mob_battle.entity.drone.DroneEntity;
+import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.client.render.Camera;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.VertexConsumer;
-import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.client.render.*;
+import net.minecraft.client.render.block.BlockRenderManager;
 import net.minecraft.client.render.entity.EntityRenderDispatcher;
 import net.minecraft.client.render.entity.EntityRenderer;
+import net.minecraft.client.render.entity.EntityRendererFactory;
 import net.minecraft.client.render.entity.state.EntityRenderState;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
@@ -99,6 +99,33 @@ public abstract class EntityRendererMixin {
     private static void renderLeash(MatrixStack matrices, VertexConsumerProvider vertexConsumers, EntityRenderState.LeashData leashData, CallbackInfo ci) {
         if (!((ILeadRenderData)leashData).shouldRender()) {
             ci.cancel();
+        }
+    }
+    @Unique
+    private BlockRenderManager blockRenderManager;
+    @Inject(method = "<init>", at = @At("RETURN"))
+    private void initSkillManager(EntityRendererFactory.Context context, CallbackInfo ci) {
+        blockRenderManager = context.getBlockRenderManager();
+    }
+    @Inject(
+            method = "render",
+            at = @At("RETURN")
+    )
+    private void renderIce(EntityRenderState state, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, CallbackInfo ci) {
+        int amplifier = ((IModEntityRenderState)state).getIceAmplifier();
+        if (amplifier >= 5) {
+            matrices.push();
+            matrices.translate(-0.28F, 0.7F, -0.28F);
+            matrices.scale(0.7F, 0.7F, 0.7F);
+
+            blockRenderManager.renderBlockAsEntity(
+                    Blocks.PACKED_ICE.getDefaultState(),
+                    matrices,
+                    vertexConsumers,
+                    light,
+                    OverlayTexture.DEFAULT_UV
+            );
+            matrices.pop();
         }
     }
     @Inject(

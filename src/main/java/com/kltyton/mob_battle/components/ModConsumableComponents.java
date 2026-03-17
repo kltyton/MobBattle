@@ -1,5 +1,6 @@
 package com.kltyton.mob_battle.components;
 
+import com.kltyton.mob_battle.effect.ModEffects;
 import net.minecraft.component.type.ConsumableComponent;
 import net.minecraft.component.type.ConsumableComponents;
 import net.minecraft.entity.effect.StatusEffectInstance;
@@ -16,6 +17,36 @@ public class ModConsumableComponents {
                             List.of(
                                     new StatusEffectInstance(StatusEffects.INSTANT_HEALTH, 20, 0),
                                     new StatusEffectInstance(StatusEffects.RESISTANCE, 200, 4)
+                            )
+                    )
+            )
+            .build();
+    public static final ConsumableComponent LOBSTER = ConsumableComponents.food()
+            .consumeEffect(
+                    new ApplyEffectsConsumeEffect(
+                            List.of(
+                                    new StatusEffectInstance(ModEffects.PROTEIN_ENTRY, 100, 2)
+                            )
+                    )
+            )
+            .build();
+    public static final ConsumableComponent MAGMA_LOBSTER = ConsumableComponents.food()
+            .consumeEffect(
+                    new ApplyEffectsConsumeEffect(
+                            List.of(
+                                    new StatusEffectInstance(ModEffects.PROTEIN_ENTRY, 20 * 3, 4)
+                            )
+                    )
+            )
+            .build();
+    public static final ConsumableComponent BURST_OBSIDIAN_LOBSTER = ConsumableComponents.food()
+            .consumeEffect(
+                    new ApplyEffectsConsumeEffect(
+                            List.of(
+                                    //抗火3分钟，伤害吸收十8秒
+                                    new StatusEffectInstance(StatusEffects.FIRE_RESISTANCE, 3 * 60 * 20, 0),
+                                    new StatusEffectInstance(StatusEffects.ABSORPTION, 8 * 20, 9),
+                                    new StatusEffectInstance(ModEffects.PROTEIN_ENTRY, 400, 2)
                             )
                     )
             )

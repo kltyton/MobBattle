@@ -33,6 +33,7 @@ import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.List;
 
@@ -60,7 +61,7 @@ public abstract class EnderDragonEntityMixin extends MobEntity {
     }
     @Shadow
     @Final
-    private EnderDragonPart body;
+    public EnderDragonPart body;
 
     @Shadow
     @Final
@@ -69,6 +70,9 @@ public abstract class EnderDragonEntityMixin extends MobEntity {
     @Shadow
     @Final
     private PhaseManager phaseManager;
+
+    @Shadow
+    protected abstract void parentDamage(ServerWorld world, DamageSource source, float amount);
 
     protected EnderDragonEntityMixin(EntityType<? extends MobEntity> entityType, World world) {
         super(entityType, world);
@@ -318,5 +322,27 @@ public abstract class EnderDragonEntityMixin extends MobEntity {
     @Inject(method = "readCustomData", at = @At("RETURN"))
     protected void readCustomData(ReadView view, CallbackInfo ci) {
         this.custom$setShadow(view.getBoolean("IsShadow", false));
+    }
+    @Inject(method = "damagePart", at = @At("HEAD"), cancellable = true)
+    private void removeAllDragonInvulnerability(
+            ServerWorld world,
+            EnderDragonPart part,
+            DamageSource source,
+            float amount,
+            CallbackInfoReturnable<Boolean> cir
+    ) {
+        EnderDragonEntity self = (EnderDragonEntity)(Object)this;
+        if (amount <= 0.0F) {
+            cir.setReturnValue(false);
+            return;
+        }
+        this.parentDamage(world, source, amount);
+        // 保留原版死亡切相逻辑，避免直接把整套 Boss death sequence 弄坏
+        if (self.getPhaseManager().getCurrent() != null && self.isDead() && self.getPhaseManager().getCurrent().getType() != PhaseType.DYING) {
+            self.setHealth(1.0F);
+            self.getPhaseManager().setPhase(PhaseType.DYING);
+        }
+
+        cir.setReturnValue(true);
     }
 }

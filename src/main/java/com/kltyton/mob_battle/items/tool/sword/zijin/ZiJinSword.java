@@ -1,4 +1,4 @@
-package com.kltyton.mob_battle.items.tool.zijin;
+package com.kltyton.mob_battle.items.tool.sword.zijin;
 
 import com.kltyton.mob_battle.effect.ModEffects;
 import com.kltyton.mob_battle.items.tool.BaseSword;
