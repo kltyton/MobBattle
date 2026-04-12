@@ -8,6 +8,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
@@ -41,6 +42,15 @@ public class IceArrowEntity extends TrueDamageProjectile {
     @Override
     public void additionalDamage(Entity entity) {
         if (iceTipped) entity.sidedDamage(this.getDamageSources().indirectMagic(this, this.getOwner() != null ? this.getOwner() : this), 30.0f);
+    }
+    @Override
+    public void setOwner(@Nullable Entity owner) {
+        super.setOwner(owner);
+        this.pickupType = PickupPermission.DISALLOWED;
+    }
+    @Override
+    protected boolean tryPickup(PlayerEntity player) {
+        return false;
     }
 
     @Override

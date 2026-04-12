@@ -8,16 +8,20 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+import java.util.function.Consumer;
 
 @Mixin(ItemStack.class)
 public abstract class ItemStackMixin {
@@ -47,5 +51,10 @@ public abstract class ItemStackMixin {
     public void inventoryTick(World world, Entity entity, EquipmentSlot slot, CallbackInfo ci) {
         ItemStack stack = (ItemStack) (Object) this;
         if (this.getItem() instanceof ModFabricItem modfabricItem) modfabricItem.inventoryTick(stack, world, entity, slot);
+    }
+    @Inject(method = "onDurabilityChange", at = @At("HEAD"))
+    public void onDurabilityChange(int damage, @Nullable ServerPlayerEntity player, Consumer<Item> breakCallback, CallbackInfo ci) {
+        ItemStack stack = (ItemStack) (Object) this;
+        if (this.getItem() instanceof ModFabricItem modfabricItem) modfabricItem.onDurabilityChange(stack, damage, player);
     }
 }

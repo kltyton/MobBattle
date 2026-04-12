@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
 public class Mob_battle implements ModInitializer {
     public static final String MOD_ID = "mob_battle";
     public static final Logger LOGGER = LoggerFactory.getLogger(Mob_battle.class);
-    public static int MAX_STACK_SIZE = 1024;
+    public static int MAX_STACK_SIZE = 102400000;
     public static MinecraftServer SERVER;
     @Override
     public void onInitialize() {

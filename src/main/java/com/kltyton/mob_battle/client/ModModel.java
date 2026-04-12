@@ -8,6 +8,7 @@ import com.kltyton.mob_battle.entity.littleperson.skillentity.ironmanbullet.Iron
 import com.kltyton.mob_battle.entity.littleperson.skillentity.poisonousbullet.PoisonousBulletEntityModel;
 import com.kltyton.mob_battle.entity.littleperson.skillentity.spearbullet.SpearBulletEntityModel;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityModelLayerRegistry;
+import com.kltyton.mob_battle.entity.bullet.GoldenTrailProjectileModel;
 import net.minecraft.client.render.entity.model.EntityModelLayer;
 import net.minecraft.util.Identifier;
 
@@ -18,6 +19,7 @@ public class ModModel {
     public static final EntityModelLayer IRON_MAN_BULLET = new EntityModelLayer(Identifier.of(Mob_battle.MOD_ID, "iron_man_bullet"), "bb_main");
     public static final EntityModelLayer SPEAR_BULLET = new EntityModelLayer(Identifier.of(Mob_battle.MOD_ID, "spear_bullet"), "bb_main");
     public static final EntityModelLayer MISSILE = new EntityModelLayer(Identifier.of(Mob_battle.MOD_ID, "missile"), "bone");
+    public static final EntityModelLayer GOLDEN_TRAIL_PROJECTILE = new EntityModelLayer(Identifier.of(Mob_battle.MOD_ID, "golden_trail_projectile"), "bb_main");
 
     public static void init() {
         EntityModelLayerRegistry.registerModelLayer(LITTLE_ARROW, LittleArrowEntityModel::getTexturedModelData);
@@ -26,5 +28,6 @@ public class ModModel {
         EntityModelLayerRegistry.registerModelLayer(POISON_ARROW, PoisonousBulletEntityModel::getTexturedModelData);
         EntityModelLayerRegistry.registerModelLayer(IRON_MAN_BULLET, IronManBulletEntityModel::getTexturedModelData);
         EntityModelLayerRegistry.registerModelLayer(SPEAR_BULLET, SpearBulletEntityModel::getTexturedModelData);
+        EntityModelLayerRegistry.registerModelLayer(GOLDEN_TRAIL_PROJECTILE, GoldenTrailProjectileModel::getTexturedModelData);
     }
 }

@@ -55,16 +55,33 @@ public class BackpackItem extends Item {
                                  return super.insertItem(stack, startIndex, endIndex, fromLast);
                             }
                             @Override
-                            public void onSlotClick(int slotId, int button, SlotActionType actionType, PlayerEntity player) {
-                                // 只处理普通点击
+                            public void onSlotClick(int slotId, int hotbarSlot, SlotActionType actionType, PlayerEntity player) {
                                 if (slotId >= 0 && slotId < this.slots.size()) {
                                     Slot slot = this.slots.get(slotId);
-                                    ItemStack cursorStack = slot.getStack();
-                                    if (cursorStack.getItem() instanceof BackpackItem) {
-                                        return; // 取消操作
+
+                                    if (actionType == SlotActionType.PICKUP || actionType == SlotActionType.PICKUP_ALL) {
+                                        ItemStack cursorStack = this.getCursorStack();
+                                        if (cursorStack.getItem() instanceof BackpackItem) {
+                                            return;
+                                        }
+
+                                        if (slot.hasStack() && slot.getStack().getItem() instanceof BackpackItem) {
+                                            return;
+                                        }
+                                    } else if (actionType == SlotActionType.SWAP) {
+                                        if (hotbarSlot >= 0 && hotbarSlot < 9) {
+                                            ItemStack hotbarStack = player.getInventory().getStack(hotbarSlot);
+                                            if (hotbarStack.getItem() instanceof BackpackItem) {
+                                                return;
+                                            }
+
+                                            if (slot.hasStack() && slot.getStack().getItem() instanceof BackpackItem) {
+                                                return;
+                                            }
+                                        }
                                     }
                                 }
-                                super.onSlotClick(slotId, button, actionType, player);
+                                super.onSlotClick(slotId, hotbarSlot, actionType, player);
                             }
                         };
                     }
@@ -97,17 +114,33 @@ public class BackpackItem extends Item {
                                 return super.insertItem(stack, startIndex, endIndex, fromLast);
                             }
                             @Override
-                            public void onSlotClick(int slotId, int button, SlotActionType actionType, PlayerEntity player) {
-                                // 只处理普通点击
+                            public void onSlotClick(int slotId, int hotbarSlot, SlotActionType actionType, PlayerEntity player) {
                                 if (slotId >= 0 && slotId < this.slots.size()) {
                                     Slot slot = this.slots.get(slotId);
-                                    ItemStack cursorStack = slot.getStack();
-                                    if (cursorStack.getItem() instanceof BackpackItem) {
-                                        return; // 取消操作
+
+                                    if (actionType == SlotActionType.PICKUP || actionType == SlotActionType.PICKUP_ALL) {
+                                        ItemStack cursorStack = this.getCursorStack();
+                                        if (cursorStack.getItem() instanceof BackpackItem) {
+                                            return;
+                                        }
+
+                                        if (slot.hasStack() && slot.getStack().getItem() instanceof BackpackItem) {
+                                            return;
+                                        }
+                                    } else if (actionType == SlotActionType.SWAP) {
+                                        if (hotbarSlot >= 0 && hotbarSlot < 9) {
+                                            ItemStack hotbarStack = player.getInventory().getStack(hotbarSlot);
+                                            if (hotbarStack.getItem() instanceof BackpackItem) {
+                                                return;
+                                            }
+
+                                            if (slot.hasStack() && slot.getStack().getItem() instanceof BackpackItem) {
+                                                return;
+                                            }
+                                        }
                                     }
                                 }
-
-                                super.onSlotClick(slotId, button, actionType, player);
+                                super.onSlotClick(slotId, hotbarSlot, actionType, player);
                             }
                         };
                     }

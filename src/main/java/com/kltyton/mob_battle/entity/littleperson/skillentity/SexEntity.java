@@ -38,7 +38,7 @@ public class SexEntity extends BaseSkillLittlePersonEntity {
     private static final TrackedData<Integer> GRABBED_ENTITY_ID = DataTracker.registerData(SexEntity.class, TrackedDataHandlerRegistry.INTEGER);
     private final List<LivingEntity> knockedTargets = new ArrayList<>();
     protected static final RawAnimation RUN_ANIM = RawAnimation.begin().thenLoop("run");
-    protected static final RawAnimation SEX_ATTACK_ANIM_5 = RawAnimation.begin().thenPlay("attack5").thenPlay("attack5_1");
+    protected static final RawAnimation SEX_ATTACK_ANIM_5 = RawAnimation.begin().thenPlay("attack5").thenPlay("attack8");
 
     private final ServerBossBar bossBar = new ServerBossBar(
             this.getDisplayName(),
@@ -364,6 +364,14 @@ public class SexEntity extends BaseSkillLittlePersonEntity {
         LivingEntity target = EntityUtil.getClosestNearbyEntity(entity, LivingEntity.class, 5, EntityUtil.TeamFilter.EXCLUDE_TEAM);
         // 2. 如果找到了目标，设置 ID
         if (target != null) {
+            if (target instanceof LivingEntity livingEntity) {
+                double dx = entity.getX() - livingEntity.getX();
+                double dz = entity.getZ() - livingEntity.getZ();
+                float yaw = (float) (Math.toDegrees(Math.atan2(dz, dx)) - 90.0);
+                livingEntity.setYaw(yaw);
+                livingEntity.setHeadYaw(yaw);
+                livingEntity.setBodyYaw(yaw);
+            }
             this.setGrabbedEntityId(target.getId());
             performSkill("attack9");
         }
@@ -374,7 +382,6 @@ public class SexEntity extends BaseSkillLittlePersonEntity {
         Entity target = entity.getWorld().getEntityById(this.getGrabbedEntityId());
         if (target instanceof LivingEntity livingEntity) {
             livingEntity.damage((ServerWorld) entity.getWorld(), entity.getDamageSources().indirectMagic(entity, entity), 100);
-
         }
     }
     @Override
@@ -384,9 +391,11 @@ public class SexEntity extends BaseSkillLittlePersonEntity {
         if (target instanceof LivingEntity livingEntity) {
             livingEntity.damage((ServerWorld) entity.getWorld(), entity.getDamageSources().indirectMagic(entity, entity), 150);
             this.setGrabbedEntityId(-1);
-            livingEntity.takeKnockback(1.2, livingEntity.getX() - this.getX(), livingEntity.getZ() - this.getZ());
+            livingEntity.takeKnockback(2.4, livingEntity.getX() - this.getX(), livingEntity.getZ() - this.getZ());
         }
     }
+
+
     @Override
     public void runSkill_7(BaseSkillLittlePersonEntity entity) {
         this.setAiDisabled(false);

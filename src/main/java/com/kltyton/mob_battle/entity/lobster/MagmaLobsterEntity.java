@@ -90,14 +90,17 @@ public class MagmaLobsterEntity extends LobsterEntity {
     public PassiveEntity createChild(ServerWorld world, PassiveEntity mate) {
         return ModEntities.MAGMA_LOBSTER.create(world, SpawnReason.BREEDING);
     }
-
+    @Override
+    public float getPanicRetreatHealthThreshold() {
+        return 30.0F;
+    }
     @Override
     public boolean doSkill() {
+        if (this.isPanicRetreating()) return false;
         if (!canSkill()) return false;
 
         LivingEntity target = this.getTarget();
 
-        // 远一点优先吐火
         if (target != null && this.canSkill("attack5") && this.squaredDistanceTo(target) > 9.0D) {
             performSkill("attack5");
             return true;
@@ -249,7 +252,7 @@ public class MagmaLobsterEntity extends LobsterEntity {
                 .add(net.minecraft.entity.attribute.EntityAttributes.ARMOR_TOUGHNESS, 8.0D);
     }
 
-    private @Nullable BlockPos findNearbyBroadLava(int horizontalRange, int verticalRange) {
+    protected @Nullable BlockPos findNearbyBroadLava(int horizontalRange, int verticalRange) {
         BlockPos origin = this.getBlockPos();
         BlockPos best = null;
         double bestDistance = Double.MAX_VALUE;
@@ -297,7 +300,9 @@ public class MagmaLobsterEntity extends LobsterEntity {
         private final MagmaLobsterEntity lobster;
         private final double speed;
         private BlockPos targetLava;
-        private LivingEntity lookTarget;
+        private LivingEntity threat;
+        private boolean panicMode;
+        private int repathCooldown;
 
         private RetreatToLavaGoal(MagmaLobsterEntity lobster, double speed) {
             this.lobster = lobster;
@@ -309,19 +314,33 @@ public class MagmaLobsterEntity extends LobsterEntity {
         public boolean canStart() {
             if (this.lobster.hasSkill()) return false;
 
-            boolean lowHealth = this.lobster.getHealth() < 30.0F;
+            boolean lowHealth = this.lobster.getHealth() < this.lobster.getPanicRetreatHealthThreshold();
             boolean idleOnLand = this.lobster.getTarget() == null
                     && !this.lobster.isTouchingWater()
                     && !this.lobster.isInLava();
 
             if (!lowHealth && !idleOnLand) return false;
 
+            this.panicMode = lowHealth;
+            this.threat = this.lobster.getAttacker();
+
+            if (this.threat == null || !this.threat.isAlive()) {
+                this.threat = this.lobster.getTarget();
+            }
+
             this.targetLava = this.lobster.findNearbyBroadLava(16, 6);
-            return this.targetLava != null;
+            return this.targetLava != null || (this.panicMode && this.threat != null);
         }
 
         @Override
         public boolean shouldContinue() {
+            if (this.panicMode) {
+                return this.lobster.isAlive()
+                        && this.lobster.getHealth() < this.lobster.getPanicRetreatHealthThreshold()
+                        && this.threat != null
+                        && this.threat.isAlive();
+            }
+
             return this.targetLava != null
                     && !this.lobster.isInLava()
                     && !this.lobster.getNavigation().isIdle();
@@ -329,19 +348,53 @@ public class MagmaLobsterEntity extends LobsterEntity {
 
         @Override
         public void start() {
-            this.lookTarget = this.lobster.getTarget();
-            this.lobster.setTarget(null);
             this.lobster.setRetreating(true);
-            this.lobster.getNavigation().startMovingTo(
-                    this.targetLava.getX() + 0.5D,
-                    this.targetLava.getY() + 0.5D,
-                    this.targetLava.getZ() + 0.5D,
-                    this.speed
-            );
+            this.lobster.setPanicRetreating(this.panicMode);
+            this.lobster.setTarget(null);
+            this.lobster.setAttacker(null);
+            this.repathCooldown = 0;
+
+            if (this.targetLava != null) {
+                this.lobster.getNavigation().startMovingTo(
+                        this.targetLava.getX() + 0.5D,
+                        this.targetLava.getY() + 0.5D,
+                        this.targetLava.getZ() + 0.5D,
+                        this.speed
+                );
+            }
         }
 
         @Override
         public void tick() {
+            if (this.panicMode) {
+                if (this.threat != null && this.threat.isAlive()) {
+                    this.lobster.getLookControl().lookAt(this.threat, 30.0F, 30.0F);
+                }
+
+                if (--this.repathCooldown <= 0) {
+                    this.repathCooldown = 10;
+
+                    Vec3d fleePos = NoPenaltyTargeting.findFrom(
+                            this.lobster,
+                            12,
+                            6,
+                            this.threat != null ? this.threat.getPos() : this.lobster.getPos()
+                    );
+
+                    if (fleePos != null) {
+                        this.lobster.getNavigation().startMovingTo(fleePos.x, fleePos.y, fleePos.z, this.speed + 0.2D);
+                    } else if (this.targetLava != null) {
+                        this.lobster.getNavigation().startMovingTo(
+                                this.targetLava.getX() + 0.5D,
+                                this.targetLava.getY() + 0.5D,
+                                this.targetLava.getZ() + 0.5D,
+                                this.speed
+                        );
+                    }
+                }
+                return;
+            }
+
             if (this.targetLava == null) return;
 
             this.lobster.getNavigation().startMovingTo(
@@ -350,17 +403,16 @@ public class MagmaLobsterEntity extends LobsterEntity {
                     this.targetLava.getZ() + 0.5D,
                     this.speed
             );
-
-            if (this.lookTarget != null && this.lookTarget.isAlive()) {
-                this.lobster.getLookControl().lookAt(this.lookTarget, 30.0F, 30.0F);
-            }
         }
 
         @Override
         public void stop() {
             this.targetLava = null;
-            this.lookTarget = null;
+            this.threat = null;
+            this.panicMode = false;
+            this.repathCooldown = 0;
             this.lobster.setRetreating(false);
+            this.lobster.setPanicRetreating(false);
         }
     }
 

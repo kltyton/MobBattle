@@ -104,29 +104,28 @@ public abstract class LivingEntityMixin extends Entity implements Attackable, Se
     private long lastPigSpiritAbsorptionTime = -200L;
     @Inject(method = "damage", at = @At("RETURN"))
     private void pigDamage(ServerWorld world, DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
+        if (!cir.getReturnValue()) return;
+
         LivingEntity target = (LivingEntity) (Object) this;
         Entity attacker = source.getAttacker();
-        if (attacker instanceof LivingEntity livingAttacker) {
-            if (livingAttacker.hasStatusEffect(ModEffects.PIG_SPIRIT_MARK_ENTRY)) {
-                if (target instanceof AbstractPiglinEntity piglin) {
-                    StatusEffectInstance effect = livingAttacker.getStatusEffect(ModEffects.PIG_SPIRIT_MARK_ENTRY);
-                    int amplifier = effect != null ? effect.getAmplifier() : 0;
-                    long currentTime = target.getWorld().getTime();
-                    if (currentTime - lastPigSpiritAbsorptionTime >= 200L) {
-                        float absorptionAmount = 2.0f * (amplifier + 1);
-                        piglin.setAbsorptionAmount(piglin.getAbsorptionAmount() + absorptionAmount);
-                        lastPigSpiritAbsorptionTime = currentTime;
-                    }
-                } else if (target instanceof PlayerEntity player && ArmorUtil.hasFullArmor(player, ModMaterial.ZIJIN_ARMOR_INSTANCE)){
-                    StatusEffectInstance effect = livingAttacker.getStatusEffect(ModEffects.PIG_SPIRIT_MARK_ENTRY);
-                    int amplifier = effect != null ? effect.getAmplifier() : 0;
-                    long currentTime = target.getWorld().getTime();
-                    if (currentTime - lastPigSpiritAbsorptionTime >= 200L) {
-                        float absorptionAmount = 2.0f * (amplifier + 1);
-                        player.setAbsorptionAmount(player.getAbsorptionAmount() + absorptionAmount);
-                        lastPigSpiritAbsorptionTime = currentTime;
-                    }
-                }
+
+        StatusEffectInstance effect = target.getStatusEffect(ModEffects.PIG_SPIRIT_MARK_ENTRY);
+        if (effect == null) return;
+
+        int amplifier = effect.getAmplifier();
+        long currentTime = world.getTime();
+
+        if (attacker instanceof AbstractPiglinEntity piglin) {
+            if (currentTime - this.lastPigSpiritAbsorptionTime >= 200L) {
+                float absorptionAmount = 2.0F * (amplifier + 1);
+                piglin.setAbsorptionAmount(piglin.getAbsorptionAmount() + absorptionAmount);
+                this.lastPigSpiritAbsorptionTime = currentTime;
+            }
+        } else if (attacker instanceof PlayerEntity player && ArmorUtil.hasFullArmor(player, ModMaterial.ZIJIN_ARMOR_INSTANCE)) {
+            if (currentTime - this.lastPigSpiritAbsorptionTime >= 200L) {
+                float absorptionAmount = 2.0F * (amplifier + 1);
+                player.setAbsorptionAmount(player.getAbsorptionAmount() + absorptionAmount);
+                this.lastPigSpiritAbsorptionTime = currentTime;
             }
         }
     }
@@ -162,15 +161,14 @@ public abstract class LivingEntityMixin extends Entity implements Attackable, Se
         LivingEntity target = (LivingEntity) (Object) this;
         // --- 逻辑2：拥有印记的生物受到来自猪灵的额外伤害 ---
         if (target.hasStatusEffect(ModEffects.PIG_SPIRIT_MARK_ENTRY)) {
+            StatusEffectInstance effect = target.getStatusEffect(ModEffects.PIG_SPIRIT_MARK_ENTRY);
+            int amplifier = effect != null ? effect.getAmplifier() : 0;
+            float extraDamage = (float) (amplifier + 1);
+
             if (source.getAttacker() instanceof AbstractPiglinEntity) {
-                StatusEffectInstance effect = target.getStatusEffect(ModEffects.PIG_SPIRIT_MARK_ENTRY);
-                int amplifier = effect != null ? effect.getAmplifier() : 0;
-                float extraDamage = (float) (amplifier + 1);
                 damage += extraDamage;
-            } else if (target instanceof PlayerEntity player && ArmorUtil.hasFullArmor(player, ModMaterial.ZIJIN_ARMOR_INSTANCE)) {
-                StatusEffectInstance effect = target.getStatusEffect(ModEffects.PIG_SPIRIT_MARK_ENTRY);
-                int amplifier = effect != null ? effect.getAmplifier() : 0;
-                float extraDamage = (float) (amplifier + 1);
+            } else if (source.getAttacker() instanceof PlayerEntity player
+                    && ArmorUtil.hasFullArmor(player, ModMaterial.ZIJIN_ARMOR_INSTANCE)) {
                 damage += extraDamage;
             }
         }

@@ -3,7 +3,6 @@ package com.kltyton.mob_battle.entity.littleperson.skillentity.spearbullet;
 import com.kltyton.mob_battle.Mob_battle;
 import com.kltyton.mob_battle.client.ModModel;
 import com.kltyton.mob_battle.entity.littleperson.archer.littlearrow.LittleArrowEntity;
-import com.kltyton.mob_battle.entity.littleperson.archer.littlearrow.LittleArrowEntityModel;
 import net.minecraft.client.render.OverlayTexture;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumer;
@@ -18,11 +17,11 @@ import net.minecraft.util.math.RotationAxis;
 public class SpearBulletEntityRenderer extends EntityRenderer<LittleArrowEntity, ArrowEntityRenderState> {
     public static final Identifier TEXTURE = Identifier.of(Mob_battle.MOD_ID, "textures/entity/projectiles/spear_bullet.png");
     public static final Identifier TIPPED_TEXTURE = Identifier.ofVanilla("textures/entity/projectiles/spear_bullet.png");
-    private final LittleArrowEntityModel model;
+    private final SpearBulletEntityModel model;
 
     public SpearBulletEntityRenderer(EntityRendererFactory.Context context) {
         super(context);
-        this.model = new LittleArrowEntityModel(context.getPart(ModModel.SPEAR_BULLET));
+        this.model = new SpearBulletEntityModel(context.getPart(ModModel.SPEAR_BULLET));
     }
     @Override
     public void render(ArrowEntityRenderState projectileEntityRenderState, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i) {

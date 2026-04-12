@@ -6,10 +6,12 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffect;
+import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -23,6 +25,9 @@ public abstract class LivingEntityDisarmMixin extends Entity {
 
     @Shadow
     public abstract void travel(Vec3d movementInput);
+
+    @Shadow
+    public abstract @Nullable StatusEffectInstance getStatusEffect(RegistryEntry<StatusEffect> effect);
 
     public LivingEntityDisarmMixin(EntityType<?> type, World world) {
         super(type, world);
@@ -38,7 +43,12 @@ public abstract class LivingEntityDisarmMixin extends Entity {
     @Override
     public void changeLookDirection(double cursorDeltaX, double cursorDeltaY) {
         if (this.hasStatusEffect(ModEffects.ICE_ENTRY)) {
-            return;
+            int amplifier = -1;
+            StatusEffectInstance effect = this.getStatusEffect(ModEffects.ICE_ENTRY);
+            if (effect != null) {
+                amplifier = effect.getAmplifier();
+            }
+            if (amplifier >= 5) return;
         }
         super.changeLookDirection(cursorDeltaX, cursorDeltaY);
     }
@@ -49,8 +59,15 @@ public abstract class LivingEntityDisarmMixin extends Entity {
     )
     private void onTravel(Vec3d movementInput, CallbackInfo ci) {
         if (this.hasStatusEffect(ModEffects.ICE_ENTRY) && movementInput != Vec3d.ZERO) {
-            this.travel(Vec3d.ZERO);
-            ci.cancel();
+            int amplifier = -1;
+            StatusEffectInstance effect = this.getStatusEffect(ModEffects.ICE_ENTRY);
+            if (effect != null) {
+                amplifier = effect.getAmplifier();
+            }
+            if (amplifier >= 5) {
+                this.travel(Vec3d.ZERO);
+                ci.cancel();
+            }
         }
     }
 }

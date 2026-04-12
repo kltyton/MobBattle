@@ -331,6 +331,10 @@ public abstract class EnderDragonEntityMixin extends MobEntity {
             float amount,
             CallbackInfoReturnable<Boolean> cir
     ) {
+        if (source.getSource() instanceof EnderDragonEntity || source.getAttacker() instanceof EnderDragonEntity) {
+            cir.setReturnValue(false);
+            return;
+        }
         EnderDragonEntity self = (EnderDragonEntity)(Object)this;
         if (amount <= 0.0F) {
             cir.setReturnValue(false);

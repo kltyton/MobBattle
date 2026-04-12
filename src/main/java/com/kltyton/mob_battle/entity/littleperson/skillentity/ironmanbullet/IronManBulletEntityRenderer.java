@@ -2,7 +2,6 @@ package com.kltyton.mob_battle.entity.littleperson.skillentity.ironmanbullet;
 
 import com.kltyton.mob_battle.Mob_battle;
 import com.kltyton.mob_battle.client.ModModel;
-import com.kltyton.mob_battle.entity.littleperson.archer.littlearrow.LittleArrowEntityModel;
 import net.minecraft.client.render.OverlayTexture;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumer;
@@ -17,11 +16,11 @@ import net.minecraft.util.math.RotationAxis;
 public class IronManBulletEntityRenderer extends EntityRenderer<IronManBulletEntity, ArrowEntityRenderState> {
     public static final Identifier TEXTURE = Identifier.of(Mob_battle.MOD_ID, "textures/entity/projectiles/iron_man_bullet.png");
     public static final Identifier TIPPED_TEXTURE = Identifier.ofVanilla("textures/entity/projectiles/iron_man_bullet.png");
-    private final LittleArrowEntityModel model;
+    private final IronManBulletEntityModel model;
 
     public IronManBulletEntityRenderer(EntityRendererFactory.Context context) {
         super(context);
-        this.model = new LittleArrowEntityModel(context.getPart(ModModel.IRON_MAN_BULLET));
+        this.model = new IronManBulletEntityModel(context.getPart(ModModel.IRON_MAN_BULLET));
     }
     @Override
     public void render(ArrowEntityRenderState projectileEntityRenderState, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i) {

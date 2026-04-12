@@ -89,7 +89,17 @@ public class WitherSkullBulletEntity extends ProjectileEntity {
         this.targetY = view.getDouble("TYD", 0.0);
         this.targetZ = view.getDouble("TZD", 0.0);
         this.direction = view.read("Dir", Direction.INDEX_CODEC).orElse(null);
-        this.target = LazyEntityReference.fromData(view, "Target");
+
+        // 防御性读取：只有当 NBT 包含 Target 时才尝试恢复引用
+        if (view.contains("Target")) {
+            try {
+                this.target = LazyEntityReference.fromData(view, "Target");
+            } catch (Exception e) {
+                this.target = null; // 如果数据格式损坏，直接重置
+            }
+        } else {
+            this.target = null;
+        }
     }
 
     @Override
@@ -195,23 +205,30 @@ public class WitherSkullBulletEntity extends ProjectileEntity {
     public void tick() {
         super.tick();
         Entity entity = null;
+
         if (!this.getWorld().isClient() && this.target != null) {
-            entity = LazyEntityReference.resolve(this.target, this.getWorld(), Entity.class);
-        }
-        HitResult hitResult = null;
-        if (!this.getWorld().isClient) {
-            if (entity == null) {
+            try {
+                // 包装解析过程，防止内部 Optional.of(null) 崩溃
+                entity = LazyEntityReference.resolve(this.target, this.getWorld(), Entity.class);
+            } catch (NullPointerException | IllegalArgumentException e) {
+                // 如果解析失败，说明引用已失效
                 this.target = null;
             }
+        }
 
-            if (entity == null || !entity.isAlive() || entity instanceof PlayerEntity && entity.isSpectator()) {
+        HitResult hitResult = null;
+        if (!this.getWorld().isClient) {
+            // 如果 entity 依然为 null，说明目标可能被移除或从未找到
+            if (entity == null || !entity.isAlive() || (entity instanceof PlayerEntity p && p.isSpectator())) {
+                this.target = null; // 清除无效引用
                 this.applyGravity();
             } else {
+                // 原有的追踪逻辑...
                 this.targetX = MathHelper.clamp(this.targetX * 1.025, -1.0, 1.0);
                 this.targetY = MathHelper.clamp(this.targetY * 1.025, -1.0, 1.0);
                 this.targetZ = MathHelper.clamp(this.targetZ * 1.025, -1.0, 1.0);
-                Vec3d vec3d = this.getVelocity();
-                this.setVelocity(vec3d.add((this.targetX - vec3d.x) * 0.2, (this.targetY - vec3d.y) * 0.2, (this.targetZ - vec3d.z) * 0.2));
+                Vec3d v = this.getVelocity();
+                this.setVelocity(v.add((this.targetX - v.x) * 0.2, (this.targetY - v.y) * 0.2, (this.targetZ - v.z) * 0.2));
             }
 
             hitResult = ProjectileUtil.getCollision(this, this::canHit);

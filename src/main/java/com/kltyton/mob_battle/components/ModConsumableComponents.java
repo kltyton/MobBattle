@@ -34,18 +34,22 @@ public class ModConsumableComponents {
             .consumeEffect(
                     new ApplyEffectsConsumeEffect(
                             List.of(
-                                    new StatusEffectInstance(ModEffects.PROTEIN_ENTRY, 20 * 3, 4)
+                                    new StatusEffectInstance(ModEffects.PROTEIN_ENTRY, 20 * 3, 4),
+                                    new StatusEffectInstance(StatusEffects.ABSORPTION, 10 * 20, 4),
+                                    new StatusEffectInstance(StatusEffects.RESISTANCE, 10 * 20, 0)
                             )
                     )
             )
             .build();
+
     public static final ConsumableComponent BURST_OBSIDIAN_LOBSTER = ConsumableComponents.food()
             .consumeEffect(
                     new ApplyEffectsConsumeEffect(
                             List.of(
-                                    //抗火3分钟，伤害吸收十8秒
                                     new StatusEffectInstance(StatusEffects.FIRE_RESISTANCE, 3 * 60 * 20, 0),
                                     new StatusEffectInstance(StatusEffects.ABSORPTION, 8 * 20, 9),
+                                    new StatusEffectInstance(StatusEffects.RESISTANCE, 8 * 20, 0),
+                                    new StatusEffectInstance(StatusEffects.REGENERATION, 8 * 20, 1),
                                     new StatusEffectInstance(ModEffects.PROTEIN_ENTRY, 400, 2)
                             )
                     )

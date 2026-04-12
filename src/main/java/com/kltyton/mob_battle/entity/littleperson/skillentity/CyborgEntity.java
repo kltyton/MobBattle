@@ -119,7 +119,7 @@ public class CyborgEntity extends BaseSkillLittlePersonEntity {
                     cyborg.getAttributeInstance(EntityAttributes.MAX_HEALTH).setBaseValue(newMaxHealth);
                     cyborg.setHealth((float) newMaxHealth);
                     serverWorld.spawnEntity(cyborg);
-                    EntityUtil.joinSameTeam(cyborg, livingEntity);
+                    EntityUtil.joinSameTeam(cyborg, this);
                 }
             }
         }

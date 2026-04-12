@@ -33,6 +33,7 @@
     "heardstone.PlayerEntityMixin",
     "heardstone.ServerPlayerEntityMixin",
     "initgoals.AbstractPiglinEntityMixin",
+    "initgoals.AbstractSkeletonEntityMixin",
     "initgoals.PiglinBrainMixin",
     "initgoals.PiglinBruteBrainMixin",
     "initgoals.PiglinBruteEntityMixin",

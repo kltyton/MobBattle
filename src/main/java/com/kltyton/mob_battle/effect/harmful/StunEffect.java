@@ -25,6 +25,7 @@ public class StunEffect extends StatusEffect {
         entity.setVelocity(Vec3d.ZERO);
         entity.velocityModified = true;
         if (entity instanceof MobEntity mob) {
+            if (mob.isAiDisabled()) return true;
             target = mob;
             mob.setAiDisabled(true);
         }

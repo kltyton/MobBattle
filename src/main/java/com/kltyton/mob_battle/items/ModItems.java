@@ -27,7 +27,6 @@ import net.minecraft.component.type.FoodComponent;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.item.Item;
-import net.minecraft.item.ShieldItem;
 import net.minecraft.item.SpawnEggItem;
 import net.minecraft.item.ToolMaterial;
 import net.minecraft.item.equipment.EquipmentType;
@@ -231,13 +230,13 @@ public class ModItems {
                         new FoodComponent.Builder().nutrition(10).saturationModifier(0.3F).build()
                 )
         );
-        COMPRESSED_COPPER_INGOT = registerItem("compressed_copper_ingot");
-        COMPRESSED_IRON_INGOT = registerItem("compressed_iron_ingot");
-        COMPRESSED_GOLD_INGOT = registerItem("compressed_gold_ingot");
-        COMPRESSED_DIAMOND = registerItem("compressed_diamond");
-        COMPRESSED_NETHERITE_INGOT = registerItem("compressed_netherite_ingot");
-        COMPRESSED_REDSTONE = registerItem("compressed_redstone");
-        COMPRESSED_LAPIS_LAZULI = registerItem("compressed_lapis_lazuli");
+        COMPRESSED_COPPER_INGOT = registerItem("compressed_copper_ingot", registryBaseItemSettings("compressed_copper_ingot").rarity(Rarity.UNCOMMON));
+        COMPRESSED_IRON_INGOT = registerItem("compressed_iron_ingot", registryBaseItemSettings("compressed_iron_ingot").rarity(Rarity.UNCOMMON));
+        COMPRESSED_GOLD_INGOT = registerItem("compressed_gold_ingot", registryBaseItemSettings("compressed_gold_ingot").rarity(Rarity.UNCOMMON));
+        COMPRESSED_DIAMOND = registerItem("compressed_diamond", registryBaseItemSettings("compressed_diamond").rarity(Rarity.UNCOMMON));
+        COMPRESSED_NETHERITE_INGOT = registerItem("compressed_netherite_ingot", registryBaseItemSettings("compressed_netherite_ingot").rarity(Rarity.UNCOMMON));
+        COMPRESSED_REDSTONE = registerItem("compressed_redstone", registryBaseItemSettings("compressed_redstone").rarity(Rarity.UNCOMMON));
+        COMPRESSED_LAPIS_LAZULI = registerItem("compressed_lapis_lazuli", registryBaseItemSettings("compressed_lapis_lazuli").rarity(Rarity.UNCOMMON));
 
         // 龙虾系列
         LOBSTER = registerItem("lobster",
@@ -269,7 +268,7 @@ public class ModItems {
         // 黑曜石龙虾：
         // 右键当盾牌，1500耐久，不能附魔
         OBSIDIAN_LOBSTER = registerItem("obsidian_lobster",
-                new ShieldItem(
+                new ObsidianLobsterItem(
                         registryBaseItemSettings("obsidian_lobster")
                                 .maxCount(1)
                                 .maxDamage(1500)
@@ -706,6 +705,7 @@ public class ModItems {
         TRAIN_BULLET = registerItem("train_bullet", registryBaseItemSettings("train_bullet").maxCount(64));
         AREA_GRAVITY_DEVICE_ITEM = registerItem("area_gravity_device_item", new AreaGravityDeviceItem(
                 registryBaseItemSettings("area_gravity_device_item")
+                        .rarity(Rarity.RARE)
                         .maxCount(1)
                         .useCooldown(70)
                         .component(DataComponentTypes.UNBREAKABLE, Unit.INSTANCE)

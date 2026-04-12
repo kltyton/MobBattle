@@ -31,23 +31,43 @@ public class DrillSilverfishEntity extends CoalSilverfishEntity {
     public void runSkill(CoalSilverfishEntity entity) {
         if (this.getWorld().isClient) return;
         ServerWorld serverWorld = (ServerWorld) this.getWorld();
-        // 1. 方向向量与冲刺向量 (距离改为 1.0)
-        Vec3d lookDir = this.getRotationVector();
-        Vec3d dashVector = lookDir.multiply(10.0); // 1格距离
-        Box dashArea = this.getBoundingBox().stretch(dashVector).expand(1.0);
-        // 3. 伤害逻辑
-        List<Entity> targets = serverWorld.getOtherEntities(this, dashArea,
-                target -> target instanceof LivingEntity && target.isAlive() && !target.isTeammate(this));
-        float damageAmount = (float) this.getAttributeValue(EntityAttributes.ATTACK_DAMAGE);
-        for (Entity target : targets) {
-            target.damage(serverWorld, this.getDamageSources().mobAttack(this), damageAmount);
-        }
-        this.move(MovementType.SELF, dashVector);
 
-        // 给一点微弱的初速度，让动作看起来更丝滑
-        this.setVelocity(lookDir.multiply(2));
+        Vec3d lookDir = this.getRotationVector();
+        lookDir = new Vec3d(lookDir.x, 0, lookDir.z);
+        if (lookDir.lengthSquared() < 1.0E-6) return;
+        lookDir = lookDir.normalize();
+
+        Vec3d wantedDash = lookDir.multiply(10.0);
+
+        Vec3d oldPos = this.getPos();
+        Box oldBox = this.getBoundingBox();
+        Vec3d startCenter = oldBox.getCenter();
+
+        this.move(MovementType.SELF, wantedDash);
+
+        Vec3d actualDash = this.getPos().subtract(oldPos);
+        if (actualDash.lengthSquared() < 0.0001) return;
+
+        Vec3d endCenter = startCenter.add(actualDash);
+        Box hitBox = oldBox.stretch(actualDash).expand(0.3);
+
+        List<Entity> targets = serverWorld.getOtherEntities(this, hitBox,
+                target -> target instanceof LivingEntity
+                        && target.isAlive()
+                        && !target.isTeammate(this));
+
+        float damageAmount = (float) this.getAttributeValue(EntityAttributes.ATTACK_DAMAGE);
+
+        for (Entity target : targets) {
+            if (target.getBoundingBox().expand(0.1).raycast(startCenter, endCenter).isPresent()) {
+                target.damage(serverWorld, this.getDamageSources().mobAttack(this), damageAmount);
+            }
+        }
+
+        this.setVelocity(Vec3d.ZERO);
         this.velocityDirty = true;
     }
+
     @Override
     public boolean tryAttack(ServerWorld world, Entity target) {
         return false;

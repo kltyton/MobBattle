@@ -151,6 +151,7 @@ public class ModChineseLangProvider extends FabricLanguageProvider {
         translationBuilder.add(ModLangUtils.getTranslationKey(ModEntities.MAGMA_LOBBER_BIG_FIREBALL), "火球");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModEntities.MAGMA_LOBSTER), "熔岩龙虾");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModEntities.LOBSTER), "龙虾");
-
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.ELECTRONIC_COMPONENTS), "电子元件");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.WIRE), "电线");
     }
 }

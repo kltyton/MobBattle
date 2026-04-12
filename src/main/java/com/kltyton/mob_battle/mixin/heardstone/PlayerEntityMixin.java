@@ -21,6 +21,7 @@ import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Implements;
 import org.spongepowered.asm.mixin.Interface;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
@@ -33,6 +34,9 @@ import java.util.Objects;
 @Mixin(PlayerEntity.class)
 @Implements(@Interface(iface = IPlayerEntityAccessor.class, prefix = "accessor$"))
 public abstract class PlayerEntityMixin extends LivingEntity {
+    @Shadow
+    protected abstract void vanishCursedItems();
+
     protected PlayerEntityMixin(EntityType<? extends LivingEntity> entityType, World world) {
         super(entityType, world);
     }
@@ -41,6 +45,7 @@ public abstract class PlayerEntityMixin extends LivingEntity {
     public boolean dropInventory(GameRules instance, GameRules.Key<GameRules.BooleanRule> rule) {
         if (HeadStoneUtil.keepInventory((PlayerEntity) (Object) this)) {
             HeadStoneUtil.consumeHeartStones((PlayerEntity) (Object) this, 2);
+            this.vanishCursedItems();
             return true;
         }
         return instance.getBoolean(rule);

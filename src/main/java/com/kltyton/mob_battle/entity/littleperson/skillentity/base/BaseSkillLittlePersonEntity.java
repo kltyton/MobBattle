@@ -92,11 +92,14 @@ public class BaseSkillLittlePersonEntity extends LittlePersonMilitiaEntity imple
         endDamage = false;
         this.dataTracker.set(HAS_SKILL, hasSkill);
     }
-    public void performSkill(String skill) {
+    public void performSkill(String skill, boolean isAfterSkill) {
         this.setHasSkill(true);
         this.setAiDisabled(true);
-        this.setSkillCooldown(skill);
+        if (isAfterSkill) this.setSkillCooldown(skill);
         this.triggerAnim("skill_controller", skill);
+    }
+    public void performSkill(String skill) {
+        this.performSkill(skill, true);
     }
     public int getSkillCooldown(String skill) {
         return switch (skill) {

@@ -94,7 +94,7 @@ public class VsSnipe extends RangedWeaponItem implements ModFabricItem {
         ItemStack itemStack = user.getStackInHand(hand);
         ChargedProjectilesComponent chargedProjectilesComponent = itemStack.get(DataComponentTypes.CHARGED_PROJECTILES);
         if (chargedProjectilesComponent != null && !chargedProjectilesComponent.isEmpty()) {
-            this.shootAll(world, user, hand, itemStack, getSpeed(chargedProjectilesComponent) * 2.5f, 1.0F, null);
+            this.shootAll(world, user, hand, itemStack, getSpeed(chargedProjectilesComponent), 1.0F, null);
             return ActionResult.CONSUME;
         } else if (!user.getProjectileType(itemStack).isEmpty()) {
             this.charged = false;

@@ -9,14 +9,15 @@ import org.spongepowered.asm.mixin.injection.At;
 
 @Mixin(DataComponentTypes.class)
 public class DataComponentTypesMixin {
-    @ModifyExpressionValue
+    //修改默认堆栈大小
+/*    @ModifyExpressionValue
             (
                     method = "<clinit>",
                     at = @At(value = "CONSTANT", args = "intValue=64")
             )
     private static int getMaxCountPerStack(int original) {
         return Mob_battle.MAX_STACK_SIZE;
-    }
+    }*/
     @ModifyExpressionValue
             (
                     method = "method_58570",

@@ -19,6 +19,7 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.stat.Stats;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 import java.util.function.Predicate;
@@ -157,8 +158,15 @@ public class IceBowItem extends BaseBow {
         }
     }
     private void shootShotgun(ServerWorld world, PlayerEntity shooter, ItemStack bowStack, float pull, boolean fullyCharged) {
+        Vec3d look = shooter.getRotationVec(1.0F);
+        Vec3d eyePos = shooter.getEyePos();
+        Vec3d spawnPos = eyePos.add(look.multiply(0.6)); // 在玩家前方生成，避免打到自己
+
         for (int i = 0; i < SHOT_COUNT; i++) {
             IceArrowEntity arrow = new IceArrowEntity(world, shooter, new ItemStack(ModItems.ICE_ARROW_ITEM), bowStack);
+
+            arrow.setOwner(shooter);
+            arrow.setPosition(spawnPos.x, spawnPos.y, spawnPos.z);
 
             float yawOffset = (world.random.nextFloat() - 0.5F) * 18.0F;
             float pitchOffset = (world.random.nextFloat() - 0.5F) * 10.0F;
@@ -175,14 +183,13 @@ public class IceBowItem extends BaseBow {
             arrow.setCritical(fullyCharged);
             arrow.pickupType = IceArrowEntity.PickupPermission.DISALLOWED;
             arrow.setIceTipped(fullyCharged);
-
-            // TODO: 固定 120 点弹射物伤害
             arrow.setDamage(BASE_PROJECTILE_DAMAGE);
             arrow.setTrueDamage(true, false);
 
             world.spawnEntity(arrow);
         }
     }
+
 
     private static int countIceArrows(PlayerEntity player) {
         int total = 0;

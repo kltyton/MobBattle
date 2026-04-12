@@ -3,7 +3,6 @@ package com.kltyton.mob_battle.entity.littleperson.skillentity.poisonousbullet;
 import com.kltyton.mob_battle.Mob_battle;
 import com.kltyton.mob_battle.client.ModModel;
 import com.kltyton.mob_battle.entity.littleperson.archer.littlearrow.LittleArrowEntity;
-import com.kltyton.mob_battle.entity.littleperson.archer.littlearrow.LittleArrowEntityModel;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.render.OverlayTexture;
@@ -20,11 +19,11 @@ import net.minecraft.util.math.RotationAxis;
 public class PoisonousBulletEntityRenderer extends EntityRenderer<LittleArrowEntity, ArrowEntityRenderState> {
     public static final Identifier TEXTURE = Identifier.of(Mob_battle.MOD_ID, "textures/entity/projectiles/poison_arrow.png");
     public static final Identifier TIPPED_TEXTURE = Identifier.ofVanilla("textures/entity/projectiles/poison_arrow.png");
-    private final LittleArrowEntityModel model;
+    private final PoisonousBulletEntityModel model;
 
     public PoisonousBulletEntityRenderer(EntityRendererFactory.Context context) {
         super(context);
-        this.model = new LittleArrowEntityModel(context.getPart(ModModel.POISON_ARROW));
+        this.model = new PoisonousBulletEntityModel(context.getPart(ModModel.POISON_ARROW));
     }
     @Override
     public void render(ArrowEntityRenderState projectileEntityRenderState, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i) {

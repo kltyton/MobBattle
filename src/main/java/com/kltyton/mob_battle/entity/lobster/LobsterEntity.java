@@ -51,6 +51,8 @@ public class LobsterEntity extends AnimalEntity implements GeneralEntity<Lobster
             DataTracker.registerData(LobsterEntity.class, TrackedDataHandlerRegistry.INTEGER);
     private static final TrackedData<Boolean> RETREATING =
             DataTracker.registerData(LobsterEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
+    private static final TrackedData<Boolean> PANIC_RETREATING =
+            DataTracker.registerData(LobsterEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
 
     public static final TrackedData<Boolean> HAS_SKILL =
             DataTracker.registerData(LobsterEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
@@ -78,7 +80,9 @@ public class LobsterEntity extends AnimalEntity implements GeneralEntity<Lobster
         this.setPathfindingPenalty(PathNodeType.LAVA, -1.0F);
         this.setHasSkill(false);
     }
-
+    public float getPanicRetreatHealthThreshold() {
+        return 10.0F;
+    }
     @Override
     public MobEntity getEntity() {
         return this;
@@ -139,9 +143,16 @@ public class LobsterEntity extends AnimalEntity implements GeneralEntity<Lobster
         super.initDataTracker(builder);
         builder.add(VARIANT, LobsterVariant.RED.getId());
         builder.add(RETREATING, false);
+        builder.add(PANIC_RETREATING, false);
         entityInitDataTracker(builder);
     }
+    public boolean isPanicRetreating() {
+        return this.dataTracker.get(PANIC_RETREATING);
+    }
 
+    public void setPanicRetreating(boolean panicRetreating) {
+        this.dataTracker.set(PANIC_RETREATING, panicRetreating);
+    }
     @Override
     protected void initGoals() {
         this.goalSelector.add(0, new RetreatToWaterGoal(this, 1.35D));
@@ -241,11 +252,15 @@ public class LobsterEntity extends AnimalEntity implements GeneralEntity<Lobster
 
     @Override
     public boolean tryAttack(ServerWorld world, Entity target) {
+        if (this.isPanicRetreating()) {
+            return false;
+        }
         return doSkill();
     }
 
     @Override
     public boolean doSkill() {
+        if (this.isPanicRetreating()) return false;
         if (!canSkill()) return false;
 
         String[] skills = {"attack2", "attack3", "attack4"};
@@ -370,6 +385,7 @@ public class LobsterEntity extends AnimalEntity implements GeneralEntity<Lobster
         super.writeCustomData(view);
         view.putInt("Variant", this.getVariant().getId());
         view.putBoolean("Retreating", this.isRetreating());
+        view.putBoolean("PanicRetreating", this.isPanicRetreating());
         view.putBoolean("TargetingUnderwater", this.targetingUnderwater);
     }
 
@@ -378,6 +394,7 @@ public class LobsterEntity extends AnimalEntity implements GeneralEntity<Lobster
         super.readCustomData(view);
         this.setVariant(LobsterVariant.byId(view.getInt("Variant", LobsterVariant.RED.getId())));
         this.setRetreating(view.getBoolean("Retreating", false));
+        this.setPanicRetreating(view.getBoolean("PanicRetreating", false));
         this.targetingUnderwater = view.getBoolean("TargetingUnderwater", false);
     }
 
@@ -387,7 +404,7 @@ public class LobsterEntity extends AnimalEntity implements GeneralEntity<Lobster
             return PlayState.CONTINUE;
         }
 
-        if (this.isRetreating()) {
+        if (this.isPanicRetreating()) {
             return event.setAndContinue(SWING_ANIM);
         }
 
@@ -414,7 +431,7 @@ public class LobsterEntity extends AnimalEntity implements GeneralEntity<Lobster
                 .add(EntityAttributes.ATTACK_KNOCKBACK, 0.2D);
     }
 
-    private @Nullable BlockPos findNearbyBroadWater(int horizontalRange, int verticalRange) {
+    protected @Nullable BlockPos findNearbyBroadWater(int horizontalRange, int verticalRange) {
         BlockPos origin = this.getBlockPos();
         BlockPos best = null;
         double bestDistance = Double.MAX_VALUE;
@@ -469,7 +486,6 @@ public class LobsterEntity extends AnimalEntity implements GeneralEntity<Lobster
         @Override
         public void tick() {
             LivingEntity target = this.lobster.getTarget();
-
             if (this.lobster.isTargetingUnderwater() && this.lobster.isTouchingWater()) {
                 if ((target != null && target.getY() > this.lobster.getY()) || this.lobster.targetingUnderwater) {
                     this.lobster.setVelocity(this.lobster.getVelocity().add(0.0D, 0.002D, 0.0D));
@@ -522,7 +538,9 @@ public class LobsterEntity extends AnimalEntity implements GeneralEntity<Lobster
         private final LobsterEntity lobster;
         private final double speed;
         private BlockPos targetWater;
-        private LivingEntity lookTarget;
+        private LivingEntity threat;
+        private boolean panicMode;
+        private int repathCooldown;
 
         private RetreatToWaterGoal(LobsterEntity lobster, double speed) {
             this.lobster = lobster;
@@ -534,17 +552,31 @@ public class LobsterEntity extends AnimalEntity implements GeneralEntity<Lobster
         public boolean canStart() {
             if (this.lobster.hasSkill()) return false;
 
-            boolean lowHealth = this.lobster.getHealth() < 10.0F;
+            boolean lowHealth = this.lobster.getHealth() < this.lobster.getPanicRetreatHealthThreshold();
             boolean idleOnLand = this.lobster.getTarget() == null && !this.lobster.isTouchingWater();
 
             if (!lowHealth && !idleOnLand) return false;
 
+            this.panicMode = lowHealth;
+            this.threat = this.lobster.getAttacker();
+
+            if (this.threat == null || !this.threat.isAlive()) {
+                this.threat = this.lobster.getTarget();
+            }
+
             this.targetWater = this.lobster.findNearbyBroadWater(16, 6);
-            return this.targetWater != null;
+            return this.targetWater != null || (this.panicMode && this.threat != null);
         }
 
         @Override
         public boolean shouldContinue() {
+            if (this.panicMode) {
+                return this.lobster.isAlive()
+                        && this.lobster.getHealth() < this.lobster.getPanicRetreatHealthThreshold()
+                        && this.threat != null
+                        && this.threat.isAlive();
+            }
+
             return this.targetWater != null
                     && !this.lobster.isTouchingWater()
                     && !this.lobster.getNavigation().isIdle();
@@ -552,20 +584,54 @@ public class LobsterEntity extends AnimalEntity implements GeneralEntity<Lobster
 
         @Override
         public void start() {
-            this.lookTarget = this.lobster.getTarget();
-            this.lobster.setTarget(null);
             this.lobster.setRetreating(true);
+            this.lobster.setPanicRetreating(this.panicMode);
+            this.lobster.setTarget(null);
+            this.lobster.setAttacker(null);
             this.lobster.setTargetingUnderwater(true);
-            this.lobster.getNavigation().startMovingTo(
-                    this.targetWater.getX() + 0.5D,
-                    this.targetWater.getY() + 0.5D,
-                    this.targetWater.getZ() + 0.5D,
-                    this.speed
-            );
+            this.repathCooldown = 0;
+
+            if (this.targetWater != null) {
+                this.lobster.getNavigation().startMovingTo(
+                        this.targetWater.getX() + 0.5D,
+                        this.targetWater.getY() + 0.5D,
+                        this.targetWater.getZ() + 0.5D,
+                        this.speed
+                );
+            }
         }
 
         @Override
         public void tick() {
+            if (this.panicMode) {
+                if (this.threat != null && this.threat.isAlive()) {
+                    this.lobster.getLookControl().lookAt(this.threat, 30.0F, 30.0F);
+                }
+
+                if (--this.repathCooldown <= 0) {
+                    this.repathCooldown = 10;
+
+                    Vec3d fleePos = NoPenaltyTargeting.findFrom(
+                            this.lobster,
+                            12,
+                            6,
+                            this.threat != null ? this.threat.getPos() : this.lobster.getPos()
+                    );
+
+                    if (fleePos != null) {
+                        this.lobster.getNavigation().startMovingTo(fleePos.x, fleePos.y, fleePos.z, this.speed + 0.2D);
+                    } else if (this.targetWater != null) {
+                        this.lobster.getNavigation().startMovingTo(
+                                this.targetWater.getX() + 0.5D,
+                                this.targetWater.getY() + 0.5D,
+                                this.targetWater.getZ() + 0.5D,
+                                this.speed
+                        );
+                    }
+                }
+                return;
+            }
+
             if (this.targetWater == null) return;
 
             this.lobster.getNavigation().startMovingTo(
@@ -574,17 +640,16 @@ public class LobsterEntity extends AnimalEntity implements GeneralEntity<Lobster
                     this.targetWater.getZ() + 0.5D,
                     this.speed
             );
-
-            if (this.lookTarget != null && this.lookTarget.isAlive()) {
-                this.lobster.getLookControl().lookAt(this.lookTarget, 30.0F, 30.0F);
-            }
         }
 
         @Override
         public void stop() {
             this.targetWater = null;
-            this.lookTarget = null;
+            this.threat = null;
+            this.panicMode = false;
+            this.repathCooldown = 0;
             this.lobster.setRetreating(false);
+            this.lobster.setPanicRetreating(false);
             this.lobster.setTargetingUnderwater(false);
         }
     }
