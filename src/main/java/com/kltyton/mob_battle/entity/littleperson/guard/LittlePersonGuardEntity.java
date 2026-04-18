@@ -38,8 +38,7 @@ public class LittlePersonGuardEntity extends LittlePersonMilitiaEntity {
         builder.add(SKILL_COOLDOWN, 700);
         builder.add(LIFE, -1);
     }
-    @Override
-    public boolean canSkill() {
+    public boolean canSkillAttack() {
         if (!ModSkillEntityType.canSkill(this)) return false;
         return !this.getWorld().isClient() && !hasSkill() && getSkillCooldown() == 0 && this.getTarget() != null;
     }
@@ -52,7 +51,7 @@ public class LittlePersonGuardEntity extends LittlePersonMilitiaEntity {
     @Override
     public boolean tryAttack(ServerWorld world, Entity target) {
         if (!ModSkillEntityType.canSkill(this)) return false;
-        if (canSkill()) {
+        if (canSkillAttack()) {
             performSkill();
             return true;
         }

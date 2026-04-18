@@ -1,14 +1,16 @@
 package com.kltyton.mob_battle.items.misc;
 
+import com.kltyton.mob_battle.Mob_battle;
+import com.kltyton.mob_battle.components.ModComponents;
 import com.kltyton.mob_battle.items.ModFabricItem;
 import com.kltyton.mob_battle.items.ModItems;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ShieldItem;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.Hand;
 
 public class ObsidianLobsterItem extends ShieldItem implements ModFabricItem {
-    public boolean isDamageable = false;
     public ObsidianLobsterItem(Settings settings) {
         super(settings);
     }
@@ -27,18 +29,19 @@ public class ObsidianLobsterItem extends ShieldItem implements ModFabricItem {
     public void onDurabilityChange(ItemStack stack, int amount, ServerPlayerEntity player) {
         int oldDamage = stack.getDamage();
         int maxDamage = stack.getMaxDamage();
-
-        if (oldDamage < maxDamage && oldDamage + amount >= maxDamage && !isDamageable) {
+        boolean transformed = stack.getOrDefault(ModComponents.LOBSTER_TRANSFORMED, false);
+        if (oldDamage < maxDamage && oldDamage + amount >= maxDamage && !transformed) {
             ItemStack broken = new ItemStack(ModItems.BURST_OBSIDIAN_LOBSTER);
 
             if (player.getOffHandStack() == stack) {
-                player.setStackInHand(net.minecraft.util.Hand.OFF_HAND, broken);
+                player.setStackInHand(Hand.OFF_HAND, broken);
             } else if (player.getMainHandStack() == stack) {
-                player.setStackInHand(net.minecraft.util.Hand.MAIN_HAND, broken);
+                Mob_battle.LOGGER.info("Transformed");
+                player.setStackInHand(Hand.MAIN_HAND, broken);
             } else if (!player.getInventory().insertStack(broken)) {
                 player.dropItem(broken, false);
             }
-            isDamageable = true;
+            stack.set(ModComponents.LOBSTER_TRANSFORMED, true);
         }
     }
 }

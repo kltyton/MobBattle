@@ -5,6 +5,7 @@ import com.kltyton.mob_battle.block.ModBlockEntities;
 import com.kltyton.mob_battle.block.ModBlocks;
 import com.kltyton.mob_battle.client.screen.ModScreenHandlers;
 import com.kltyton.mob_battle.command.ModCommands;
+import com.kltyton.mob_battle.components.ModComponents;
 import com.kltyton.mob_battle.effect.ModEffects;
 import com.kltyton.mob_battle.enchantment.ModEnchantments;
 import com.kltyton.mob_battle.entity.ModEntities;
@@ -35,6 +36,7 @@ public class Mob_battle implements ModInitializer {
         ModTrackedDataHandler.init();
         ModSensorTypes.init();
         ModEntityAttributes.init();
+        ModComponents.init();
         ModEffects.init();
         ModItems.init();
         ModEnchantments.init();

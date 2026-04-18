@@ -123,6 +123,7 @@ public class EntityUtil {
         if (box == null) box = center.getBoundingBox().expand(radius);
         Predicate<T> predicate = entity -> {
             if (!entity.isAlive()) return false;
+            if (entity.isSpectator()) return false;
             if (!includeSelf && entity == center) return false;
             if (!filterClass.isInstance(entity)) return false;
             boolean isTeammate = entity.isTeammate(center);

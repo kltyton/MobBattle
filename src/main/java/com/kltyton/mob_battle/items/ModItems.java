@@ -1,6 +1,7 @@
 package com.kltyton.mob_battle.items;
 
 import com.kltyton.mob_battle.Mob_battle;
+import com.kltyton.mob_battle.components.ModComponents;
 import com.kltyton.mob_battle.components.ModConsumableComponents;
 import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.items.armor.ModBaseArmorItem;
@@ -283,6 +284,7 @@ public class ModItems {
                                                 Optional.of(SoundEvents.ITEM_SHIELD_BREAK)
                                         )
                                 )
+                                .component(ModComponents.LOBSTER_TRANSFORMED, false)
                                 .component(DataComponentTypes.BREAK_SOUND, SoundEvents.ITEM_SHIELD_BREAK)
                 )
         );

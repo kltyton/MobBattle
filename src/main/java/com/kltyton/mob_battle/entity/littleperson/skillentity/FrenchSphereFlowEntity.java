@@ -44,12 +44,19 @@ public class FrenchSphereFlowEntity extends BaseSkillLittlePersonEntity {
     public void tick() {
         super.tick();
         if (!this.getWorld().isClient()) {
-            if (this.canSkill("attack2")) performSkill("attack2");
-            if (this.canSkill("attack3")) performSkill("attack3");
-            if (this.canSkill("attack4")) performSkill("attack4");
+            runSkill();
         }
     }
 
+    public void runSkill() {
+        String[] skills = {"attack6", "attack4", "attack3", "attack2"};
+        for (String skill : skills) {
+            if (this.canSkill(skill)) {
+                performSkill(skill);
+                return;
+            }
+        }
+    }
     @Override
     public void heal() {
         this.heal(3.0F);

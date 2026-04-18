@@ -200,7 +200,7 @@ public abstract class HighbirdBaseEntity extends HighbirdAndEggEntity {
     }
     @Override
     public boolean tryAttack(ServerWorld world, Entity target) {
-        if (ModSkillEntityType.canSkill(this)) return false;
+        if (!ModSkillEntityType.canSkill(this)) return false;
         // 如果正在睡觉，先醒来再攻击
         if (isSleeping()) {
             wake();
