@@ -26,6 +26,10 @@ repositories {
     maven {
         url "https://cursemaven.com"
     }
+    maven {
+        name = "Fuzs Mod Resources"
+        url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/"
+    }
 }
 loom {
     accessWidenerPath = file("src/main/resources/kltyton.accesswidener")
@@ -42,6 +46,7 @@ dependencies {
     modImplementation "software.bernie.geckolib:geckolib-fabric-${minecraft_version}:${geckolib_version}"
     include(modImplementation "curse.maven:xxl-packets-962921:5485536")
     include(modImplementation "curse.maven:packet-fixer-689467:7221528")
+    include(modApi("fuzs.forgeconfigapiport:forgeconfigapiport-fabric:21.8.2"))
 }
 
 processResources {

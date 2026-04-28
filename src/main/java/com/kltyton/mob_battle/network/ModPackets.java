@@ -69,5 +69,9 @@ public class ModPackets {
                 ILeadUpdatePayload.ID,
                 ILeadUpdatePayload.CODEC
         );
+        PayloadTypeRegistry.playS2C().register(
+                PermissionPayload.ID,
+                PermissionPayload.CODEC
+        );
     }
 }

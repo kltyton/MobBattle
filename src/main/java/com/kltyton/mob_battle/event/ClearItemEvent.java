@@ -33,7 +33,9 @@ public final class ClearItemEvent {
             }
         });
     }
-
+    public static boolean isModItem(ItemStack stack) {
+        return isBannedItem(stack);
+    }
     private static boolean isBannedItem(ItemStack stack) {
         return !stack.isEmpty() && isBannedRawId(Item.getRawId(stack.getItem()));
     }

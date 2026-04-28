@@ -1,11 +1,9 @@
 package com.kltyton.mob_battle.network;
 
 import com.kltyton.mob_battle.accessor.ILead;
+import com.kltyton.mob_battle.config.whitelist.ClientPermissionState;
 import com.kltyton.mob_battle.items.itemgroup.ClientTagManager;
-import com.kltyton.mob_battle.network.packet.ILeadUpdatePayload;
-import com.kltyton.mob_battle.network.packet.ItemGroupPayload;
-import com.kltyton.mob_battle.network.packet.PlayerSkillUtilPayload;
-import com.kltyton.mob_battle.network.packet.SoundPayload;
+import com.kltyton.mob_battle.network.packet.*;
 import com.kltyton.mob_battle.sounds.bgm.ClientBgmManager;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.MinecraftClient;
@@ -72,6 +70,13 @@ public class ClientPlayNetwork {
                         case "setPerson_3" -> client.options.setPerspective(Perspective.THIRD_PERSON_FRONT);
                     }
                 }
+            });
+        });
+        ClientPlayNetworking.registerGlobalReceiver(PermissionPayload.ID, (payload, context) -> {
+            MinecraftClient client = context.client();
+            boolean isWhitelisted = payload.isWhitelisted();
+            client.execute(() -> {
+                ClientPermissionState.setWhitelisted(isWhitelisted);
             });
         });
     }

@@ -168,6 +168,7 @@ public class MilitiaArcherVillager extends SnowGolemEntity implements Angerable 
             // 设置箭的伤害
             arrowEntity.setDamage(f);
             arrowEntity.setOwner(this);
+            arrowEntity.setNoGravity(true);
             double adjustedY = targetY + distance * 0.5; // 调整箭的发射高度
             arrowEntity.setVelocity(targetX, adjustedY - arrowEntity.getY(), targetZ, 1.6F, 0.1F); // 调整速度和轨迹
             // 发射箭

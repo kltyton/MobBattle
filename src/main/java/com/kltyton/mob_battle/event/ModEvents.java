@@ -5,6 +5,7 @@ import com.kltyton.mob_battle.event.flowerfairy.FlowerFairyEntityEvent;
 import com.kltyton.mob_battle.event.item.AreaGravityDeviceItemEvent;
 import com.kltyton.mob_battle.event.item.GuardianSealItemEvent;
 import com.kltyton.mob_battle.event.player.DeathPenaltyEvents;
+import com.kltyton.mob_battle.event.player.PermissionEvents;
 import com.kltyton.mob_battle.event.team.TeamFightHandler;
 
 public class ModEvents {
@@ -20,5 +21,6 @@ public class ModEvents {
         GuardianSealItemEvent.init();
         AreaGravityDeviceItemEvent.init();
         DeathPenaltyEvents.init();
+        PermissionEvents.init();
     }
 }
