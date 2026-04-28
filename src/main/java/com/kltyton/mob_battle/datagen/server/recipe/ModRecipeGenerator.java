@@ -74,7 +74,7 @@ public class ModRecipeGenerator extends FabricRecipeProvider {
                         .pattern("a")
                         .pattern("b")
                         .input('a', Items.IRON_INGOT)
-                        .input('b', Items.GOLD_INGOT)
+                        .input('b', Items.LAPIS_LAZULI)
                         .group("bullet") //将其放入名为“multi_bench”的组中-组显示在配方书的一个槽中
                         .criterion(hasItem(Items.CRAFTING_TABLE), conditionsFromItem(Items.CRAFTING_TABLE))
                         .offerTo(exporter);

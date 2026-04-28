@@ -11,7 +11,7 @@ import net.minecraft.component.type.NbtComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.mob.PiglinEntity;
+import net.minecraft.entity.mob.AbstractPiglinEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -317,15 +317,15 @@ public class PiglinCannonItem extends Item {
         double remain = amount;
 
         while (remain > 0.0D) {
-            List<PiglinEntity> piglins = new ArrayList<>(
-                    EntityUtil.getNearbyEntity(player, PiglinEntity.class, 8.0, false, EntityUtil.TeamFilter.ALL)
+            List<AbstractPiglinEntity> piglins = new ArrayList<>(
+                    EntityUtil.getNearbyEntity(player, AbstractPiglinEntity.class, 8.0, false, EntityUtil.TeamFilter.ALL)
             );
 
             if (piglins.isEmpty()) {
                 return false;
             }
 
-            PiglinEntity piglin = piglins.get(world.random.nextInt(piglins.size()));
+            AbstractPiglinEntity piglin = piglins.get(world.random.nextInt(piglins.size()));
             float health = piglin.getHealth();
             double take = Math.min(remain, health);
 

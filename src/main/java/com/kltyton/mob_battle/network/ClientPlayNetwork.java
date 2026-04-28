@@ -1,6 +1,7 @@
 package com.kltyton.mob_battle.network;
 
 import com.kltyton.mob_battle.accessor.ILead;
+import com.kltyton.mob_battle.bossbar.CustomBossBarClientState;
 import com.kltyton.mob_battle.config.whitelist.ClientPermissionState;
 import com.kltyton.mob_battle.items.itemgroup.ClientTagManager;
 import com.kltyton.mob_battle.network.packet.*;
@@ -77,6 +78,16 @@ public class ClientPlayNetwork {
             boolean isWhitelisted = payload.isWhitelisted();
             client.execute(() -> {
                 ClientPermissionState.setWhitelisted(isWhitelisted);
+            });
+        });
+        ClientPlayNetworking.registerGlobalReceiver(CustomBossBarPayload.ID, (payload, context) -> {
+            MinecraftClient client = context.client();
+            client.execute(() -> {
+                if (payload.visible()) {
+                    CustomBossBarClientState.set(payload.bossBarUuid(), payload.styleId());
+                } else {
+                    CustomBossBarClientState.remove(payload.bossBarUuid());
+                }
             });
         });
     }

@@ -7,6 +7,7 @@ import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.hud.BossBarHud;
 import net.minecraft.client.gui.hud.InGameHud;
+import net.minecraft.client.render.RenderTickCounter;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.Identifier;
 import org.spongepowered.asm.mixin.Mixin;
@@ -22,30 +23,37 @@ public abstract class CustomHealthBarMixin {
     @Shadow
     public abstract BossBarHud getBossBarHud();
 
-    // ==================== 配置区 ====================
     @Unique
-    private static final Identifier HEALTH_FRAME = Identifier.of(Mob_battle.MOD_ID, "textures/gui/health_frame.png");
-    @Unique
-    private static final Identifier HEALTH_PROGRESS = Identifier.of(Mob_battle.MOD_ID, "textures/gui/health_progress.png");
+    private static final Identifier HEALTH_FRAME =
+            Identifier.of(Mob_battle.MOD_ID, "textures/gui/health_frame.png");
 
-    // 血条宽高（必须和你纹理像素尺寸一致！）
+    @Unique
+    private static final Identifier HEALTH_PROGRESS =
+            Identifier.of(Mob_battle.MOD_ID, "textures/gui/health_progress.png");
+
     @Unique
     private static final int BAR_WIDTH = 224;
+
     @Unique
     private static final int BAR_HEIGHT = 48;
+
     @Unique
     private static final int PER_BOSS_OFFSET = 19;
+
+    @Unique
+    private static final int CUSTOM_BAR_SPACING = 58;
+
     @Unique
     private static final int BASE_Y = 0;
 
-    // 触发自定义血条的阈值（血量 + 吸收护盾 > 20 即 10 颗心以上就切换）
-    // 你可以改成 player.getMaxHealth() > 40.0f 或者任何条件
     @Unique
     private boolean shouldUseCustomHealthBar(PlayerEntity player) {
-        return ((IPlayerEntityAccessor)player).isUsingGeckoLib() || player.getMaxHealth() >= 20000;
+        return ((IPlayerEntityAccessor) player).isUsingGeckoLib() || player.getMaxHealth() >= 20000;
     }
-    // ===============================================
 
+    /**
+     * 仍然保留：本地玩家自己满足条件时，隐藏原版红心，改成你的自定义血条。
+     */
     @Inject(
             method = "renderHealthBar",
             at = @At("HEAD"),
@@ -68,46 +76,127 @@ public abstract class CustomHealthBarMixin {
         if (!shouldUseCustomHealthBar(player)) {
             return;
         }
-        int bossCount = this.getBossBarHud().bossBars.size();
-        int offset = bossCount * PER_BOSS_OFFSET;
 
-        // 最终 y 位置（顶部从 12 开始 + 所有 Boss 条占用的空间）
-        int customBarY = BASE_Y + offset;
-        // 取消原版红心渲染
+        int bossCount = this.getBossBarHud().bossBars.size();
+        int customBarY = BASE_Y + bossCount * PER_BOSS_OFFSET;
+
         renderCustomHealthBar(context, player, customBarY);
         ci.cancel();
+    }
+
+    /**
+     * 新增：每帧额外绘制其他玩家的“Boss 血条”。
+     */
+    @Inject(
+            method = "render",
+            at = @At("TAIL")
+    )
+    private void mobBattle$renderOtherPlayerBossHealthBars(
+            DrawContext context, RenderTickCounter tickCounter, CallbackInfo ci
+    ) {
+        MinecraftClient client = MinecraftClient.getInstance();
+
+        if (client.world == null || client.player == null) {
+            return;
+        }
+
+        int bossCount = this.getBossBarHud().bossBars.size();
+        int barIndex = 0;
+
+        for (PlayerEntity player : client.world.getPlayers()) {
+            // 本地玩家已经由 renderHealthBar 处理，避免重复画
+            if (player == client.player) {
+                continue;
+            }
+
+            if (!player.isAlive()) {
+                continue;
+            }
+
+            if (!shouldUseCustomHealthBar(player)) {
+                continue;
+            }
+
+            // 隐身玩家不显示
+            // if (player.isInvisibleTo(client.player)) {
+            //     continue;
+            // }
+
+            int barY = BASE_Y
+                    + bossCount * PER_BOSS_OFFSET
+                    + barIndex * CUSTOM_BAR_SPACING;
+
+            renderCustomHealthBar(context, player, barY);
+            barIndex++;
+        }
     }
 
     @Unique
     private void renderCustomHealthBar(DrawContext context, PlayerEntity player, int barY) {
         MinecraftClient client = MinecraftClient.getInstance();
+
         int screenWidth = client.getWindow().getScaledWidth();
-        // 屏幕顶部中央（类似 Boss 血条位置，可自行改 y 值避开其他 HUD）
         int barX = (screenWidth - BAR_WIDTH) / 2;
+
         float currentHealth = player.getHealth();
         float maxH = player.getMaxHealth();
         float absorption = player.getAbsorptionAmount();
 
-        // 进度（包含吸收护盾，超出 100% 也显示满）
-        float progress = Math.min(1.0f, (currentHealth + absorption) / maxH);
-
-        // 1. 绘制外框
-        context.drawTexture(RenderPipelines.GUI_TEXTURED, HEALTH_FRAME, barX, barY, 0, 0, BAR_WIDTH, BAR_HEIGHT, BAR_WIDTH, BAR_HEIGHT);
-
-        // 2. 绘制内部进度条（从左向右填充）
-        int filledWidth = (int) (BAR_WIDTH * progress);
-        if (filledWidth > 0) {
-            context.drawTexture(RenderPipelines.GUI_TEXTURED, HEALTH_PROGRESS, barX, barY, 0, 0, filledWidth, BAR_HEIGHT, BAR_WIDTH, BAR_HEIGHT);
+        if (maxH <= 0.0F) {
+            return;
         }
 
-        String text = (int) currentHealth + " / " + (int) maxH;
-        if (absorption > 0) text += " (+" + (int) absorption + ")";
+        float progress = Math.min(1.0F, (currentHealth + absorption) / maxH);
+
+        context.drawTexture(
+                RenderPipelines.GUI_TEXTURED,
+                HEALTH_FRAME,
+                barX,
+                barY,
+                0,
+                0,
+                BAR_WIDTH,
+                BAR_HEIGHT,
+                BAR_WIDTH,
+                BAR_HEIGHT
+        );
+
+        int filledWidth = (int) (BAR_WIDTH * progress);
+
+        if (filledWidth > 0) {
+            context.drawTexture(
+                    RenderPipelines.GUI_TEXTURED,
+                    HEALTH_PROGRESS,
+                    barX,
+                    barY,
+                    0,
+                    0,
+                    filledWidth,
+                    BAR_HEIGHT,
+                    BAR_WIDTH,
+                    BAR_HEIGHT
+            );
+        }
+
+        String text = player.getName().getString()
+                + "  "
+                + (int) currentHealth
+                + " / "
+                + (int) maxH;
+
+        if (absorption > 0) {
+            text += " (+" + (int) absorption + ")";
+        }
+
         int textWidth = client.textRenderer.getWidth(text);
+
         context.drawText(
-            client.textRenderer, text,
-            barX + (BAR_WIDTH - textWidth) / 2,
-            barY + BAR_HEIGHT + 4,
-            0xFFFFFF, false
+                client.textRenderer,
+                text,
+                barX + (BAR_WIDTH - textWidth) / 2,
+                barY + BAR_HEIGHT,
+                0xFFFFFFFF,
+                false
         );
     }
 }

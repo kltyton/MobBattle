@@ -73,5 +73,9 @@ public class ModPackets {
                 PermissionPayload.ID,
                 PermissionPayload.CODEC
         );
+        PayloadTypeRegistry.playS2C().register(
+                CustomBossBarPayload.ID,
+                CustomBossBarPayload.CODEC
+        );
     }
 }

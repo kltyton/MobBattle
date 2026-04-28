@@ -4,6 +4,8 @@ import com.kltyton.mob_battle.entity.ModSkillEntityType;
 import com.kltyton.mob_battle.entity.accessor.BigBossLookControl;
 import com.kltyton.mob_battle.entity.accessor.BigBossMoveControl;
 import com.kltyton.mob_battle.entity.accessor.BigBossNavigation;
+import com.kltyton.mob_battle.bossbar.CustomBossBarStyles;
+import com.kltyton.mob_battle.bossbar.CustomBossBarSync;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
 import com.kltyton.mob_battle.utils.EnchantmentUtil;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -104,12 +106,14 @@ public class VindicatorGeneralEntity extends VindicatorEntity implements GeoEnti
     @Override
     public void onStartedTrackingBy(ServerPlayerEntity player) {
         super.onStartedTrackingBy(player);
+        CustomBossBarSync.add(player, this.bossBar.getUuid(), CustomBossBarStyles.VINDICATOR_GENERAL);
         this.bossBar.addPlayer(player);
     }
     @Override
     public void onStoppedTrackingBy(ServerPlayerEntity player) {
         super.onStoppedTrackingBy(player);
         this.bossBar.removePlayer(player);
+        CustomBossBarSync.remove(player, this.bossBar.getUuid());
     }
     @Override
     protected void mobTick(ServerWorld world) {

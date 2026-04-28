@@ -5,6 +5,7 @@ import net.minecraft.entity.CrossbowUser;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.ai.NoPenaltyTargeting;
 import net.minecraft.entity.ai.RangedAttackMob;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
@@ -19,6 +20,7 @@ import net.minecraft.item.*;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.Hand;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.LocalDifficulty;
 import net.minecraft.world.World;
@@ -47,6 +49,15 @@ public abstract class PiglinBruteEntityMixin extends AbstractPiglinEntity implem
 
     @Unique
     private int mob_battle$bowTargetSeeingTicker = 0;
+
+    @Unique
+    private int mob_battle$bowRetreatCooldown = 0;
+
+    @Unique
+    private static final double BOW_ATTACK_RANGE_SQUARED = 225.0D;
+
+    @Unique
+    private static final double BOW_MIN_DISTANCE_SQUARED = 64.0D;
 
     @Override
     protected void initDataTracker(DataTracker.Builder builder) {
@@ -161,6 +172,7 @@ public abstract class PiglinBruteEntityMixin extends AbstractPiglinEntity implem
             this.setAttacking(false);
             this.mob_battle$bowCooldown = 0;
             this.mob_battle$bowTargetSeeingTicker = 0;
+            this.mob_battle$bowRetreatCooldown = 0;
             return;
         }
 
@@ -179,11 +191,7 @@ public abstract class PiglinBruteEntityMixin extends AbstractPiglinEntity implem
 
         this.getLookControl().lookAt(target, 30.0F, 30.0F);
 
-        if (distanceSq > 225.0D) {
-            this.getNavigation().startMovingTo(target, 1.0D);
-        } else {
-            this.getNavigation().stop();
-        }
+        this.mob_battle$updateBowMovement(target, distanceSq);
 
         if (this.isUsingItem()) {
             this.setAttacking(true);
@@ -205,6 +213,28 @@ public abstract class PiglinBruteEntityMixin extends AbstractPiglinEntity implem
             } else if (this.mob_battle$bowTargetSeeingTicker >= -60) {
                 this.setCurrentHand(this.mob_battle$getBowHand());
             }
+        }
+    }
+
+    @Unique
+    private void mob_battle$updateBowMovement(LivingEntity target, double distanceSq) {
+        if (distanceSq > BOW_ATTACK_RANGE_SQUARED) {
+            this.getNavigation().startMovingTo(target, 1.0D);
+            this.mob_battle$bowRetreatCooldown = 0;
+        } else if (distanceSq < BOW_MIN_DISTANCE_SQUARED) {
+            if (this.mob_battle$bowRetreatCooldown > 0) {
+                this.mob_battle$bowRetreatCooldown--;
+                return;
+            }
+
+            this.mob_battle$bowRetreatCooldown = 5;
+            Vec3d retreatPos = NoPenaltyTargeting.findFrom(this, 10, 7, target.getPos());
+            if (retreatPos != null) {
+                this.getNavigation().startMovingTo(retreatPos.x, retreatPos.y, retreatPos.z, 1.2D);
+            }
+        } else {
+            this.getNavigation().stop();
+            this.mob_battle$bowRetreatCooldown = 0;
         }
     }
 

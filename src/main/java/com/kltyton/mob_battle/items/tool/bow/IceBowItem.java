@@ -168,8 +168,10 @@ public class IceBowItem extends BaseBow {
             arrow.setOwner(shooter);
             arrow.setPosition(spawnPos.x, spawnPos.y, spawnPos.z);
 
-            float yawOffset = (world.random.nextFloat() - 0.5F) * 18.0F;
-            float pitchOffset = (world.random.nextFloat() - 0.5F) * 10.0F;
+            boolean centerShot = i == 0;
+            float yawOffset = centerShot ? 0.0F : (world.random.nextFloat() - 0.5F) * 18.0F;
+            float pitchOffset = centerShot ? 0.0F : (world.random.nextFloat() - 0.5F) * 10.0F;
+            float divergence = centerShot ? 0.0F : 1.6F;
 
             arrow.setVelocity(
                     shooter,
@@ -177,7 +179,7 @@ public class IceBowItem extends BaseBow {
                     shooter.getYaw() + yawOffset,
                     0.0F,
                     pull * 3.0F,
-                    1.6F
+                    divergence
             );
 
             arrow.setCritical(fullyCharged);

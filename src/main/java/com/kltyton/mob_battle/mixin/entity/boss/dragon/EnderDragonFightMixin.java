@@ -1,6 +1,8 @@
 package com.kltyton.mob_battle.mixin.entity.boss.dragon;
 
 import net.minecraft.block.Blocks;
+import net.minecraft.entity.boss.ServerBossBar;
+import net.minecraft.entity.boss.dragon.EnderDragonEntity;
 import net.minecraft.entity.boss.dragon.EnderDragonFight;
 import net.minecraft.entity.boss.dragon.EnderDragonSpawnState;
 import net.minecraft.entity.decoration.EndCrystalEntity;
@@ -24,6 +26,7 @@ import java.util.List;
 public abstract class EnderDragonFightMixin {
 
     @Shadow private EnderDragonSpawnState dragonSpawnState;
+    @Shadow @Final private ServerBossBar bossBar;
     @Shadow @Final private ServerWorld world;
     @Shadow private List<EndCrystalEntity> crystals;
     @Shadow private BlockPos exitPortalLocation;
@@ -31,6 +34,22 @@ public abstract class EnderDragonFightMixin {
     // Unique 字段模拟数据包中的 trueEnding_storage
     @Unique
     private int customRespawnTimer = -1;
+
+    @Inject(method = "updateFight", at = @At("TAIL"))
+    private void updateDragonBossBarName(EnderDragonEntity dragon, CallbackInfo ci) {
+        updateDragonBossBarName(dragon);
+    }
+
+    @Unique
+    private void updateDragonBossBarName(EnderDragonEntity dragon) {
+        if (dragon == null) {
+            return;
+        }
+
+        int health = Math.max(0, (int) Math.ceil(dragon.getHealth()));
+        int maxHealth = Math.max(1, (int) Math.ceil(dragon.getMaxHealth()));
+        this.bossBar.setName(dragon.getDisplayName().copy().append(" | " + health + "/" + maxHealth));
+    }
 
     @Inject(method = "tick", at = @At("TAIL"))
     private void injectCustomRespawnEffects(CallbackInfo ci) {

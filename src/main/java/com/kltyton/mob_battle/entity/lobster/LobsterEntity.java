@@ -332,6 +332,15 @@ public class LobsterEntity extends AnimalEntity implements GeneralEntity<Lobster
     @Nullable
     @Override
     public PassiveEntity createChild(ServerWorld world, PassiveEntity mate) {
+        if (mate instanceof LobsterEntity other
+                && this.getType() == ModEntities.LOBSTER
+                && other.getType() == ModEntities.LOBSTER
+                && this.getVariant() == LobsterVariant.GOLD
+                && other.getVariant() == LobsterVariant.GOLD
+                && world.random.nextFloat() < 0.02F) {
+            return ModEntities.MAGMA_LOBSTER.create(world, SpawnReason.BREEDING);
+        }
+
         LobsterEntity child = ModEntities.LOBSTER.create(world, SpawnReason.BREEDING);
         if (child == null) return null;
 

@@ -420,43 +420,68 @@ public class ServerPlayNetwork {
             ServerWorld world = player.getWorld();
             context.server().execute(() -> {
                 if (ArmorUtil.hasFullArmor(player, ModMaterial.ZIJIN_ARMOR_INSTANCE)) {
-                    ItemStack cooldownItem = Items.AIR.getDefaultStack();
-                    if (player.getItemCooldownManager().isCoolingDown(cooldownItem)) {
-                        // 获取剩余冷却进度 (0.0 到 1.0 之间的浮点数)
-                        float progress = player.getItemCooldownManager().getCooldownProgress(cooldownItem, 0);
-                        float remainingSeconds = (progress * 700) / 20.0F;
-                        player.sendMessage(
-                                Text.literal("套装技能冷却中！还需等待 " + String.format("%.1f", remainingSeconds) + " 秒")
-                                        .formatted(Formatting.RED),
-                                true
-                        );
-                        return;
-                    }
-                    List<LivingEntity> firstRangeTargets = EntityUtil.getNearbyEntity(player, LivingEntity.class, 5.0, false, EntityUtil.TeamFilter.EXCLUDE_TEAM);
-                    for (LivingEntity target : firstRangeTargets) {
-                        int currentAmplifier = -1; // -1 表示当前没有该效果
-                        if (target.hasStatusEffect(ModEffects.PIG_SPIRIT_MARK_ENTRY)) {
-                            currentAmplifier = target.getStatusEffect(ModEffects.PIG_SPIRIT_MARK_ENTRY).getAmplifier();
+                    if (payload.skill_id() == 0) {
+                        ItemStack cooldownItem = Items.AIR.getDefaultStack();
+                        if (player.getItemCooldownManager().isCoolingDown(cooldownItem)) {
+                            // 获取剩余冷却进度 (0.0 到 1.0 之间的浮点数)
+                            float progress = player.getItemCooldownManager().getCooldownProgress(cooldownItem, 0);
+                            float remainingSeconds = (progress * 700) / 20.0F;
+                            player.sendMessage(
+                                    Text.literal("套装技能冷却中！还需等待 " + String.format("%.1f", remainingSeconds) + " 秒")
+                                            .formatted(Formatting.RED),
+                                    true
+                            );
+                            return;
                         }
-                        int newAmplifier = Math.min(currentAmplifier + 5, 79);
-                        target.addStatusEffect(new StatusEffectInstance(ModEffects.PIG_SPIRIT_MARK_ENTRY, 160, newAmplifier, false,  false));
-                    }
+                        List<LivingEntity> firstRangeTargets = EntityUtil.getNearbyEntity(player, LivingEntity.class, 5.0, false, EntityUtil.TeamFilter.EXCLUDE_TEAM);
+                        for (LivingEntity target : firstRangeTargets) {
+                            int currentAmplifier = -1; // -1 表示当前没有该效果
+                            if (target.hasStatusEffect(ModEffects.PIG_SPIRIT_MARK_ENTRY)) {
+                                currentAmplifier = target.getStatusEffect(ModEffects.PIG_SPIRIT_MARK_ENTRY).getAmplifier();
+                            }
+                            int newAmplifier = Math.min(currentAmplifier + 5, 79);
+                            target.addStatusEffect(new StatusEffectInstance(ModEffects.PIG_SPIRIT_MARK_ENTRY, 20 * 20, newAmplifier, false, false));
+                        }
 
-                    List<LivingEntity> secondRangeTargets = EntityUtil.getNearbyEntity(player, LivingEntity.class, 20.0, false, EntityUtil.TeamFilter.EXCLUDE_TEAM);
-                    for (LivingEntity target : secondRangeTargets) {
-                        if (target.hasStatusEffect(ModEffects.PIG_SPIRIT_MARK_ENTRY)) {
-                            StatusEffectInstance effect = target.getStatusEffect(ModEffects.PIG_SPIRIT_MARK_ENTRY);
-                            int level = effect.getAmplifier() + 1;
-                            // 造成魔法伤害 (等同于等级)
-                            target.damage(world, player.getDamageSources().indirectMagic(player, player), (float) level);
-                            // 造成攻击伤害 (等级的 5 倍)
-                            // 使用 playerAttack 确保伤害来源被计入玩家
-                            target.damage(world, player.getDamageSources().playerAttack(player), (float) (level * 5));
-                            target.removeStatusEffect(ModEffects.PIG_SPIRIT_MARK_ENTRY);
+                        List<LivingEntity> secondRangeTargets = EntityUtil.getNearbyEntity(player, LivingEntity.class, 20.0, false, EntityUtil.TeamFilter.EXCLUDE_TEAM);
+                        for (LivingEntity target : secondRangeTargets) {
+                            if (target.hasStatusEffect(ModEffects.PIG_SPIRIT_MARK_ENTRY)) {
+                                StatusEffectInstance effect = target.getStatusEffect(ModEffects.PIG_SPIRIT_MARK_ENTRY);
+                                int level = effect.getAmplifier() + 1;
+                                // 造成魔法伤害 (等同于等级)
+                                target.damage(world, player.getDamageSources().indirectMagic(player, player), (float) level);
+                                // 造成攻击伤害 (等级的 5 倍)
+                                // 使用 playerAttack 确保伤害来源被计入玩家
+                                target.damage(world, player.getDamageSources().playerAttack(player), (float) (level * 5));
+                                target.removeStatusEffect(ModEffects.PIG_SPIRIT_MARK_ENTRY);
+                            }
                         }
+                        world.spawnParticles(ParticleTypes.EXPLOSION, player.getX(), player.getY(), player.getZ(), 1, 0, 0, 0, 0);
+                        player.getItemCooldownManager().set(cooldownItem, 700);
+                    } else if (payload.skill_id() == 1) {
+                        ItemStack cooldownItem = Items.COMMAND_BLOCK_MINECART.getDefaultStack();
+                        if (player.getItemCooldownManager().isCoolingDown(cooldownItem)) {
+                            float progress = player.getItemCooldownManager().getCooldownProgress(cooldownItem, 0);
+                            float remainingSeconds = (progress * 500) / 20.0F;
+                            player.sendMessage(
+                                    Text.literal("套装技能冷却中！还需等待 " + String.format("%.1f", remainingSeconds) + " 秒")
+                                            .formatted(Formatting.RED),
+                                    true
+                            );
+                            return;
+                        }
+                        List<LivingEntity> targets = EntityUtil.getNearbyEntity(player, LivingEntity.class, 5.0, false, EntityUtil.TeamFilter.EXCLUDE_TEAM);
+                        for (LivingEntity target : targets) {
+                            target.damage(world, player.getDamageSources().playerAttack(player), 150.0F);
+                            int currentAmplifier = -1;
+                            if (target.hasStatusEffect(ModEffects.PIG_SPIRIT_MARK_ENTRY)) {
+                                currentAmplifier = target.getStatusEffect(ModEffects.PIG_SPIRIT_MARK_ENTRY).getAmplifier();
+                            }
+                            int newAmplifier = Math.min(currentAmplifier + 5, 79);
+                            target.addStatusEffect(new StatusEffectInstance(ModEffects.PIG_SPIRIT_MARK_ENTRY, 20 * 20, newAmplifier, false, false));
+                        }
+                        player.getItemCooldownManager().set(cooldownItem, 500);
                     }
-                    world.spawnParticles(ParticleTypes.EXPLOSION, player.getX(), player.getY(), player.getZ(), 1, 0, 0, 0, 0);
-                    player.getItemCooldownManager().set(cooldownItem, 700);
                 }
             });
         });

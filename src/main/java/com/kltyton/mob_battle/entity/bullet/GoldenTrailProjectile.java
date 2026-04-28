@@ -203,7 +203,7 @@ public class GoldenTrailProjectile extends TrueDamageProjectile {
             if (current != null) {
                 amplifier = Math.min(current.getAmplifier() + 1, 79);
             }
-            target.addStatusEffect(new StatusEffectInstance(ModEffects.PIG_SPIRIT_MARK_ENTRY, 160, amplifier));
+            target.addStatusEffect(new StatusEffectInstance(ModEffects.PIG_SPIRIT_MARK_ENTRY, 20 * 20, amplifier));
             target.damage(world, target.getDamageSources().magic(), 10.0F);
         }
     }

@@ -20,7 +20,8 @@ public class ModKeyBinding {
     public static KeyBinding keyTreatmentDroneMode;     // 默认 Z
     public static KeyBinding keyMasterScepter;
     public static KeyBinding shieldKey;
-    public static KeyBinding keyZiJin;
+    public static KeyBinding keyZiJin_0;
+    public static KeyBinding keyZiJin_1;
     public static KeyBinding keyPlayerRetreatStepRun;
     public static KeyBinding keyPlayerAttack2Run;
     public static KeyBinding keyPlayerLeftWhipRun;
@@ -64,10 +65,16 @@ public class ModKeyBinding {
                 GLFW.GLFW_KEY_C,
                 "category.mob_battle.general"
         ));
-        keyZiJin = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+        keyZiJin_0 = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 "key.mob_battle.zi_jin",
                 InputUtil.Type.KEYSYM,
                 GLFW.GLFW_KEY_C,
+                "category.mob_battle.general"
+        ));
+        keyZiJin_1 = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+                "key.mob_battle.zi_jin",
+                InputUtil.Type.KEYSYM,
+                GLFW.GLFW_KEY_X,
                 "category.mob_battle.general"
         ));
         keyPlayerRetreatStepRun = KeyBindingHelper.registerKeyBinding(new KeyBinding(
@@ -218,9 +225,14 @@ public class ModKeyBinding {
                         ClientPlayNetworking.send(new ShieldSpawnPayload())
                 );
             }
-            while (keyZiJin.wasPressed()) {
+            while (keyZiJin_0.wasPressed()) {
                 client.execute(() ->
-                        ClientPlayNetworking.send(new ZiJinPayload())
+                        ClientPlayNetworking.send(new ZiJinPayload(0))
+                );
+            }
+            while (keyZiJin_1.wasPressed()) {
+                client.execute(() ->
+                        ClientPlayNetworking.send(new ZiJinPayload(1))
                 );
             }
             while (keyPiglinCannonItemMode.wasPressed()) {

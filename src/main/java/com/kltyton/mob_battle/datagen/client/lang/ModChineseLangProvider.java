@@ -92,7 +92,7 @@ public class ModChineseLangProvider extends FabricLanguageProvider {
 
 
         translationBuilder.add(ModLangUtils.getTranslationKey(ModEffects.TRUE_INVISIBLE), "超级隐形");
-        translationBuilder.add(ModLangUtils.getTranslationKey(ModEffects.BLOCK), "格挡");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModEffects.BLOCK), "骨骼强化");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModEffects.DISARM), "缴械");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModEffects.INFESTATION), "虫扰");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModEffects.HEART_EATER), "噬心");

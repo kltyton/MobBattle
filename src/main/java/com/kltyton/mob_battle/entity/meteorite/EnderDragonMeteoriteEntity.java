@@ -22,6 +22,8 @@ import software.bernie.geckolib.animation.RawAnimation;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 public class EnderDragonMeteoriteEntity extends MeteoriteEntity implements GeoEntity {
+    private static final double MAX_SHOCKWAVE_RADIUS = 25.0;
+
     public EnderDragonMeteoriteEntity(EntityType<? extends CustomFireballEntity> entityType, World world) {
         super(entityType, world);
     }
@@ -48,7 +50,7 @@ public class EnderDragonMeteoriteEntity extends MeteoriteEntity implements GeoEn
         java.util.Set<Integer> hitEntities = new java.util.HashSet<>();
 
         int totalSteps = 800;           // ← 关键：原来400，现在800，扩散慢一倍
-        double maxRadius = 800.0;
+        double maxRadius = MAX_SHOCKWAVE_RADIUS;
         double wallHeight = 6.0;        // ← 加高一点，更有冲击波高度
         double thickness = 12.0;        // ← 厚度加大，烟雾更连贯
 

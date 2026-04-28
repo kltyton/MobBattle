@@ -1,6 +1,7 @@
 package com.kltyton.mob_battle.entity.bullet;
 
 import com.kltyton.mob_battle.entity.ModEntities;
+import com.kltyton.mob_battle.items.ModItems;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.PotionContentsComponent;
 import net.minecraft.entity.Entity;
@@ -10,7 +11,6 @@ import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.particle.TintedParticleEffect;
 import net.minecraft.util.math.MathHelper;
@@ -91,7 +91,7 @@ public class BulletEntity extends TrueDamageProjectile {
                 && !this.getPotionContents().equals(PotionContentsComponent.DEFAULT)
                 && this.inGroundTime >= 600) {
             this.getWorld().sendEntityStatus(this, (byte) 0);
-            this.setStack(new ItemStack(Items.IRON_BLOCK));
+            this.setStack(new ItemStack(ModItems.COMPRESSED_IRON_INGOT));
         }
     }
 
@@ -164,7 +164,7 @@ public class BulletEntity extends TrueDamageProjectile {
 
     @Override
     protected ItemStack getDefaultItemStack() {
-        return new ItemStack(Items.IRON_BLOCK);
+        return new ItemStack(ModItems.COMPRESSED_IRON_INGOT);
     }
 
     @Override

@@ -9,6 +9,9 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.ai.NoPenaltyTargeting;
 import net.minecraft.entity.ai.goal.*;
+import net.minecraft.entity.ai.pathing.PathNodeType;
+import net.minecraft.entity.attribute.DefaultAttributeContainer;
+import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
@@ -34,7 +37,7 @@ import java.util.EnumSet;
 public class MagmaLobsterEntity extends LobsterEntity {
     public MagmaLobsterEntity(EntityType<? extends MagmaLobsterEntity> entityType, World world) {
         super(entityType, world);
-        this.setPathfindingPenalty(net.minecraft.entity.ai.pathing.PathNodeType.LAVA, 0.0F);
+        this.setPathfindingPenalty(PathNodeType.LAVA, 0.0F);
     }
 
     @Override
@@ -88,7 +91,11 @@ public class MagmaLobsterEntity extends LobsterEntity {
     @Nullable
     @Override
     public PassiveEntity createChild(ServerWorld world, PassiveEntity mate) {
-        return ModEntities.MAGMA_LOBSTER.create(world, SpawnReason.BREEDING);
+        LobsterEntity child = ModEntities.LOBSTER.create(world, SpawnReason.BREEDING);
+        if (child == null) return null;
+
+        child.setVariant(LobsterVariant.GOLD);
+        return child;
     }
     @Override
     public float getPanicRetreatHealthThreshold() {
@@ -245,11 +252,11 @@ public class MagmaLobsterEntity extends LobsterEntity {
         return hit;
     }
 
-    public static net.minecraft.entity.attribute.DefaultAttributeContainer.Builder createAttributes() {
+    public static DefaultAttributeContainer.Builder createAttributes() {
         return LobsterEntity.createAttributes()
-                .add(net.minecraft.entity.attribute.EntityAttributes.MAX_HEALTH, 170.0D)
-                .add(net.minecraft.entity.attribute.EntityAttributes.ARMOR, 12.0D)
-                .add(net.minecraft.entity.attribute.EntityAttributes.ARMOR_TOUGHNESS, 8.0D);
+                .add(EntityAttributes.MAX_HEALTH, 170.0D)
+                .add(EntityAttributes.ARMOR, 12.0D)
+                .add(EntityAttributes.ARMOR_TOUGHNESS, 8.0D);
     }
 
     protected @Nullable BlockPos findNearbyBroadLava(int horizontalRange, int verticalRange) {

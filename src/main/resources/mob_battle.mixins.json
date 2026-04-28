@@ -79,6 +79,7 @@
     "client.render.LivingEntityRendererMixin",
     "client.render.PiglinBruteBowArmPoseMixin",
     "client.render.WeatherRenderingMixin",
+    "client.gui.hud.BossBarHudMixin",
     "client.render.entity.EntityRenderersMixin",
     "client.render.entity.player.ClientPlayerEntityMixin",
     "client.render.entity.player.CustomHealthBarMixin",

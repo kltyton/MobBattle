@@ -3,6 +3,7 @@ package com.kltyton.mob_battle.items.tool.snipe;
 import com.kltyton.mob_battle.entity.bullet.BulletEntity;
 import com.kltyton.mob_battle.entity.bullet.ITrueDamageProjectile;
 import com.kltyton.mob_battle.items.ModFabricItem;
+import com.kltyton.mob_battle.items.ModItems;
 import com.kltyton.mob_battle.sounds.ModSounds;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -58,12 +59,12 @@ public class VsSnipe extends RangedWeaponItem implements ModFabricItem {
 
     @Override
     public Predicate<ItemStack> getHeldProjectiles() {
-        return stack -> stack.isOf(Items.IRON_BLOCK);
+        return stack -> stack.isOf(ModItems.COMPRESSED_IRON_INGOT);
     }
 
     @Override
     public Predicate<ItemStack> getProjectiles() {
-        return stack -> stack.isOf(Items.IRON_BLOCK);
+        return stack -> stack.isOf(ModItems.COMPRESSED_IRON_INGOT);
     }
 
     /**

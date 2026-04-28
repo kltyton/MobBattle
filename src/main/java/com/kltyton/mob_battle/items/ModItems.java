@@ -575,7 +575,7 @@ public class ModItems {
 
         EMERALD_DIAMOND_SWORD = registerItem("emerald_diamond_sword",
                 registryBaseItemSettings("emerald_diamond_sword")
-                        .sword(ModMaterial.EMERALD_DIAMOND_ALLOY_TOOL_MATERIAL, 149, -2f)
+                        .sword(ModMaterial.EMERALD_DIAMOND_ALLOY_TOOL_MATERIAL, 119, -2f)
                         .maxCount(1)
                         .component(DataComponentTypes.UNBREAKABLE, Unit.INSTANCE),
                 false
