@@ -97,6 +97,13 @@ public class ModChineseLangProvider extends FabricLanguageProvider {
         translationBuilder.add(ModLangUtils.getTranslationKey(ModEffects.INFESTATION), "虫扰");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModEffects.HEART_EATER), "噬心");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModEffects.PROTEIN), "蛋白质");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModEffects.EXCITEMENT), "兴奋");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModEffects.FATIGUE), "疲惫");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModEffects.DIAMOND_MARK), "钻石标记");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModEffects.NETHERITE_MARK), "下界合金标记");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModEffects.BLINDNESS_IMMUNITY_FACTOR), "失明免疫因子");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModEffects.DARKNESS_IMMUNITY_FACTOR), "黑暗免疫因子");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModEffects.STUTTER), "卡顿");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.SMALL_BACKPACK), "小背包");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.LARGE_BACKPACK), "PM背包");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.FINE_KNIFE), "精良小刀");
@@ -127,7 +134,8 @@ public class ModChineseLangProvider extends FabricLanguageProvider {
         translationBuilder.add(ModLangUtils.getTranslationKey(ModKeyBinding.keyPlayerSmashingTheGroundRun), "跳起砸地");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModKeyBinding.keyPlayerScrapingRun), "抓取");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.CARDIOTONIC_INJECTION), "强心注射剂");
-        translationBuilder.add(ModLangUtils.getTranslationKey(ModKeyBinding.keyZiJin), "激活紫金套装奖励");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModKeyBinding.keyZiJin_0), "激活紫金套装奖励");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModKeyBinding.keyZiJin_1), "激活紫金套装奖励");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.COMPRESSED_COPPER_INGOT), "压缩铜锭");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.COMPRESSED_IRON_INGOT), "压缩铁锭");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.COMPRESSED_GOLD_INGOT), "压缩金锭");
@@ -140,6 +148,8 @@ public class ModChineseLangProvider extends FabricLanguageProvider {
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.MAGMA_LOBSTER), "岩浆龙虾");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.OBSIDIAN_LOBSTER), "黑曜石龙虾");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.BURST_OBSIDIAN_LOBSTER), "爆开的黑曜石龙虾");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.CHEESE), "芝士");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.BEER), "啤酒");
 
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.ICE_BOW), "寒冰弓");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.ICE_ARROW_ITEM), "寒冰箭");

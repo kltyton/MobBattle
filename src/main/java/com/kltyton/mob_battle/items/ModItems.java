@@ -76,6 +76,8 @@ public class ModItems {
     public static ThousandBlossomedImmortalFruit THOUSAND_BLOSSOMED_IMMORTAL_FRUIT;
     public static Item LOBSTER_MAIN_COURSE;
     public static Item COOKED_HIGHBIRD_EGG;
+    public static Item CHEESE;
+    public static Item BEER;
 
     // 压缩材料
     public static Item COMPRESSED_COPPER_INGOT;
@@ -316,6 +318,17 @@ public class ModItems {
                 registryBaseItemSettings("cooked_highbird_egg").food(
                         new FoodComponent.Builder().nutrition(20).saturationModifier(20).alwaysEdible().build(),
                         ModConsumableComponents.COOKED_HIGHBIRD_EGG
+                )
+        );
+        CHEESE = registerItem("cheese",
+                registryBaseItemSettings("cheese").food(
+                        new FoodComponent.Builder().nutrition(1).saturationModifier(2.0F).build()
+                )
+        );
+        BEER = registerItem("beer",
+                registryBaseItemSettings("beer").food(
+                        new FoodComponent.Builder().nutrition(1).saturationModifier(1.0F).alwaysEdible().build(),
+                        ModConsumableComponents.BEER
                 )
         );
 

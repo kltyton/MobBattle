@@ -18,6 +18,7 @@ import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.AbstractPiglinEntity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -44,6 +45,8 @@ public abstract class LivingEntityMixin extends Entity implements Attackable, Se
     private static final TrackedData<Boolean> UNIVERSAL_LEAD = DataTracker.registerData(LivingEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
     @Unique
     private static final TrackedData<Boolean> INVISIBLE_LEAD = DataTracker.registerData(LivingEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
+    @Unique
+    private boolean mobBattle$handlingExcitementBonus;
 
     @Unique
     public boolean custom$getIsUniversalLeadEnyity() {
@@ -83,6 +86,16 @@ public abstract class LivingEntityMixin extends Entity implements Attackable, Se
     private void preventTeamTargeting(LivingEntity target, CallbackInfoReturnable<Boolean> cir) {
         LivingEntity self = (LivingEntity) (Object) this;
         if (self.isTeammate(target)) {
+            cir.setReturnValue(false);
+        }
+    }
+    @Inject(method = "canHaveStatusEffect", at = @At("HEAD"), cancellable = true)
+    private void mobBattle$applyStatusEffectImmunity(StatusEffectInstance effect, CallbackInfoReturnable<Boolean> cir) {
+        LivingEntity self = (LivingEntity) (Object) this;
+        if (effect.getEffectType().equals(StatusEffects.BLINDNESS) && self.hasStatusEffect(ModEffects.BLINDNESS_IMMUNITY_FACTOR_ENTRY)) {
+            cir.setReturnValue(false);
+        }
+        if (effect.getEffectType().equals(StatusEffects.DARKNESS) && self.hasStatusEffect(ModEffects.DARKNESS_IMMUNITY_FACTOR_ENTRY)) {
             cir.setReturnValue(false);
         }
     }
@@ -159,6 +172,18 @@ public abstract class LivingEntityMixin extends Entity implements Attackable, Se
     )
     private float modifyDamageArgument(float damage, @Local(argsOnly = true) DamageSource source) {
         LivingEntity target = (LivingEntity) (Object) this;
+        if (!this.mobBattle$handlingExcitementBonus && mobBattle$isDirectMeleeDamage(source)) {
+            Entity attacker = source.getAttacker();
+            if (attacker instanceof LivingEntity livingAttacker) {
+                StatusEffectInstance fatigue = livingAttacker.getStatusEffect(ModEffects.FATIGUE_ENTRY);
+                if (fatigue != null) {
+                    int level = fatigue.getAmplifier() + 1;
+                    if (target.getRandom().nextFloat() < level / 100.0F) {
+                        return 0.0F;
+                    }
+                }
+            }
+        }
         // --- 逻辑2：拥有印记的生物受到来自猪灵的额外伤害 ---
         if (target.hasStatusEffect(ModEffects.PIG_SPIRIT_MARK_ENTRY)) {
             StatusEffectInstance effect = target.getStatusEffect(ModEffects.PIG_SPIRIT_MARK_ENTRY);
@@ -191,6 +216,22 @@ public abstract class LivingEntityMixin extends Entity implements Attackable, Se
         Entity attacker = source.getAttacker();
         if (attacker instanceof LivingEntity livingEntity && attacker.getType().isIn(ModTags.ATTACK_HEAL_ENTITY) && this.isDead()) {
             livingEntity.heal(5);
+        }
+        if (!cir.getReturnValue() || this.mobBattle$handlingExcitementBonus || !mobBattle$isDirectMeleeDamage(source)) {
+            return;
+        }
+        if (attacker instanceof LivingEntity livingAttacker) {
+            StatusEffectInstance excitement = livingAttacker.getStatusEffect(ModEffects.EXCITEMENT_ENTRY);
+            if (excitement != null && livingAttacker.getRandom().nextFloat() < 0.20F) {
+                LivingEntity target = (LivingEntity) (Object) this;
+                int level = excitement.getAmplifier() + 1;
+                this.mobBattle$handlingExcitementBonus = true;
+                try {
+                    target.damage(world, source, 3.0F * level);
+                } finally {
+                    this.mobBattle$handlingExcitementBonus = false;
+                }
+            }
         }
     }
     //无敌帧
@@ -272,5 +313,13 @@ public abstract class LivingEntityMixin extends Entity implements Attackable, Se
             return newProtection;
         }
         return protection;
+    }
+
+    @Unique
+    private boolean mobBattle$isDirectMeleeDamage(DamageSource source) {
+        Entity attacker = source.getAttacker();
+        return attacker instanceof LivingEntity
+                && source.getSource() == attacker
+                && (source.isOf(DamageTypes.MOB_ATTACK) || source.isOf(DamageTypes.PLAYER_ATTACK));
     }
 }

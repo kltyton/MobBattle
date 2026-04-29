@@ -1,5 +1,7 @@
 package com.kltyton.mob_battle.entity.irongolem.hulkbuster;
 
+import com.kltyton.mob_battle.bossbar.CustomBossBarStyles;
+import com.kltyton.mob_battle.bossbar.CustomBossBarSync;
 import com.kltyton.mob_battle.effect.ModEffects;
 import com.kltyton.mob_battle.entity.ModSkillEntityType;
 import com.kltyton.mob_battle.entity.accessor.BigBossLookControl;
@@ -118,12 +120,14 @@ public class HulkbusterEntity extends IronGolemEntity implements GeoEntity, ModB
     @Override
     public void onStartedTrackingBy(ServerPlayerEntity player) {
         super.onStartedTrackingBy(player);
+        CustomBossBarSync.add(player, this.bossBar.getUuid(), CustomBossBarStyles.HULKBUSTER);
         this.bossBar.addPlayer(player);
     }
     @Override
     public void onStoppedTrackingBy(ServerPlayerEntity player) {
         super.onStoppedTrackingBy(player);
         this.bossBar.removePlayer(player);
+        CustomBossBarSync.remove(player, this.bossBar.getUuid());
     }
     @Override
     protected void mobTick(ServerWorld world) {

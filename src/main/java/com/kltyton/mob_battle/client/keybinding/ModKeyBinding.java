@@ -66,13 +66,13 @@ public class ModKeyBinding {
                 "category.mob_battle.general"
         ));
         keyZiJin_0 = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-                "key.mob_battle.zi_jin",
+                "key.mob_battle.zi_jin_0",
                 InputUtil.Type.KEYSYM,
                 GLFW.GLFW_KEY_C,
                 "category.mob_battle.general"
         ));
         keyZiJin_1 = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-                "key.mob_battle.zi_jin",
+                "key.mob_battle.zi_jin_1",
                 InputUtil.Type.KEYSYM,
                 GLFW.GLFW_KEY_X,
                 "category.mob_battle.general"

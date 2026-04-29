@@ -94,6 +94,13 @@ public class ModEnglishLangProvider extends FabricLanguageProvider {
         translationBuilder.add(ModLangUtils.getTranslationKey(ModEffects.INFESTATION), "Infestation");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModEffects.HEART_EATER), "Heart Eater");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModEffects.PROTEIN), "Protein");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModEffects.EXCITEMENT), "Excitement");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModEffects.FATIGUE), "Fatigue");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModEffects.DIAMOND_MARK), "Diamond Mark");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModEffects.NETHERITE_MARK), "Netherite Mark");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModEffects.BLINDNESS_IMMUNITY_FACTOR), "Blindness Immunity Factor");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModEffects.DARKNESS_IMMUNITY_FACTOR), "Darkness Immunity Factor");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModEffects.STUTTER), "Stutter");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.SMALL_BACKPACK), "Small Backpack");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.LARGE_BACKPACK), "Large Backpack");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.FINE_KNIFE), "Fine Knife");
@@ -129,6 +136,8 @@ public class ModEnglishLangProvider extends FabricLanguageProvider {
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.MAGMA_LOBSTER), "Magma Lobster");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.OBSIDIAN_LOBSTER), "Obsidian Lobster");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.BURST_OBSIDIAN_LOBSTER), "Burst Obsidian Lobster");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.CHEESE), "Cheese");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.BEER), "Beer");
 
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.ICE_BOW), "Ice Bow");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.ICE_ARROW_ITEM), "Ice Arrow");

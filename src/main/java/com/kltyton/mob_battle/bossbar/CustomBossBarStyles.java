@@ -14,6 +14,8 @@ public final class CustomBossBarStyles {
     public static final int DEFAULT_RENDER_HEIGHT = 48;
 
     public static final Identifier VINDICATOR_GENERAL = Identifier.of(Mob_battle.MOD_ID, "vindicator_general");
+    public static final Identifier WITHER_SKELETON_KING = Identifier.of(Mob_battle.MOD_ID, "wither_skeleton_king");
+    public static final Identifier HULKBUSTER = Identifier.of(Mob_battle.MOD_ID, "hulkbuster");
 
     private static final Map<Identifier, CustomBossBarStyle> STYLES = new HashMap<>();
 
@@ -22,6 +24,16 @@ public final class CustomBossBarStyles {
                 VINDICATOR_GENERAL,
                 Identifier.of(Mob_battle.MOD_ID, "textures/gui/boss_bar/vindicator_general_background.png"),
                 Identifier.of(Mob_battle.MOD_ID, "textures/gui/boss_bar/vindicator_general_progress.png")
+        );
+        register(
+                WITHER_SKELETON_KING,
+                Identifier.of(Mob_battle.MOD_ID, "textures/gui/boss_bar/wither_skeleton_king_background.png"),
+                Identifier.of(Mob_battle.MOD_ID, "textures/gui/boss_bar/wither_skeleton_king_progress.png")
+        );
+        register(
+                HULKBUSTER,
+                Identifier.of(Mob_battle.MOD_ID, "textures/gui/boss_bar/hulkbuster_background.png"),
+                Identifier.of(Mob_battle.MOD_ID, "textures/gui/boss_bar/hulkbuster_progress.png")
         );
     }
 

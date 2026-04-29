@@ -55,4 +55,13 @@ public class ModConsumableComponents {
                     )
             )
             .build();
+    public static final ConsumableComponent BEER = ConsumableComponents.drink()
+            .consumeEffect(
+                    new ApplyEffectsConsumeEffect(
+                            List.of(
+                                    new StatusEffectInstance(ModEffects.EXCITEMENT_ENTRY, 10 * 20, 0)
+                            )
+                    )
+            )
+            .build();
 }

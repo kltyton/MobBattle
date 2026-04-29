@@ -7,6 +7,7 @@ import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.hud.BossBarHud;
 import net.minecraft.client.gui.hud.InGameHud;
+import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.render.RenderTickCounter;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.Identifier;
@@ -45,6 +46,9 @@ public abstract class CustomHealthBarMixin {
 
     @Unique
     private static final int BASE_Y = 0;
+
+    @Unique
+    private static final int PLAYER_HEAD_SIZE = 18;
 
     @Unique
     private boolean shouldUseCustomHealthBar(PlayerEntity player) {
@@ -148,6 +152,8 @@ public abstract class CustomHealthBarMixin {
 
         float progress = Math.min(1.0F, (currentHealth + absorption) / maxH);
 
+        renderPlayerHead(context, player, barX + 103, barY + 8);
+
         context.drawTexture(
                 RenderPipelines.GUI_TEXTURED,
                 HEALTH_FRAME,
@@ -197,6 +203,44 @@ public abstract class CustomHealthBarMixin {
                 barY + BAR_HEIGHT,
                 0xFFFFFFFF,
                 false
+        );
+    }
+
+    @Unique
+    private void renderPlayerHead(DrawContext context, PlayerEntity player, int x, int y) {
+        if (!(player instanceof AbstractClientPlayerEntity clientPlayer)) {
+            return;
+        }
+
+        Identifier skinTexture = clientPlayer.getSkinTextures().texture();
+
+        context.drawTexture(
+                RenderPipelines.GUI_TEXTURED,
+                skinTexture,
+                x,
+                y,
+                8.0F,
+                8.0F,
+                PLAYER_HEAD_SIZE,
+                PLAYER_HEAD_SIZE,
+                8,
+                8,
+                64,
+                64
+        );
+        context.drawTexture(
+                RenderPipelines.GUI_TEXTURED,
+                skinTexture,
+                x,
+                y,
+                40.0F,
+                8.0F,
+                PLAYER_HEAD_SIZE,
+                PLAYER_HEAD_SIZE,
+                8,
+                8,
+                64,
+                64
         );
     }
 }
