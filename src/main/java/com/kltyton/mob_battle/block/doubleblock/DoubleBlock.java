@@ -127,7 +127,7 @@ public abstract class DoubleBlock extends BlockWithEntity {
         VoxelShape[] buffer = {
                 shape, VoxelShapes.empty()
         };
-        int times = (to.getHorizontalQuarterTurns() - Direction.EAST.getHorizontalQuarterTurns() + 4) % 4;
+        int times = (to.getHorizontalQuarterTurns() - Direction.NORTH.getHorizontalQuarterTurns() + 4) % 4;
         for (int i = 0; i < times; i++) {
             buffer[1] = VoxelShapes.empty();
             buffer[0].forEachBox((minX, minY, minZ, maxX, maxY, maxZ) -> buffer[1] = VoxelShapes.union(buffer[1],

@@ -40,3 +40,5 @@ accessible method net/minecraft/entity/projectile/PersistentProjectileEntity set
 accessible field net/minecraft/entity/ai/control/JumpControl active Z
 accessible class net/minecraft/item/ItemGroup$EntriesImpl
 accessible class net/minecraft/command/suggestion/SuggestionProviders$LocalProvider
+accessible method net/minecraft/client/gui/screen/recipebook/GhostRecipe addInputs (Lnet/minecraft/screen/slot/Slot;Lnet/minecraft/util/context/ContextParameterMap;Lnet/minecraft/recipe/display/SlotDisplay;)V
+accessible method net/minecraft/client/gui/screen/recipebook/GhostRecipe addResults (Lnet/minecraft/screen/slot/Slot;Lnet/minecraft/util/context/ContextParameterMap;Lnet/minecraft/recipe/display/SlotDisplay;)V

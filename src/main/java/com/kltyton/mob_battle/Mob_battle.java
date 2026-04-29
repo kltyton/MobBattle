@@ -18,6 +18,7 @@ import com.kltyton.mob_battle.items.ModItems;
 import com.kltyton.mob_battle.items.itemgroup.ModItemGroups;
 import com.kltyton.mob_battle.network.ModPackets;
 import com.kltyton.mob_battle.network.ServerPlayNetwork;
+import com.kltyton.mob_battle.recipe.ModRecipeTypes;
 import com.kltyton.mob_battle.sounds.ModSounds;
 import com.kltyton.mob_battle.sounds.bgm.ServerBgmManager;
 import com.kltyton.mob_battle.utils.ModTrackedDataHandler;
@@ -39,6 +40,7 @@ public class Mob_battle implements ModInitializer {
         ModComponents.init();
         ModEffects.init();
         ModItems.init();
+        ModRecipeTypes.init();
         ModEnchantments.init();
         ModCommands.init();
         ModEvents.init();

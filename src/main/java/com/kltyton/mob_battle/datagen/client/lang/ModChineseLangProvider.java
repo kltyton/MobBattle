@@ -23,7 +23,12 @@ public class ModChineseLangProvider extends FabricLanguageProvider {
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.ECREDCULTIST_HELMET), "拜火教徒头盔");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.ECREDCULTIST_LEGGINGS), "拜火教徒护腿");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModBlocks.NEST_BLOCK), "巢穴");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModBlocks.MACHINE_WORKTABLE_BLOCK), "机械工作台");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModBlocks.MUSHROOM_BLOCK), "蘑菇");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModBlocks.COMPRESSED_IRON_BLOCK), "压缩铁块");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModBlocks.COMPRESSED_GOLD_BLOCK), "压缩金块");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModBlocks.COMPRESSED_DIAMOND_BLOCK), "压缩钻石块");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModBlocks.COMPRESSED_NETHERITE_BLOCK), "压缩下界合金块");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.LOBSTER_MAIN_COURSE), "龙虾正餐");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.COOKED_HIGHBIRD_EGG), "烤高鸟蛋");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModEffects.SELF_DESTRUCT), "玉碎");
@@ -111,6 +116,7 @@ public class ModChineseLangProvider extends FabricLanguageProvider {
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.GRAND_SUMMON_BOOK), "唤魔大书");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.GUARDIAN_SEAL), "守护法印");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.FILLING_SEAL), "充盈法印");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.PURIFICATION_SCROLL), "净化卷轴");
 
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.EMERALD_DIAMOND_HELMET), "翠钻合金头盔");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.EMERALD_DIAMOND_CHESTPLATE), "翠钻合金胸甲");

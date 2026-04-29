@@ -25,6 +25,11 @@ public class ModEnglishLangProvider extends FabricLanguageProvider {
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.ECREDCULTIST_LEGGINGS), "Ecredcultist Leggings");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModBlocks.NEST_BLOCK), "Nest");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModBlocks.MUSHROOM_BLOCK), "Mushroom");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModBlocks.MACHINE_WORKTABLE_BLOCK), "Mechanical Worktable");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModBlocks.COMPRESSED_IRON_BLOCK), "Compressed Iron Block");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModBlocks.COMPRESSED_GOLD_BLOCK), "Compressed Gold Block");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModBlocks.COMPRESSED_DIAMOND_BLOCK), "Compressed Diamond Block");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModBlocks.COMPRESSED_NETHERITE_BLOCK), "Compressed Netherite Block");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.LOBSTER_MAIN_COURSE), "Lobster Main Course");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.COOKED_HIGHBIRD_EGG), "Cooked Highbird Egg");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModEffects.SELF_DESTRUCT), "Self Destruct");
@@ -108,6 +113,7 @@ public class ModEnglishLangProvider extends FabricLanguageProvider {
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.GRAND_SUMMON_BOOK), "Grand Summon Book");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.GUARDIAN_SEAL), "Guardian Seal");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.FILLING_SEAL), "Filling Seal");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.PURIFICATION_SCROLL), "Purification Scroll");
 
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.EMERALD_DIAMOND_HELMET), "Emerald Diamond Helmet");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.EMERALD_DIAMOND_CHESTPLATE), "Emerald Diamond Chestplate");

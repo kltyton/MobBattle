@@ -1,6 +1,7 @@
 package com.kltyton.mob_battle.datagen.server.recipe;
 
 import com.kltyton.mob_battle.Mob_battle;
+import com.kltyton.mob_battle.block.ModBlocks;
 import com.kltyton.mob_battle.items.ModItems;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider;
@@ -48,6 +49,20 @@ public class ModRecipeGenerator extends FabricRecipeProvider {
                         .input('a', Items.IRON_INGOT)
                         .input('b', Items.GOLD_INGOT)
                         .group("fine_knife") //将其放入名为“multi_bench”的组中-组显示在配方书的一个槽中
+                        .criterion(hasItem(Items.CRAFTING_TABLE), conditionsFromItem(Items.CRAFTING_TABLE))
+                        .offerTo(exporter);
+
+                createShaped(RecipeCategory.DECORATIONS, ModBlocks.MACHINE_WORKTABLE_BLOCK, 1)
+                        .pattern("aba")
+                        .pattern("cdc")
+                        .pattern("efe")
+                        .input('a', ModItems.WIRE)
+                        .input('b', ModItems.COMPRESSED_COPPER_INGOT)
+                        .input('c', ModItems.COMPRESSED_REDSTONE)
+                        .input('d', ModItems.COMPRESSED_IRON_INGOT)
+                        .input('e', ModItems.ELECTRONIC_COMPONENTS)
+                        .input('f', Items.CRAFTING_TABLE)
+                        .group("machine_worktable")
                         .criterion(hasItem(Items.CRAFTING_TABLE), conditionsFromItem(Items.CRAFTING_TABLE))
                         .offerTo(exporter);
 
@@ -101,6 +116,45 @@ public class ModRecipeGenerator extends FabricRecipeProvider {
                         .group("electronic_components") //将其放入名为“multi_bench”的组中-组显示在配方书的一个槽中
                         .criterion(hasItem(Items.CRAFTING_TABLE), conditionsFromItem(Items.CRAFTING_TABLE))
                         .offerTo(exporter);
+
+                // 机械工作台专用配方示例：这些配方只能在机械工作台中合成。
+                // 写法和 createShaped 基本相同，但会生成 type 为 mob_battle:mechanical_crafting_shaped 的 JSON。
+                // 如果输出物品已经有普通配方，offerTo 第二个参数请写一个独立 ID，避免和普通配方重名。
+                MechanicalShapedRecipeJsonBuilder.create(itemLookup, RecipeCategory.BUILDING_BLOCKS, ModBlocks.COMPRESSED_IRON_BLOCK)
+                        .pattern("iii")
+                        .pattern("iii")
+                        .pattern("iii")
+                        .input('i', ModItems.COMPRESSED_IRON_INGOT)
+                        .group("mechanical_compressed_blocks")
+                        .criterion(hasItem(ModItems.COMPRESSED_IRON_INGOT), conditionsFromItem(ModItems.COMPRESSED_IRON_INGOT))
+                        .offerTo(exporter, "mob_battle:mechanical/compressed_iron_block");
+
+                MechanicalShapedRecipeJsonBuilder.create(itemLookup, RecipeCategory.BUILDING_BLOCKS, ModBlocks.COMPRESSED_GOLD_BLOCK)
+                        .pattern("ggg")
+                        .pattern("ggg")
+                        .pattern("ggg")
+                        .input('g', ModItems.COMPRESSED_GOLD_INGOT)
+                        .group("mechanical_compressed_blocks")
+                        .criterion(hasItem(ModItems.COMPRESSED_GOLD_INGOT), conditionsFromItem(ModItems.COMPRESSED_GOLD_INGOT))
+                        .offerTo(exporter, "mob_battle:mechanical/compressed_gold_block");
+
+                MechanicalShapedRecipeJsonBuilder.create(itemLookup, RecipeCategory.BUILDING_BLOCKS, ModBlocks.COMPRESSED_DIAMOND_BLOCK)
+                        .pattern("ddd")
+                        .pattern("ddd")
+                        .pattern("ddd")
+                        .input('d', ModItems.COMPRESSED_DIAMOND)
+                        .group("mechanical_compressed_blocks")
+                        .criterion(hasItem(ModItems.COMPRESSED_DIAMOND), conditionsFromItem(ModItems.COMPRESSED_DIAMOND))
+                        .offerTo(exporter, "mob_battle:mechanical/compressed_diamond_block");
+
+                MechanicalShapedRecipeJsonBuilder.create(itemLookup, RecipeCategory.BUILDING_BLOCKS, ModBlocks.COMPRESSED_NETHERITE_BLOCK)
+                        .pattern("nnn")
+                        .pattern("nnn")
+                        .pattern("nnn")
+                        .input('n', ModItems.COMPRESSED_NETHERITE_INGOT)
+                        .group("mechanical_compressed_blocks")
+                        .criterion(hasItem(ModItems.COMPRESSED_NETHERITE_INGOT), conditionsFromItem(ModItems.COMPRESSED_NETHERITE_INGOT))
+                        .offerTo(exporter, "mob_battle:mechanical/compressed_netherite_block");
 
                 offerReversibleCompactingRecipes(
                         RecipeCategory.MISC,

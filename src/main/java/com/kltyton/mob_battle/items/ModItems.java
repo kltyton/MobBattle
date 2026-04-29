@@ -63,6 +63,7 @@ public class ModItems {
     public static FiremanScrollItem FIREMAN_SCROLL;
     public static SlownessScrollItem SLOWNESS_SCROLL;
     public static FireWallScrollItem FIRE_WALL_SCROLL;
+    public static PurificationScrollItem PURIFICATION_SCROLL;
     public static SummonVexBookItem WARLOCK_BOOK;
     public static SummonVexBookItem GRAND_SUMMON_BOOK;
     public static GuardianSealItem GUARDIAN_SEAL;
@@ -223,6 +224,10 @@ public class ModItems {
                 new FireWallScrollItem(new Item.Settings().useCooldown(35)
                         .registryKey(RegistryKey.of(
                                 RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "fire_wall_scroll")))));
+        PURIFICATION_SCROLL = registerItem("purification_scroll",
+                new PurificationScrollItem(registryBaseItemSettings("purification_scroll")
+                        .useCooldown(75))
+        );
         //.useRemainder(THOUSAND_BLOSSOMED_IMMORTAL_FRUIT)
         THOUSAND_BLOSSOMED_IMMORTAL_FRUIT = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "thousand_blossomed_immortal_fruit"),
                 new ThousandBlossomedImmortalFruit(new Item.Settings().food(new FoodComponent.Builder().nutrition(4).saturationModifier(0.3F).alwaysEdible().build()).useCooldown(60)

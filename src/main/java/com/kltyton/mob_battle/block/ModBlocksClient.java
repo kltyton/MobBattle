@@ -15,6 +15,7 @@ public class ModBlocksClient {
                 BlockRenderLayer.TRIPWIRE,
                 ModBlocks.SCARECROW_BLOCK,
                 ModBlocks.TARGET_BLOCK,
+                ModBlocks.MACHINE_WORKTABLE_BLOCK,
                 ModBlocks.NEST_BLOCK,
                 ModBlocks.MUSHROOM_BLOCK
         );

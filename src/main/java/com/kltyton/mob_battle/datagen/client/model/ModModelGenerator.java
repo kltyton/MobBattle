@@ -5,6 +5,7 @@ import com.kltyton.mob_battle.block.ModBlocks;
 import com.kltyton.mob_battle.items.ModItems;
 import net.fabricmc.fabric.api.client.datagen.v1.provider.FabricModelProvider;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
+import net.minecraft.block.Block;
 import net.minecraft.client.data.*;
 import net.minecraft.item.Item;
 import net.minecraft.item.SpawnEggItem;
@@ -38,6 +39,25 @@ public class ModModelGenerator extends FabricModelProvider {
     public void generateBlockStateModels(BlockStateModelGenerator blockStateCollector) {
         blockStateCollector.registerSimpleState(ModBlocks.NEST_BLOCK);
         blockStateCollector.registerSimpleState(ModBlocks.MUSHROOM_BLOCK);
+        registerCompressedBlock(blockStateCollector, ModBlocks.COMPRESSED_IRON_BLOCK);
+        registerCompressedBlock(blockStateCollector, ModBlocks.COMPRESSED_GOLD_BLOCK);
+        registerCompressedBlock(blockStateCollector, ModBlocks.COMPRESSED_DIAMOND_BLOCK);
+        registerCompressedBlock(blockStateCollector, ModBlocks.COMPRESSED_NETHERITE_BLOCK);
+        blockStateCollector.registerNorthDefaultHorizontalRotation(ModBlocks.MACHINE_WORKTABLE_BLOCK);
+        blockStateCollector.registerParentedItemModel(ModBlocks.MACHINE_WORKTABLE_BLOCK, Identifier.of(Mob_battle.MOD_ID, "block/machine_worktable"));
+    }
+
+    private void registerCompressedBlock(BlockStateModelGenerator blockStateCollector, Block block) {
+        String blockName = Registries.BLOCK.getId(block).getPath();
+        Identifier modelId = Models.CUBE_ALL.upload(
+                block,
+                TextureMap.all(Identifier.of(Mob_battle.MOD_ID, "block/compressed/" + blockName)),
+                blockStateCollector.modelCollector
+        );
+        blockStateCollector.blockStateCollector.accept(
+                BlockStateModelGenerator.createSingletonBlockState(block, BlockStateModelGenerator.createWeightedVariant(modelId))
+        );
+        blockStateCollector.registerParentedItemModel(block, modelId);
     }
 
 

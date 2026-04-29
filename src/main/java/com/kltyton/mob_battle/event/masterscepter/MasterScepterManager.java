@@ -1,5 +1,7 @@
 package com.kltyton.mob_battle.event.masterscepter;
 
+import com.kltyton.mob_battle.effect.ModEffects;
+import com.kltyton.mob_battle.items.scroll.PurificationScrollItem;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -21,6 +23,7 @@ public class MasterScepterManager {
             case "h" -> 7 * 20;        // 7秒
             case "pfwull" -> 7 * 20;
             case "sw" -> 10 * 20;
+            case "j" -> 30 * 20;
             default -> 0;
         };
         Long lastUse = playerCooldowns.get(command);
@@ -91,6 +94,18 @@ public class MasterScepterManager {
             }
             case "Resistanceee" -> {
                 player.addStatusEffect(new StatusEffectInstance(StatusEffects.RESISTANCE, 60 * 20, 1));
+                yield true;
+            }
+            case "j" -> {
+                PurificationScrollItem.removeStatusEffects(player,
+                        StatusEffects.MINING_FATIGUE,
+                        StatusEffects.BLINDNESS,
+                        StatusEffects.DARKNESS,
+                        StatusEffects.NAUSEA,
+                        StatusEffects.SLOWNESS,
+                        ModEffects.STUN_ENTRY,
+                        ModEffects.ICE_ENTRY
+                );
                 yield true;
             }
             default -> false;

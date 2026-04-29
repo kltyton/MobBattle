@@ -1,6 +1,7 @@
 package com.kltyton.mob_battle.block;
 
 import com.kltyton.mob_battle.Mob_battle;
+import com.kltyton.mob_battle.block.doubleblock.machine_worktable.MachineWorktableBlock;
 import com.kltyton.mob_battle.block.doubleblock.scarecrow.ScarecrowBlock;
 import com.kltyton.mob_battle.block.doubleblock.target.TargetBlock;
 import com.kltyton.mob_battle.block.mushroom.MushroomBlock;
@@ -27,8 +28,13 @@ public class ModBlocks {
     public static final Map<String, Block> BLOCKS = new HashMap<>();
     public static ScarecrowBlock SCARECROW_BLOCK;
     public static TargetBlock TARGET_BLOCK;
+    public static MachineWorktableBlock MACHINE_WORKTABLE_BLOCK;
     public static NestBlock NEST_BLOCK;
     public static MushroomBlock MUSHROOM_BLOCK;
+    public static Block COMPRESSED_IRON_BLOCK;
+    public static Block COMPRESSED_GOLD_BLOCK;
+    public static Block COMPRESSED_DIAMOND_BLOCK;
+    public static Block COMPRESSED_NETHERITE_BLOCK;
     public static void init() {
         SCARECROW_BLOCK = register(
                 "scarecrow",
@@ -49,6 +55,19 @@ public class ModBlocks {
                         .strength(3.0F)
                         .nonOpaque()
                         .burnable()
+                        .pistonBehavior(PistonBehavior.DESTROY),
+                true
+        );
+        MACHINE_WORKTABLE_BLOCK = register(
+                "machine_worktable",
+                MachineWorktableBlock::new,
+                AbstractBlock.Settings.create()
+                        .mapColor(MapColor.IRON_GRAY)
+                        .instrument(NoteBlockInstrument.IRON_XYLOPHONE)
+                        .strength(3.5F)
+                        .nonOpaque()
+                        .sounds(BlockSoundGroup.METAL)
+                        .requiresTool()
                         .pistonBehavior(PistonBehavior.DESTROY),
                 true
         );
@@ -75,6 +94,39 @@ public class ModBlocks {
                         .sounds(BlockSoundGroup.GRASS),
                 true
         );
+        COMPRESSED_IRON_BLOCK = register(
+                "compressed_iron_block",
+                Block::new,
+                compressedBlockSettings(MapColor.IRON_GRAY, NoteBlockInstrument.IRON_XYLOPHONE),
+                true
+        );
+        COMPRESSED_GOLD_BLOCK = register(
+                "compressed_gold_block",
+                Block::new,
+                compressedBlockSettings(MapColor.GOLD, NoteBlockInstrument.BELL),
+                true
+        );
+        COMPRESSED_DIAMOND_BLOCK = register(
+                "compressed_diamond_block",
+                Block::new,
+                compressedBlockSettings(MapColor.DIAMOND_BLUE, NoteBlockInstrument.BIT),
+                true
+        );
+        COMPRESSED_NETHERITE_BLOCK = register(
+                "compressed_netherite_block",
+                Block::new,
+                compressedBlockSettings(MapColor.BLACK, NoteBlockInstrument.BASEDRUM),
+                true
+        );
+    }
+
+    private static AbstractBlock.Settings compressedBlockSettings(MapColor mapColor, NoteBlockInstrument instrument) {
+        return AbstractBlock.Settings.create()
+                .mapColor(mapColor)
+                .instrument(instrument)
+                .strength(5.0F, 6.0F)
+                .sounds(BlockSoundGroup.METAL)
+                .requiresTool();
     }
 
     public static <T extends Block> T register(
