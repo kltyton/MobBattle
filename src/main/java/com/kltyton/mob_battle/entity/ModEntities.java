@@ -3,6 +3,7 @@ package com.kltyton.mob_battle.entity;
 import com.kltyton.mob_battle.Mob_battle;
 import com.kltyton.mob_battle.entity.blueirongolem.BlueIronGolemEntity;
 import com.kltyton.mob_battle.entity.bullet.BulletEntity;
+import com.kltyton.mob_battle.entity.bullet.GoldenBulletEntity;
 import com.kltyton.mob_battle.entity.bullet.GoldenTrailProjectile;
 import com.kltyton.mob_battle.entity.bullet.IceArrowEntity;
 import com.kltyton.mob_battle.entity.customfireball.CustomSuperBigFireballEntity;
@@ -813,6 +814,17 @@ public class ModEntities {
             EntityType.Builder.<GoldenTrailProjectile>create(GoldenTrailProjectile::new, SpawnGroup.MISC)
                     .dropsNothing()
                     .dimensions(0.5F, 0.5F)
+                    .eyeHeight(0.13F)
+                    .maxTrackingRange(4)
+                    .trackingTickInterval(20),
+            false,
+            false
+    );
+    public static final EntityType<GoldenBulletEntity> GOLDEN_BULLET = createEntityType(
+            "golden_bullet",
+            EntityType.Builder.<GoldenBulletEntity>create(GoldenBulletEntity::new, SpawnGroup.MISC)
+                    .dropsNothing()
+                    .dimensions(0.35F, 0.35F)
                     .eyeHeight(0.13F)
                     .maxTrackingRange(4)
                     .trackingTickInterval(20),

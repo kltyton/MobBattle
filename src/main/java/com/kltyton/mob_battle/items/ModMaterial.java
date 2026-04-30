@@ -34,6 +34,14 @@ public class ModMaterial {
             RegistryKey.of(EquipmentAssetKeys.REGISTRY_KEY, Identifier.of(Mob_battle.MOD_ID, "emerald_diamond_alloy"));
     public static final RegistryKey<EquipmentAsset> ZIJIN_ARMOR_MATERIAL_KEY =
             RegistryKey.of(EquipmentAssetKeys.REGISTRY_KEY, Identifier.of(Mob_battle.MOD_ID, "zijin"));
+    public static final RegistryKey<EquipmentAsset> COMPRESSED_IRON_ARMOR_MATERIAL_KEY =
+            RegistryKey.of(EquipmentAssetKeys.REGISTRY_KEY, Identifier.of(Mob_battle.MOD_ID, "compressed_iron_ingot"));
+    public static final RegistryKey<EquipmentAsset> COMPRESSED_GOLD_ARMOR_MATERIAL_KEY =
+            RegistryKey.of(EquipmentAssetKeys.REGISTRY_KEY, Identifier.of(Mob_battle.MOD_ID, "compressed_gold"));
+    public static final RegistryKey<EquipmentAsset> COMPRESSED_DIAMOND_ARMOR_MATERIAL_KEY =
+            RegistryKey.of(EquipmentAssetKeys.REGISTRY_KEY, Identifier.of(Mob_battle.MOD_ID, "compressed_diamond"));
+    public static final RegistryKey<EquipmentAsset> COMPRESSED_NETHERITE_ARMOR_MATERIAL_KEY =
+            RegistryKey.of(EquipmentAssetKeys.REGISTRY_KEY, Identifier.of(Mob_battle.MOD_ID, "compressed_netherite"));
 
     public static final ArmorMaterial HELL_ARMOR_INSTANCE_1 = new ArmorMaterial(
             Integer.MAX_VALUE,
@@ -155,6 +163,70 @@ public class ModMaterial {
             ItemTags.BEACON_PAYMENT_ITEMS,
             ZIJIN_ARMOR_MATERIAL_KEY
     );
+    public static final ArmorMaterial COMPRESSED_IRON_ARMOR_INSTANCE = new ArmorMaterial(
+            5000,
+            Map.of(
+                    EquipmentType.HELMET, 4,
+                    EquipmentType.CHESTPLATE, 9,
+                    EquipmentType.LEGGINGS, 6,
+                    EquipmentType.BOOTS, 4,
+                    EquipmentType.BODY, 0
+            ),
+            15,
+            SoundEvents.ITEM_ARMOR_EQUIP_IRON,
+            4.0F,
+            0.0F,
+            ItemTags.BEACON_PAYMENT_ITEMS,
+            COMPRESSED_IRON_ARMOR_MATERIAL_KEY
+    );
+    public static final ArmorMaterial COMPRESSED_GOLD_ARMOR_INSTANCE = new ArmorMaterial(
+            4000,
+            Map.of(
+                    EquipmentType.HELMET, 3,
+                    EquipmentType.CHESTPLATE, 8,
+                    EquipmentType.LEGGINGS, 7,
+                    EquipmentType.BOOTS, 3,
+                    EquipmentType.BODY, 0
+            ),
+            25,
+            SoundEvents.ITEM_ARMOR_EQUIP_GOLD,
+            4.0F,
+            0.0F,
+            ItemTags.BEACON_PAYMENT_ITEMS,
+            COMPRESSED_GOLD_ARMOR_MATERIAL_KEY
+    );
+    public static final ArmorMaterial COMPRESSED_DIAMOND_ARMOR_INSTANCE = new ArmorMaterial(
+            10000,
+            Map.of(
+                    EquipmentType.HELMET, 5,
+                    EquipmentType.CHESTPLATE, 8,
+                    EquipmentType.LEGGINGS, 7,
+                    EquipmentType.BOOTS, 5,
+                    EquipmentType.BODY, 0
+            ),
+            10,
+            SoundEvents.ITEM_ARMOR_EQUIP_DIAMOND,
+            4.0F,
+            0.0F,
+            ItemTags.BEACON_PAYMENT_ITEMS,
+            COMPRESSED_DIAMOND_ARMOR_MATERIAL_KEY
+    );
+    public static final ArmorMaterial COMPRESSED_NETHERITE_ARMOR_INSTANCE = new ArmorMaterial(
+            20000,
+            Map.of(
+                    EquipmentType.HELMET, 6,
+                    EquipmentType.CHESTPLATE, 10,
+                    EquipmentType.LEGGINGS, 8,
+                    EquipmentType.BOOTS, 6,
+                    EquipmentType.BODY, 0
+            ),
+            15,
+            SoundEvents.ITEM_ARMOR_EQUIP_NETHERITE,
+            5.0F,
+            0.1F,
+            ItemTags.BEACON_PAYMENT_ITEMS,
+            COMPRESSED_NETHERITE_ARMOR_MATERIAL_KEY
+    );
 
     public static final ToolMaterial KLTYTON_TOOL_MATERIAL = new ToolMaterial(
             BlockTags.INCORRECT_FOR_WOODEN_TOOL,
@@ -186,6 +258,38 @@ public class ModMaterial {
             8.0F,
             0.0F,
             10,
+            ItemTags.BEACON_PAYMENT_ITEMS
+    );
+    public static final ToolMaterial COMPRESSED_IRON_TOOL_MATERIAL = new ToolMaterial(
+            BlockTags.INCORRECT_FOR_IRON_TOOL,
+            5000,
+            8.0F,
+            -1.0F,
+            15,
+            ItemTags.BEACON_PAYMENT_ITEMS
+    );
+    public static final ToolMaterial COMPRESSED_GOLD_TOOL_MATERIAL = new ToolMaterial(
+            BlockTags.INCORRECT_FOR_GOLD_TOOL,
+            4000,
+            12.0F,
+            -1.0F,
+            25,
+            ItemTags.BEACON_PAYMENT_ITEMS
+    );
+    public static final ToolMaterial COMPRESSED_DIAMOND_TOOL_MATERIAL = new ToolMaterial(
+            BlockTags.INCORRECT_FOR_DIAMOND_TOOL,
+            10000,
+            8.0F,
+            -1.0F,
+            10,
+            ItemTags.BEACON_PAYMENT_ITEMS
+    );
+    public static final ToolMaterial COMPRESSED_NETHERITE_TOOL_MATERIAL = new ToolMaterial(
+            BlockTags.INCORRECT_FOR_NETHERITE_TOOL,
+            15000,
+            9.0F,
+            -1.0F,
+            15,
             ItemTags.BEACON_PAYMENT_ITEMS
     );
 

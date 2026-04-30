@@ -79,6 +79,10 @@ public class ModModelGenerator extends FabricModelProvider {
 
         itemModelCollector.register(ModItems.EMERALD_DIAMOND_SWORD, Models.HANDHELD);
         itemModelCollector.register(ModItems.ZIJIN_SWORD, Models.HANDHELD);
+        itemModelCollector.register(ModItems.COMPRESSED_IRON_SWORD, Models.HANDHELD);
+        itemModelCollector.register(ModItems.COMPRESSED_GOLD_SWORD, Models.HANDHELD);
+        itemModelCollector.register(ModItems.COMPRESSED_DIAMOND_SWORD, Models.HANDHELD);
+        itemModelCollector.register(ModItems.COMPRESSED_NETHERITE_SWORD, Models.HANDHELD);
 
         itemModelCollector.register(ModItems.CARDIOTONIC_INJECTION, STICK_TEMPLATE);
 

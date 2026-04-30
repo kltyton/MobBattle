@@ -15,7 +15,52 @@ public class ModItemTagGenerator extends FabricTagProvider.ItemTagProvider {
 
     @Override
     protected void configure(RegistryWrapper.WrapperLookup wrapperLookup) {
-        valueLookupBuilder(ItemTags.SWORDS).add(ModItems.EMERALD_DIAMOND_SWORD, ModItems.IRON_GOLD_SWORD, ModItems.METEORICORE_SWORD, ModItems.ZIJIN_SWORD);
+        valueLookupBuilder(ItemTags.SWORDS).add(
+                ModItems.EMERALD_DIAMOND_SWORD,
+                ModItems.IRON_GOLD_SWORD,
+                ModItems.METEORICORE_SWORD,
+                ModItems.ZIJIN_SWORD,
+                ModItems.COMPRESSED_IRON_SWORD,
+                ModItems.COMPRESSED_GOLD_SWORD,
+                ModItems.COMPRESSED_DIAMOND_SWORD,
+                ModItems.COMPRESSED_NETHERITE_SWORD
+        );
+        valueLookupBuilder(ItemTags.SWORD_ENCHANTABLE).add(
+                ModItems.COMPRESSED_IRON_SWORD,
+                ModItems.COMPRESSED_GOLD_SWORD,
+                ModItems.COMPRESSED_DIAMOND_SWORD,
+                ModItems.COMPRESSED_NETHERITE_SWORD
+        );
+        valueLookupBuilder(ItemTags.TRIMMABLE_ARMOR).add(
+                ModItems.COMPRESSED_IRON_HELMET,
+                ModItems.COMPRESSED_IRON_CHESTPLATE,
+                ModItems.COMPRESSED_IRON_LEGGINGS,
+                ModItems.COMPRESSED_IRON_BOOTS,
+                ModItems.COMPRESSED_GOLD_HELMET,
+                ModItems.COMPRESSED_GOLD_CHESTPLATE,
+                ModItems.COMPRESSED_GOLD_LEGGINGS,
+                ModItems.COMPRESSED_GOLD_BOOTS,
+                ModItems.COMPRESSED_DIAMOND_HELMET,
+                ModItems.COMPRESSED_DIAMOND_CHESTPLATE,
+                ModItems.COMPRESSED_DIAMOND_LEGGINGS,
+                ModItems.COMPRESSED_DIAMOND_BOOTS,
+                ModItems.COMPRESSED_NETHERITE_HELMET,
+                ModItems.COMPRESSED_NETHERITE_CHESTPLATE,
+                ModItems.COMPRESSED_NETHERITE_LEGGINGS,
+                ModItems.COMPRESSED_NETHERITE_BOOTS
+        );
+        valueLookupBuilder(ItemTags.PIGLIN_LOVED).add(
+                ModItems.COMPRESSED_GOLD_HELMET,
+                ModItems.COMPRESSED_GOLD_CHESTPLATE,
+                ModItems.COMPRESSED_GOLD_LEGGINGS,
+                ModItems.COMPRESSED_GOLD_BOOTS
+        );
+        valueLookupBuilder(ItemTags.PIGLIN_SAFE_ARMOR).add(
+                ModItems.COMPRESSED_GOLD_HELMET,
+                ModItems.COMPRESSED_GOLD_CHESTPLATE,
+                ModItems.COMPRESSED_GOLD_LEGGINGS,
+                ModItems.COMPRESSED_GOLD_BOOTS
+        );
         /*
         valueLookupBuilder(ItemTags.WOODEN_SLABS)  // 创建一个标签构建器，用于处理WOODEN_SLABS标签
             .add(Items.SLIME_BALL)                 // 将SLIME_BALL物品添加到当前标签中

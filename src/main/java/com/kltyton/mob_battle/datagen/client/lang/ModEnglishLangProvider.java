@@ -40,6 +40,7 @@ public class ModEnglishLangProvider extends FabricLanguageProvider {
         translationBuilder.add(ModLangUtils.getTranslationKey(ModEntities.HULKBUSTER), "Hulkbuster");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.HULKBUSTER_SPAWN_EGG), "Hulkbuster Spawn Egg");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModEntities.MISSILE), "Missile");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModEntities.GOLDEN_BULLET), "Golden Bullet");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModEntities.SILENCE_PHANTOM), "Silence Phantom");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.SILENCE_PHANTOM_SPAWN_EGG), "Silence Phantom Spawn Egg");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModEntities.COAL_SILVERFISH), "Coal Silverfish");
@@ -128,6 +129,12 @@ public class ModEnglishLangProvider extends FabricLanguageProvider {
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.ZIJIN_BOOTS), "Zijin Boots");
 
         translationBuilder.add(ModLangUtils.getTranslationKey(ModKeyBinding.shieldKey), "Spawn Shield");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModKeyBinding.keyCompressArmorSkill_Z), "Compressed Armor Skill Z");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModKeyBinding.keyCompressArmorSkill_X), "Compressed Armor Skill X");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModKeyBinding.keyCompressArmorSkill_C), "Compressed Armor Skill C");
+        translationBuilder.add("message.mob_battle.gold_bullet_mode", "Gold bullet: %s");
+        translationBuilder.add("message.mob_battle.missing_projectile_item", "Missing projectile item: %s");
+        translationBuilder.add("message.mob_battle.armor_skill_cooling_down", "Armor skill is cooling down: %s seconds remaining");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.CARDIOTONIC_INJECTION), "Cardiotonic Injection");
 
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.COMPRESSED_COPPER_INGOT), "Compressed Copper Ingot");
@@ -137,6 +144,26 @@ public class ModEnglishLangProvider extends FabricLanguageProvider {
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.COMPRESSED_NETHERITE_INGOT), "Compressed Netherite Ingot");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.COMPRESSED_REDSTONE), "Compressed Redstone");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.COMPRESSED_LAPIS_LAZULI), "Compressed Lapis Lazuli");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.COMPRESSED_IRON_HELMET), "Compressed Iron Helmet");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.COMPRESSED_IRON_CHESTPLATE), "Compressed Iron Chestplate");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.COMPRESSED_IRON_LEGGINGS), "Compressed Iron Leggings");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.COMPRESSED_IRON_BOOTS), "Compressed Iron Boots");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.COMPRESSED_GOLD_HELMET), "Compressed Gold Helmet");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.COMPRESSED_GOLD_CHESTPLATE), "Compressed Gold Chestplate");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.COMPRESSED_GOLD_LEGGINGS), "Compressed Gold Leggings");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.COMPRESSED_GOLD_BOOTS), "Compressed Gold Boots");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.COMPRESSED_DIAMOND_HELMET), "Compressed Diamond Helmet");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.COMPRESSED_DIAMOND_CHESTPLATE), "Compressed Diamond Chestplate");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.COMPRESSED_DIAMOND_LEGGINGS), "Compressed Diamond Leggings");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.COMPRESSED_DIAMOND_BOOTS), "Compressed Diamond Boots");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.COMPRESSED_NETHERITE_HELMET), "Compressed Netherite Helmet");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.COMPRESSED_NETHERITE_CHESTPLATE), "Compressed Netherite Chestplate");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.COMPRESSED_NETHERITE_LEGGINGS), "Compressed Netherite Leggings");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.COMPRESSED_NETHERITE_BOOTS), "Compressed Netherite Boots");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.COMPRESSED_IRON_SWORD), "Compressed Iron Sword");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.COMPRESSED_GOLD_SWORD), "Compressed Gold Sword");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.COMPRESSED_DIAMOND_SWORD), "Compressed Diamond Sword");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.COMPRESSED_NETHERITE_SWORD), "Compressed Netherite Sword");
 
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.LOBSTER), "Lobster");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.MAGMA_LOBSTER), "Magma Lobster");

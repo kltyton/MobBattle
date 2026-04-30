@@ -31,6 +31,10 @@ public class ModKeyBinding {
     public static KeyBinding keyPlayerSmashingTheGroundRun;
     public static KeyBinding keyPlayerScrapingRun;
     public static KeyBinding keyPiglinCannonItemMode;
+    //压缩盔甲套装技能
+    public static KeyBinding keyCompressArmorSkill_Z;
+    public static KeyBinding keyCompressArmorSkill_X;
+    public static KeyBinding keyCompressArmorSkill_C;
 
     public static void init() {
         keySummon = KeyBindingHelper.registerKeyBinding(new KeyBinding(
@@ -129,6 +133,24 @@ public class ModKeyBinding {
                 "key.mob_battle.piglin_cannon_item_mode",
                 InputUtil.Type.KEYSYM,
                 GLFW.GLFW_KEY_V,
+                "category.mob_battle.general"
+        ));
+        keyCompressArmorSkill_Z = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+                "key.mob_battle.compress_armor_skill_z",
+                InputUtil.Type.KEYSYM,
+                GLFW.GLFW_KEY_Z,
+                "category.mob_battle.general"
+        ));
+        keyCompressArmorSkill_X = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+                "key.mob_battle.compress_armor_skill_x",
+                InputUtil.Type.KEYSYM,
+                GLFW.GLFW_KEY_X,
+                "category.mob_battle.general"
+        ));
+        keyCompressArmorSkill_C = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+                "key.mob_battle.compress_armor_skill_c",
+                InputUtil.Type.KEYSYM,
+                GLFW.GLFW_KEY_C,
                 "category.mob_battle.general"
         ));
 
@@ -233,6 +255,21 @@ public class ModKeyBinding {
             while (keyZiJin_1.wasPressed()) {
                 client.execute(() ->
                         ClientPlayNetworking.send(new ZiJinPayload(1))
+                );
+            }
+            while (keyCompressArmorSkill_Z.wasPressed()) {
+                client.execute(() ->
+                        ClientPlayNetworking.send(new CompressArmorSkillPayload(0))
+                );
+            }
+            while (keyCompressArmorSkill_X.wasPressed()) {
+                client.execute(() ->
+                        ClientPlayNetworking.send(new CompressArmorSkillPayload(1))
+                );
+            }
+            while (keyCompressArmorSkill_C.wasPressed()) {
+                client.execute(() ->
+                        ClientPlayNetworking.send(new CompressArmorSkillPayload(2))
                 );
             }
             while (keyPiglinCannonItemMode.wasPressed()) {

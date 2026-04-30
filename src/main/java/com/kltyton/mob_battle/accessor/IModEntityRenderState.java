@@ -5,4 +5,6 @@ public interface IModEntityRenderState {
     boolean isTrueInvisible();
     void setIceAmplifier(int amplifier);
     int getIceAmplifier();
+    void setCompressedArmorMarkerType(int markerType);
+    int getCompressedArmorMarkerType();
 }

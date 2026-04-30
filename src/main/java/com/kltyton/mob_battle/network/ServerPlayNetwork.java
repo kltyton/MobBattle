@@ -38,6 +38,7 @@ import com.kltyton.mob_battle.entity.witherskeletonking.skill.WitherSkeletonKing
 import com.kltyton.mob_battle.event.masterscepter.MasterScepterManager;
 import com.kltyton.mob_battle.items.ModItems;
 import com.kltyton.mob_battle.items.ModMaterial;
+import com.kltyton.mob_battle.items.armor.compressarmor.CompressArmorSkillManager;
 import com.kltyton.mob_battle.items.tool.piglin.PiglinCannonModeUtil;
 import com.kltyton.mob_battle.network.packet.*;
 import com.kltyton.mob_battle.utils.ArmorUtil;
@@ -496,6 +497,12 @@ public class ServerPlayNetwork {
                         player.sendMessage(Text.literal(mode == PiglinCannonModeUtil.Mode.FAST_FIRE ? "切换为速射形态" : "切换为重击模式"), true);
                     }
                 }
+            });
+        });
+        ServerPlayNetworking.registerGlobalReceiver(CompressArmorSkillPayload.ID, (payload, context) -> {
+            ServerPlayerEntity player = context.player();
+            context.server().execute(() -> {
+                CompressArmorSkillManager.handleSkill(player, payload.skill_id());
             });
         });
     }

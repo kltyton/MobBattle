@@ -2,68 +2,80 @@ package com.kltyton.mob_battle.utils;
 
 import com.kltyton.mob_battle.effect.ModEffects;
 import com.kltyton.mob_battle.enchantment.ModEnchantments;
-import com.kltyton.mob_battle.items.ModItems;
-import com.kltyton.mob_battle.items.ModMaterial;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.EquippableComponent;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.equipment.ArmorMaterial;
+import net.minecraft.item.equipment.EquipmentAsset;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.world.World;
 
 public class ArmorUtil {
     public static boolean hasFullArmor(LivingEntity entity, ArmorMaterial material) {
-        ItemStack head = entity.getEquippedStack(EquipmentSlot.HEAD);
-        ItemStack chest = entity.getEquippedStack(EquipmentSlot.CHEST);
-        ItemStack legs = entity.getEquippedStack(EquipmentSlot.LEGS);
-        ItemStack feet = entity.getEquippedStack(EquipmentSlot.FEET);
-        if (material == ModMaterial.IRON_GOLD_INSTANCE) return
-                head.isOf(ModItems.IRON_GOLD_HELMET) &&
-                chest.isOf(ModItems.IRON_GOLD_CHESTPLATE) &&
-                legs.isOf(ModItems.IRON_GOLD_LEGGINGS) &&
-                feet.isOf(ModItems.IRON_GOLD_BOOTS);
+        RegistryKey<EquipmentAsset> assetId = material.assetId();
 
-        if (material == ModMaterial.ECREDCULTIST_INSTANCE) return
-                head.isOf(ModItems.ECREDCULTIST_HELMET) &&
-                chest.isOf(ModItems.ECREDCULTIST_CHESTPLATE) &&
-                legs.isOf(ModItems.ECREDCULTIST_LEGGINGS) &&
-                feet.isOf(ModItems.ECREDCULTIST_BOOTS);
-
-        if (material == ModMaterial.EMERALD_DIAMOND_ALLOY_INSTANCE) return
-                head.isOf(ModItems.EMERALD_DIAMOND_HELMET) &&
-                chest.isOf(ModItems.EMERALD_DIAMOND_CHESTPLATE) &&
-                legs.isOf(ModItems.EMERALD_DIAMOND_LEGGINGS) &&
-                feet.isOf(ModItems.EMERALD_DIAMOND_BOOTS);
-
-        if (material == ModMaterial.ZIJIN_ARMOR_INSTANCE) return
-                head.isOf(ModItems.ZIJIN_HELMET) &&
-                chest.isOf(ModItems.ZIJIN_CHESTPLATE) &&
-                legs.isOf(ModItems.ZIJIN_LEGGINGS) &&
-                feet.isOf(ModItems.ZIJIN_BOOTS);
-
-        return false;
+        return hasArmorWithAsset(entity, EquipmentSlot.HEAD, assetId)
+                && hasArmorWithAsset(entity, EquipmentSlot.CHEST, assetId)
+                && hasArmorWithAsset(entity, EquipmentSlot.LEGS, assetId)
+                && hasArmorWithAsset(entity, EquipmentSlot.FEET, assetId);
     }
+
+    private static boolean hasArmorWithAsset(
+            LivingEntity entity,
+            EquipmentSlot slot,
+            RegistryKey<EquipmentAsset> assetId
+    ) {
+        ItemStack stack = entity.getEquippedStack(slot);
+        if (stack.isEmpty()) {
+            return false;
+        }
+
+        EquippableComponent equippable = stack.get(DataComponentTypes.EQUIPPABLE);
+        if (equippable == null) {
+            return false;
+        }
+
+        if (equippable.slot() != slot) {
+            return false;
+        }
+
+        return equippable.assetId().isPresent()
+                && equippable.assetId().get().equals(assetId);
+    }
+
     public static int getMagicProtectionLevel(LivingEntity entity) {
         World world = entity.getWorld();
-        EquipmentSlot[] slots = {EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET};
+        EquipmentSlot[] slots = {
+                EquipmentSlot.HEAD,
+                EquipmentSlot.CHEST,
+                EquipmentSlot.LEGS,
+                EquipmentSlot.FEET
+        };
+
         int totalLevel = 0;
 
         for (EquipmentSlot slot : slots) {
             ItemStack stack = entity.getEquippedStack(slot);
-            if (stack != null) {
-                totalLevel += EnchantmentUtil.getEnchantmentLevel(world, stack, ModEnchantments.MAGIC_PROTECTION);
+            if (!stack.isEmpty()) {
+                totalLevel += EnchantmentUtil.getEnchantmentLevel(
+                        world,
+                        stack,
+                        ModEnchantments.MAGIC_PROTECTION
+                );
             }
         }
+
         if (totalLevel != 0) {
             StatusEffectInstance effect = entity.getStatusEffect(ModEffects.VOID_ARMOR_PIERCING_ENTRY);
             if (effect != null) {
                 int level = effect.getAmplifier() + 1;
-                int newProtection = totalLevel - level;
-                newProtection = Math.max(0, newProtection);
-                return newProtection;
+                return Math.max(0, totalLevel - level);
             }
         }
+
         return totalLevel;
     }
-
 }

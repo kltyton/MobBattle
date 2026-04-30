@@ -3,11 +3,13 @@ package com.kltyton.mob_battle.items;
 import com.kltyton.mob_battle.Mob_battle;
 import com.kltyton.mob_battle.components.ModComponents;
 import com.kltyton.mob_battle.components.ModConsumableComponents;
+import com.kltyton.mob_battle.effect.ModEffects;
 import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.items.armor.ModBaseArmorItem;
 import com.kltyton.mob_battle.items.food.MagmaLobsterItemMod;
 import com.kltyton.mob_battle.items.food.ThousandBlossomedImmortalFruit;
 import com.kltyton.mob_battle.items.misc.*;
+import com.kltyton.mob_battle.items.tool.BaseSword;
 import com.kltyton.mob_battle.items.scroll.*;
 import com.kltyton.mob_battle.items.tool.BaseAxe;
 import com.kltyton.mob_battle.items.tool.MasterScepterItem;
@@ -18,18 +20,24 @@ import com.kltyton.mob_battle.items.tool.irongold.IronGoldSword;
 import com.kltyton.mob_battle.items.tool.meteorite.MeteoriteSword;
 import com.kltyton.mob_battle.items.tool.piglin.PiglinCannonItem;
 import com.kltyton.mob_battle.items.tool.snipe.VsSnipe;
+import com.kltyton.mob_battle.items.tool.sword.CompressedMarkedSword;
 import com.kltyton.mob_battle.items.tool.sword.FineKnifeItem;
 import com.kltyton.mob_battle.items.tool.sword.zijin.ZiJinSword;
 import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.AttributeModifierSlot;
+import net.minecraft.component.type.AttributeModifiersComponent;
 import net.minecraft.component.type.BlocksAttacksComponent;
 import net.minecraft.component.type.ChargedProjectilesComponent;
 import net.minecraft.component.type.DeathProtectionComponent;
 import net.minecraft.component.type.FoodComponent;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.attribute.EntityAttributeModifier;
+import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.SpawnEggItem;
 import net.minecraft.item.ToolMaterial;
+import net.minecraft.item.equipment.ArmorMaterial;
 import net.minecraft.item.equipment.EquipmentType;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
@@ -163,6 +171,22 @@ public class ModItems {
     public static Item ZIJIN_CHESTPLATE;
     public static Item ZIJIN_LEGGINGS;
     public static Item ZIJIN_BOOTS;
+    public static Item COMPRESSED_IRON_HELMET;
+    public static Item COMPRESSED_IRON_CHESTPLATE;
+    public static Item COMPRESSED_IRON_LEGGINGS;
+    public static Item COMPRESSED_IRON_BOOTS;
+    public static Item COMPRESSED_GOLD_HELMET;
+    public static Item COMPRESSED_GOLD_CHESTPLATE;
+    public static Item COMPRESSED_GOLD_LEGGINGS;
+    public static Item COMPRESSED_GOLD_BOOTS;
+    public static Item COMPRESSED_DIAMOND_HELMET;
+    public static Item COMPRESSED_DIAMOND_CHESTPLATE;
+    public static Item COMPRESSED_DIAMOND_LEGGINGS;
+    public static Item COMPRESSED_DIAMOND_BOOTS;
+    public static Item COMPRESSED_NETHERITE_HELMET;
+    public static Item COMPRESSED_NETHERITE_CHESTPLATE;
+    public static Item COMPRESSED_NETHERITE_LEGGINGS;
+    public static Item COMPRESSED_NETHERITE_BOOTS;
     //工具以及武器
     public static Item METEORICORE_AXE;
     public static Item METEORICORE_BOW;
@@ -170,6 +194,10 @@ public class ModItems {
     public static Item IRON_GOLD_SWORD;
     public static Item EMERALD_DIAMOND_SWORD;
     public static Item ZIJIN_SWORD;
+    public static Item COMPRESSED_IRON_SWORD;
+    public static Item COMPRESSED_GOLD_SWORD;
+    public static Item COMPRESSED_DIAMOND_SWORD;
+    public static Item COMPRESSED_NETHERITE_SWORD;
     public static Item IRON_GOLD_SWORD_DAMAGED;
 
     public static VsSnipe VS_SNIPE;
@@ -545,6 +573,26 @@ public class ModItems {
         );
 
         // 注册工具和武器
+        COMPRESSED_IRON_HELMET = registerCompressedArmor("compressed_iron_helmet", ModMaterial.COMPRESSED_IRON_ARMOR_INSTANCE, EquipmentType.HELMET, 5000, 6.0, 0.0);
+        COMPRESSED_IRON_CHESTPLATE = registerCompressedArmor("compressed_iron_chestplate", ModMaterial.COMPRESSED_IRON_ARMOR_INSTANCE, EquipmentType.CHESTPLATE, 5000, 6.0, 0.0);
+        COMPRESSED_IRON_LEGGINGS = registerCompressedArmor("compressed_iron_leggings", ModMaterial.COMPRESSED_IRON_ARMOR_INSTANCE, EquipmentType.LEGGINGS, 5000, 6.0, 0.0);
+        COMPRESSED_IRON_BOOTS = registerCompressedArmor("compressed_iron_boots", ModMaterial.COMPRESSED_IRON_ARMOR_INSTANCE, EquipmentType.BOOTS, 5000, 6.0, 0.0);
+
+        COMPRESSED_GOLD_HELMET = registerCompressedArmor("compressed_gold_helmet", ModMaterial.COMPRESSED_GOLD_ARMOR_INSTANCE, EquipmentType.HELMET, 4000, 5.0, 0.0);
+        COMPRESSED_GOLD_CHESTPLATE = registerCompressedArmor("compressed_gold_chestplate", ModMaterial.COMPRESSED_GOLD_ARMOR_INSTANCE, EquipmentType.CHESTPLATE, 4000, 5.0, 0.0);
+        COMPRESSED_GOLD_LEGGINGS = registerCompressedArmor("compressed_gold_leggings", ModMaterial.COMPRESSED_GOLD_ARMOR_INSTANCE, EquipmentType.LEGGINGS, 4000, 5.0, 0.0);
+        COMPRESSED_GOLD_BOOTS = registerCompressedArmor("compressed_gold_boots", ModMaterial.COMPRESSED_GOLD_ARMOR_INSTANCE, EquipmentType.BOOTS, 4000, 5.0, 0.0);
+
+        COMPRESSED_DIAMOND_HELMET = registerCompressedArmor("compressed_diamond_helmet", ModMaterial.COMPRESSED_DIAMOND_ARMOR_INSTANCE, EquipmentType.HELMET, 10000, 7.0, 0.0);
+        COMPRESSED_DIAMOND_CHESTPLATE = registerCompressedArmor("compressed_diamond_chestplate", ModMaterial.COMPRESSED_DIAMOND_ARMOR_INSTANCE, EquipmentType.CHESTPLATE, 10000, 7.0, 1.0);
+        COMPRESSED_DIAMOND_LEGGINGS = registerCompressedArmor("compressed_diamond_leggings", ModMaterial.COMPRESSED_DIAMOND_ARMOR_INSTANCE, EquipmentType.LEGGINGS, 10000, 7.0, 1.0);
+        COMPRESSED_DIAMOND_BOOTS = registerCompressedArmor("compressed_diamond_boots", ModMaterial.COMPRESSED_DIAMOND_ARMOR_INSTANCE, EquipmentType.BOOTS, 10000, 7.0, 0.0);
+
+        COMPRESSED_NETHERITE_HELMET = registerCompressedArmor("compressed_netherite_helmet", ModMaterial.COMPRESSED_NETHERITE_ARMOR_INSTANCE, EquipmentType.HELMET, 20000, 10.0, 0.0);
+        COMPRESSED_NETHERITE_CHESTPLATE = registerCompressedArmor("compressed_netherite_chestplate", ModMaterial.COMPRESSED_NETHERITE_ARMOR_INSTANCE, EquipmentType.CHESTPLATE, 20000, 10.0, 0.0);
+        COMPRESSED_NETHERITE_LEGGINGS = registerCompressedArmor("compressed_netherite_leggings", ModMaterial.COMPRESSED_NETHERITE_ARMOR_INSTANCE, EquipmentType.LEGGINGS, 20000, 10.0, 0.0);
+        COMPRESSED_NETHERITE_BOOTS = registerCompressedArmor("compressed_netherite_boots", ModMaterial.COMPRESSED_NETHERITE_ARMOR_INSTANCE, EquipmentType.BOOTS, 20000, 10.0, 0.0);
+
         METEORICORE_AXE = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "meteoricore_axe"),
                 new BaseAxe(new Item.Settings()
                         .registryKey(RegistryKey.of(
@@ -607,6 +655,23 @@ public class ModItems {
                         .component(DataComponentTypes.UNBREAKABLE, Unit.INSTANCE)
                 ),
                 false
+        );
+
+        COMPRESSED_IRON_SWORD = registerCompressedSword(
+                "compressed_iron_sword",
+                new BaseSword(compressedSwordSettings("compressed_iron_sword", ModMaterial.COMPRESSED_IRON_TOOL_MATERIAL, 25.0F, -2.2F))
+        );
+        COMPRESSED_GOLD_SWORD = registerCompressedSword(
+                "compressed_gold_sword",
+                new BaseSword(compressedSwordSettings("compressed_gold_sword", ModMaterial.COMPRESSED_GOLD_TOOL_MATERIAL, 30.0F, -2.3F))
+        );
+        COMPRESSED_DIAMOND_SWORD = registerCompressedSword(
+                "compressed_diamond_sword",
+                new CompressedMarkedSword(compressedSwordSettings("compressed_diamond_sword", ModMaterial.COMPRESSED_DIAMOND_TOOL_MATERIAL, 68.0F, -2.0F), ModEffects.DIAMOND_MARK_ENTRY)
+        );
+        COMPRESSED_NETHERITE_SWORD = registerCompressedSword(
+                "compressed_netherite_sword",
+                new CompressedMarkedSword(compressedSwordSettings("compressed_netherite_sword", ModMaterial.COMPRESSED_NETHERITE_TOOL_MATERIAL, 120.0F, -2.0F), ModEffects.NETHERITE_MARK_ENTRY)
         );
 
         VS_SNIPE = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "vs_snipe"),
@@ -752,6 +817,60 @@ public class ModItems {
         Identifier itemId = Identifier.of(Mob_battle.MOD_ID, id);
         return new Item.Settings()
                 .registryKey(RegistryKey.of(RegistryKeys.ITEM, itemId));
+    }
+    private static Item registerCompressedArmor(String id, ArmorMaterial material, EquipmentType type, int durability, double maxHealth, double extraToughness) {
+        AttributeModifierSlot slot = AttributeModifierSlot.forEquipmentSlot(type.getEquipmentSlot());
+        AttributeModifiersComponent attributes = material.createAttributeModifiers(type)
+                .with(
+                        EntityAttributes.MAX_HEALTH,
+                        new EntityAttributeModifier(Identifier.of(Mob_battle.MOD_ID, "health_" + id), maxHealth, EntityAttributeModifier.Operation.ADD_VALUE),
+                        slot
+                );
+        if (extraToughness > 0.0) {
+            attributes = attributes.with(
+                    EntityAttributes.ARMOR_TOUGHNESS,
+                    new EntityAttributeModifier(Identifier.of(Mob_battle.MOD_ID, "armor_toughness_" + id), extraToughness, EntityAttributeModifier.Operation.ADD_VALUE),
+                    slot
+            );
+        }
+        return registerItem(
+                id,
+                new ModBaseArmorItem(
+                        registryBaseItemSettings(id)
+                        .armor(material, type)
+                        .attributeModifiers(attributes)
+                        .maxDamage(durability)
+                        .maxCount(1),
+                        material,
+                        false
+                )
+        );
+    }
+    private static Item.Settings compressedSwordSettings(String id, ToolMaterial material, float attackDamage, float attackSpeed) {
+        AttributeModifiersComponent attributes = AttributeModifiersComponent.builder()
+                .add(
+                        EntityAttributes.ATTACK_DAMAGE,
+                        new EntityAttributeModifier(Item.BASE_ATTACK_DAMAGE_MODIFIER_ID, attackDamage + material.attackDamageBonus(), EntityAttributeModifier.Operation.ADD_VALUE),
+                        AttributeModifierSlot.MAINHAND
+                )
+                .add(
+                        EntityAttributes.ATTACK_SPEED,
+                        new EntityAttributeModifier(Item.BASE_ATTACK_SPEED_MODIFIER_ID, attackSpeed, EntityAttributeModifier.Operation.ADD_VALUE),
+                        AttributeModifierSlot.MAINHAND
+                )
+                .add(
+                        EntityAttributes.SWEEPING_DAMAGE_RATIO,
+                        new EntityAttributeModifier(Identifier.of(Mob_battle.MOD_ID, "sweeping_" + id), 1.0, EntityAttributeModifier.Operation.ADD_VALUE),
+                        AttributeModifierSlot.MAINHAND
+                )
+                .build();
+        return registryBaseItemSettings(id)
+                .sword(material, attackDamage, attackSpeed)
+                .attributeModifiers(attributes)
+                .maxCount(1);
+    }
+    private static Item registerCompressedSword(String id, Item item) {
+        return registerItem(id, item, true, false);
     }
     public static Item registerItem(String id) {
         return registerItem(id, registryBaseItemSettings(id));

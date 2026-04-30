@@ -14,11 +14,20 @@ public class EntityRenderStateMixin {
     private boolean trueInvisible;
     @Unique
     private int iceAmplifier = -1;
+    @Unique
+    private int compressedArmorMarkerType = 0;
+
     public void custom$setIceAmplifier(int amplifier) {
         this.iceAmplifier = amplifier;
     }
     public int custom$getIceAmplifier() {
         return iceAmplifier;
+    }
+    public void custom$setCompressedArmorMarkerType(int markerType) {
+        this.compressedArmorMarkerType = markerType;
+    }
+    public int custom$getCompressedArmorMarkerType() {
+        return compressedArmorMarkerType;
     }
     public boolean custom$isTrueInvisible() {
         return trueInvisible;

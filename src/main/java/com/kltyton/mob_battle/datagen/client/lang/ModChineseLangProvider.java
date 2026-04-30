@@ -18,6 +18,9 @@ public class ModChineseLangProvider extends FabricLanguageProvider {
 
     @Override
     public void generateTranslations(RegistryWrapper.WrapperLookup registryLookup, TranslationBuilder translationBuilder) {
+        translationBuilder.add("message.mob_battle.gold_bullet_mode", "金套弹种：%s");
+        translationBuilder.add("message.mob_battle.missing_projectile_item", "缺少发射物品：%s");
+        translationBuilder.add("message.mob_battle.armor_skill_cooling_down", "套装技能冷却中，还需等待 %s 秒");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.ECREDCULTIST_BOOTS), "拜火教徒靴子");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.ECREDCULTIST_CHESTPLATE), "拜火教徒胸甲");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.ECREDCULTIST_HELMET), "拜火教徒头盔");
@@ -39,6 +42,7 @@ public class ModChineseLangProvider extends FabricLanguageProvider {
         translationBuilder.add(ModLangUtils.getTranslationKey(ModEntities.HULKBUSTER), "钢铁巨人傀儡");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.HULKBUSTER_SPAWN_EGG), "钢铁巨人傀儡刷怪蛋");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModEntities.MISSILE), "导弹");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModEntities.GOLDEN_BULLET), "黄金子弹");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModEntities.SILENCE_PHANTOM), "潜声幻翼");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.SILENCE_PHANTOM_SPAWN_EGG), "潜声幻翼刷怪蛋");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModEntities.COAL_SILVERFISH), "煤蠹虫");
@@ -131,6 +135,9 @@ public class ModChineseLangProvider extends FabricLanguageProvider {
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.ZIJIN_BOOTS), "紫金靴子");
 
         translationBuilder.add(ModLangUtils.getTranslationKey(ModKeyBinding.shieldKey), "召唤盾牌");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModKeyBinding.keyCompressArmorSkill_Z), "压缩套装技能 Z");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModKeyBinding.keyCompressArmorSkill_X), "压缩套装技能 X");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModKeyBinding.keyCompressArmorSkill_C), "压缩套装技能 C");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModKeyBinding.keyPlayerRetreatStepRun), "后撤步");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModKeyBinding.keyPlayerAttack2Run), "左拳大摆拳");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModKeyBinding.keyPlayerLeftWhipRun), "左鞭腿");
@@ -149,6 +156,26 @@ public class ModChineseLangProvider extends FabricLanguageProvider {
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.COMPRESSED_NETHERITE_INGOT), "压缩下界合金锭");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.COMPRESSED_REDSTONE), "压缩红石");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.COMPRESSED_LAPIS_LAZULI), "压缩青金石");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.COMPRESSED_IRON_HELMET), "压缩铁头盔");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.COMPRESSED_IRON_CHESTPLATE), "压缩铁胸甲");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.COMPRESSED_IRON_LEGGINGS), "压缩铁护腿");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.COMPRESSED_IRON_BOOTS), "压缩铁靴子");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.COMPRESSED_GOLD_HELMET), "压缩金头盔");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.COMPRESSED_GOLD_CHESTPLATE), "压缩金胸甲");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.COMPRESSED_GOLD_LEGGINGS), "压缩金护腿");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.COMPRESSED_GOLD_BOOTS), "压缩金靴子");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.COMPRESSED_DIAMOND_HELMET), "压缩钻石头盔");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.COMPRESSED_DIAMOND_CHESTPLATE), "压缩钻石胸甲");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.COMPRESSED_DIAMOND_LEGGINGS), "压缩钻石护腿");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.COMPRESSED_DIAMOND_BOOTS), "压缩钻石靴子");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.COMPRESSED_NETHERITE_HELMET), "压缩下界合金头盔");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.COMPRESSED_NETHERITE_CHESTPLATE), "压缩下界合金胸甲");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.COMPRESSED_NETHERITE_LEGGINGS), "压缩下界合金护腿");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.COMPRESSED_NETHERITE_BOOTS), "压缩下界合金靴子");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.COMPRESSED_IRON_SWORD), "压缩铁剑");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.COMPRESSED_GOLD_SWORD), "压缩金剑");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.COMPRESSED_DIAMOND_SWORD), "压缩钻石剑");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.COMPRESSED_NETHERITE_SWORD), "压缩下界合金剑");
 
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.LOBSTER), "龙虾");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.MAGMA_LOBSTER), "岩浆龙虾");

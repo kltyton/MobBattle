@@ -3,6 +3,7 @@ package com.kltyton.mob_battle.client;
 import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.entity.blueirongolem.BlueIronGolemEntityRenderer;
 import com.kltyton.mob_battle.entity.bullet.BulletEntityRenderer;
+import com.kltyton.mob_battle.entity.bullet.GoldenBulletEntityRenderer;
 import com.kltyton.mob_battle.entity.bullet.GoldenTrailProjectileRenderer;
 import com.kltyton.mob_battle.entity.bullet.IceArrowEntityRenderer;
 import com.kltyton.mob_battle.entity.customfireball.render.CustomSuperBigFireballEntityRenderer;
@@ -110,6 +111,7 @@ public class ModEntityRenderer {
         EntityRendererRegistry.register(ModEntities.MISSILE, MissileEntityRenderer::new);
         EntityRendererRegistry.register(ModEntities.ICE_ARROW, IceArrowEntityRenderer::new);
         EntityRendererRegistry.register(ModEntities.GOLDEN_TRAIL_PROJECTILE, GoldenTrailProjectileRenderer::new);
+        EntityRendererRegistry.register(ModEntities.GOLDEN_BULLET, GoldenBulletEntityRenderer::new);
         EntityRendererRegistry.register(ModEntities.MODIFIED_DRAGON_BREATH_CLOUD, EmptyEntityRenderer::new);
         EntityRendererRegistry.register(ModEntities.COAL_SILVERFISH, ctx -> new GeneralEntityRenderer<>(ctx, "coal_silverfish", false));
         EntityRendererRegistry.register(ModEntities.SILENCE_PHANTOM, ctx -> new GeneralEntityRenderer<>(ctx, "silence_phantom", false));

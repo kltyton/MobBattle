@@ -58,6 +58,10 @@ public class ModPackets {
                 ZiJinPayload.CODEC
         );
         PayloadTypeRegistry.playC2S().register(
+                CompressArmorSkillPayload.ID,
+                CompressArmorSkillPayload.CODEC
+        );
+        PayloadTypeRegistry.playC2S().register(
                 PiglinCannonModePayload.ID,
                 PiglinCannonModePayload.CODEC
         );

@@ -7,9 +7,13 @@ import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider;
 import net.minecraft.data.recipe.RecipeExporter;
 import net.minecraft.data.recipe.RecipeGenerator;
+import net.minecraft.data.recipe.SmithingTransformRecipeJsonBuilder;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemConvertible;
 import net.minecraft.item.Items;
+import net.minecraft.recipe.Ingredient;
 import net.minecraft.recipe.book.RecipeCategory;
+import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.RegistryWrapper;
 
@@ -156,6 +160,47 @@ public class ModRecipeGenerator extends FabricRecipeProvider {
                         .criterion(hasItem(ModItems.COMPRESSED_NETHERITE_INGOT), conditionsFromItem(ModItems.COMPRESSED_NETHERITE_INGOT))
                         .offerTo(exporter, "mob_battle:mechanical/compressed_netherite_block");
 
+                MechanicalShapedRecipeJsonBuilder.create(itemLookup, RecipeCategory.MISC, ModItems.COMPRESSED_IRON_INGOT, 9)
+                        .pattern("b")
+                        .input('b', ModBlocks.COMPRESSED_IRON_BLOCK)
+                        .group("mechanical_compressed_block_unpacking")
+                        .criterion(hasItem(ModBlocks.COMPRESSED_IRON_BLOCK), conditionsFromItem(ModBlocks.COMPRESSED_IRON_BLOCK))
+                        .offerTo(exporter, "mob_battle:mechanical/compressed_iron_ingot_from_block");
+
+                MechanicalShapedRecipeJsonBuilder.create(itemLookup, RecipeCategory.MISC, ModItems.COMPRESSED_GOLD_INGOT, 9)
+                        .pattern("b")
+                        .input('b', ModBlocks.COMPRESSED_GOLD_BLOCK)
+                        .group("mechanical_compressed_block_unpacking")
+                        .criterion(hasItem(ModBlocks.COMPRESSED_GOLD_BLOCK), conditionsFromItem(ModBlocks.COMPRESSED_GOLD_BLOCK))
+                        .offerTo(exporter, "mob_battle:mechanical/compressed_gold_ingot_from_block");
+
+                MechanicalShapedRecipeJsonBuilder.create(itemLookup, RecipeCategory.MISC, ModItems.COMPRESSED_DIAMOND, 9)
+                        .pattern("b")
+                        .input('b', ModBlocks.COMPRESSED_DIAMOND_BLOCK)
+                        .group("mechanical_compressed_block_unpacking")
+                        .criterion(hasItem(ModBlocks.COMPRESSED_DIAMOND_BLOCK), conditionsFromItem(ModBlocks.COMPRESSED_DIAMOND_BLOCK))
+                        .offerTo(exporter, "mob_battle:mechanical/compressed_diamond_from_block");
+
+                MechanicalShapedRecipeJsonBuilder.create(itemLookup, RecipeCategory.MISC, ModItems.COMPRESSED_NETHERITE_INGOT, 9)
+                        .pattern("b")
+                        .input('b', ModBlocks.COMPRESSED_NETHERITE_BLOCK)
+                        .group("mechanical_compressed_block_unpacking")
+                        .criterion(hasItem(ModBlocks.COMPRESSED_NETHERITE_BLOCK), conditionsFromItem(ModBlocks.COMPRESSED_NETHERITE_BLOCK))
+                        .offerTo(exporter, "mob_battle:mechanical/compressed_netherite_ingot_from_block");
+
+                offerMechanicalArmorRecipes(itemLookup, exporter, ModItems.COMPRESSED_IRON_INGOT, "compressed_iron", ModItems.COMPRESSED_IRON_HELMET, ModItems.COMPRESSED_IRON_CHESTPLATE, ModItems.COMPRESSED_IRON_LEGGINGS, ModItems.COMPRESSED_IRON_BOOTS);
+                offerMechanicalArmorRecipes(itemLookup, exporter, ModItems.COMPRESSED_GOLD_INGOT, "compressed_gold", ModItems.COMPRESSED_GOLD_HELMET, ModItems.COMPRESSED_GOLD_CHESTPLATE, ModItems.COMPRESSED_GOLD_LEGGINGS, ModItems.COMPRESSED_GOLD_BOOTS);
+                offerMechanicalArmorRecipes(itemLookup, exporter, ModItems.COMPRESSED_DIAMOND, "compressed_diamond", ModItems.COMPRESSED_DIAMOND_HELMET, ModItems.COMPRESSED_DIAMOND_CHESTPLATE, ModItems.COMPRESSED_DIAMOND_LEGGINGS, ModItems.COMPRESSED_DIAMOND_BOOTS);
+                offerMechanicalSwordRecipe(itemLookup, exporter, ModItems.COMPRESSED_IRON_INGOT, ModItems.COMPRESSED_IRON_SWORD, "compressed_iron");
+                offerMechanicalSwordRecipe(itemLookup, exporter, ModItems.COMPRESSED_GOLD_INGOT, ModItems.COMPRESSED_GOLD_SWORD, "compressed_gold");
+                offerMechanicalSwordRecipe(itemLookup, exporter, ModItems.COMPRESSED_DIAMOND, ModItems.COMPRESSED_DIAMOND_SWORD, "compressed_diamond");
+
+                offerCompressedNetheriteUpgrade(exporter, ModItems.COMPRESSED_DIAMOND_HELMET, ModItems.COMPRESSED_NETHERITE_HELMET);
+                offerCompressedNetheriteUpgrade(exporter, ModItems.COMPRESSED_DIAMOND_CHESTPLATE, ModItems.COMPRESSED_NETHERITE_CHESTPLATE);
+                offerCompressedNetheriteUpgrade(exporter, ModItems.COMPRESSED_DIAMOND_LEGGINGS, ModItems.COMPRESSED_NETHERITE_LEGGINGS);
+                offerCompressedNetheriteUpgrade(exporter, ModItems.COMPRESSED_DIAMOND_BOOTS, ModItems.COMPRESSED_NETHERITE_BOOTS);
+                offerCompressedNetheriteUpgrade(exporter, ModItems.COMPRESSED_DIAMOND_SWORD, ModItems.COMPRESSED_NETHERITE_SWORD);
+
                 offerReversibleCompactingRecipes(
                         RecipeCategory.MISC,
                         Items.DIAMOND_BLOCK,
@@ -198,6 +243,72 @@ public class ModRecipeGenerator extends FabricRecipeProvider {
                         RecipeCategory.BUILDING_BLOCKS,
                         ModItems.COMPRESSED_LAPIS_LAZULI
                 );
+            }
+
+            private void offerMechanicalArmorRecipes(
+                    RegistryWrapper.Impl<Item> itemLookup,
+                    RecipeExporter exporter,
+                    ItemConvertible ingredient,
+                    String materialName,
+                    ItemConvertible helmet,
+                    ItemConvertible chestplate,
+                    ItemConvertible leggings,
+                    ItemConvertible boots
+            ) {
+                MechanicalShapedRecipeJsonBuilder.create(itemLookup, RecipeCategory.COMBAT, helmet)
+                        .pattern("xxx")
+                        .pattern("x x")
+                        .input('x', ingredient)
+                        .group("mechanical_" + materialName + "_armor")
+                        .criterion(hasItem(ingredient), conditionsFromItem(ingredient))
+                        .offerTo(exporter, "mob_battle:mechanical/" + materialName + "_helmet");
+                MechanicalShapedRecipeJsonBuilder.create(itemLookup, RecipeCategory.COMBAT, chestplate)
+                        .pattern("x x")
+                        .pattern("xxx")
+                        .pattern("xxx")
+                        .input('x', ingredient)
+                        .group("mechanical_" + materialName + "_armor")
+                        .criterion(hasItem(ingredient), conditionsFromItem(ingredient))
+                        .offerTo(exporter, "mob_battle:mechanical/" + materialName + "_chestplate");
+                MechanicalShapedRecipeJsonBuilder.create(itemLookup, RecipeCategory.COMBAT, leggings)
+                        .pattern("xxx")
+                        .pattern("x x")
+                        .pattern("x x")
+                        .input('x', ingredient)
+                        .group("mechanical_" + materialName + "_armor")
+                        .criterion(hasItem(ingredient), conditionsFromItem(ingredient))
+                        .offerTo(exporter, "mob_battle:mechanical/" + materialName + "_leggings");
+                MechanicalShapedRecipeJsonBuilder.create(itemLookup, RecipeCategory.COMBAT, boots)
+                        .pattern("x x")
+                        .pattern("x x")
+                        .input('x', ingredient)
+                        .group("mechanical_" + materialName + "_armor")
+                        .criterion(hasItem(ingredient), conditionsFromItem(ingredient))
+                        .offerTo(exporter, "mob_battle:mechanical/" + materialName + "_boots");
+            }
+
+            private void offerCompressedNetheriteUpgrade(RecipeExporter exporter, ItemConvertible base, Item result) {
+                SmithingTransformRecipeJsonBuilder.create(
+                                Ingredient.ofItem(Items.NETHERITE_UPGRADE_SMITHING_TEMPLATE),
+                                Ingredient.ofItem(base),
+                                Ingredient.ofItem(ModItems.COMPRESSED_NETHERITE_INGOT),
+                                RecipeCategory.COMBAT,
+                                result
+                        )
+                        .criterion(hasItem(ModItems.COMPRESSED_NETHERITE_INGOT), conditionsFromItem(ModItems.COMPRESSED_NETHERITE_INGOT))
+                        .offerTo(exporter, "mob_battle:compressed_netherite_upgrade_" + Registries.ITEM.getId(result).getPath());
+            }
+
+            private void offerMechanicalSwordRecipe(RegistryWrapper.Impl<Item> itemLookup, RecipeExporter exporter, ItemConvertible ingredient, ItemConvertible sword, String materialName) {
+                MechanicalShapedRecipeJsonBuilder.create(itemLookup, RecipeCategory.COMBAT, sword)
+                        .pattern("x")
+                        .pattern("x")
+                        .pattern("s")
+                        .input('x', ingredient)
+                        .input('s', Items.STICK)
+                        .group("mechanical_" + materialName + "_sword")
+                        .criterion(hasItem(ingredient), conditionsFromItem(ingredient))
+                        .offerTo(exporter, "mob_battle:mechanical/" + materialName + "_sword");
             }
         };
     }

@@ -20,4 +20,24 @@ public abstract class EntityMixin {
     public boolean custom$isTrueInvisible() {
         return false;
     }
+
+    @Unique
+    public void custom$setIceAmplifier(int amplifier) {
+
+    }
+
+    @Unique
+    public int custom$getIceAmplifier() {
+        return -1;
+    }
+
+    @Unique
+    public void custom$setCompressedArmorMarkerType(int markerType) {
+
+    }
+
+    @Unique
+    public int custom$getCompressedArmorMarkerType() {
+        return 0;
+    }
 }

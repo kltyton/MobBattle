@@ -1,32 +1,32 @@
 package com.kltyton.mob_battle.mixin.client.render;
 
+import com.kltyton.mob_battle.accessor.ICompressedArmorMarker;
 import com.kltyton.mob_battle.accessor.ILead;
 import com.kltyton.mob_battle.accessor.ILeadRenderData;
 import com.kltyton.mob_battle.accessor.IModEntityRenderState;
-import com.kltyton.mob_battle.effect.ModEffects;
 import com.kltyton.mob_battle.entity.drone.DroneEntity;
 import com.kltyton.mob_battle.items.ModItems;
+import com.kltyton.mob_battle.items.ModMaterial;
+import com.kltyton.mob_battle.utils.ArmorUtil;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.item.ItemModelManager;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.render.*;
-import net.minecraft.client.render.item.ItemRenderState;
 import net.minecraft.client.render.block.BlockRenderManager;
 import net.minecraft.client.render.entity.EntityRenderDispatcher;
 import net.minecraft.client.render.entity.EntityRenderer;
 import net.minecraft.client.render.entity.EntityRendererFactory;
 import net.minecraft.client.render.entity.state.EntityRenderState;
+import net.minecraft.client.render.item.ItemRenderState;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.Leashable;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemDisplayContext;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RotationAxis;
 import net.minecraft.util.math.Vec3d;
@@ -58,6 +58,10 @@ public abstract class EntityRendererMixin {
     @Unique
     private static final int TEXT_COLOR = -1; // 白色文本
     @Unique
+    private static final int DIAMOND_MARKER_MASK = 1;
+    @Unique
+    private static final int NETHERITE_MARKER_MASK = 2;
+    @Unique
     private LivingEntity targetEntity;
 
     @Inject(
@@ -67,8 +71,10 @@ public abstract class EntityRendererMixin {
     private void onUpdateRenderState(Entity livingEntity, EntityRenderState livingEntityRenderState, float f, CallbackInfo ci) {
         if (livingEntity instanceof LivingEntity) {
             this.targetEntity = (LivingEntity) livingEntity;
+            ((IModEntityRenderState) livingEntityRenderState).setCompressedArmorMarkerType(((ICompressedArmorMarker) this.targetEntity).mobBattle$getCompressedArmorMarkerType());
         } else {
             this.targetEntity = null;
+            ((IModEntityRenderState) livingEntityRenderState).setCompressedArmorMarkerType(0);
         }
     }
     @Inject(
@@ -149,23 +155,22 @@ public abstract class EntityRendererMixin {
             at = @At("TAIL")
     )
     private void mobBattle$renderMarkerItem(EntityRenderState state, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, CallbackInfo ci) {
-        if (targetEntity == null) return;
         ClientPlayerEntity player = MinecraftClient.getInstance().player;
         if (player == null) return;
-        //TODO: 添加压缩钻石甲和压缩下界合金甲的判断
         Item markerItem = null;
-        if (targetEntity.hasStatusEffect(ModEffects.DIAMOND_MARK_ENTRY) && mobBattle$hasFullVanillaArmor(player, Items.DIAMOND_HELMET, Items.DIAMOND_CHESTPLATE, Items.DIAMOND_LEGGINGS, Items.DIAMOND_BOOTS)) {
-            markerItem = ModItems.COMPRESSED_DIAMOND;
-        } else if (targetEntity.hasStatusEffect(ModEffects.NETHERITE_MARK_ENTRY) && mobBattle$hasFullVanillaArmor(player, Items.NETHERITE_HELMET, Items.NETHERITE_CHESTPLATE, Items.NETHERITE_LEGGINGS, Items.NETHERITE_BOOTS)) {
+        int markerMask = ((IModEntityRenderState) state).getCompressedArmorMarkerType();
+        if ((markerMask & NETHERITE_MARKER_MASK) != 0 && ArmorUtil.hasFullArmor(player, ModMaterial.COMPRESSED_NETHERITE_ARMOR_INSTANCE)) {
             markerItem = ModItems.COMPRESSED_NETHERITE_INGOT;
+        } else if ((markerMask & DIAMOND_MARKER_MASK) != 0 && ArmorUtil.hasFullArmor(player, ModMaterial.COMPRESSED_DIAMOND_ARMOR_INSTANCE)) {
+            markerItem = ModItems.COMPRESSED_DIAMOND;
         }
         if (markerItem == null) return;
 
         matrices.push();
-        matrices.translate(0.0F, targetEntity.getHeight() + 0.95F, 0.0F);
+        matrices.translate(0.0F, state.height + 0.95F, 0.0F);
         matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees((state.age * 8.0F) % 360.0F));
         matrices.scale(0.75F, 0.75F, 0.75F);
-        itemModelManager.updateForNonLivingEntity(markerItemRenderState, new ItemStack(markerItem), ItemDisplayContext.GROUND, targetEntity);
+        itemModelManager.updateForNonLivingEntity(markerItemRenderState, new ItemStack(markerItem), ItemDisplayContext.GROUND, player);
         markerItemRenderState.render(matrices, vertexConsumers, light, OverlayTexture.DEFAULT_UV);
         matrices.pop();
     }
@@ -261,13 +266,5 @@ public abstract class EntityRendererMixin {
                 .color(red, green, blue, alpha);
         buffer.vertex(entry.getPositionMatrix(), x, y, z)
                 .color(red, green, blue, alpha);
-    }
-
-    @Unique
-    private boolean mobBattle$hasFullVanillaArmor(LivingEntity entity, Item helmet, Item chestplate, Item leggings, Item boots) {
-        return entity.getEquippedStack(EquipmentSlot.HEAD).isOf(helmet)
-                && entity.getEquippedStack(EquipmentSlot.CHEST).isOf(chestplate)
-                && entity.getEquippedStack(EquipmentSlot.LEGS).isOf(leggings)
-                && entity.getEquippedStack(EquipmentSlot.FEET).isOf(boots);
     }
 }

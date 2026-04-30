@@ -1,5 +1,6 @@
 package com.kltyton.mob_battle.mixin.client.render;
 
+import com.kltyton.mob_battle.accessor.ICompressedArmorMarker;
 import com.kltyton.mob_battle.accessor.IModEntityRenderState;
 import com.kltyton.mob_battle.effect.ModEffects;
 import net.minecraft.client.render.entity.LivingEntityRenderer;
@@ -20,6 +21,8 @@ public class LivingEntityRendererMixin {
         if (effect != null) {
             amplifier = effect.getAmplifier();
         }
-        ((IModEntityRenderState)state).setIceAmplifier(amplifier);
+        IModEntityRenderState modState = (IModEntityRenderState) state;
+        modState.setIceAmplifier(amplifier);
+        modState.setCompressedArmorMarkerType(((ICompressedArmorMarker) entity).mobBattle$getCompressedArmorMarkerType());
     }
 }
