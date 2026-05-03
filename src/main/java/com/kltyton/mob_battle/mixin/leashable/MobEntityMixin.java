@@ -37,7 +37,7 @@ public abstract class MobEntityMixin extends LivingEntity implements EquipmentHo
     private void allowUniversalLead(LivingEntity target, CallbackInfo ci) {
         if (target != null && target.isTeammate(this)) ci.cancel();
     }
-    @Inject(method = "tryAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;damage(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/entity/damage/DamageSource;F)Z"), cancellable = true)
+    @Inject(method = "tryAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;damage(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/entity/damage/DamageSource;F)Z"))
     private void cancelMeleeAttack(ServerWorld world, Entity target, CallbackInfoReturnable<Boolean> cir) {
         if (this.getAttributes().hasAttribute(ModEntityAttributes.MAGIC_DAMAGE)) {
             com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(target);
