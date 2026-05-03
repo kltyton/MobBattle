@@ -66,6 +66,7 @@ public class IronManTrueEntity extends BaseSkillLittlePersonEntity {
                         distanceSide <= 0.5 &&
                         Math.abs(relativePos.y) <= 2.0) {
 
+                    com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(livingTarget);
                     livingTarget.damage(world, entity.getDamageSources().mobAttack(entity), 70.0f);
                 }
             }
@@ -75,7 +76,10 @@ public class IronManTrueEntity extends BaseSkillLittlePersonEntity {
     public void runSkill_3(BaseSkillLittlePersonEntity entity) {
         if (entity.getTarget() != null) {
             List<LivingEntity> targets = EntityUtil.getNearbyEntity(entity,LivingEntity.class, Object.class,4, false, EntityUtil.TeamFilter.EXCLUDE_TEAM);
-            for (LivingEntity livingEntity : targets) livingEntity.damage((ServerWorld) entity.getWorld(), entity.getDamageSources().mobAttack(entity), 90);
+            for (LivingEntity livingEntity : targets) {
+                com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(livingEntity);
+                livingEntity.damage((ServerWorld) entity.getWorld(), entity.getDamageSources().mobAttack(entity), 90);
+            }
         }
     }
     @Override
@@ -100,6 +104,7 @@ public class IronManTrueEntity extends BaseSkillLittlePersonEntity {
                         distanceSide <= 1.5 &&
                         Math.abs(relativePos.y) <= 2.0) {
 
+                    com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(livingTarget);
                     livingTarget.damage(world, entity.getDamageSources().mobAttack(entity), 95.0f);
                 }
             }

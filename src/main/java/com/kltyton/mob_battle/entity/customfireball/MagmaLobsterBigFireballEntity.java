@@ -60,7 +60,9 @@ public class MagmaLobsterBigFireballEntity extends CustomFireballEntity implemen
             DamageSource explosionSource = this.getDamageSources().explosion(this, owner);
             DamageSource fireballSource = this.getDamageSources().fireball(this, owner);
 
+            com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(living);
             living.damage(serverWorld, explosionSource, 50.0F);
+            com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(living);
             living.damage(serverWorld, fireballSource, 50.0F);
             living.setOnFireFor(5);
             EnchantmentHelper.onTargetDamaged(serverWorld, living, fireballSource);

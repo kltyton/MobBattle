@@ -43,6 +43,7 @@ public class IronManEntity extends BaseSkillLittlePersonEntity {
             if (canSkill("attack3")) performSkill("attack3");
             if (this.endDamage) {
                 for (LivingEntity entity : EntityUtil.getNearbyEntity(this, LivingEntity.class, Object.class, 2, false, EntityUtil.TeamFilter.EXCLUDE_TEAM)) {
+                    com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(entity);
                     entity.damage((ServerWorld) this.getWorld(), this.getDamageSources().mobAttack(this), 65);
                 }
             }
@@ -59,6 +60,7 @@ public class IronManEntity extends BaseSkillLittlePersonEntity {
     @Override
     public void runSkill_2(BaseSkillLittlePersonEntity entity) {
         if (entity.getTarget() != null) {
+            com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(entity.getTarget());
             entity.getTarget().damage((ServerWorld) entity.getWorld(), entity.getDamageSources().mobAttack(entity), 75);
         }
     }

@@ -26,6 +26,7 @@ public class CustomSmallFireballEntity extends SmallFireballEntity {
             int i = entity.getFireTicks();
             entity.setOnFireFor(5.0F);
             DamageSource damageSource = this.getDamageSources().fireball(this, entity2);
+            com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(entity);
             if (!entity.damage(serverWorld, damageSource, damage)) {
                 entity.setFireTicks(i);
             } else {

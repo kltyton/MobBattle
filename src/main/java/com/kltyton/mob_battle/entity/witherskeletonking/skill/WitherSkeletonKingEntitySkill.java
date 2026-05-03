@@ -48,7 +48,9 @@ public class WitherSkeletonKingEntitySkill {
                         attackDamage = 350.0f;
                         magicDamage = 75.0f;
                     }
+                    com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(entity);
                     entity.damage((ServerWorld) world, entity.getDamageSources().mobAttack(witherSkeletonKingEntity), attackDamage);
+                    com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(entity);
                     entity.damage((ServerWorld) world, entity.getDamageSources().magic(), magicDamage);
                     ((LivingEntity) entity).takeKnockback(2.0D, witherSkeletonKingEntity.getX() - entity.getX(), witherSkeletonKingEntity.getZ() - entity.getZ());
                 });

@@ -40,6 +40,7 @@ public class HumanHammerEntity extends BaseSkillLittlePersonEntity {
     public boolean damage(ServerWorld world, DamageSource source, float amount) {
         HumanShieldEntity shieldEntity = EntityUtil.getClosestNearbyEntity(this, HumanShieldEntity.class, 5, EntityUtil.TeamFilter.ONLY_TEAM);
         if (shieldEntity != null && shieldEntity.isAlive()) {
+            com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(shieldEntity);
             boolean result = shieldEntity.damage(world, this.getDamageSources().mobAttack(this), amount);
             if (result) this.addStatusEffect(new StatusEffectInstance(StatusEffects.STRENGTH, 20 * 5, 14));
             return result;
@@ -49,6 +50,7 @@ public class HumanHammerEntity extends BaseSkillLittlePersonEntity {
     public void runSkill_2(BaseSkillLittlePersonEntity entity) {
         if (this.getTarget() != null && this.getTarget().isAlive() && this.getWorld() instanceof ServerWorld serverWorld) {
             LivingEntity target = this.getTarget();
+            com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(target);
             target.damage(serverWorld, this.getDamageSources().mobAttack(entity), 50);
         }
     }
@@ -56,12 +58,16 @@ public class HumanHammerEntity extends BaseSkillLittlePersonEntity {
     public void runSkill_3(BaseSkillLittlePersonEntity entity) {
         if (this.getTarget() != null && this.getTarget().isAlive() && this.getWorld() instanceof ServerWorld serverWorld) {
             LivingEntity target = this.getTarget();
+            com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(target);
             target.damage(serverWorld, this.getDamageSources().mobAttack(entity), 45);
             target.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 40, 0));
         }
     }
     @Override
     public void runSkill_4(BaseSkillLittlePersonEntity entity) {
-        EntityUtil.getNearbyEntity(entity, LivingEntity.class,3,false, EntityUtil.TeamFilter.EXCLUDE_TEAM).forEach(target -> target.damage((ServerWorld) this.getWorld(), this.getDamageSources().mobAttack(this), 55));
+        EntityUtil.getNearbyEntity(entity, LivingEntity.class,3,false, EntityUtil.TeamFilter.EXCLUDE_TEAM).forEach(target -> {
+            com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(target);
+            target.damage((ServerWorld) this.getWorld(), this.getDamageSources().mobAttack(this), 55);
+        });
     }
 }

@@ -36,6 +36,7 @@ public class ModifiedDragonBreathCloud extends AreaEffectCloudEntity {
                     LivingEntity.class, this.getBoundingBox().expand(0.5))) {
                 if (!living.isSpectator()) {
                     if (living.isTeammate(this.getOwner())) continue;
+                    com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(living);
                     living.damage(serverWorld, source, 50.0F);  // 50点魔法伤害
                 }
             }

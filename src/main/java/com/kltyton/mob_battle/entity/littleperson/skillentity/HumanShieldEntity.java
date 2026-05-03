@@ -46,6 +46,7 @@ public class HumanShieldEntity extends BaseSkillLittlePersonEntity {
     public void runSkill_2(BaseSkillLittlePersonEntity entity) {
         if (this.getTarget() != null && this.getTarget().isAlive() && this.getWorld() instanceof ServerWorld serverWorld) {
             LivingEntity target = this.getTarget();
+            com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(target);
             target.damage(serverWorld, this.getDamageSources().mobAttack(entity), 55);
             target.takeKnockback(1, MathHelper.sin(this.getYaw() * (float) (Math.PI / 180.0)), -MathHelper.cos(this.getYaw() * (float) (Math.PI / 180.0)));
         }
@@ -54,6 +55,7 @@ public class HumanShieldEntity extends BaseSkillLittlePersonEntity {
     public void runSkill_3(BaseSkillLittlePersonEntity entity) {
         if (this.getTarget() != null && this.getTarget().isAlive() && this.getWorld() instanceof ServerWorld serverWorld) {
             LivingEntity target = this.getTarget();
+            com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(target);
             target.damage(serverWorld, this.getDamageSources().mobAttack(entity), 45);
             target.addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS, 20, 0));
         }
@@ -62,6 +64,7 @@ public class HumanShieldEntity extends BaseSkillLittlePersonEntity {
     public void runSkill_4(BaseSkillLittlePersonEntity entity) {
         if (this.getTarget() != null && this.getTarget().isAlive() && this.getWorld() instanceof ServerWorld serverWorld) {
             LivingEntity target = this.getTarget();
+            com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(target);
             target.damage(serverWorld, this.getDamageSources().mobAttack(entity), 35);
         }
     }

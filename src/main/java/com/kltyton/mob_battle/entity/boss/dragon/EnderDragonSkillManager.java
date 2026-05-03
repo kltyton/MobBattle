@@ -191,6 +191,7 @@ public class EnderDragonSkillManager {
                 for (Entity e : world.getOtherEntities(null, box)) {
                     if (e instanceof LivingEntity living && !e.isSpectator()) {
                         if (living.isTeammate(dragon)) continue;
+                        com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(living);
                         living.damage(world, living.getDamageSources().explosion(dragon, dragon), 400.0F);
                     }
                 }
@@ -264,6 +265,7 @@ public class EnderDragonSkillManager {
                     Box box = new Box(center.x-2, center.y-2, center.z-2, center.x+2, center.y+3, center.z+2);
                     for (Entity e : world.getOtherEntities(null, box)) {
                         if (e instanceof LivingEntity living) {
+                            com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(living);
                             living.damage(world, living.getDamageSources().magic(), 20.0F);
                             world.createExplosion(null, center.x, center.y, center.z, 5.0F, false, World.ExplosionSourceType.MOB);
                         }

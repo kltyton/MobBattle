@@ -34,6 +34,7 @@ public class HeavenCrippledFeetEntity extends BaseSkillLittlePersonEntity {
     @Override
     public void runSkill_2(BaseSkillLittlePersonEntity entity) {
         if (this.getTarget() != null && this.getTarget().isAlive() && this.getWorld() instanceof ServerWorld serverWorld) {
+            com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(this.getTarget());
             this.getTarget().damage(serverWorld, this.getDamageSources().mobAttack(entity), 50);
         }
     }
@@ -41,6 +42,7 @@ public class HeavenCrippledFeetEntity extends BaseSkillLittlePersonEntity {
     public void runSkill_3(BaseSkillLittlePersonEntity entity) {
         LivingEntity target = EntityUtil.getClosestNearbyEntity(entity, LivingEntity.class, 2, EntityUtil.TeamFilter.EXCLUDE_TEAM);
         if (target != null && this.getWorld() instanceof ServerWorld serverWorld) {
+            com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(target);
             target.damage(serverWorld, this.getDamageSources().mobAttack(entity), 40);
         }
     }
@@ -48,6 +50,7 @@ public class HeavenCrippledFeetEntity extends BaseSkillLittlePersonEntity {
     public void runSkill_4(BaseSkillLittlePersonEntity entity) {
         LivingEntity target = EntityUtil.getClosestNearbyEntity(entity, LivingEntity.class, 2, EntityUtil.TeamFilter.EXCLUDE_TEAM);
         if (target != null && this.getWorld() instanceof ServerWorld serverWorld) {
+            com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(target);
             target.damage(serverWorld, this.getDamageSources().mobAttack(entity), 150);
         }
     }

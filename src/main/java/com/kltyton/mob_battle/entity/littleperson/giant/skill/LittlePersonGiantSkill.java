@@ -17,7 +17,9 @@ public class LittlePersonGiantSkill {
         List<LivingEntity> livingEntities = getNearbyLivingEntities(littlePersonGiantEntity, 5);
         ServerWorld sw = (ServerWorld) littlePersonGiantEntity.getWorld();
         for (LivingEntity living : livingEntities) {
+            com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(living);
             living.damage(sw, living.getDamageSources().magic(), 5);
+            com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(living);
             living.damage(sw, living.getDamageSources().mobAttack(littlePersonGiantEntity), 70);
         }
 
@@ -26,6 +28,7 @@ public class LittlePersonGiantSkill {
         List<LivingEntity> livingEntities = getNearbyLivingEntities(littlePersonGiantEntity, 3);
         ServerWorld sw = (ServerWorld) littlePersonGiantEntity.getWorld();
         for (LivingEntity living : livingEntities) {
+            com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(living);
             living.damage(sw, living.getDamageSources().mobAttack(littlePersonGiantEntity), 65);
         }
     }

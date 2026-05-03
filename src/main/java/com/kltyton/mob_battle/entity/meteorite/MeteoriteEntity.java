@@ -70,7 +70,9 @@ public class MeteoriteEntity extends CustomFireballEntity {
                 DamageSource physicalSource = world.getDamageSources().fireball(this, owner);
                 DamageSource magicSource = world.getDamageSources().indirectMagic(this, owner);
 
+                com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(target);
                 target.damage(serverWorld, physicalSource, 50.0f);
+                com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(target);
                 target.damage(serverWorld, magicSource, 50.0f);
             }
             serverWorld.spawnParticles(ParticleTypes.EXPLOSION_EMITTER,

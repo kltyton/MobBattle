@@ -23,7 +23,7 @@ import software.bernie.geckolib.renderer.layer.GeoRenderLayer;
 
 import java.util.List;
 
-public class PlayerProxyRenderer<T extends PlayerEntity & GeoAnimatable, R extends PlayerEntityRenderState & GeoRenderState> extends PlayerEntityRenderer implements GeoRenderer<T, Void, R> {
+public class PlayerProxyRenderer<T extends PlayerEntity & GeoAnimatable, R extends PlayerEntityRenderState & GeoRenderState> extends PlayerEntityRenderer implements GeoRenderer<T, Void, R>, IGeoEntityAnimationTickInvoker<T> {
     public final PlayerReplacedEntityRenderer<T, R> playerRenderer;
 
     public PlayerProxyRenderer(EntityRendererFactory.Context context, boolean slim) {
@@ -184,5 +184,15 @@ public class PlayerProxyRenderer<T extends PlayerEntity & GeoAnimatable, R exten
     @Override
     public void firePostRenderEvent(R renderState, MatrixStack poseStack, BakedGeoModel model, VertexConsumerProvider bufferSource) {
         playerRenderer.firePostRenderEvent(renderState, poseStack, model, bufferSource);
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public void mobBattle$tickGeckoAnimations(T entity, float partialTick) {
+        try {
+            ((IGeoEntityAnimationTickInvoker<T>) playerRenderer).mobBattle$tickGeckoAnimations(entity, partialTick);
+        } catch (NullPointerException e) {
+            // 忽略相机未初始化的错误，这可能在渲染器完全初始化之前发生
+        }
     }
 }

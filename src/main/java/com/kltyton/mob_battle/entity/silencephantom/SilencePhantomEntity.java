@@ -158,6 +158,7 @@ public class SilencePhantomEntity extends PhantomEntity implements  GeneralEntit
 
         if (distance <= 120.0) {
             target.takeKnockback(1.5, -direction.x, -direction.z);
+            com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(target);
             target.damage(serverWorld,
                     world.getDamageSources().sonicBoom(entity),
                     20.0f // 伤害数值

@@ -48,6 +48,7 @@ public class WarriorVillager extends IronGolemEntity implements GeoEntity, ModBa
         float f = this.getAttackDamage();
         float g = (int)f > 0 ? f / 2.0F + this.random.nextInt((int)f) : f;
         DamageSource damageSource = this.getDamageSources().mobAttack(this);
+        com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(target);
         boolean bl = target.damage(world, damageSource, g);
         if (bl) {
             this.triggerAnim("attack_controller", "attack");

@@ -41,6 +41,7 @@ public class PoisonousSlashEntity extends BaseSkillLittlePersonEntity {
         super.tick();
         if (!this.getWorld().isClient() && this.endDamage) {
             for (LivingEntity entity : EntityUtil.getNearbyEntity(this, LivingEntity.class, Object.class, 3, false, EntityUtil.TeamFilter.EXCLUDE_TEAM)) {
+                com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(entity);
                 entity.damage((ServerWorld) this.getWorld(), this.getDamageSources().mobAttack(this), 70);
             }
         }
@@ -70,12 +71,14 @@ public class PoisonousSlashEntity extends BaseSkillLittlePersonEntity {
                     1.2,                                    // 垂直速度分量（向上）
                     (entity.getTarget().getZ() - entity.getZ()) * 0.5   // 水平速度分量
             );
+            com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(entity.getTarget());
             entity.getTarget().damage((ServerWorld) entity.getWorld(), entity.getDamageSources().mobAttack(entity), 80);
         }
     }
     @Override
     public void runSkill_5(BaseSkillLittlePersonEntity entity) {
         for (LivingEntity livingEntity : EntityUtil.getNearbyEntity(entity, LivingEntity.class, Object.class, 3, false, EntityUtil.TeamFilter.EXCLUDE_TEAM)) {
+            com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(livingEntity);
             livingEntity.damage((ServerWorld) entity.getWorld(), entity.getDamageSources().mobAttack(entity), 80);
         }
     }

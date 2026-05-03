@@ -26,6 +26,7 @@ public class FineKnifeItem extends Item {
                 entity instanceof AnimalEntity &&
                 (entity.getType() == EntityType.PIG || entity.getType() == EntityType.COW || entity.getType() == EntityType.SHEEP)
         ) {
+            com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(entity);
             entity.damage((ServerWorld) world, user.getDamageSources().playerAttack(user), 5.0f);
             Item meat;
             if (entity.getType() == EntityType.PIG) {

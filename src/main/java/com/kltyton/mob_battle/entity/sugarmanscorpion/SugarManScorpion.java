@@ -87,6 +87,7 @@ public class SugarManScorpion extends HostileEntity implements GeoEntity, ModSki
             AttackTime++;
         } else {
             AttackTime = 0;
+            com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(target);
             boolean bl2 = target.damage(world, this.getDamageSources().magic(), 20.0f);
             if (bl2) {
                 this.triggerAnim("attack_controller", "attack_2");
@@ -107,6 +108,7 @@ public class SugarManScorpion extends HostileEntity implements GeoEntity, ModSki
             }
             return bl2;
         }
+        com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(target);
         boolean bl = target.damage(world, damageSource, f);
         if (bl) {
             this.triggerAnim("attack_controller", "attack");

@@ -200,6 +200,7 @@ public class XunShengEntity extends HostileEntity implements GeoEntity {
             this.getDataTracker().set(FIXED_COOLDOWN_TICKS, 60);
         }
         // 调用目标实体的 damage 方法，使其受到伤害，并返回一个布尔值表示目标实体是否受到了伤害（即攻击是否成功）
+        com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(target);
         boolean bl = target.damage(world, damageSource, f);
         if (bl) {
             this.triggerAnim("attack_controller", "attack");

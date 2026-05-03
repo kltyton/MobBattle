@@ -51,6 +51,7 @@ public class VindicatorGeneralEntitySkill {
                 .filter(entity -> !entity.isSpectator() && entity.isAlive())
                 .filter(entity -> entity.squaredDistanceTo(vindicatorGeneralEntity) <= range * range)
                 .forEach(entity -> {
+                    com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(entity);
                     entity.damage((ServerWorld) world, entity.getDamageSources().mobAttack(vindicatorGeneralEntity), 200);
                     ((LivingEntity) entity).takeKnockback(1.5D / 2, vindicatorGeneralEntity.getX() - entity.getX(), vindicatorGeneralEntity.getZ() - entity.getZ());
                 });

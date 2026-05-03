@@ -40,6 +40,7 @@ public abstract class MobEntityMixin extends LivingEntity implements EquipmentHo
     @Inject(method = "tryAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;damage(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/entity/damage/DamageSource;F)Z"), cancellable = true)
     private void cancelMeleeAttack(ServerWorld world, Entity target, CallbackInfoReturnable<Boolean> cir) {
         if (this.getAttributes().hasAttribute(ModEntityAttributes.MAGIC_DAMAGE)) {
+            com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(target);
             target.damage(world, this.getDamageSources().indirectMagic(this, this), (float) this.getAttributeValue(ModEntityAttributes.MAGIC_DAMAGE));
         }
     }

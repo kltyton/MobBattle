@@ -21,5 +21,6 @@ public class Mob_battleClient implements ClientModInitializer {
         ModBlocksClient.init();
         ModScreen.init();
         DragonBgmHandler.init();
+        ClientGeckoAnimationTicker.init();
     }
 }

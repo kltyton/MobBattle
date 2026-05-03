@@ -160,6 +160,7 @@ public abstract class HighbirdBaseEntity extends HighbirdAndEggEntity {
         if (attackOwner) f = 1;
 
         // 对目标实体造成伤害，返回是否成功造成伤害
+        com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(target);
         boolean bl = target.damage(world, damageSource, f);
 
         // 如果伤害成功施加

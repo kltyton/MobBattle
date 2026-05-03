@@ -177,6 +177,7 @@ public class CompressArmorSkillManager {
     private static void ironSlash(ServerPlayerEntity player) {
         ServerWorld world = player.getWorld();
         for (LivingEntity target : EntityUtil.getNearbyEntity(player, LivingEntity.class, 3.0, false, EntityUtil.TeamFilter.EXCLUDE_TEAM)) {
+            com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(target);
             target.damage(world, player.getDamageSources().playerAttack(player), 25.0F);
         }
         player.addStatusEffect(new StatusEffectInstance(StatusEffects.RESISTANCE, 3 * 20, 2, false, false, true));
@@ -225,9 +226,11 @@ public class CompressArmorSkillManager {
                 target.velocityModified = true;
             }
             if (attackDamage > 0.0F) {
+                com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(target);
                 target.damage(world, player.getDamageSources().playerAttack(player), attackDamage);
             }
             if (magicDamage > 0.0F) {
+                com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(target);
                 target.damage(world, player.getDamageSources().indirectMagic(player, player), magicDamage);
             }
             target.addStatusEffect(new StatusEffectInstance(mark, 7 * 20, 0, false, false, true), player);
@@ -248,8 +251,10 @@ public class CompressArmorSkillManager {
         List<LivingEntity> targets = EntityUtil.getNearbyEntity(player, LivingEntity.class, Object.class, distance + 2.0, attackBox, false, EntityUtil.TeamFilter.EXCLUDE_TEAM, null, null);
         boolean markedHit = false;
         for (LivingEntity target : targets) {
+            com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(target);
             target.damage(world, player.getDamageSources().playerAttack(player), attackDamage);
             if (magicDamage > 0.0F) {
+                com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(target);
                 target.damage(world, player.getDamageSources().indirectMagic(player, player), magicDamage);
             }
             if (target.hasStatusEffect(mark)) {
@@ -277,6 +282,7 @@ public class CompressArmorSkillManager {
         }
         ServerWorld world = player.getWorld();
         player.requestTeleport(target.getX(), target.getY(), target.getZ());
+        com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(target);
         target.damage(world, player.getDamageSources().playerAttack(player), 160.0F);
         target.removeStatusEffect(ModEffects.NETHERITE_MARK_ENTRY);
         player.getItemCooldownManager().set(cooldownItem, 65 * 20);

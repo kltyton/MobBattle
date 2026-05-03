@@ -359,6 +359,7 @@ public class DeepCreatureEntity extends HostileEntity implements GeoEntity, ModS
             if (getGrabTargetId() != -1 && this.age % 20 == 0) {
                 //抓取攻击
                 if (this.getTarget() != null)
+                    com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(this.getTarget());
                     this.getTarget().damage((ServerWorld) this.getWorld(), this.getTarget().getDamageSources().indirectMagic(this, this), 60F);
             }
             if (isAiDisabled()) {
@@ -401,6 +402,7 @@ public class DeepCreatureEntity extends HostileEntity implements GeoEntity, ModS
 
 
                 for (LivingEntity e : list) {
+                    com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(e);
                     e.damage((ServerWorld)this.getWorld(), this.getDamageSources().mobAttack(this), 10.0F);
                     e.takeKnockback(1.5, chargeDir.x, chargeDir.z);
                 }

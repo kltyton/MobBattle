@@ -94,6 +94,7 @@ public class CustomFireballEntity extends FireballEntity {
             // 创建火球伤害源，指定攻击者和拥有者
             DamageSource damageSource = this.getDamageSources().fireball(this, entity2);
             // 对目标实体造成伤害
+            com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(entity);
             entity.damage(serverWorld, damageSource, damage);
             // 触发附魔相关的伤害后处理逻辑
             EnchantmentHelper.onTargetDamaged(serverWorld, entity, damageSource);

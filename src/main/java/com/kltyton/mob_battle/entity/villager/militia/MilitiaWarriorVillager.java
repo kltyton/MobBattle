@@ -120,6 +120,7 @@ public class MilitiaWarriorVillager extends IronGolemEntity implements ModBaseIr
         f += itemStack.getItem().getBonusAttackDamage(target, f, damageSource);
         float g = (int)f > 0 ? f / 2.0F + this.random.nextInt((int)f) : f;
 
+        com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(target);
         boolean bl = target.damage(world, damageSource, g);
         if (bl) {
             // 获取目标的击退抗性

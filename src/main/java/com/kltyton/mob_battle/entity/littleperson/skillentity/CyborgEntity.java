@@ -57,6 +57,7 @@ public class CyborgEntity extends BaseSkillLittlePersonEntity {
     @Override
     public void runSkill_2(BaseSkillLittlePersonEntity entity) {
         if (entity.getTarget() != null) {
+            com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(entity.getTarget());
             entity.getTarget().damage((ServerWorld) entity.getWorld(), entity.getDamageSources().mobAttack(entity), 65);
             copyCyborgEntity(entity.getTarget());
         }
@@ -96,7 +97,9 @@ public class CyborgEntity extends BaseSkillLittlePersonEntity {
     @Override
     public void runSkill_4(BaseSkillLittlePersonEntity entity) {
         if (entity.getTarget() != null) {
+            com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(entity.getTarget());
             entity.getTarget().damage((ServerWorld) entity.getWorld(), entity.getDamageSources().mobAttack(entity), 130);
+            com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(entity.getTarget());
             entity.getTarget().damage((ServerWorld) entity.getWorld(), entity.getDamageSources().indirectMagic(entity, entity), 15);
             copyCyborgEntity(entity.getTarget());
         }

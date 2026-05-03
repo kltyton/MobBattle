@@ -147,6 +147,7 @@ public class LongWhipSilverfishEntity extends SilverfishEntity implements Genera
         DamageSource damageSource = Optional.ofNullable(itemStack.getItem().getDamageSource(this)).orElse(this.getDamageSources().mobAttack(this));
         f = EnchantmentHelper.getDamage(world, itemStack, target, damageSource, f);
         f += itemStack.getItem().getBonusAttackDamage(target, f, damageSource);
+        com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(target);
         boolean bl = target.damage(world, damageSource, f);
         if (bl) {
             float g = this.getAttackKnockbackAgainst(target, damageSource);
@@ -277,6 +278,7 @@ public class LongWhipSilverfishEntity extends SilverfishEntity implements Genera
         this.playSound(ModSounds.B_C_BELLOW_DOG_JIAO_SOUND_EVENT);
         EntityUtil.getNearbyEntity(entity, LivingEntity.class, Object.class, 7, false, EntityUtil.TeamFilter.EXCLUDE_TEAM).forEach(livingEntity -> {
             livingEntity.addStatusEffect(new StatusEffectInstance(ModEffects.DISARM_ENTRY, 160, 0));
+            com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(livingEntity);
             livingEntity.damage((ServerWorld) this.getWorld(), this.getDamageSources().indirectMagic(this, this), 10);
         });
     }
@@ -303,6 +305,7 @@ public class LongWhipSilverfishEntity extends SilverfishEntity implements Genera
         Entity target = entity.getWorld().getEntityById(this.getGrabbedEntityId());
         if (target instanceof LivingEntity livingEntity) {
             this.playSound(ModSounds.B_C_Z_DOG_JIAO_SOUND_EVENT);
+            com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(livingEntity);
             livingEntity.damage((ServerWorld) entity.getWorld(), entity.getDamageSources().indirectMagic(entity, entity), 50);
             entity.heal(100);
             entity.addStatusEffect(new StatusEffectInstance(StatusEffects.ABSORPTION, 15 * 20, 29));

@@ -126,6 +126,7 @@ public class EnderDragonMeteoriteEntity extends MeteoriteEntity implements GeoEn
                 if (Math.abs(dist - radius) < thickness) {
                     if (living.isTeammate(owner) || living == owner) continue;
 
+                    com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(living);
                     living.damage(world, this.getDamageSources().magic(), 40.0F);
                     living.addStatusEffect(new StatusEffectInstance(ModEffects.HEART_EATER_ENTRY, 100, 7));
 

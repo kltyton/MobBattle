@@ -22,6 +22,7 @@ public class LiruiSilverfishEntity extends CoalSilverfishEntity {
     }
     @Override
     public void runSkill(CoalSilverfishEntity entity) {
+        com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(entity.getTarget());
         if (entity.getTarget() != null && !this.getWorld().isClient) entity.getTarget().damage((ServerWorld) this.getWorld(), this.getDamageSources().mobAttack(this), 230);
     }
     public static DefaultAttributeContainer.Builder createAttributes() {

@@ -56,7 +56,9 @@ public class WitherSkullKingEntity extends WitherSkullEntity {
             if (this.getOwner() instanceof LivingEntity livingEntity) {
                 if (this.getOwner().isTeammate(var8)) return;
                 DamageSource damageSource = this.getDamageSources().witherSkull(this, livingEntity);
+                com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(var8);
                 bl = var8.damage(serverWorld, damageSource, power);
+                com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(var8);
                 var8.damage(serverWorld, this.getDamageSources().explosion(this, livingEntity), 160F);
                 if (bl) {
                     if (var8.isAlive()) {
@@ -66,6 +68,7 @@ public class WitherSkullKingEntity extends WitherSkullEntity {
                     }
                 }
             } else {
+                com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(var8);
                 bl = var8.damage(serverWorld, this.getDamageSources().magic(), power);
             }
 
