@@ -1,22 +1,24 @@
 package com.kltyton.mob_battle.effect.harmful;
 
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.attribute.AttributeContainer;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectCategory;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.Vec3d;
 
+import java.util.Map;
+import java.util.WeakHashMap;
+
 public class StunEffect extends StatusEffect {
-    public MobEntity target;
+    private static final Map<MobEntity, Boolean> ORIGINAL_AI_DISABLED = new WeakHashMap<>();
+
     public StunEffect() {
-        super(StatusEffectCategory.HARMFUL, 0xAAAAFF); // 眩晕颜色，可自定义
+        super(StatusEffectCategory.HARMFUL, 0xAAAAFF);
     }
 
     @Override
     public boolean canApplyUpdateEffect(int duration, int amplifier) {
-        // 每 tick 都应用一次
         return true;
     }
 
@@ -25,17 +27,18 @@ public class StunEffect extends StatusEffect {
         entity.setVelocity(Vec3d.ZERO);
         entity.velocityModified = true;
         if (entity instanceof MobEntity mob) {
-            if (mob.isAiDisabled()) return true;
-            target = mob;
+            ORIGINAL_AI_DISABLED.putIfAbsent(mob, mob.isAiDisabled());
             mob.setAiDisabled(true);
         }
         return true;
     }
 
-    public void onRemoved(AttributeContainer attributeContainer) {
-        super.onRemoved(attributeContainer);
-        if (target != null && target.isAiDisabled()) {
-            target.setAiDisabled(false);
+    public static void restoreAiState(LivingEntity entity) {
+        if (entity instanceof MobEntity mob) {
+            Boolean originalAiDisabled = ORIGINAL_AI_DISABLED.remove(mob);
+            if (originalAiDisabled != null) {
+                mob.setAiDisabled(originalAiDisabled);
+            }
         }
     }
 }

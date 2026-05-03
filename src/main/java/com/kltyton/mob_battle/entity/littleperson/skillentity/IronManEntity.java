@@ -98,6 +98,7 @@ public class IronManEntity extends BaseSkillLittlePersonEntity {
                         entity.getYaw(),
                         entity.getPitch()
                 );
+                EntityUtil.joinSameTeam(ironManTrue, entity);
                 serverWorld.spawnEntity(ironManTrue);
             }
         }

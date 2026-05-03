@@ -68,7 +68,7 @@ public abstract class PlayerEntityMixin extends LivingEntity {
     public boolean isInvulnerableTo(PlayerEntity instance, ServerWorld world, DamageSource source) {
         Entity sourcer = source.getSource();
         Entity attacker = source.getAttacker();
-        if ((sourcer instanceof WitherSkullKingEntity && attacker instanceof WitherSkullKingEntity) || source.isOf(DamageTypes.THORNS) || (source.isOf(DamageTypes.ON_FIRE) && !this.isFireImmune() && !world.getGameRules().getBoolean(GameRules.FIRE_DAMAGE))) {
+        if ((sourcer instanceof WitherSkullKingEntity && attacker instanceof WitherSkullKingEntity) || source.isOf(DamageTypes.THORNS)) {
             instance.timeUntilRegen = 0;
             return false;
         }

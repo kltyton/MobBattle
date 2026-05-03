@@ -20,6 +20,10 @@ import net.minecraft.world.WorldEvents;
 import software.bernie.geckolib.animatable.GeoEntity;
 
 public class PlayerEntitySkill {
+    private static boolean isValidSkillTarget(ServerPlayerEntity player, LivingEntity target) {
+        return target != null && target != player && !target.getUuid().equals(player.getUuid());
+    }
+
     public static void canMove(ServerPlayerEntity player) {
         player.getDataTracker().set(DataTrackersEvent.CAN_MOVE, true);
     }
@@ -28,12 +32,14 @@ public class PlayerEntitySkill {
     }
     public static void runAttackSkill(ServerPlayerEntity player) {
         EntityUtil.getNearbyEntity(player, LivingEntity.class, 8, false, EntityUtil.TeamFilter.EXCLUDE_TEAM).forEach(livingEntity -> {
+            if (!isValidSkillTarget(player, livingEntity)) return;
             livingEntity.damage(player.getWorld(), player.getDamageSources().playerAttack(player), 80);
             livingEntity.takeKnockback(1.5, player.getX() - livingEntity.getX(), player.getZ() - livingEntity.getZ());
         });
     }
     public static void runAttackSkill_2(ServerPlayerEntity player) {
         EntityUtil.getNearbyEntity(player, LivingEntity.class, 8, false, EntityUtil.TeamFilter.EXCLUDE_TEAM).forEach(livingEntity -> {
+            if (!isValidSkillTarget(player, livingEntity)) return;
             livingEntity.damage(player.getWorld(), player.getDamageSources().playerAttack(player), 150);
             livingEntity.takeKnockback(1.5, player.getX() - livingEntity.getX(), player.getZ() - livingEntity.getZ());
         });
@@ -45,13 +51,14 @@ public class PlayerEntitySkill {
 
     public static void runUpperHookSkill(ServerPlayerEntity player) {
         EntityUtil.getNearbyEntity(player, LivingEntity.class, 8, false, EntityUtil.TeamFilter.EXCLUDE_TEAM).forEach(livingEntity -> {
+            if (!isValidSkillTarget(player, livingEntity)) return;
             livingEntity.damage(player.getWorld(), player.getDamageSources().playerAttack(player), 130);
             livingEntity.takeKnockback(1.5, player.getX() - livingEntity.getX(), player.getZ() - livingEntity.getZ());
         });
     }
     public static void runTopKneeSkill(ServerPlayerEntity player) {
         LivingEntity livingEntity = EntityUtil.getClosestNearbyEntity(player, LivingEntity.class, 8, EntityUtil.TeamFilter.EXCLUDE_TEAM);
-        if (livingEntity != null && livingEntity != player) {
+        if (isValidSkillTarget(player, livingEntity)) {
             livingEntity.damage(player.getWorld(), player.getDamageSources().playerAttack(player), 60);
             livingEntity.addStatusEffect(new StatusEffectInstance(ModEffects.STUN_ENTRY, 20));
             livingEntity.takeKnockback(1.5, player.getX() - livingEntity.getX(), player.getZ() - livingEntity.getZ());
@@ -81,7 +88,7 @@ public class PlayerEntitySkill {
 
     public static void runLeftWhipSkill(ServerPlayerEntity player) {
         LivingEntity livingEntity = EntityUtil.getClosestNearbyEntity(player, LivingEntity.class, 8, EntityUtil.TeamFilter.EXCLUDE_TEAM);
-        if (livingEntity != null && livingEntity != player) {
+        if (isValidSkillTarget(player, livingEntity)) {
             livingEntity.damage(player.getWorld(), player.getDamageSources().playerAttack(player), 70);
             livingEntity.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 100, 2));
             livingEntity.takeKnockback(1.5, player.getX() - livingEntity.getX(), player.getZ() - livingEntity.getZ());
@@ -117,6 +124,7 @@ public class PlayerEntitySkill {
         // 8 格范围搜索
         EntityUtil.getNearbyEntity(player, LivingEntity.class, 8, false, EntityUtil.TeamFilter.EXCLUDE_TEAM).forEach(target -> {
             // 1. 造成 350 点巨额伤害
+            if (!isValidSkillTarget(player, target)) return;
             target.damage(world, player.getDamageSources().playerAttack(player), 350f);
             target.takeKnockback(5.0, player.getX() - target.getX(), player.getZ() - target.getZ());
         });
@@ -143,10 +151,16 @@ public class PlayerEntitySkill {
     }
     public static void runRunCollisionSkill(ServerPlayerEntity player) {
         EntityUtil.getNearbyEntity(player, LivingEntity.class, 8, false, EntityUtil.TeamFilter.EXCLUDE_TEAM).forEach(livingEntity -> {
-            if (livingEntity != null && livingEntity != player) {
+            if (isValidSkillTarget(player, livingEntity)) {
                 livingEntity.damage(player.getWorld(), player.getDamageSources().playerAttack(player), 200);
                 livingEntity.addStatusEffect(new StatusEffectInstance(ModEffects.STUN_ENTRY, 30));
-                livingEntity.requestTeleport(livingEntity.getX(), livingEntity.getY() - 1, livingEntity.getZ());
+                if (livingEntity instanceof PlayerEntity) {
+                    livingEntity.takeKnockback(1.2, player.getX() - livingEntity.getX(), player.getZ() - livingEntity.getZ());
+                    livingEntity.setVelocity(livingEntity.getVelocity().x, Math.max(livingEntity.getVelocity().y, 0.35), livingEntity.getVelocity().z);
+                    livingEntity.velocityDirty = true;
+                } else {
+                    livingEntity.requestTeleport(livingEntity.getX(), livingEntity.getY() - 1, livingEntity.getZ());
+                }
             }
         });
     }
@@ -159,7 +173,7 @@ public class PlayerEntitySkill {
     public static void runScraping(ServerPlayerEntity player) {
         // 1. 寻找 8 格内最近的实体
         LivingEntity target = EntityUtil.getClosestNearbyEntity(player, LivingEntity.class, 8, EntityUtil.TeamFilter.EXCLUDE_TEAM);
-        if (target != null) {
+        if (isValidSkillTarget(player, target)) {
             ((IPlayerSkillAccessor)player).mobBattle$setGrabbedEntity(target);
             ((GeoEntity)player).triggerAnim("attack_controller", "yes_scraping");
         } else {
@@ -170,7 +184,7 @@ public class PlayerEntitySkill {
     public static void runScrapingAttack(ServerPlayerEntity player) {
         // 从 Mixin 获取被抓取的实体
         LivingEntity target = ((IPlayerSkillAccessor)player).mobBattle$getGrabbedEntity();
-        if (target != null && target.isAlive() && target != player) {
+        if (target != null && target.isAlive() && isValidSkillTarget(player, target)) {
             target.damage(player.getWorld(), player.getDamageSources().playerAttack(player), 100f);
             // 反胃 V (Nausea 5) - 10秒
             target.addStatusEffect(new StatusEffectInstance(StatusEffects.NAUSEA, 200, 4));

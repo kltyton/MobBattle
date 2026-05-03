@@ -3,12 +3,21 @@ package com.kltyton.mob_battle.datagen.server.tag;
 import com.kltyton.mob_battle.items.ModItems;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagProvider;
+import net.minecraft.item.Item;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.registry.tag.ItemTags;
+import net.minecraft.registry.tag.TagKey;
+import net.minecraft.util.Identifier;
 
 import java.util.concurrent.CompletableFuture;
 
 public class ModItemTagGenerator extends FabricTagProvider.ItemTagProvider {
+    private static final TagKey<Item> ENCHANTABLE_HEAD_ARMOR = TagKey.of(RegistryKeys.ITEM, Identifier.ofVanilla("enchantable/head_armor"));
+    private static final TagKey<Item> ENCHANTABLE_CHEST_ARMOR = TagKey.of(RegistryKeys.ITEM, Identifier.ofVanilla("enchantable/chest_armor"));
+    private static final TagKey<Item> ENCHANTABLE_LEG_ARMOR = TagKey.of(RegistryKeys.ITEM, Identifier.ofVanilla("enchantable/leg_armor"));
+    private static final TagKey<Item> ENCHANTABLE_FOOT_ARMOR = TagKey.of(RegistryKeys.ITEM, Identifier.ofVanilla("enchantable/foot_armor"));
+
     public ModItemTagGenerator(FabricDataOutput output, CompletableFuture<RegistryWrapper.WrapperLookup> registriesFuture) {
         super(output, registriesFuture);
     }
@@ -47,6 +56,30 @@ public class ModItemTagGenerator extends FabricTagProvider.ItemTagProvider {
                 ModItems.COMPRESSED_NETHERITE_HELMET,
                 ModItems.COMPRESSED_NETHERITE_CHESTPLATE,
                 ModItems.COMPRESSED_NETHERITE_LEGGINGS,
+                ModItems.COMPRESSED_NETHERITE_BOOTS
+        );
+        valueLookupBuilder(ENCHANTABLE_HEAD_ARMOR).add(
+                ModItems.COMPRESSED_IRON_HELMET,
+                ModItems.COMPRESSED_GOLD_HELMET,
+                ModItems.COMPRESSED_DIAMOND_HELMET,
+                ModItems.COMPRESSED_NETHERITE_HELMET
+        );
+        valueLookupBuilder(ENCHANTABLE_CHEST_ARMOR).add(
+                ModItems.COMPRESSED_IRON_CHESTPLATE,
+                ModItems.COMPRESSED_GOLD_CHESTPLATE,
+                ModItems.COMPRESSED_DIAMOND_CHESTPLATE,
+                ModItems.COMPRESSED_NETHERITE_CHESTPLATE
+        );
+        valueLookupBuilder(ENCHANTABLE_LEG_ARMOR).add(
+                ModItems.COMPRESSED_IRON_LEGGINGS,
+                ModItems.COMPRESSED_GOLD_LEGGINGS,
+                ModItems.COMPRESSED_DIAMOND_LEGGINGS,
+                ModItems.COMPRESSED_NETHERITE_LEGGINGS
+        );
+        valueLookupBuilder(ENCHANTABLE_FOOT_ARMOR).add(
+                ModItems.COMPRESSED_IRON_BOOTS,
+                ModItems.COMPRESSED_GOLD_BOOTS,
+                ModItems.COMPRESSED_DIAMOND_BOOTS,
                 ModItems.COMPRESSED_NETHERITE_BOOTS
         );
         valueLookupBuilder(ItemTags.PIGLIN_LOVED).add(

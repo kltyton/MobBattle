@@ -206,6 +206,9 @@ public abstract class LivingEntityMixin extends Entity implements Attackable, Se
     }
     @Inject(method = "damage", at = @At("HEAD"), cancellable = true)
     public void damage(ServerWorld world, DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
+        if (!this.mobBattle$keepsDamageCooldown(source)) {
+            ((LivingEntity) (Object) this).timeUntilRegen = 0;
+        }
         if (source.isOf(DamageTypes.OUT_OF_WORLD) && (Object) this instanceof PlayerEntity player && (player.isCreative() || player.isSpectator())) {
             cir.setReturnValue(false);
             cir.cancel();
@@ -213,6 +216,9 @@ public abstract class LivingEntityMixin extends Entity implements Attackable, Se
     }
     @Inject(method = "damage", at = @At("RETURN"))
     public void damageReturn(ServerWorld world, DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
+        if (!this.mobBattle$keepsDamageCooldown(source)) {
+            ((LivingEntity) (Object) this).timeUntilRegen = 0;
+        }
         Entity attacker = source.getAttacker();
         if (attacker instanceof LivingEntity livingEntity && attacker.getType().isIn(ModTags.ATTACK_HEAL_ENTITY) && this.isDead()) {
             livingEntity.heal(5);
@@ -239,7 +245,7 @@ public abstract class LivingEntityMixin extends Entity implements Attackable, Se
     public boolean isInvulnerableTo(LivingEntity instance, ServerWorld world, DamageSource source) {
         Entity sourcer = source.getSource();
         Entity attacker = source.getAttacker();
-        if ((sourcer instanceof WitherSkullKingEntity && attacker instanceof WitherSkullKingEntity) || source.isOf(DamageTypes.THORNS) || (source.isOf(DamageTypes.ON_FIRE) && !this.isFireImmune())) {
+        if ((sourcer instanceof WitherSkullKingEntity && attacker instanceof WitherSkullKingEntity) || source.isOf(DamageTypes.THORNS)) {
             instance.timeUntilRegen = 0;
             return false;
         }
@@ -321,5 +327,22 @@ public abstract class LivingEntityMixin extends Entity implements Attackable, Se
         return attacker instanceof LivingEntity
                 && source.getSource() == attacker
                 && (source.isOf(DamageTypes.MOB_ATTACK) || source.isOf(DamageTypes.PLAYER_ATTACK));
+    }
+
+    @Unique
+    private boolean mobBattle$keepsDamageCooldown(DamageSource source) {
+        return source.isOf(DamageTypes.IN_FIRE)
+                || source.isOf(DamageTypes.ON_FIRE)
+                || source.isOf(DamageTypes.LAVA)
+                || source.isOf(DamageTypes.HOT_FLOOR)
+                || source.isOf(DamageTypes.DROWN)
+                || source.isOf(DamageTypes.CACTUS)
+                || source.isOf(DamageTypes.SWEET_BERRY_BUSH)
+                || source.isOf(DamageTypes.FREEZE)
+                || source.isOf(DamageTypes.IN_WALL)
+                || source.isOf(DamageTypes.CRAMMING)
+                || source.isOf(DamageTypes.STARVE)
+                || source.isOf(DamageTypes.WITHER)
+                || source.isOf(DamageTypes.DRY_OUT);
     }
 }

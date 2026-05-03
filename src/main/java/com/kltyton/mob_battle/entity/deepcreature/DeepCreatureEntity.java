@@ -401,12 +401,8 @@ public class DeepCreatureEntity extends HostileEntity implements GeoEntity, ModS
 
 
                 for (LivingEntity e : list) {
-                    // 给自己 2 tick 无敌帧，避免同一帧多次伤害
-                    if (e.timeUntilRegen <= 0) {
-                        e.damage((ServerWorld)this.getWorld(), this.getDamageSources().mobAttack(this), 10.0F);
-                        e.takeKnockback(1.5, chargeDir.x, chargeDir.z);
-                        e.timeUntilRegen = 2;
-                    }
+                    e.damage((ServerWorld)this.getWorld(), this.getDamageSources().mobAttack(this), 10.0F);
+                    e.takeKnockback(1.5, chargeDir.x, chargeDir.z);
                 }
 
                 // 5. 结束处理

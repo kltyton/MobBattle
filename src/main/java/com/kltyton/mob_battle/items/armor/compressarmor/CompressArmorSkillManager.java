@@ -8,23 +8,32 @@ import com.kltyton.mob_battle.items.ModMaterial;
 import com.kltyton.mob_battle.utils.ArmorUtil;
 import com.kltyton.mob_battle.utils.EntityUtil;
 import com.kltyton.mob_battle.utils.TaskSchedulerUtil;
-import net.minecraft.entity.EquipmentSlot;
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.decoration.ArmorStandEntity;
+import net.minecraft.entity.decoration.Brightness;
+import net.minecraft.entity.decoration.DisplayEntity;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemDisplayContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.particle.ParticleTypes;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.math.AffineTransformation;
 import net.minecraft.util.math.Box;
-import net.minecraft.util.math.EulerAngle;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
+import org.jetbrains.annotations.NotNull;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
 import java.util.HashMap;
 import java.util.List;
@@ -75,38 +84,94 @@ public class CompressArmorSkillManager {
         if (isCoolingDown(player, cooldownItem, 6)) return;
 
         ServerWorld world = player.getWorld();
-        Vec3d direction = horizontalDirection(player);
-        Vec3d standPos = player.getPos().add(direction.multiply(1.0)).add(0.0, 0.6, 0.0);
-        ArmorStandEntity swordStand = new ArmorStandEntity(world, standPos.x, standPos.y, standPos.z);
-        swordStand.setInvisible(true);
-        swordStand.setNoGravity(true);
-        swordStand.setInvulnerable(true);
-        swordStand.setShowArms(true);
-        swordStand.setHideBasePlate(true);
-        swordStand.equipStack(EquipmentSlot.MAINHAND, new ItemStack(ModItems.COMPRESSED_IRON_SWORD));
-        swordStand.setYaw(player.getYaw());
-        swordStand.setRightArmRotation(new EulerAngle(-120.0F, 0.0F, 25.0F));
-        world.spawnEntity(swordStand);
+        DisplayEntity.ItemDisplayEntity swordDisplay = getItemDisplayEntity(world);
+        setIronSwordPose(swordDisplay, player, -42.0F, -0.85F, 1.85F, 1.95F);
+        world.spawnEntity(swordDisplay);
 
-        ironSlash(player);
-        TaskSchedulerUtil.runLater(4, () -> {
-            if (!swordStand.isRemoved()) {
-                swordStand.setRightArmRotation(new EulerAngle(30.0F, 0.0F, -45.0F));
+        TaskSchedulerUtil.runLater(3, () -> {
+            if (!swordDisplay.isRemoved()) {
+                setIronSwordPose(swordDisplay, player, -42.0F, 0.85F, 0.65F, 2.15F);
             }
-        });
-        TaskSchedulerUtil.runLater(8, () -> {
             if (!player.isRemoved()) {
-                swordStand.setRightArmRotation(new EulerAngle(-120.0F, 0.0F, 25.0F));
+                playIronSlashEffect(player, 0.0F);
                 ironSlash(player);
             }
         });
-        TaskSchedulerUtil.runLater(12, () -> {
-            if (!swordStand.isRemoved()) {
-                swordStand.setRightArmRotation(new EulerAngle(30.0F, 0.0F, -45.0F));
+        TaskSchedulerUtil.runLater(8, () -> {
+            if (!swordDisplay.isRemoved()) {
+                setIronSwordPose(swordDisplay, player, 42.0F, 0.85F, 1.85F, 1.95F);
             }
         });
-        TaskSchedulerUtil.runLater(18, swordStand::discard);
+        TaskSchedulerUtil.runLater(11, () -> {
+            if (!swordDisplay.isRemoved()) {
+                setIronSwordPose(swordDisplay, player, 42.0F, -0.85F, 0.65F, 2.15F);
+            }
+            if (!player.isRemoved()) {
+                playIronSlashEffect(player, 0.0F);
+                ironSlash(player);
+            }
+        });
+        TaskSchedulerUtil.runLater(15, () -> {
+            if (!swordDisplay.isRemoved()) {
+                setIronSwordPose(swordDisplay, player, 0.0F, 0.0F, 1.25F, 1.35F);
+            }
+        });
+        TaskSchedulerUtil.runLater(18, swordDisplay::discard);
         player.getItemCooldownManager().set(cooldownItem, 6 * 20);
+    }
+
+    private static DisplayEntity.@NotNull ItemDisplayEntity getItemDisplayEntity(ServerWorld world) {
+        DisplayEntity.ItemDisplayEntity swordDisplay = new DisplayEntity.ItemDisplayEntity(EntityType.ITEM_DISPLAY, world);
+        swordDisplay.setItemStack(new ItemStack(ModItems.COMPRESSED_IRON_SWORD));
+        swordDisplay.setItemDisplayContext(ItemDisplayContext.THIRD_PERSON_RIGHT_HAND);
+        swordDisplay.setNoGravity(true);
+        swordDisplay.setInvulnerable(true);
+        swordDisplay.setBrightness(Brightness.FULL);
+        swordDisplay.setGlowColorOverride(0xD8E8FF);
+        swordDisplay.setGlowing(true);
+        swordDisplay.setViewRange(32.0F);
+        swordDisplay.setDisplayWidth(3.0F);
+        swordDisplay.setDisplayHeight(3.0F);
+        return swordDisplay;
+    }
+
+    private static void setIronSwordPose(DisplayEntity.ItemDisplayEntity swordDisplay, ServerPlayerEntity player, float swingDegrees,
+                                         float sideOffset, float heightOffset, float scale) {
+        Vec3d forward = horizontalDirection(player);
+        Vec3d right = new Vec3d(-forward.z, 0.0, forward.x);
+        Vec3d displayPos = player.getPos()
+                .add(forward.multiply(1.35))
+                .add(right.multiply(sideOffset))
+                .add(0.0, heightOffset, 0.0);
+
+        swordDisplay.setPosition(displayPos.x, displayPos.y, displayPos.z);
+        swordDisplay.setYaw(player.getYaw());
+        swordDisplay.setPitch(0.0F);
+        swordDisplay.setTeleportDuration(3);
+        swordDisplay.setInterpolationDuration(3);
+        swordDisplay.setStartInterpolation(0);
+        swordDisplay.setTransformation(new AffineTransformation(
+                new Vector3f(0.0F, 0.0F, 0.0F),
+                new Quaternionf().rotateXYZ(MathHelper.RADIANS_PER_DEGREE * 65.0F, 0.0F, MathHelper.RADIANS_PER_DEGREE * swingDegrees),
+                new Vector3f(scale, scale, scale),
+                new Quaternionf()
+        ));
+    }
+
+    private static void playIronSlashEffect(ServerPlayerEntity player, float sideOffset) {
+        ServerWorld world = player.getWorld();
+        Vec3d forward = horizontalDirection(player);
+        Vec3d right = new Vec3d(-forward.z, 0.0, forward.x);
+        Vec3d center = player.getPos()
+                .add(forward.multiply(1.9))
+                .add(right.multiply(sideOffset))
+                .add(0.0, 1.0, 0.0);
+
+        world.spawnParticles(ParticleTypes.SWEEP_ATTACK, center.x, center.y, center.z, 3, 0.45, 0.18, 0.45, 0.0);
+        world.spawnParticles(ParticleTypes.CRIT, center.x, center.y, center.z, 24, 1.0, 0.55, 1.0, 0.18);
+        world.spawnParticles(ParticleTypes.ELECTRIC_SPARK, center.x, center.y + 0.15, center.z, 18, 0.8, 0.35, 0.8, 0.12);
+        world.playSound(null, center.x, center.y, center.z, SoundEvents.ENTITY_PLAYER_ATTACK_SWEEP, SoundCategory.PLAYERS, 1.2F, 0.75F);
+        world.playSound(null, center.x, center.y, center.z, SoundEvents.BLOCK_ANVIL_HIT, SoundCategory.PLAYERS, 0.55F, 1.45F);
     }
 
     private static void ironSlash(ServerPlayerEntity player) {

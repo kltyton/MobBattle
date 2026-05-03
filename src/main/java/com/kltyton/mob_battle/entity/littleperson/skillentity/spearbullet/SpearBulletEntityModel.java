@@ -14,7 +14,7 @@ public class SpearBulletEntityModel extends EntityModel<ProjectileEntityRenderSt
     public static TexturedModelData getTexturedModelData() {
         ModelData modelData = new ModelData();
         ModelPartData modelPartData = modelData.getRoot();
-        ModelPartData bb_main = modelPartData.addChild("bb_main", ModelPartBuilder.create().uv(2, 19).cuboid(-0.5F, 0.0F, -4.0F, 0.5F, 0.5F, 9.0F, new Dilation(0.0F)), ModelTransform.origin(0.0F, 0.0F, 0.0F));
+        ModelPartData bb_main = modelPartData.addChild("bb_main", ModelPartBuilder.create().uv(11, 7).cuboid(-0.25F, -0.5F, -5.0F, 0.5F, 0.5F, 9.0F, new Dilation(0.0F)), ModelTransform.origin(0.0F, 24.0F, 0.0F));
         return TexturedModelData.of(modelData, 32, 32);
     }
     @Override

@@ -381,7 +381,7 @@ public class SexEntity extends BaseSkillLittlePersonEntity {
         if (this.getWorld().isClient) return;
         Entity target = entity.getWorld().getEntityById(this.getGrabbedEntityId());
         if (target instanceof LivingEntity livingEntity) {
-            livingEntity.damage((ServerWorld) entity.getWorld(), entity.getDamageSources().indirectMagic(entity, entity), 100);
+            livingEntity.damage((ServerWorld) entity.getWorld(), entity.getDamageSources().mobAttack(entity), 100);
         }
     }
     @Override
@@ -389,9 +389,9 @@ public class SexEntity extends BaseSkillLittlePersonEntity {
         if (this.getWorld().isClient) return;
         Entity target = entity.getWorld().getEntityById(this.getGrabbedEntityId());
         if (target instanceof LivingEntity livingEntity) {
-            livingEntity.damage((ServerWorld) entity.getWorld(), entity.getDamageSources().indirectMagic(entity, entity), 150);
             this.setGrabbedEntityId(-1);
             livingEntity.takeKnockback(2.4, livingEntity.getX() - this.getX(), livingEntity.getZ() - this.getZ());
+            livingEntity.damage((ServerWorld) entity.getWorld(), entity.getDamageSources().indirectMagic(entity, entity), 150);
         }
     }
 

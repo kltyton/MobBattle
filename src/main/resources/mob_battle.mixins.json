@@ -17,6 +17,7 @@
     "compressarmor.LivingEntityMarkerMixin",
     "client.render.entity.player.PlayerEntityMixin",
     "damage.DamageUtilMixin",
+    "effect.LivingEntityStatusEffectMixin",
     "disarm.AttackEntityTaskMixin",
     "disarm.AttackGoalMixin",
     "disarm.BowAttackGoalMixin",

@@ -198,8 +198,6 @@ public class ModItems {
     public static Item COMPRESSED_GOLD_SWORD;
     public static Item COMPRESSED_DIAMOND_SWORD;
     public static Item COMPRESSED_NETHERITE_SWORD;
-    public static Item IRON_GOLD_SWORD_DAMAGED;
-
     public static VsSnipe VS_SNIPE;
     public static Item TRAIN_BULLET;
     public static Item AREA_GRAVITY_DEVICE_ITEM;
@@ -623,18 +621,6 @@ public class ModItems {
                         .component(DataComponentTypes.DEATH_PROTECTION, DeathProtectionComponent.TOTEM_OF_UNDYING)
                         .registryKey(RegistryKey.of(
                                 RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "iron_gold_sword")
-                        ))
-                )
-        );
-
-        IRON_GOLD_SWORD_DAMAGED = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "iron_gold_sword_damaged"),
-                new IronGoldSword(new Item.Settings()
-                        .sword(ModMaterial.IRON_GOLD_TOOL_MATERIAL, 0f,-2.2f)
-                        .maxCount(1)
-                        .maxDamage(0)
-                        .component(DataComponentTypes.UNBREAKABLE, Unit.INSTANCE)
-                        .registryKey(RegistryKey.of(
-                                RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "iron_gold_sword_damaged")
                         ))
                 )
         );

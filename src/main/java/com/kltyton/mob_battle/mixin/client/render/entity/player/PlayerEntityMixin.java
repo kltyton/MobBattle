@@ -99,24 +99,44 @@ public abstract class PlayerEntityMixin extends LivingEntity implements GeoEntit
     @Unique
     private static final TrackedData<Boolean> ISCOLLIDING = DataTracker.registerData(PlayerEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
     @Unique
+    private static final int MAX_COLLISION_TICKS = 90;
+    @Unique
     private LivingEntity collidingEntity = null;
     @Unique
     private LivingEntity grabbedEntity = null;
+    @Unique
+    private int collisionTicks = 0;
     @Unique
     private boolean isColliding() {
         return this.dataTracker.get(ISCOLLIDING);
     }
     @Unique
+    private boolean mobBattle$isValidCollisionTarget(LivingEntity target) {
+        return target != null && target != (Object) this && !target.getUuid().equals(this.getUuid());
+    }
+    @Unique
     @Override
     public void mobBattle$startCollision() {
         this.dataTracker.set(ISCOLLIDING, true);
+        this.collisionTicks = 0;
     }
 
     @Unique
     @Override
     public void mobBattle$stopCollision() {
+        this.mobBattle$releaseCollisionTarget();
         this.dataTracker.set(ISCOLLIDING, false);
         this.collidingEntity = null;
+        this.collisionTicks = 0;
+    }
+    @Unique
+    private void mobBattle$releaseCollisionTarget() {
+        if (this.collidingEntity == null) {
+            return;
+        }
+        this.collidingEntity.setVelocity(0.0, Math.max(this.collidingEntity.getVelocity().y, 0.0), 0.0);
+        this.collidingEntity.velocityModified = true;
+        this.collidingEntity.velocityDirty = true;
     }
     @Unique
     @Override
@@ -175,6 +195,10 @@ public abstract class PlayerEntityMixin extends LivingEntity implements GeoEntit
                 this.setVelocity(velocity.x, this.getVelocity().y, velocity.z);
                 this.velocityDirty = true;
             } else {
+                if (++this.collisionTicks > MAX_COLLISION_TICKS) {
+                    this.mobBattle$stopCollision();
+                    return;
+                }
                 // 1. 冲锋位移逻辑
                 Vec3d lookVec = this.getRotationVec(1.0F);
                 Vec3d velocity = new Vec3d(lookVec.x, 0, lookVec.z).normalize().multiply(1.5); // 冲锋速度 0.5
@@ -184,12 +208,12 @@ public abstract class PlayerEntityMixin extends LivingEntity implements GeoEntit
                 if (this.collidingEntity == null) {
                     // 探测前方 1.5 格内的生物
                     LivingEntity target = EntityUtil.getClosestNearbyEntity((PlayerEntity) (Object) this, LivingEntity.class, 5, EntityUtil.TeamFilter.EXCLUDE_TEAM);
-                    if (target != null) {
+                    if (this.mobBattle$isValidCollisionTarget(target)) {
                         this.collidingEntity = target;
                     }
                 } else {
                     // 3. 维持被抓取生物的位置 & 伤害
-                    if (!this.collidingEntity.isAlive()) {
+                    if (!this.collidingEntity.isAlive() || !this.mobBattle$isValidCollisionTarget(this.collidingEntity)) {
                         this.collidingEntity = null;
                     } else {
                         // 将生物固定在玩家前方 1.2 格处

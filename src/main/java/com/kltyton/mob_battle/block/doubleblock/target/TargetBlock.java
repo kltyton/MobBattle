@@ -14,6 +14,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.World;
@@ -69,20 +70,21 @@ public class TargetBlock extends DoubleBlock {
         return null;
     }
     @Override
-    protected void onStateReplaced(BlockState state, ServerWorld world, BlockPos pos, boolean moved) {
-        // 只在下半部分被替换/移除时处理，避免重复执行
-        if (state.get(HALF) == DoubleBlockHalf.LOWER) {
-            BlockEntity be = world.getBlockEntity(pos);
-            if (be instanceof TargetBlockEntity targetBlockEntity) {
-                targetBlockEntity.killTrackedGolems(world);
-            }
-        }
-
-        super.onStateReplaced(state, world, pos, moved);
-    }
-
-    @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
         return world.isClient() ? null : validateTicker(type, ModBlockEntities.TARGET_ENTITY, TargetBlockEntity::tick);
+    }
+    @Override
+    public VoxelShape rotateShape(Direction to, VoxelShape shape) {
+        VoxelShape[] buffer = {
+                shape, VoxelShapes.empty()
+        };
+        int times = (to.getHorizontalQuarterTurns() - Direction.EAST.getHorizontalQuarterTurns() + 4) % 4;
+        for (int i = 0; i < times; i++) {
+            buffer[1] = VoxelShapes.empty();
+            buffer[0].forEachBox((minX, minY, minZ, maxX, maxY, maxZ) -> buffer[1] = VoxelShapes.union(buffer[1],
+                    VoxelShapes.cuboid(1 - maxZ, minY, minX, 1 - minZ, maxY, maxX)));
+            buffer[0] = buffer[1];
+        }
+        return buffer[0];
     }
 }
