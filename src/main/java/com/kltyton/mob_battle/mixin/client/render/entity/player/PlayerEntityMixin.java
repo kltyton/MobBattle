@@ -112,7 +112,7 @@ public abstract class PlayerEntityMixin extends LivingEntity implements GeoEntit
     }
     @Unique
     private boolean mobBattle$isValidCollisionTarget(LivingEntity target) {
-        return target != null && target != (Object) this && !target.getUuid().equals(this.getUuid());
+        return target != null && target != this && !target.getUuid().equals(this.getUuid());
     }
     @Unique
     @Override
@@ -319,7 +319,7 @@ public abstract class PlayerEntityMixin extends LivingEntity implements GeoEntit
                         if (this.mobBattle$hasSkill()) {
                             ((IClientPlayerEntityAccessor)this).clientSend("stop");
                             ((IClientPlayerEntityAccessor)this).clientSend("can_move");
-                            ((IClientPlayerEntityAccessor)this).setPerson(1);
+                            //((IClientPlayerEntityAccessor)this).setPerson(1);
                         }
                     }
                     return PlayState.STOP;
@@ -501,7 +501,7 @@ public abstract class PlayerEntityMixin extends LivingEntity implements GeoEntit
             this.mobBattle$setAttackCooldown(controllerName, getMaxAttackCooldown(controllerName));
             // 新增：切换到第三人称后视角（客户端专属）
             if (this.getWorld().isClient) {
-                ((IClientPlayerEntityAccessor)this).setPerson(2);
+                //((IClientPlayerEntityAccessor)this).setPerson(2);
             } else {
                 ServerPlayNetworking.send((ServerPlayerEntity)(Object)this, new PlayerSkillUtilPayload("setPerson_2"));
             }

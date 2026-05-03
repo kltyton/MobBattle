@@ -28,6 +28,7 @@ public abstract class GeoEntityRendererAnimationTickMixin<T extends Entity & Geo
     public void mobBattle$tickGeckoAnimations(T entity, float partialTick) {
         R renderState = createBaseRenderState(entity);
         updateRenderState(entity, renderState, partialTick);
-        getGeoModel().setCustomAnimations(((GeoRenderer<T, Void, R>) this).createAnimationState(renderState));
+        getGeoModel().getBakedModel(getGeoModel().getModelResource(renderState));
+        getGeoModel().handleAnimations(((GeoRenderer<T, Void, R>) this).createAnimationState(renderState));
     }
 }

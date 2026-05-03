@@ -8,7 +8,6 @@ import com.kltyton.mob_battle.network.packet.*;
 import com.kltyton.mob_battle.sounds.bgm.ClientBgmManager;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.option.Perspective;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.Identifier;
 
@@ -66,9 +65,9 @@ public class ClientPlayNetwork {
             client.execute(() -> {
                 if (client.player != null) {
                     switch (payload.name()) {
-                        case "setPerson_1" -> client.options.setPerspective(Perspective.FIRST_PERSON);
+/*                        case "setPerson_1" -> client.options.setPerspective(Perspective.FIRST_PERSON);
                         case "setPerson_2" -> client.options.setPerspective(Perspective.THIRD_PERSON_BACK);
-                        case "setPerson_3" -> client.options.setPerspective(Perspective.THIRD_PERSON_FRONT);
+                        case "setPerson_3" -> client.options.setPerspective(Perspective.THIRD_PERSON_FRONT);*/
                     }
                 }
             });

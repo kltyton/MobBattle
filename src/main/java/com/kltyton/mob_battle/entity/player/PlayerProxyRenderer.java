@@ -174,7 +174,7 @@ public class PlayerProxyRenderer<T extends PlayerEntity & GeoAnimatable, R exten
 
     @Override
     public void fireCompileRenderStateEvent(T animatable, Void relatedObject, R renderState) {
-        playerRenderer.fireCompileRenderStateEvent((T)animatable, relatedObject, renderState);
+        playerRenderer.fireCompileRenderStateEvent(animatable, relatedObject, renderState);
     }
     @Override
     public boolean firePreRenderEvent(R renderState, MatrixStack poseStack, BakedGeoModel model, VertexConsumerProvider bufferSource) {
