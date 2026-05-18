@@ -54,7 +54,6 @@ public class MagicManEntity extends BaseSkillLittlePersonEntity {
         if (this.getWorld() instanceof ServerWorld serverWorld) {
             EntityUtil.getNearbyEntity(entity, LivingEntity.class, Object.class, 5, false, EntityUtil.TeamFilter.EXCLUDE_TEAM).forEach(
                     livingEntity -> {
-                        com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(livingEntity);
                         livingEntity.damage(serverWorld, this.getDamageSources().indirectMagic(entity, entity), 150);
                     }
             );
@@ -63,7 +62,6 @@ public class MagicManEntity extends BaseSkillLittlePersonEntity {
                         livingEntity.addStatusEffect(new StatusEffectInstance(StatusEffects.ABSORPTION, 10 * 20, 14), entity);
                     }
             );
-            com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(this);
             this.damage(serverWorld, this.getDamageSources().magic(), 100);
         }
     }

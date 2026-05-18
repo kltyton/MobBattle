@@ -227,7 +227,6 @@ public class WitherSkeletonKingEntity extends WitherSkeletonEntity implements Ge
         f = EnchantmentHelper.getDamage(world, itemStack, target, damageSource, f);
         f += itemStack.getItem().getBonusAttackDamage(target, f, damageSource);
         if (this.isTeammate(target)) return false;
-        com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(target);
         boolean bl = target.damage(world, damageSource, f);
         if (bl) {
             float g = this.getAttackKnockbackAgainst(target, damageSource);

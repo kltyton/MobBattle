@@ -43,7 +43,6 @@ public class SelfDestructEffectEvent {
                 if (livingTarget.isTeammate(entity)) {
                     continue;
                 }
-                com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(livingTarget);
                 livingTarget.damage(
                         world,
                         world.getDamageSources().explosion(entity, entity),

@@ -130,7 +130,6 @@ public class MissileEntity extends CustomFireballEntity {
                     continue;
                 }
                 DamageSource physicalSource = world.getDamageSources().fireball(this, owner);
-                com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(target);
                 target.damage(serverWorld, physicalSource, extraDamage);
             }
             serverWorld.spawnParticles(ParticleTypes.EXPLOSION_EMITTER,

@@ -288,9 +288,7 @@ public class PiglinCannonItem extends Item {
         }
 
         for (LivingEntity entity : hitEntities) {
-            com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(entity);
             entity.damage(world, entity.getDamageSources().explosion(player, player), 220.0F);
-            com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(entity);
             entity.damage(world, entity.getDamageSources().mobProjectile(player, player), 100.0F);
         }
 
@@ -331,7 +329,6 @@ public class PiglinCannonItem extends Item {
             float health = piglin.getHealth();
             double take = Math.min(remain, health);
 
-            com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(piglin);
             piglin.damage(world, piglin.getDamageSources().magic(), (float) take);
             remain -= take;
 

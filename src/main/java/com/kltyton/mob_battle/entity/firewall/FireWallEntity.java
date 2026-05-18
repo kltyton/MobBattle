@@ -107,7 +107,6 @@ public class FireWallEntity extends Entity {
 
         for (Entity e : this.getWorld().getOtherEntities(owner, box)) {
             if (e instanceof LivingEntity living) {
-                com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(living);
                 living.damage((ServerWorld) this.getWorld(),
                         owner.getDamageSources().magic(), damage);
                 living.addStatusEffect(

@@ -39,7 +39,6 @@ public class Skill {
             ServerWorld sw = (ServerWorld) entity.getWorld();
             LivingEntity player = (LivingEntity) entity.getWorld().getEntityById(entity.getGrabTargetId());
             if (player != null) {
-                com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(player);
                 player.damage(sw, player.getDamageSources().magic(), 60);
             }
         }*/
@@ -51,14 +50,11 @@ public class Skill {
     }
     public static void runDamage(DeepCreatureEntity entity) {
         if (entity.getTarget() == null) return;
-        com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(entity.getTarget());
         entity.getTarget().damage((ServerWorld) entity.getWorld(), entity.getTarget().getDamageSources().mobAttack(entity), 5);
         TaskSchedulerUtil.runLater(15, () -> {
-            com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(entity.getTarget());
             entity.getTarget().damage((ServerWorld) entity.getWorld(), entity.getTarget().getDamageSources().mobAttack(entity), 5);
         });
         TaskSchedulerUtil.runLater(25, () -> {
-            com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(entity.getTarget());
             entity.getTarget().damage((ServerWorld) entity.getWorld(), entity.getTarget().getDamageSources().mobAttack(entity), 5);
         });
     }
@@ -80,7 +76,6 @@ public class Skill {
         double radius = 8.0D;
         if (entity.getTarget() == null || entity.distanceTo(entity.getTarget()) > radius) return;
         ServerWorld sw = (ServerWorld) entity.getWorld();
-        com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(entity.getTarget());
         entity.getTarget().damage(sw, entity.getTarget().getDamageSources().mobAttack(entity), 85F);
 /*        sw.createExplosion(
                 entity,
@@ -103,7 +98,6 @@ public class Skill {
         ServerWorld sw = (ServerWorld) entity.getWorld();
         for (LivingEntity player : players) {
             SkillUtils.knockbackPlayer(entity, player, 0.8, 0.2, 0.05);
-            com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(player);
             player.damage(sw, player.getDamageSources().mobAttack(entity), 90F);
         }
     }
@@ -173,7 +167,6 @@ public class Skill {
             double distFromLine = playerPos.distanceTo(closestPoint);
 
             if (distFromLine <= hitRadius) {
-                com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(player);
                 if (player.damage(world, world.getDamageSources().magic(), (float) damage)) {
                     player.addVelocity(direction.x * knockbackH,
                             direction.y * knockbackV,

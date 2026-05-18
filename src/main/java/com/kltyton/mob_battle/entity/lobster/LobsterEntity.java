@@ -296,7 +296,6 @@ public class LobsterEntity extends AnimalEntity implements GeneralEntity<Lobster
         if (!(this.getTarget() instanceof LivingEntity target) || !target.isAlive()) return false;
         if (!isTargetInAttackRange(target)) return false;
 
-        com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(target);
         boolean hit = target.damage(serverWorld, this.getDamageSources().mobAttack(this), damage);
         if (hit) {
             this.onAttacking(target);

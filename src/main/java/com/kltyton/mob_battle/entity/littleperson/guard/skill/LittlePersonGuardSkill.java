@@ -11,7 +11,6 @@ public class LittlePersonGuardSkill {
         List<LivingEntity> livingEntities = getNearbyLivingEntities(littlePersonGuardEntity, 3);
         ServerWorld sw = (ServerWorld) littlePersonGuardEntity.getWorld();
         for (LivingEntity living : livingEntities) {
-            com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(living);
             living.damage(sw, living.getDamageSources().mobAttack(littlePersonGuardEntity), 90);
         }
 

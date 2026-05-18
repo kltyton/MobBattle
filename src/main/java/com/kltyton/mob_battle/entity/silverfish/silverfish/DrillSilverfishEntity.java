@@ -60,7 +60,6 @@ public class DrillSilverfishEntity extends CoalSilverfishEntity {
 
         for (Entity target : targets) {
             if (target.getBoundingBox().expand(0.1).raycast(startCenter, endCenter).isPresent()) {
-                com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(target);
                 target.damage(serverWorld, this.getDamageSources().mobAttack(this), damageAmount);
             }
         }

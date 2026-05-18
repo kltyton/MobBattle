@@ -204,7 +204,6 @@ public class GoldenTrailProjectile extends TrueDamageProjectile {
                 amplifier = Math.min(current.getAmplifier() + 1, 79);
             }
             target.addStatusEffect(new StatusEffectInstance(ModEffects.PIG_SPIRIT_MARK_ENTRY, 20 * 20, amplifier));
-            com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(target);
             target.damage(world, target.getDamageSources().magic(), 10.0F);
         }
     }

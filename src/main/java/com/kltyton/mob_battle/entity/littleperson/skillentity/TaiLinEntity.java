@@ -43,7 +43,6 @@ public class TaiLinEntity extends BaseSkillLittlePersonEntity {
     @Override
     public void runSkill_2(BaseSkillLittlePersonEntity entity) {
         if (entity.getTarget() != null) {
-            com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(entity.getTarget());
             entity.getTarget().damage((ServerWorld) entity.getWorld(), entity.getDamageSources().mobAttack(entity), 90);
             entity.getTarget().takeKnockback(5.0, entity.getX() - entity.getTarget().getX(), entity.getZ() - entity.getTarget().getZ());
         }
@@ -51,7 +50,6 @@ public class TaiLinEntity extends BaseSkillLittlePersonEntity {
     @Override
     public void runSkill_3(BaseSkillLittlePersonEntity entity) {
         if (entity.getTarget() != null) {
-            com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(entity.getTarget());
             entity.getTarget().damage((ServerWorld) entity.getWorld(), entity.getDamageSources().mobAttack(entity), 180);
             if (entity.getTarget() instanceof PlayerEntity player) player.addStatusEffect(new StatusEffectInstance(ModEffects.STUN_ENTRY, 40, 0));
         }
@@ -65,7 +63,6 @@ public class TaiLinEntity extends BaseSkillLittlePersonEntity {
             }
             if (this.endDamage) {
                 for (LivingEntity entity : EntityUtil.getNearbyEntity(this, LivingEntity.class, Object.class, 2, false, EntityUtil.TeamFilter.EXCLUDE_TEAM)) {
-                    com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(entity);
                     entity.damage((ServerWorld) this.getWorld(), this.getDamageSources().mobAttack(this), 70);
                 }
             }
@@ -80,7 +77,6 @@ public class TaiLinEntity extends BaseSkillLittlePersonEntity {
     @Override
     public void runSkill_5(BaseSkillLittlePersonEntity entity) {
         for (LivingEntity livingEntity : EntityUtil.getNearbyEntity(entity, LivingEntity.class, Object.class, 5, false, EntityUtil.TeamFilter.EXCLUDE_TEAM)) {
-            com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(livingEntity);
             livingEntity.damage((ServerWorld) entity.getWorld(), entity.getDamageSources().mobAttack(entity), 80);
         }
     }

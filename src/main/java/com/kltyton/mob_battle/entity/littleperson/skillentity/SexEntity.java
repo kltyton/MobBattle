@@ -232,7 +232,6 @@ public class SexEntity extends BaseSkillLittlePersonEntity {
         if (!this.getWorld().isClient) {
             if (this.endDamage) {
                 for (LivingEntity entity : EntityUtil.getNearbyEntity(this, LivingEntity.class, Object.class, 2, false, EntityUtil.TeamFilter.EXCLUDE_TEAM)) {
-                    com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(entity);
                     entity.damage((ServerWorld) this.getWorld(), this.getDamageSources().mobAttack(this), 85);
                 }
             }
@@ -300,14 +299,12 @@ public class SexEntity extends BaseSkillLittlePersonEntity {
     @Override
     public void runSkill_2(BaseSkillLittlePersonEntity entity) {
         EntityUtil.getNearbyEntity(entity, LivingEntity.class, 5, false, EntityUtil.TeamFilter.EXCLUDE_TEAM).forEach(livingEntity -> {
-            com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(livingEntity);
             livingEntity.damage((ServerWorld) entity.getWorld(), entity.getDamageSources().mobAttack(entity), 120);
         });
     }
     @Override
     public void runSkill_3(BaseSkillLittlePersonEntity entity) {
         EntityUtil.getNearbyEntity(entity, LivingEntity.class, 5, false, EntityUtil.TeamFilter.EXCLUDE_TEAM).forEach(livingEntity -> {
-            com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(livingEntity);
             livingEntity.damage((ServerWorld) entity.getWorld(), entity.getDamageSources().mobAttack(entity), 145);
         });
     }
@@ -315,7 +312,6 @@ public class SexEntity extends BaseSkillLittlePersonEntity {
     public void runSkill_4(BaseSkillLittlePersonEntity entity) {
         LivingEntity livingEntity = entity.getTarget();
         if (livingEntity != null) {
-            com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(livingEntity);
             boolean result = livingEntity.damage((ServerWorld) entity.getWorld(), entity.getDamageSources().mobAttack(entity), 180);
             if (result) {
                 double d = livingEntity.getAttributeValue(EntityAttributes.KNOCKBACK_RESISTANCE);
@@ -340,7 +336,6 @@ public class SexEntity extends BaseSkillLittlePersonEntity {
     public void runSkill_5(BaseSkillLittlePersonEntity entity) {
         LivingEntity livingEntity = entity.getTarget();
         if (livingEntity != null) {
-            com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(livingEntity);
             boolean result = livingEntity.damage((ServerWorld) entity.getWorld(), entity.getDamageSources().mobAttack(entity), 150);
             if (result) {
                 double d = livingEntity.getAttributeValue(EntityAttributes.KNOCKBACK_RESISTANCE);
@@ -354,11 +349,9 @@ public class SexEntity extends BaseSkillLittlePersonEntity {
     public void runSkill_8(BaseSkillLittlePersonEntity entity) {
         LivingEntity livingEntity = entity.getTarget();
         if (livingEntity != null) {
-            com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(livingEntity);
             boolean result = livingEntity.damage((ServerWorld) entity.getWorld(), entity.getDamageSources().mobAttack(entity), 150);
             if (result) {
                 EntityUtil.getNearbyEntity(entity, LivingEntity.class, 5, false, EntityUtil.TeamFilter.EXCLUDE_TEAM).forEach(livingEntity1 -> {
-                    com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(livingEntity1);
                     livingEntity1.damage((ServerWorld) entity.getWorld(), entity.getDamageSources().mobAttack(entity), 120);
                 });
             }
@@ -388,7 +381,6 @@ public class SexEntity extends BaseSkillLittlePersonEntity {
         if (this.getWorld().isClient) return;
         Entity target = entity.getWorld().getEntityById(this.getGrabbedEntityId());
         if (target instanceof LivingEntity livingEntity) {
-            com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(livingEntity);
             livingEntity.damage((ServerWorld) entity.getWorld(), entity.getDamageSources().mobAttack(entity), 100);
         }
     }
@@ -399,7 +391,6 @@ public class SexEntity extends BaseSkillLittlePersonEntity {
         if (target instanceof LivingEntity livingEntity) {
             this.setGrabbedEntityId(-1);
             livingEntity.takeKnockback(2.4, livingEntity.getX() - this.getX(), livingEntity.getZ() - this.getZ());
-            com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(livingEntity);
             livingEntity.damage((ServerWorld) entity.getWorld(), entity.getDamageSources().indirectMagic(entity, entity), 150);
         }
     }

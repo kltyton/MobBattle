@@ -17,7 +17,6 @@ public class SbD {
                 .filter(entity -> entity.squaredDistanceTo(user) <= range * range)
                 .forEach(entity -> {
                     if (entity != user) {
-                        com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(entity);
                         entity.damage(world, entity.getDamageSources().mobAttack(user), 150F);
                     }
                 });

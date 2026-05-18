@@ -40,7 +40,6 @@ public class BloodyBladeEntity extends BaseSkillLittlePersonEntity {
     @Override
     public void runSkill_2(BaseSkillLittlePersonEntity entity) {
         if (this.getTarget() != null && this.getTarget().isAlive() && this.getWorld() instanceof ServerWorld serverWorld) {
-            com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(this.getTarget());
             this.getTarget().damage(serverWorld, this.getDamageSources().mobAttack(entity), 80);
         }
     }

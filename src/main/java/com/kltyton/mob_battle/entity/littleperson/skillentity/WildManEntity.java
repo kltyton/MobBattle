@@ -75,14 +75,12 @@ public class WildManEntity extends BaseSkillLittlePersonEntity implements Ranged
     @Override
     public void runSkill_3(BaseSkillLittlePersonEntity entity) {
         if (entity.getTarget() != null) {
-            com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(entity.getTarget());
             entity.getTarget().damage((ServerWorld) entity.getWorld(), entity.getDamageSources().mobAttack(entity), 35);
         }
     }
     @Override
     public void runSkill_5(BaseSkillLittlePersonEntity entity) {
         if (entity.getTarget() != null) {
-            com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(entity.getTarget());
             entity.getTarget().damage((ServerWorld) entity.getWorld(), entity.getDamageSources().mobAttack(entity), 35);
         }
     }

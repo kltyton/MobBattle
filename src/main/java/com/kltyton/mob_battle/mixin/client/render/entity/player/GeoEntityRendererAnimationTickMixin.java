@@ -18,7 +18,7 @@ public abstract class GeoEntityRendererAnimationTickMixin<T extends Entity & Geo
     protected abstract R createBaseRenderState(T entity);
 
     @Shadow
-    public abstract void updateRenderState(T entity, R entityRenderState, float partialTick);
+    public abstract void method_62354(T entity, R entityRenderState, float partialTick);
 
     @Shadow
     public abstract GeoModel<T> getGeoModel();
@@ -27,7 +27,7 @@ public abstract class GeoEntityRendererAnimationTickMixin<T extends Entity & Geo
     @SuppressWarnings("unchecked")
     public void mobBattle$tickGeckoAnimations(T entity, float partialTick) {
         R renderState = createBaseRenderState(entity);
-        updateRenderState(entity, renderState, partialTick);
+        method_62354(entity, renderState, partialTick);
         getGeoModel().getBakedModel(getGeoModel().getModelResource(renderState));
         getGeoModel().handleAnimations(((GeoRenderer<T, Void, R>) this).createAnimationState(renderState));
     }

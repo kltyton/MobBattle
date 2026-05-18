@@ -241,7 +241,6 @@ public class MagmaLobsterEntity extends LobsterEntity {
         double reach = (this.getWidth() * 2.0F) * (this.getWidth() * 2.0F) + target.getWidth();
         if (this.squaredDistanceTo(target) > reach + 1.0D) return false;
 
-        com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(target);
         boolean hit = target.damage(serverWorld, this.getDamageSources().mobAttack(this), damage);
         if (hit) {
             this.onAttacking(target);

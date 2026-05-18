@@ -221,7 +221,6 @@ public abstract class PlayerEntityMixin extends LivingEntity implements GeoEntit
                         this.collidingEntity.requestTeleport(targetPos.x, targetPos.y + 4, targetPos.z);
                         // 每 20 刻给予 70 点伤害
                         if (this.age % 20 == 0) {
-                            com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(this.collidingEntity);
                             this.collidingEntity.damage((ServerWorld) this.getWorld(), this.getDamageSources().playerAttack((PlayerEntity) (Object) this), 70f);
                             this.playSound(ModSounds.PLAYER_ATTACK_4_SOUND_EVENT);
                         }

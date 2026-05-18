@@ -49,9 +49,7 @@ public class SkullKingEntitySkill {
                         isFriend = skullEntity.isOwner(witherSkeletonKingEntity);
                     }
                     if (!isFriend) {
-                        com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(entity);
                         entity.damage((ServerWorld) world, entity.getDamageSources().mobAttack(witherSkeletonKingEntity), 120F);
-                        com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(entity);
                         entity.damage((ServerWorld) world, entity.getDamageSources().magic(), 30F);
                         ((LivingEntity) entity).takeKnockback(2.0D, witherSkeletonKingEntity.getX() - entity.getX(), witherSkeletonKingEntity.getZ() - entity.getZ());
                     }

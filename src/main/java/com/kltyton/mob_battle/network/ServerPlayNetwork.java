@@ -450,11 +450,9 @@ public class ServerPlayNetwork {
                                 StatusEffectInstance effect = target.getStatusEffect(ModEffects.PIG_SPIRIT_MARK_ENTRY);
                                 int level = effect.getAmplifier() + 1;
                                 // 造成魔法伤害 (等同于等级)
-                                com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(target);
                                 target.damage(world, player.getDamageSources().indirectMagic(player, player), (float) level);
                                 // 造成攻击伤害 (等级的 5 倍)
                                 // 使用 playerAttack 确保伤害来源被计入玩家
-                                com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(target);
                                 target.damage(world, player.getDamageSources().playerAttack(player), (float) (level * 5));
                                 target.removeStatusEffect(ModEffects.PIG_SPIRIT_MARK_ENTRY);
                             }
@@ -475,7 +473,6 @@ public class ServerPlayNetwork {
                         }
                         List<LivingEntity> targets = EntityUtil.getNearbyEntity(player, LivingEntity.class, 5.0, false, EntityUtil.TeamFilter.EXCLUDE_TEAM);
                         for (LivingEntity target : targets) {
-                            com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(target);
                             target.damage(world, player.getDamageSources().playerAttack(player), 150.0F);
                             int currentAmplifier = -1;
                             if (target.hasStatusEffect(ModEffects.PIG_SPIRIT_MARK_ENTRY)) {

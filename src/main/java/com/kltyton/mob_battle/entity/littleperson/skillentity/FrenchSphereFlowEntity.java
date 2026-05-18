@@ -38,7 +38,6 @@ public class FrenchSphereFlowEntity extends BaseSkillLittlePersonEntity {
     }
     @Override
     public void attackAdditional(LivingEntity target) {
-        com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(target);
         target.damage((ServerWorld) this.getWorld(), this.getDamageSources().indirectMagic(this, this), 25);
     }
     @Override
@@ -98,9 +97,7 @@ public class FrenchSphereFlowEntity extends BaseSkillLittlePersonEntity {
         }
         TaskSchedulerUtil.runLater(40, () -> {
             if (entity.getTarget() != null) {
-                com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(entity.getTarget());
                 entity.getTarget().damage((ServerWorld) entity.getWorld(), entity.getTarget().getDamageSources().explosion(entity, entity), 200);
-                com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(entity.getTarget());
                 entity.getTarget().damage((ServerWorld) entity.getWorld(), entity.getTarget().getDamageSources().indirectMagic(entity, entity), 70);
             }
 

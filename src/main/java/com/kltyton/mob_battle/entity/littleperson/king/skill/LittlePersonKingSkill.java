@@ -36,7 +36,6 @@ public class LittlePersonKingSkill {
         serverWorld.spawnEntity(lightning);
         List<LivingEntity> target = getNearbyLivingEntities(littlePersonKingEntity, 4.0);
         for (LivingEntity targetEntity : target) {
-            com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(targetEntity);
             targetEntity.damage(serverWorld, targetEntity.getDamageSources().lightningBolt(), 120.0F);
         }
         serverWorld.spawnParticles(ParticleTypes.ELECTRIC_SPARK,

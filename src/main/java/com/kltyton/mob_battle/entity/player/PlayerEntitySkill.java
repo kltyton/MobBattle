@@ -33,7 +33,6 @@ public class PlayerEntitySkill {
     public static void runAttackSkill(ServerPlayerEntity player) {
         EntityUtil.getNearbyEntity(player, LivingEntity.class, 8, false, EntityUtil.TeamFilter.EXCLUDE_TEAM).forEach(livingEntity -> {
             if (!isValidSkillTarget(player, livingEntity)) return;
-            com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(livingEntity);
             livingEntity.damage(player.getWorld(), player.getDamageSources().playerAttack(player), 80);
             livingEntity.takeKnockback(1.5, player.getX() - livingEntity.getX(), player.getZ() - livingEntity.getZ());
         });
@@ -41,7 +40,6 @@ public class PlayerEntitySkill {
     public static void runAttackSkill_2(ServerPlayerEntity player) {
         EntityUtil.getNearbyEntity(player, LivingEntity.class, 8, false, EntityUtil.TeamFilter.EXCLUDE_TEAM).forEach(livingEntity -> {
             if (!isValidSkillTarget(player, livingEntity)) return;
-            com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(livingEntity);
             livingEntity.damage(player.getWorld(), player.getDamageSources().playerAttack(player), 150);
             livingEntity.takeKnockback(1.5, player.getX() - livingEntity.getX(), player.getZ() - livingEntity.getZ());
         });
@@ -54,7 +52,6 @@ public class PlayerEntitySkill {
     public static void runUpperHookSkill(ServerPlayerEntity player) {
         EntityUtil.getNearbyEntity(player, LivingEntity.class, 8, false, EntityUtil.TeamFilter.EXCLUDE_TEAM).forEach(livingEntity -> {
             if (!isValidSkillTarget(player, livingEntity)) return;
-            com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(livingEntity);
             livingEntity.damage(player.getWorld(), player.getDamageSources().playerAttack(player), 130);
             livingEntity.takeKnockback(1.5, player.getX() - livingEntity.getX(), player.getZ() - livingEntity.getZ());
         });
@@ -62,7 +59,6 @@ public class PlayerEntitySkill {
     public static void runTopKneeSkill(ServerPlayerEntity player) {
         LivingEntity livingEntity = EntityUtil.getClosestNearbyEntity(player, LivingEntity.class, 8, EntityUtil.TeamFilter.EXCLUDE_TEAM);
         if (isValidSkillTarget(player, livingEntity)) {
-            com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(livingEntity);
             livingEntity.damage(player.getWorld(), player.getDamageSources().playerAttack(player), 60);
             livingEntity.addStatusEffect(new StatusEffectInstance(ModEffects.STUN_ENTRY, 20));
             livingEntity.takeKnockback(1.5, player.getX() - livingEntity.getX(), player.getZ() - livingEntity.getZ());
@@ -93,7 +89,6 @@ public class PlayerEntitySkill {
     public static void runLeftWhipSkill(ServerPlayerEntity player) {
         LivingEntity livingEntity = EntityUtil.getClosestNearbyEntity(player, LivingEntity.class, 8, EntityUtil.TeamFilter.EXCLUDE_TEAM);
         if (isValidSkillTarget(player, livingEntity)) {
-            com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(livingEntity);
             livingEntity.damage(player.getWorld(), player.getDamageSources().playerAttack(player), 70);
             livingEntity.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 100, 2));
             livingEntity.takeKnockback(1.5, player.getX() - livingEntity.getX(), player.getZ() - livingEntity.getZ());
@@ -130,7 +125,6 @@ public class PlayerEntitySkill {
         EntityUtil.getNearbyEntity(player, LivingEntity.class, 8, false, EntityUtil.TeamFilter.EXCLUDE_TEAM).forEach(target -> {
             // 1. 造成 350 点巨额伤害
             if (!isValidSkillTarget(player, target)) return;
-            com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(target);
             target.damage(world, player.getDamageSources().playerAttack(player), 350f);
             target.takeKnockback(5.0, player.getX() - target.getX(), player.getZ() - target.getZ());
         });
@@ -158,7 +152,6 @@ public class PlayerEntitySkill {
     public static void runRunCollisionSkill(ServerPlayerEntity player) {
         EntityUtil.getNearbyEntity(player, LivingEntity.class, 8, false, EntityUtil.TeamFilter.EXCLUDE_TEAM).forEach(livingEntity -> {
             if (isValidSkillTarget(player, livingEntity)) {
-                com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(livingEntity);
                 livingEntity.damage(player.getWorld(), player.getDamageSources().playerAttack(player), 200);
                 livingEntity.addStatusEffect(new StatusEffectInstance(ModEffects.STUN_ENTRY, 30));
                 if (livingEntity instanceof PlayerEntity) {
@@ -192,7 +185,6 @@ public class PlayerEntitySkill {
         // 从 Mixin 获取被抓取的实体
         LivingEntity target = ((IPlayerSkillAccessor)player).mobBattle$getGrabbedEntity();
         if (target != null && target.isAlive() && isValidSkillTarget(player, target)) {
-            com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(target);
             target.damage(player.getWorld(), player.getDamageSources().playerAttack(player), 100f);
             // 反胃 V (Nausea 5) - 10秒
             target.addStatusEffect(new StatusEffectInstance(StatusEffects.NAUSEA, 200, 4));

@@ -158,7 +158,6 @@ public class VindicatorGeneralEntity extends VindicatorEntity implements GeoEnti
         DamageSource damageSource = Optional.ofNullable(itemStack.getItem().getDamageSource(this)).orElse(this.getDamageSources().mobAttack(this));
         f = EnchantmentHelper.getDamage(world, itemStack, target, damageSource, f);
         f += itemStack.getItem().getBonusAttackDamage(target, f, damageSource);
-        com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(target);
         boolean bl = target.damage(world, damageSource, f);
         if (bl) {
             float g = this.getAttackKnockbackAgainst(target, damageSource);

@@ -158,7 +158,6 @@ public abstract class EnderDragonEntityMixin extends MobEntity {
                     if (living.isTeammate(self)) continue;  // 跳过队友
                     // 330点物理伤害（用mobAttack来源）
                     DamageSource source = self.getDamageSources().mobAttack(self);
-                    com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(living);
                     living.damage(world, source, 330.0F);
 
                     // 击退翻倍（原版冲撞击退 ≈ 2~3，这里翻倍 ≈ 4~6）
@@ -297,7 +296,6 @@ public abstract class EnderDragonEntityMixin extends MobEntity {
                 entity.addVelocity(f / h * 4.0, 0.2F, g / h * 4.0);
                 if (this.phaseManager.getCurrent() != null && !this.phaseManager.getCurrent().isSittingOrHovering() && livingEntity.getLastAttackedTime() < entity.age - 2) {
                     DamageSource damageSource = this.getDamageSources().mobAttack(this);
-                    com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(entity);
                     entity.damage(world, damageSource, 5.0F);
                     EnchantmentHelper.onTargetDamaged(world, entity, damageSource);
                 }
@@ -311,7 +309,6 @@ public abstract class EnderDragonEntityMixin extends MobEntity {
             if (entity instanceof LivingEntity) {
                 if (entity.isTeammate(this)) continue;
                 DamageSource damageSource = this.getDamageSources().mobAttack(this);
-                com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(entity);
                 entity.damage(world, damageSource, 10.0F);
                 EnchantmentHelper.onTargetDamaged(world, entity, damageSource);
             }

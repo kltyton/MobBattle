@@ -227,7 +227,6 @@ public abstract class LivingEntityMixin extends Entity implements Attackable, Se
                 int level = excitement.getAmplifier() + 1;
                 this.mobBattle$handlingExcitementBonus = true;
                 try {
-                    com.kltyton.mob_battle.utils.ModDamageUtil.resetDamageCooldown(target);
                     target.damage(world, source, 3.0F * level);
                 } finally {
                     this.mobBattle$handlingExcitementBonus = false;
