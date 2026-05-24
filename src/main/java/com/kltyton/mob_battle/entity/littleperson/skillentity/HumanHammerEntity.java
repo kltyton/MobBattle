@@ -42,7 +42,6 @@ public class HumanHammerEntity extends BaseSkillLittlePersonEntity {
         if (shieldEntity != null && shieldEntity.isAlive()) {
             this.addStatusEffect(new StatusEffectInstance(StatusEffects.STRENGTH, 20 * 5, 14));
             shieldEntity.addStatusEffect(new StatusEffectInstance(StatusEffects.RESISTANCE, 20 * 5, 2));
-            shieldEntity.timeUntilRegen = 0;
             boolean result = shieldEntity.damage(world, this.getDamageSources().mobAttack(this), amount);
             return result;
         } else return super.damage(world, source, amount);

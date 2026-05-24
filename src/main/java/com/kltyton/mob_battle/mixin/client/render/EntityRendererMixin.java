@@ -1,7 +1,7 @@
 package com.kltyton.mob_battle.mixin.client.render;
 
 import com.kltyton.mob_battle.Mob_battle;
-import com.kltyton.mob_battle.accessor.ICompressedArmorMarker;
+import com.kltyton.mob_battle.accessor.IEffectMarker;
 import com.kltyton.mob_battle.accessor.ILead;
 import com.kltyton.mob_battle.accessor.ILeadRenderData;
 import com.kltyton.mob_battle.accessor.IModEntityRenderState;
@@ -72,13 +72,21 @@ public abstract class EntityRendererMixin {
             method = "updateRenderState",
             at = @At("HEAD")
     )
-    private void onUpdateRenderState(Entity livingEntity, EntityRenderState livingEntityRenderState, float f, CallbackInfo ci) {
-        if (livingEntity instanceof LivingEntity) {
-            this.targetEntity = (LivingEntity) livingEntity;
-            ((IModEntityRenderState) livingEntityRenderState).setCompressedArmorMarkerType(((ICompressedArmorMarker) this.targetEntity).mobBattle$getCompressedArmorMarkerType());
+    private void onUpdateRenderState(Entity entity, EntityRenderState state, float tickProgress, CallbackInfo ci) {
+        if (entity instanceof LivingEntity livingEntity) {
+            this.targetEntity = livingEntity;
+
+            IEffectMarker marker = (IEffectMarker) livingEntity;
+            IModEntityRenderState modState = (IModEntityRenderState) state;
+
+            modState.setCompressedArmorMarkerType(marker.mobBattle$getCompressedArmorMarkerType());
+            modState.setPigSpiritMarkAmplifier(marker.mobBattle$getPigSpiritMarkAmplifier());
         } else {
             this.targetEntity = null;
-            ((IModEntityRenderState) livingEntityRenderState).setCompressedArmorMarkerType(0);
+
+            IModEntityRenderState modState = (IModEntityRenderState) state;
+            modState.setCompressedArmorMarkerType(0);
+            modState.setPigSpiritMarkAmplifier(-1);
         }
     }
     @Inject(
@@ -159,6 +167,7 @@ public abstract class EntityRendererMixin {
             at = @At("TAIL")
     )
     private void mobBattle$renderMarkerItem(EntityRenderState state, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, CallbackInfo ci) {
+        mobBattle$renderPigSpiritMark(state, matrices, vertexConsumers, light);
         ClientPlayerEntity player = MinecraftClient.getInstance().player;
         if (player == null) return;
         Item markerItem = null;
@@ -178,11 +187,8 @@ public abstract class EntityRendererMixin {
         markerItemRenderState.render(matrices, vertexConsumers, light, OverlayTexture.DEFAULT_UV);
         matrices.pop();
     }
-    @Inject(
-            method = "render",
-            at = @At("TAIL")
-    )
-    private void mobBattle$renderPigSpiritMark(EntityRenderState state, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, CallbackInfo ci) {
+    @Unique
+    private void mobBattle$renderPigSpiritMark(EntityRenderState state, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light) {
         int amplifier = ((IModEntityRenderState) state).getPigSpiritMarkAmplifier();
         if (amplifier < 0) {
             return;

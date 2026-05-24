@@ -45,11 +45,7 @@ import com.kltyton.mob_battle.items.ModMaterial;
 import com.kltyton.mob_battle.items.armor.compressarmor.CompressArmorSkillManager;
 import com.kltyton.mob_battle.items.tool.piglin.PiglinCannonModeUtil;
 import com.kltyton.mob_battle.network.packet.*;
-import com.kltyton.mob_battle.utils.ArmorUtil;
-import com.kltyton.mob_battle.utils.CombatEffectUtil;
-import com.kltyton.mob_battle.utils.EnchantmentUtil;
-import com.kltyton.mob_battle.utils.EntityUtil;
-import com.kltyton.mob_battle.utils.LeftClickUtil;
+import com.kltyton.mob_battle.utils.*;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.entity.Entity;
@@ -57,7 +53,6 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.particle.ParticleTypes;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -468,21 +463,26 @@ public class ServerPlayNetwork {
                             CombatEffectUtil.addPigSpiritMark(target, player, 5);
                         }
 
+                        // 技能0第一段：近距离上印记粒子
+                        ParticleUtils.spawnZiJinSkill0MarkParticles(world, player, firstRangeTargets);
+
                         List<LivingEntity> secondRangeTargets = EntityUtil.getNearbyEntity(player, LivingEntity.class, 20.0, false, EntityUtil.TeamFilter.EXCLUDE_TEAM);
                         for (LivingEntity target : secondRangeTargets) {
                             if (target.hasStatusEffect(ModEffects.PIG_SPIRIT_MARK_ENTRY)) {
                                 StatusEffectInstance effect = target.getStatusEffect(ModEffects.PIG_SPIRIT_MARK_ENTRY);
                                 int level = effect.getAmplifier() + 1;
+                                target.timeUntilRegen = 0;
                                 // 造成魔法伤害 (等同于等级)
                                 target.damage(world, player.getDamageSources().indirectMagic(player, player), (float) level);
                                 // 造成攻击伤害 (等级的 5 倍)
                                 // 使用 playerAttack 确保伤害来源被计入玩家
+                                target.timeUntilRegen = 0;
                                 target.damage(world, player.getDamageSources().playerAttack(player), (float) (level * 5));
                                 target.removeStatusEffect(ModEffects.PIG_SPIRIT_MARK_ENTRY);
                             }
                         }
-                        world.spawnParticles(ParticleTypes.EXPLOSION, player.getX(), player.getY(), player.getZ(), 1, 0, 0, 0, 0);
-                        player.getItemCooldownManager().set(cooldownItem, 700);
+                        ParticleUtils.spawnZiJinSkill0DetonateParticles(world, player, secondRangeTargets);
+                        player.getItemCooldownManager().set(cooldownItem, 12 * 20);
                     } else if (payload.skill_id() == 1) {
                         ItemStack cooldownItem = Items.COMMAND_BLOCK_MINECART.getDefaultStack();
                         if (player.getItemCooldownManager().isCoolingDown(cooldownItem)) {
@@ -499,6 +499,10 @@ public class ServerPlayNetwork {
                         for (LivingEntity target : targets) {
                             CombatEffectUtil.addPigSpiritMark(target, player, 10);
                         }
+
+                        // 技能1：强化上印记粒子
+                        ParticleUtils.spawnZiJinSkill1MarkParticles(world, player, targets);
+
                         player.getItemCooldownManager().set(cooldownItem, 300);
                     }
                 }

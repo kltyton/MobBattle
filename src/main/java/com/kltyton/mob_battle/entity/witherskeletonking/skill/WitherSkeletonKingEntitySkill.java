@@ -1,8 +1,8 @@
 package com.kltyton.mob_battle.entity.witherskeletonking.skill;
 
-import com.kltyton.mob_battle.entity.witherskeletonking.WitherSkeletonKingEntity;
 import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.entity.enhancedwither.EnhancedWitherEntity;
+import com.kltyton.mob_battle.entity.witherskeletonking.WitherSkeletonKingEntity;
 import com.kltyton.mob_battle.entity.witherskeletonking.summon.DualBladeWitherSkeletonEntity;
 import com.kltyton.mob_battle.entity.witherskeletonking.summon.ShieldAxeWitherSkeletonEntity;
 import com.kltyton.mob_battle.utils.EntityUtil;
@@ -10,7 +10,6 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.SpawnReason;
-import net.minecraft.entity.boss.WitherEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.MobEntity;
@@ -222,9 +221,7 @@ public class WitherSkeletonKingEntitySkill {
         }
         king.requestTeleport(pos.x, target.getY(), pos.z);
         king.lookAtEntity(target, 30.0F, 30.0F);
-        target.timeUntilRegen = 0;
         target.damage(world, king.getDamageSources().mobAttack(king), 220.0F);
-        target.timeUntilRegen = 0;
         target.damage(world, king.getDamageSources().indirectMagic(king, king), 70.0F);
     }
 

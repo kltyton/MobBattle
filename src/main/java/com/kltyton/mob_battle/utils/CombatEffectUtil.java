@@ -30,6 +30,6 @@ public final class CombatEffectUtil {
         StatusEffectInstance current = target.getStatusEffect(ModEffects.PIG_SPIRIT_MARK_ENTRY);
         int currentAmplifier = current == null ? -1 : current.getAmplifier();
         int newAmplifier = Math.min(currentAmplifier + layers, 79);
-        target.addStatusEffect(new StatusEffectInstance(ModEffects.PIG_SPIRIT_MARK_ENTRY, durationTicks, newAmplifier, false, false), source);
+        target.addStatusEffect(new StatusEffectInstance(ModEffects.PIG_SPIRIT_MARK_ENTRY, durationTicks, newAmplifier, false, false, true), source);
     }
 }

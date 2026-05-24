@@ -4,10 +4,10 @@ import com.kltyton.mob_battle.utils.EntityUtil;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
-import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.storage.ReadView;
 import net.minecraft.storage.WriteView;
@@ -17,7 +17,6 @@ import software.bernie.geckolib.animatable.GeoEntity;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.animatable.manager.AnimatableManager;
 import software.bernie.geckolib.animatable.processing.AnimationController;
-import software.bernie.geckolib.animation.PlayState;
 import software.bernie.geckolib.animation.RawAnimation;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
@@ -87,7 +86,6 @@ public class SkillVisualEntity extends Entity implements GeoEntity {
         Box box = this.getBoundingBox().expand(this.radius);
         for (LivingEntity target : world.getEntitiesByClass(LivingEntity.class, box,
                 living -> EntityUtil.isValidSummonCombatTarget(this, this.owner, living))) {
-            target.timeUntilRegen = 0;
             target.damage(world, this.owner.getDamageSources().mobAttack(this.owner), this.damage);
         }
     }

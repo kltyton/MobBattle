@@ -341,7 +341,6 @@ public abstract class RequestedLittlePersonEntity extends BaseSkillLittlePersonE
         if (amount <= 0.0F || !isValidSummonTarget(target) || !(this.getWorld() instanceof ServerWorld world)) {
             return;
         }
-        target.timeUntilRegen = 0;
         target.damage(world, this.getDamageSources().mobAttack(this), amount);
     }
 
@@ -349,7 +348,6 @@ public abstract class RequestedLittlePersonEntity extends BaseSkillLittlePersonE
         if (amount <= 0.0F || !isValidSummonTarget(target) || !(this.getWorld() instanceof ServerWorld world)) {
             return;
         }
-        target.timeUntilRegen = 0;
         target.damage(world, this.getDamageSources().indirectMagic(this, this), amount);
     }
 

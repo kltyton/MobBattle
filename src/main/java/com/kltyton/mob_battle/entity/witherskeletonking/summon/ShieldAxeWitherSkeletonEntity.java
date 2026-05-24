@@ -184,7 +184,6 @@ public class ShieldAxeWitherSkeletonEntity extends WitherSkeletonEntity implemen
         if (target == null || !(this.getWorld() instanceof ServerWorld world) || !isValidSummonTarget(target)) {
             return;
         }
-        target.timeUntilRegen = 0;
         if (target.damage(world, this.getDamageSources().mobAttack(this), damage) && stun) {
             target.addStatusEffect(new StatusEffectInstance(ModEffects.STUN_ENTRY, 20, 0), this);
         }

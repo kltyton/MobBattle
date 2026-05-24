@@ -21,7 +21,6 @@ import software.bernie.geckolib.animatable.GeoEntity;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.animatable.manager.AnimatableManager;
 import software.bernie.geckolib.animatable.processing.AnimationController;
-import software.bernie.geckolib.animation.PlayState;
 import software.bernie.geckolib.animation.RawAnimation;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
@@ -143,7 +142,6 @@ public class SkillProjectileEntity extends ProjectileEntity implements GeoEntity
             return;
         }
         if (this.physicalDamage > 0.0F) {
-            target.timeUntilRegen = 0;
             if (owner instanceof LivingEntity livingOwner) {
                 target.damage(world, this.getDamageSources().mobProjectile(this, livingOwner), this.physicalDamage);
             } else {
@@ -151,7 +149,6 @@ public class SkillProjectileEntity extends ProjectileEntity implements GeoEntity
             }
         }
         if (this.magicDamage > 0.0F) {
-            target.timeUntilRegen = 0;
             target.damage(world, this.getDamageSources().indirectMagic(this, owner == null ? this : owner), this.magicDamage);
         }
     }

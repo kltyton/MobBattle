@@ -110,7 +110,6 @@ public class VindicatorGeneralAxeEntity extends ProjectileEntity implements GeoE
         Box box = this.getBoundingBox().expand(0.85D);
         for (LivingEntity target : world.getEntitiesByClass(LivingEntity.class, box,
                 living -> EntityUtil.isValidCombatTarget(vindicatorGeneral, living))) {
-            target.timeUntilRegen = 0;
             target.damage(world, this.getDamageSources().mobProjectile(this, vindicatorGeneral), 280.0F);
             startReturning();
             return;

@@ -1,7 +1,6 @@
 package com.kltyton.mob_battle.entity.littleperson.skillentity;
 
 import com.kltyton.mob_battle.entity.ModEntities;
-import com.kltyton.mob_battle.utils.EntityUtil;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -66,11 +65,13 @@ public class IceManEntity extends RequestedLittlePersonEntity {
 
     @Override
     protected void runAttack() {
-        if (this.clone) {
+        damageTarget(50.0F, 0.0F);
+        //原来的克隆体20物理,8魔法
+/*        if (this.clone) {
             damageTarget(20.0F, 8.0F);
         } else {
             damageTarget(50.0F, 0.0F);
-        }
+        }*/
     }
 
     @Override

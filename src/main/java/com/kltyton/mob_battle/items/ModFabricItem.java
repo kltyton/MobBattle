@@ -22,4 +22,7 @@ public interface ModFabricItem {
 
     }
     default void onDurabilityChange(ItemStack stack, int amount, ServerPlayerEntity entity) {}
+
+    default void onSuccessfulCriticalHit(PlayerEntity player, Entity target, ItemStack stack) {}
+    default void onSuccessfulSweepHit(PlayerEntity player, Entity target, ItemStack stack) {}
 }

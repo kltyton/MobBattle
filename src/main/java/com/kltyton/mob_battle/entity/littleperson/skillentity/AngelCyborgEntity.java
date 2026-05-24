@@ -4,7 +4,6 @@ import com.kltyton.mob_battle.effect.ModEffects;
 import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.entity.littleperson.archer.littlearrow.LittleArrowEntity;
 import com.kltyton.mob_battle.utils.TaskSchedulerUtil;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
@@ -75,7 +74,8 @@ public class AngelCyborgEntity extends RequestedLittlePersonEntity {
         if (this.bossBar == null) {
             return;
         }
-        this.bossBar.setPercent(Math.max(0.0F, Math.min(1.0F, this.getHealth() / this.getMaxHealth())));
+
+        this.bossBar.setPercent(Math.clamp(this.getHealth() / this.getMaxHealth(), 0.0F, 1.0F));
         this.bossBar.setName(this.getDisplayName());
     }
 
@@ -92,69 +92,175 @@ public class AngelCyborgEntity extends RequestedLittlePersonEntity {
     @Override
     protected void runSkill(int attack, int phase) {
         switch (attack) {
-            case 2 -> areaDamage(4.0D, 120.0F, 0.0F);
-            case 3 -> runPoisonCombo(phase);
-            case 4 -> coneDamage(4.0D, 100.0F, 0.0F, 50.0F);
-            case 5 -> areaDamage(4.0D, 100.0F, 0.0F);
-            case 6 -> areaDamage(5.0D, 150.0F, 0.0F);
-            case 7 -> {
-                LivingEntity target = this.getTarget();
-                if (target != null) {
-                    pullTargetToFront(target, 1.4D);
-                    target.addStatusEffect(new StatusEffectInstance(ModEffects.STUN_ENTRY, 40, 0), this);
-                    damagePhysical(target, 200.0F);
+            case 2 -> runAttack2();
+
+            case 3 -> {
+                if (phase == 0) {
+                    runAttack3();
+                } else if (phase == 1) {
+                    runAttack3_1();
                 }
             }
-            case 8 -> shootCyborgArrow();
+
+            case 4 -> runAttack4();
+
+            case 5 -> runAttack5();
+
+            case 6 -> runAttack6();
+
+            case 7 -> runAttack7();
+
+            case 8 -> runAttack8();
+
             case 9 -> {
                 if (phase == 0) {
-                    this.setVelocity(this.getVelocity().x, 1.25D, this.getVelocity().z);
-                    this.velocityModified = true;
-                } else {
-                    areaDamage(6.0D, 300.0F, 0.0F);
+                    runAttack9();
+                } else if (phase == 1) {
+                    runAttack9_1();
                 }
             }
+
             default -> {
             }
         }
     }
 
-    private void runPoisonCombo(int phase) {
+    /**
+     * attack2:
+     * 范围伤害 120
+     */
+    private void runAttack2() {
+        areaDamage(4.0D, 120.0F, 0.0F);
+    }
+
+    /**
+     * attack3 / runAttack3;
+     * 给予目标中毒、反胃、凋零、饥饿、黑暗、穿甲、魔法穿甲 III 级 10 秒，
+     * 并造成 50 魔法伤害。
+     */
+    private void runAttack3() {
         LivingEntity target = this.getTarget();
-        if (target == null) {
+        if (target == null || !isValidSummonTarget(target)) {
             return;
         }
-        if (phase == 0) {
-            target.addStatusEffect(new StatusEffectInstance(StatusEffects.POISON, 10 * 20, 2), this);
-            target.addStatusEffect(new StatusEffectInstance(StatusEffects.NAUSEA, 10 * 20, 2), this);
-            target.addStatusEffect(new StatusEffectInstance(StatusEffects.WITHER, 10 * 20, 2), this);
-            target.addStatusEffect(new StatusEffectInstance(StatusEffects.HUNGER, 10 * 20, 2), this);
-            target.addStatusEffect(new StatusEffectInstance(StatusEffects.DARKNESS, 10 * 20, 2), this);
-            target.addStatusEffect(new StatusEffectInstance(ModEffects.ARMOR_PIERCING_ENTRY, 10 * 20, 2), this);
-            target.addStatusEffect(new StatusEffectInstance(ModEffects.VOID_ARMOR_PIERCING_ENTRY, 10 * 20, 2), this);
-            damageMagic(target, 50.0F);
-        } else {
-            pullTargetToFront(target, 1.4D);
-            damagePhysical(target, 100.0F);
+
+        target.addStatusEffect(new StatusEffectInstance(StatusEffects.POISON, 10 * 20, 2), this);
+        target.addStatusEffect(new StatusEffectInstance(StatusEffects.NAUSEA, 10 * 20, 2), this);
+        target.addStatusEffect(new StatusEffectInstance(StatusEffects.WITHER, 10 * 20, 2), this);
+        target.addStatusEffect(new StatusEffectInstance(StatusEffects.HUNGER, 10 * 20, 2), this);
+        target.addStatusEffect(new StatusEffectInstance(StatusEffects.DARKNESS, 10 * 20, 2), this);
+        target.addStatusEffect(new StatusEffectInstance(ModEffects.ARMOR_PIERCING_ENTRY, 10 * 20, 2), this);
+        target.addStatusEffect(new StatusEffectInstance(ModEffects.VOID_ARMOR_PIERCING_ENTRY, 10 * 20, 2), this);
+
+        damageMagic(target, 50.0F);
+    }
+
+    /**
+     * attack3 / runAttack3_1;
+     * 把目标拉到自己面前，并造成 100 物理伤害。
+     */
+    private void runAttack3_1() {
+        LivingEntity target = this.getTarget();
+        if (target == null || !isValidSummonTarget(target)) {
+            return;
         }
+
+        pullTargetToFront(target, 1.4D);
+        damagePhysical(target, 100.0F);
+    }
+
+    /**
+     * attack4:
+     * 对面前敌人造成 50 法术范围伤害。
+     */
+    private void runAttack4() {
+        coneDamage(4.0D, 100.0F, 0.0F, 50.0F);
+    }
+
+    /**
+     * attack5:
+     * 100 点范围伤害。
+     */
+    private void runAttack5() {
+        areaDamage(4.0D, 100.0F, 0.0F);
+    }
+
+    /**
+     * attack6:
+     * 150 点范围伤害。
+     */
+    private void runAttack6() {
+        areaDamage(5.0D, 150.0F, 0.0F);
+    }
+
+    /**
+     * attack7:
+     * 抓住控制敌人并造成 200 伤害。
+     */
+    private void runAttack7() {
+        LivingEntity target = this.getTarget();
+        if (target == null || !isValidSummonTarget(target)) {
+            return;
+        }
+
+        pullTargetToFront(target, 1.4D);
+        target.addStatusEffect(new StatusEffectInstance(ModEffects.STUN_ENTRY, 40, 0), this);
+        damagePhysical(target, 200.0F);
+    }
+
+    /**
+     * attack8:
+     * 发射一个生化人同款子弹，造成 100 物理伤害。
+     */
+    private void runAttack8() {
+        shootCyborgArrow();
+    }
+
+    /**
+     * attack9 / runAttack9;
+     * 向上跳起。
+     */
+    private void runAttack9() {
+        this.setVelocity(this.getVelocity().x, 1.25D, this.getVelocity().z);
+        this.velocityModified = true;
+    }
+
+    /**
+     * attack9 / runAttack9_1;
+     * 向下砸下，造成 300 范围伤害。
+     */
+    private void runAttack9_1() {
+        areaDamage(6.0D, 300.0F, 0.0F);
     }
 
     private void shootCyborgArrow() {
         LivingEntity target = this.getTarget();
-        if (target == null || !(this.getWorld() instanceof ServerWorld world)) {
+        if (target == null || !isValidSummonTarget(target) || !(this.getWorld() instanceof ServerWorld world)) {
             return;
         }
-        LittleArrowEntity arrow = new LittleArrowEntity(ModEntities.POISON_ARROW, world, this, new ItemStack(Items.ARROW), null);
+
+        LittleArrowEntity arrow = new LittleArrowEntity(
+                ModEntities.POISON_ARROW,
+                world,
+                this,
+                new ItemStack(Items.ARROW),
+                null
+        );
+
         arrow.setDamage(100.0D);
         arrow.setTrueDamage(true, false);
+
         Vec3d velocity = target.getEyePos().subtract(this.getEyePos());
         arrow.setVelocity(velocity.x, velocity.y, velocity.z, 1.8F, 0.01F);
+
         world.spawnEntity(arrow);
+
         TaskSchedulerUtil.runLater(5 * 20, () -> {
             if (!arrow.isRemoved()) {
                 arrow.discard();
             }
         });
+
         this.playSound(SoundEvents.ENTITY_SNOW_GOLEM_SHOOT, 1.0F, 0.8F);
     }
 }

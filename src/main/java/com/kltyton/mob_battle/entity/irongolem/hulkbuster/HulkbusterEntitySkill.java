@@ -114,7 +114,6 @@ public class HulkbusterEntitySkill {
         for (LivingEntity target : world.getEntitiesByClass(LivingEntity.class, damageBox,
                 living -> EntityUtil.isValidCombatTarget(hulkbusterEntity, living)
                         && living.squaredDistanceTo(hulkbusterEntity) <= 9.0D)) {
-            target.timeUntilRegen = 0;
             hulkbusterEntity.tryAttackBaseDamage(world, target, 280.0F);
             target.takeKnockback(1.5D, hulkbusterEntity.getX() - target.getX(), hulkbusterEntity.getZ() - target.getZ());
         }
@@ -132,7 +131,6 @@ public class HulkbusterEntitySkill {
         Box damageBox = hulkbusterEntity.getBoundingBox().expand(1.75D);
         for (LivingEntity target : world.getEntitiesByClass(LivingEntity.class, damageBox,
                 living -> EntityUtil.isValidCombatTarget(hulkbusterEntity, living))) {
-            target.timeUntilRegen = 0;
             hulkbusterEntity.tryAttackBaseDamage(world, target, 20.0F);
         }
         world.spawnParticles(ParticleTypes.EXPLOSION, hulkbusterEntity.getX(), hulkbusterEntity.getY() + 0.5D, hulkbusterEntity.getZ(),

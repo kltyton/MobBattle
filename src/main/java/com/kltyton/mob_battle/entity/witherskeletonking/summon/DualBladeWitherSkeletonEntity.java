@@ -148,7 +148,6 @@ public class DualBladeWitherSkeletonEntity extends WitherSkeletonEntity implemen
         if (target == null || !(this.getWorld() instanceof ServerWorld world) || !isValidSummonTarget(target)) {
             return;
         }
-        target.timeUntilRegen = 0;
         target.damage(world, this.getDamageSources().mobAttack(this), damage);
     }
 
@@ -160,7 +159,6 @@ public class DualBladeWitherSkeletonEntity extends WitherSkeletonEntity implemen
             if (!isValidSummonTarget(target)) {
                 continue;
             }
-            target.timeUntilRegen = 0;
             target.damage(world, this.getDamageSources().mobAttack(this), damage);
         }
     }

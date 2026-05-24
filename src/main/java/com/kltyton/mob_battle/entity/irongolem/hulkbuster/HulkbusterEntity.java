@@ -476,7 +476,6 @@ public class HulkbusterEntity extends IronGolemEntity implements GeoEntity, ModB
         for (LivingEntity target : world.getEntitiesByClass(LivingEntity.class, box,
                 living -> EntityUtil.isValidCombatTarget(this, living))) {
             if (this.punchHitEntities.add(target.getId())) {
-                target.timeUntilRegen = 0;
                 this.tryAttackBaseDamage(world, target, 300.0F);
             }
         }

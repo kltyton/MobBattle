@@ -11,25 +11,29 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.goal.ActiveTargetGoal;
+import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.entity.ai.goal.LookAtEntityGoal;
-import net.minecraft.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.entity.ai.goal.RevengeGoal;
 import net.minecraft.entity.ai.goal.WanderAroundFarGoal;
+import net.minecraft.entity.ai.pathing.Path;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
+import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.damage.DamageTypes;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.damage.DamageTypes;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.AbstractPiglinEntity;
 import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.mob.PiglinActivity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.predicate.entity.EntityPredicates;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.util.Hand;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
@@ -42,6 +46,7 @@ import software.bernie.geckolib.animation.PlayState;
 import software.bernie.geckolib.animation.RawAnimation;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
+import java.util.EnumSet;
 import java.util.List;
 
 public class PiglinGeneralEntity extends AbstractPiglinEntity implements GeneralEntity<PiglinGeneralEntity> {
@@ -68,10 +73,13 @@ public class PiglinGeneralEntity extends AbstractPiglinEntity implements General
     private static final RawAnimation DEATH_ANIM = RawAnimation.begin().thenPlay("death");
 
     private final AnimatableInstanceCache geoCache = GeckoLibUtil.createInstanceCache(this);
+
     @Nullable
     private LivingEntity goalTarget;
+
     @Nullable
     private Vec3d swordEnergyPos;
+
     private int swordEnergyPosAge = -1000;
 
     public PiglinGeneralEntity(EntityType<? extends AbstractPiglinEntity> entityType, World world) {
@@ -84,9 +92,10 @@ public class PiglinGeneralEntity extends AbstractPiglinEntity implements General
 
     @Override
     protected void initGoals() {
-        this.goalSelector.add(2, new MeleeAttackGoal(this, 1.0D, true));
+        this.goalSelector.add(2, new PiglinGeneralCombatGoal(this, 1.0D, true));
         this.goalSelector.add(7, new WanderAroundFarGoal(this, 0.75D));
         this.goalSelector.add(8, new LookAtEntityGoal(this, LivingEntity.class, 10.0F));
+
         this.targetSelector.add(1, new RevengeGoal(this));
         this.targetSelector.add(2, new ActiveTargetGoal<>(this, LivingEntity.class, 10, true, false,
                 (target, world) -> EntityUtil.isValidCombatTarget(this, target) && !(target instanceof AbstractPiglinEntity)));
@@ -102,17 +111,28 @@ public class PiglinGeneralEntity extends AbstractPiglinEntity implements General
         builder.add(DYING_ANIMATION, false);
         builder.add(DEATH_ANIMATION_TICKS, 0);
     }
-
+    @Override
+    public void entityInitDataTracker(DataTracker.Builder builder) {
+        builder.add(getHasSkillKey(), false);
+        builder.add(getCooldownKey1(), 1);
+        builder.add(getCooldownKey2(), getMaxCooldownForSkill(2));
+        builder.add(getCooldownKey3(), getMaxCooldownForSkill(3));
+        builder.add(getCooldownKey4(), getMaxCooldownForSkill(4));
+        builder.add(getCooldownKey5(), getMaxCooldownForSkill(5));
+    }
     @Override
     public void tick() {
         super.tick();
         entityTick();
+
         if (!this.getWorld().isClient() && isPlayingDeathAnimation()) {
             tickDeathAnimation();
             return;
         }
+
         if (!this.getWorld().isClient()) {
             tickRush();
+
             if (!hasSkill()) {
                 decrementCooldownIfPositive(SKILL_COOLDOWN_6);
             }
@@ -124,10 +144,12 @@ public class PiglinGeneralEntity extends AbstractPiglinEntity implements General
         if (source.isOf(DamageTypes.FALL) || isPlayingDeathAnimation()) {
             return false;
         }
+
         if (this.getHealth() - amount <= 0.0F) {
             startDeathAnimation();
             return true;
         }
+
         return super.damage(world, source, amount);
     }
 
@@ -142,11 +164,13 @@ public class PiglinGeneralEntity extends AbstractPiglinEntity implements General
 
     private void tickDeathAnimation() {
         int ticks = getDeathAnimationTicks();
+
         if (ticks > 0) {
             setDeathAnimationTicks(ticks - 1);
             this.setHealth(1.0F);
             return;
         }
+
         this.remove(Entity.RemovalReason.KILLED);
     }
 
@@ -160,32 +184,34 @@ public class PiglinGeneralEntity extends AbstractPiglinEntity implements General
         }
 
         double distance = this.distanceTo(living);
+
         if (this.isRushing()) {
             if (distance <= 4.0D) {
                 finishRushWithAttack2();
             }
             return true;
         }
-        if (canSkill("attack2") && distance > 4.0D && distance <= 20.0D) {
-            startRush();
-            return true;
-        }
+
         if (canSkill("attack7") && distance <= 6.0D) {
             performSkill("attack7");
             return true;
         }
+
         if (canSkill("attack6") && distance <= 5.0D) {
             performSkill("attack6");
             return true;
         }
+
         if (canSkill("attack5") && distance <= 12.0D) {
             performSkill("attack5");
             return true;
         }
+
         if (canSkill("attack4") && distance <= 20.0D) {
             performSkill("attack4");
             return true;
         }
+
         if (canSkill("attack3") && distance <= 7.0D) {
             performSkill("attack3");
             return true;
@@ -198,8 +224,10 @@ public class PiglinGeneralEntity extends AbstractPiglinEntity implements General
     private void performNormalAttack() {
         setHasSkill(true);
         setAiDisabled(true);
+
         int index = this.random.nextInt(3);
         setNormalAttackDamage(index == 2 ? 150 : 100);
+
         triggerAnim("skill_controller", switch (index) {
             case 0 -> "attack1_1";
             case 1 -> "attack1_2";
@@ -212,7 +240,7 @@ public class PiglinGeneralEntity extends AbstractPiglinEntity implements General
         GeneralEntity.super.performSkill(skill);
     }
 
-    private void startRush() {
+    public void startRush() {
         setSkillCooldown("attack2");
         setRushTicks(1);
         this.getNavigation().stop();
@@ -222,26 +250,44 @@ public class PiglinGeneralEntity extends AbstractPiglinEntity implements General
         if (!isRushing()) {
             return;
         }
+
         LivingEntity target = this.getTarget();
         if (target == null || target instanceof AbstractPiglinEntity || !EntityUtil.isValidCombatTarget(this, target)) {
             stopRush();
             return;
         }
+
         int ticks = getRushTicks();
         if (ticks > 100) {
             stopRush();
             return;
         }
+
         double distance = this.distanceTo(target);
         if (distance <= 4.0D) {
             finishRushWithAttack2();
             return;
         }
+
         this.getLookControl().lookAt(target, 30.0F, 30.0F);
         this.getNavigation().startMovingTo(target, 1.65D);
-        Vec3d direction = target.getPos().subtract(this.getPos()).normalize();
-        this.setVelocity(direction.multiply(0.48D).add(0.0D, this.getVelocity().y, 0.0D));
-        this.velocityModified = true;
+
+        Vec3d direction = target.getPos().subtract(this.getPos());
+        Vec3d horizontalDirection = new Vec3d(direction.x, 0.0D, direction.z);
+
+        if (horizontalDirection.lengthSquared() > 1.0E-6D) {
+            horizontalDirection = horizontalDirection.normalize();
+
+            float yaw = (float) (Math.toDegrees(Math.atan2(horizontalDirection.z, horizontalDirection.x)) - 90.0F);
+
+            this.setYaw(yaw);
+            this.setBodyYaw(yaw);
+            this.setHeadYaw(yaw);
+
+            this.setVelocity(horizontalDirection.multiply(0.48D).add(0.0D, this.getVelocity().y, 0.0D));
+            this.velocityModified = true;
+        }
+
         setRushTicks(ticks + 1);
     }
 
@@ -292,10 +338,10 @@ public class PiglinGeneralEntity extends AbstractPiglinEntity implements General
         if (target == null || !(this.getWorld() instanceof ServerWorld world) || !EntityUtil.isValidCombatTarget(this, target)) {
             return;
         }
+
         markedDamage(world, target, 200.0F, 0, 0);
         target.setVelocity(target.getVelocity().x, 1.45D, target.getVelocity().z);
         target.velocityModified = true;
-        teleportToUppercutTarget(world, target);
     }
 
     @Override
@@ -304,9 +350,20 @@ public class PiglinGeneralEntity extends AbstractPiglinEntity implements General
         if (target == null || !(this.getWorld() instanceof ServerWorld world) || !EntityUtil.isValidCombatTarget(this, target)) {
             return;
         }
+
         markedDamage(world, target, 250.0F, 0, 0);
         target.setVelocity(target.getVelocity().x * 0.25D, -1.65D, target.getVelocity().z * 0.25D);
         target.velocityModified = true;
+    }
+
+    @Override
+    public void runSkill_3_2(PiglinGeneralEntity entity) {
+        LivingEntity target = this.getTarget();
+        if (target == null || !(this.getWorld() instanceof ServerWorld world) || !EntityUtil.isValidCombatTarget(this, target)) {
+            return;
+        }
+
+        teleportToUppercutTarget(world, target);
     }
 
     @Override
@@ -325,8 +382,10 @@ public class PiglinGeneralEntity extends AbstractPiglinEntity implements General
         if (!(this.getWorld() instanceof ServerWorld world)) {
             return;
         }
+
         Vec3d center = getSwordEnergyDamageCenter();
         Box box = new Box(center.subtract(4.0D, 4.0D, 4.0D), center.add(4.0D, 4.0D, 4.0D));
+
         for (LivingEntity target : world.getEntitiesByClass(LivingEntity.class, box,
                 target -> EntityUtil.isValidCombatTarget(this, target) && target.squaredDistanceTo(center) <= 16.0D)) {
             markedDamage(world, target, 320.0F, 50, ATTACK5_MARK_DURATION);
@@ -338,6 +397,7 @@ public class PiglinGeneralEntity extends AbstractPiglinEntity implements General
         if (!(this.getWorld() instanceof ServerWorld world)) {
             return;
         }
+
         for (LivingEntity target : EntityUtil.getEntitiesInCone(this, LivingEntity.class, 5.0D, 85.0F, EntityUtil.TeamFilter.EXCLUDE_TEAM)) {
             markedDamage(world, target, 300.0F, 0, 0);
         }
@@ -355,6 +415,7 @@ public class PiglinGeneralEntity extends AbstractPiglinEntity implements General
 
     private void areaDamage(ServerWorld world, double radius, float damage, int markLayers, int markDurationTicks, boolean armorPiercing) {
         List<LivingEntity> targets = EntityUtil.getNearbyEntity(this, LivingEntity.class, radius, false, EntityUtil.TeamFilter.EXCLUDE_TEAM);
+
         for (LivingEntity target : targets) {
             if (markedDamage(world, target, damage, markLayers, markDurationTicks) && armorPiercing) {
                 CombatEffectUtil.addStackingArmorPiercing(target, this);
@@ -365,11 +426,14 @@ public class PiglinGeneralEntity extends AbstractPiglinEntity implements General
     private boolean markedDamage(ServerWorld world, LivingEntity target, float damage, int markLayers, int markDurationTicks) {
         StatusEffectInstance mark = target.getStatusEffect(ModEffects.PIG_SPIRIT_MARK_ENTRY);
         float multiplier = mark == null ? 1.0F : 1.3F;
+
         DamageSource source = this.getDamageSources().mobAttack(this);
         boolean hit = target.damage(world, source, damage * multiplier);
+
         if (hit && markLayers > 0) {
             CombatEffectUtil.addPigSpiritMark(target, this, markLayers, markDurationTicks);
         }
+
         return hit;
     }
 
@@ -389,6 +453,7 @@ public class PiglinGeneralEntity extends AbstractPiglinEntity implements General
         if (this.swordEnergyPos != null && this.age - this.swordEnergyPosAge <= 10) {
             return this.swordEnergyPos;
         }
+
         Vec3d direction = this.getRotationVec(1.0F).normalize();
         return this.getEyePos().add(direction.multiply(4.0D));
     }
@@ -473,6 +538,7 @@ public class PiglinGeneralEntity extends AbstractPiglinEntity implements General
             this.dataTracker.set(SKILL_COOLDOWN_6, getMaxSkillCooldown_6());
             return;
         }
+
         GeneralEntity.super.setSkillCooldown(skill);
     }
 
@@ -481,6 +547,7 @@ public class PiglinGeneralEntity extends AbstractPiglinEntity implements General
         if ("attack7".equals(skill)) {
             return this.dataTracker.get(SKILL_COOLDOWN_6);
         }
+
         return GeneralEntity.super.getSkillCooldown(skill);
     }
 
@@ -523,10 +590,12 @@ public class PiglinGeneralEntity extends AbstractPiglinEntity implements General
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>("main_controller", 5, this::mainController));
+
         controllers.add(new AnimationController<>("skill_controller", 5, animTest -> {
             if (animTest.controller().getAnimationState() == AnimationController.State.STOPPED && this.hasSkill()) {
                 ClientPlayNetworking.send(new SkillPayload("stop", this.getId()));
             }
+
             return PlayState.STOP;
         })
                 .triggerableAnim("attack1_1", NORMAL_ATTACK_ANIM_1)
@@ -541,6 +610,7 @@ public class PiglinGeneralEntity extends AbstractPiglinEntity implements General
                 .triggerableAnim("death", DEATH_ANIM)
                 .setCustomInstructionKeyframeHandler(s -> {
                     String instruction = s.keyframeData().getInstructions().replaceAll("\\s+", "");
+
                     switch (instruction) {
                         case "runAttack1_1;" -> ClientPlayNetworking.send(new SkillPayload("attack1_1", this.getId()));
                         case "runAttack1_2;" -> ClientPlayNetworking.send(new SkillPayload("attack1_2", this.getId()));
@@ -548,6 +618,7 @@ public class PiglinGeneralEntity extends AbstractPiglinEntity implements General
                         case "runAttack2;" -> ClientPlayNetworking.send(new SkillPayload("attack2", this.getId()));
                         case "runAttack3;" -> ClientPlayNetworking.send(new SkillPayload("attack3", this.getId()));
                         case "runAttack3_1;" -> ClientPlayNetworking.send(new SkillPayload("attack3_1", this.getId()));
+                        case "runAttack3_2;" -> ClientPlayNetworking.send(new SkillPayload("attack3_2", this.getId()));
                         case "runAttack4;" -> ClientPlayNetworking.send(new SkillPayload("attack4", this.getId()));
                         case "runAttack5;" -> ClientPlayNetworking.send(new SkillPayload("attack5", this.getId()));
                         case "runAttack6;" -> ClientPlayNetworking.send(new SkillPayload("attack6", this.getId()));
@@ -562,18 +633,23 @@ public class PiglinGeneralEntity extends AbstractPiglinEntity implements General
     @Override
     public PlayState mainController(AnimationTest<?> event) {
         event.renderState().addGeckolibData(PiglinGeneralEntityRenderer.ENTITY_ID, this.getUuid());
+
         if (this.isDead() || isPlayingDeathAnimation()) {
             return event.setAndContinue(DEATH_ANIM);
         }
+
         if (isRushing()) {
             return event.setAndContinue(RUN_ANIM);
         }
+
         if (hasSkill()) {
             return PlayState.CONTINUE;
         }
+
         if (event.isMoving()) {
-            return this.getTarget() == null ? event.setAndContinue(WALK_ANIM) : event.setAndContinue(RUN_ANIM);
+            return event.setAndContinue(WALK_ANIM);
         }
+
         return event.setAndContinue(IDLE_ANIM);
     }
 
@@ -594,6 +670,7 @@ public class PiglinGeneralEntity extends AbstractPiglinEntity implements General
                 || (target != null && !EntityUtil.isValidCombatTarget(this, target))) {
             target = null;
         }
+
         super.setTarget(target);
         this.goalTarget = target;
     }
@@ -629,5 +706,193 @@ public class PiglinGeneralEntity extends AbstractPiglinEntity implements General
                 .add(EntityAttributes.ATTACK_DAMAGE, 100.0D)
                 .add(EntityAttributes.KNOCKBACK_RESISTANCE, 0.8D)
                 .add(ModEntityAttributes.DAMAGE_REDUCTION, 0.64D);
+    }
+
+    private static class PiglinGeneralCombatGoal extends Goal {
+        private final PiglinGeneralEntity mob;
+        private final double speed;
+        private final boolean pauseWhenMobIdle;
+
+        private Path path;
+        private double targetX;
+        private double targetY;
+        private double targetZ;
+        private int updateCountdownTicks;
+        private int cooldown;
+        private long lastUpdateTime;
+
+        private PiglinGeneralCombatGoal(PiglinGeneralEntity mob, double speed, boolean pauseWhenMobIdle) {
+            this.mob = mob;
+            this.speed = speed;
+            this.pauseWhenMobIdle = pauseWhenMobIdle;
+            this.setControls(EnumSet.of(Control.MOVE, Control.LOOK));
+        }
+
+        @Override
+        public boolean canStart() {
+            long time = this.mob.getWorld().getTime();
+
+            if (time - this.lastUpdateTime < 20L) {
+                return false;
+            }
+
+            this.lastUpdateTime = time;
+
+            LivingEntity target = this.mob.getTarget();
+            if (!this.isValidTarget(target)) {
+                return false;
+            }
+
+            this.path = this.mob.getNavigation().findPathTo(target, 0);
+            return this.path != null || this.mob.isInAttackRange(target) || this.mob.distanceTo(target) <= 20.0D;
+        }
+
+        @Override
+        public boolean shouldContinue() {
+            LivingEntity target = this.mob.getTarget();
+
+            if (!this.isValidTarget(target)) {
+                return false;
+            }
+
+            if (this.mob.hasSkill() || this.mob.isPlayingDeathAnimation()) {
+                return false;
+            }
+
+            if (this.mob.isRushing()) {
+                return true;
+            }
+
+            if (!this.pauseWhenMobIdle) {
+                return !this.mob.getNavigation().isIdle();
+            }
+
+            if (!this.mob.isInPositionTargetRange(target.getBlockPos())) {
+                return false;
+            }
+
+            return !(target instanceof PlayerEntity player && (player.isSpectator() || player.isCreative()));
+        }
+
+        @Override
+        public void start() {
+            if (this.path != null) {
+                this.mob.getNavigation().startMovingAlong(this.path, this.speed);
+            }
+
+            this.mob.setAttacking(true);
+            this.updateCountdownTicks = 0;
+            this.cooldown = 0;
+        }
+
+        @Override
+        public void stop() {
+            LivingEntity target = this.mob.getTarget();
+
+            if (!EntityPredicates.EXCEPT_CREATIVE_OR_SPECTATOR.test(target)) {
+                this.mob.setTarget(null);
+            }
+
+            this.mob.setAttacking(false);
+
+            if (!this.mob.isRushing()) {
+                this.mob.getNavigation().stop();
+            }
+        }
+
+        @Override
+        public boolean shouldRunEveryTick() {
+            return true;
+        }
+
+        @Override
+        public void tick() {
+            LivingEntity target = this.mob.getTarget();
+            if (!this.isValidTarget(target)) {
+                this.mob.getNavigation().stop();
+                return;
+            }
+
+            if (this.mob.hasSkill() || this.mob.isPlayingDeathAnimation()) {
+                this.mob.getNavigation().stop();
+                return;
+            }
+
+            this.mob.getLookControl().lookAt(target, 30.0F, 30.0F);
+
+            double distance = this.mob.distanceTo(target);
+
+            if (this.mob.isRushing()) {
+                this.mob.getNavigation().stop();
+                return;
+            }
+
+            if (distance > 4.0D && distance <= 20.0D && this.mob.canSkill("attack2")) {
+                this.mob.getNavigation().stop();
+                this.mob.startRush();
+                return;
+            }
+
+            this.updateCountdownTicks = Math.max(this.updateCountdownTicks - 1, 0);
+
+            if ((this.pauseWhenMobIdle || this.mob.getVisibilityCache().canSee(target))
+                    && this.updateCountdownTicks <= 0
+                    && (
+                    this.targetX == 0.0D && this.targetY == 0.0D && this.targetZ == 0.0D
+                            || target.squaredDistanceTo(this.targetX, this.targetY, this.targetZ) >= 1.0D
+                            || this.mob.getRandom().nextFloat() < 0.05F
+            )) {
+                this.targetX = target.getX();
+                this.targetY = target.getY();
+                this.targetZ = target.getZ();
+
+                this.updateCountdownTicks = 4 + this.mob.getRandom().nextInt(7);
+
+                double squaredDistance = this.mob.squaredDistanceTo(target);
+                if (squaredDistance > 1024.0D) {
+                    this.updateCountdownTicks += 10;
+                } else if (squaredDistance > 256.0D) {
+                    this.updateCountdownTicks += 5;
+                }
+
+                if (!this.mob.getNavigation().startMovingTo(target, this.speed)) {
+                    this.updateCountdownTicks += 15;
+                }
+
+                this.updateCountdownTicks = this.getTickCount(this.updateCountdownTicks);
+            }
+
+            this.cooldown = Math.max(this.cooldown - 1, 0);
+            this.attack(target);
+        }
+
+        private void attack(LivingEntity target) {
+            if (this.canAttack(target)) {
+                this.resetCooldown();
+                this.mob.swingHand(Hand.MAIN_HAND);
+                this.mob.tryAttack((ServerWorld) this.mob.getWorld(), target);
+            }
+        }
+
+        private void resetCooldown() {
+            this.cooldown = this.getTickCount(20);
+        }
+
+        private boolean isCooledDown() {
+            return this.cooldown <= 0;
+        }
+
+        private boolean canAttack(LivingEntity target) {
+            return this.isCooledDown()
+                    && this.mob.isInAttackRange(target)
+                    && this.mob.getVisibilityCache().canSee(target);
+        }
+
+        private boolean isValidTarget(@Nullable LivingEntity target) {
+            return target != null
+                    && target.isAlive()
+                    && !(target instanceof AbstractPiglinEntity)
+                    && EntityUtil.isValidCombatTarget(this.mob, target);
+        }
     }
 }

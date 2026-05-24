@@ -21,9 +21,7 @@ public class DecayEffect extends StatusEffect {
             return true;
         }
         float damage = Math.min(1.0F, entity.getHealth() - 1.0F);
-        entity.timeUntilRegen = 0;
         entity.damage(world, entity.getDamageSources().magic(), damage);
-        entity.timeUntilRegen = 0;
         return true;
     }
 }

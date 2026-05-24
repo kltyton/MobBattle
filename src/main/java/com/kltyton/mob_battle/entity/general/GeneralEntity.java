@@ -241,6 +241,9 @@ public interface GeneralEntity<T extends MobEntity> extends ModSkillEntityType, 
     default void runSkill_3_1(T entity) {
         runSkill_3(entity);
     }
+    default void runSkill_3_2(T entity) {
+        runSkill_3(entity);
+    }
     default void runSkill_4(T entity) {
     }
     default void stopSkill_4(T entity) {

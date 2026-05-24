@@ -119,7 +119,6 @@ public class VindicatorGeneralEntitySkill {
         Box damageBox = vindicatorGeneralEntity.getBoundingBox().expand(1.0D);
         for (LivingEntity target : world.getEntitiesByClass(LivingEntity.class, damageBox,
                 living -> EntityUtil.isValidCombatTarget(vindicatorGeneralEntity, living))) {
-            target.timeUntilRegen = 0;
             vindicatorGeneralEntity.tryAttackBaseDamage(world, target, 220.0F);
         }
     }
@@ -132,7 +131,6 @@ public class VindicatorGeneralEntitySkill {
         for (LivingEntity target : world.getEntitiesByClass(LivingEntity.class, damageBox,
                 living -> EntityUtil.isValidCombatTarget(vindicatorGeneralEntity, living)
                         && living.squaredDistanceTo(vindicatorGeneralEntity) <= 36.0D)) {
-            target.timeUntilRegen = 0;
             vindicatorGeneralEntity.tryAttackBaseDamage(world, target, 260.0F);
             target.takeKnockback(4.0D, vindicatorGeneralEntity.getX() - target.getX(), vindicatorGeneralEntity.getZ() - target.getZ());
         }

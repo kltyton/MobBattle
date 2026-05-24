@@ -2,7 +2,6 @@
 	"format_version": "1.8.0",
 	"animations": {
 		"attack1": {
-			"loop": "hold_on_last_frame",
 			"animation_length": 0.2193,
 			"bones": {
 				"bone6": {
@@ -70,11 +69,20 @@
 					"scale": {
 						"vector": [1, 1, 1.8]
 					}
+				},
+				"bone9": {
+					"position": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"0.2193": {
+							"vector": [0, 0, -34]
+						}
+					}
 				}
 			}
 		},
 		"attack2": {
-			"loop": "hold_on_last_frame",
 			"animation_length": 0.3704,
 			"bones": {
 				"bone6": {
@@ -152,11 +160,20 @@
 							"vector": [0, 3.25, -2]
 						}
 					}
+				},
+				"bone9": {
+					"position": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"0.3667": {
+							"vector": [0, 0, -28]
+						}
+					}
 				}
 			}
 		},
 		"attack3": {
-			"loop": "hold_on_last_frame",
 			"animation_length": 0.3366,
 			"bones": {
 				"bone3": {
@@ -177,7 +194,12 @@
 						"vector": [180, 0, 0]
 					},
 					"position": {
-						"vector": [0, 1, 0]
+						"0.0": {
+							"vector": [0, 1, 0]
+						},
+						"0.1417": {
+							"vector": [0, -11, 0]
+						}
 					}
 				}
 			}

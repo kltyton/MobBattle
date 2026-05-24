@@ -32,6 +32,7 @@ public class GeneralEntitySkillHelper {
                 case "attack2_stop" -> skillInterface.stopSkill_2(entity);
                 case "attack3" -> skillInterface.runSkill_3(entity);
                 case "attack3_1" -> skillInterface.runSkill_3_1(entity);
+                case "attack3_2" -> skillInterface.runSkill_3_2(entity);
                 case "attack4" -> skillInterface.runSkill_4(entity);
                 case "attack4_stop" -> skillInterface.stopSkill_4(entity);
                 case "attack5" -> skillInterface.runSkill_5(entity);

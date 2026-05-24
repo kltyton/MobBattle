@@ -1,6 +1,6 @@
 package com.kltyton.mob_battle.mixin.client.render;
 
-import com.kltyton.mob_battle.accessor.ICompressedArmorMarker;
+import com.kltyton.mob_battle.accessor.IEffectMarker;
 import com.kltyton.mob_battle.accessor.IModEntityRenderState;
 import com.kltyton.mob_battle.effect.ModEffects;
 import net.minecraft.client.render.entity.LivingEntityRenderer;
@@ -14,21 +14,22 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(LivingEntityRenderer.class)
 public class LivingEntityRendererMixin {
-    @Inject(method = "updateRenderState(Lnet/minecraft/entity/LivingEntity;Lnet/minecraft/client/render/entity/state/LivingEntityRenderState;F)V", at = @At("TAIL"))
-    private void mob_battle$copyIceEffect(LivingEntity entity, LivingEntityRenderState state, float tickDelta, CallbackInfo ci) {
-        int amplifier = -1;
-        StatusEffectInstance effect = entity.getStatusEffect(ModEffects.ICE_ENTRY);
-        if (effect != null) {
-            amplifier = effect.getAmplifier();
+    @Inject(
+            method = "updateRenderState(Lnet/minecraft/entity/LivingEntity;Lnet/minecraft/client/render/entity/state/LivingEntityRenderState;F)V",
+            at = @At("TAIL")
+    )
+    private void mobBattle$copyModRenderState(LivingEntity entity, LivingEntityRenderState state, float tickDelta, CallbackInfo ci) {
+        int iceAmplifier = -1;
+        StatusEffectInstance iceEffect = entity.getStatusEffect(ModEffects.ICE_ENTRY);
+        if (iceEffect != null) {
+            iceAmplifier = iceEffect.getAmplifier();
         }
-        int pigSpiritMarkAmplifier = -1;
-        StatusEffectInstance pigSpiritMark = entity.getStatusEffect(ModEffects.PIG_SPIRIT_MARK_ENTRY);
-        if (pigSpiritMark != null) {
-            pigSpiritMarkAmplifier = pigSpiritMark.getAmplifier();
-        }
+
+        IEffectMarker marker = (IEffectMarker) entity;
         IModEntityRenderState modState = (IModEntityRenderState) state;
-        modState.setIceAmplifier(amplifier);
-        modState.setCompressedArmorMarkerType(((ICompressedArmorMarker) entity).mobBattle$getCompressedArmorMarkerType());
-        modState.setPigSpiritMarkAmplifier(pigSpiritMarkAmplifier);
+
+        modState.setIceAmplifier(iceAmplifier);
+        modState.setCompressedArmorMarkerType(marker.mobBattle$getCompressedArmorMarkerType());
+        modState.setPigSpiritMarkAmplifier(marker.mobBattle$getPigSpiritMarkAmplifier());
     }
 }

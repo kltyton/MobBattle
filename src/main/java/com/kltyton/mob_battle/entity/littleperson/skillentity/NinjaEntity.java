@@ -84,7 +84,7 @@ public class NinjaEntity extends RequestedLittlePersonEntity {
         }
         if (this.cloneSequenceSpawned < CLONES_PER_VARIANT) {
             spawnClone(world, target, this.cloneSequenceVariant);
-            target.damage(world, this.getDamageSources().indirectMagic(this, this), 1.0F);
+            target.damage(world, this.getDamageSources().indirectMagic(this, this), 90.0F);
             this.cloneSequenceSpawned++;
             if (this.cloneSequenceSpawned >= CLONES_PER_VARIANT) {
                 this.cloneSequenceDelay = CLONE_MAX_AGE + 2;

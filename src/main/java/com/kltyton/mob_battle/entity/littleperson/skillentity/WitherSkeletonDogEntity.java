@@ -90,9 +90,7 @@ public class WitherSkeletonDogEntity extends WitherSkeletonEntity implements Gen
         if (target == null || !(this.getWorld() instanceof ServerWorld world)) {
             return;
         }
-        target.timeUntilRegen = 0;
         target.damage(world, this.getDamageSources().mobAttack(this), 80.0F);
-        target.timeUntilRegen = 0;
         target.damage(world, this.getDamageSources().indirectMagic(this, this), 20.0F);
     }
 
