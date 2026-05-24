@@ -3,12 +3,15 @@ package com.kltyton.mob_battle.entity.irongolem.hulkbuster;
 import com.kltyton.mob_battle.effect.ModEffects;
 import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.entity.irongolem.hulkbuster.missile.MissileEntity;
+import com.kltyton.mob_battle.utils.EntityUtil;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.WorldEvents;
 import net.minecraft.world.World;
 
 public class HulkbusterEntitySkill {
@@ -18,9 +21,7 @@ public class HulkbusterEntitySkill {
         if (hulkbusterEntity.tryAttackBase((ServerWorld)world, hulkbusterEntity.getTarget())) {
             Box damageBox = hulkbusterEntity.getBoundingBox().expand(range, range, range);
             world.getOtherEntities(hulkbusterEntity, damageBox).stream()
-                    .filter(entity -> entity instanceof LivingEntity)
-                    .filter(entity -> !entity.isTeammate(hulkbusterEntity))
-                    .filter(entity -> !entity.isSpectator() && entity.isAlive())
+                    .filter(entity -> entity instanceof LivingEntity living && EntityUtil.isValidCombatTarget(hulkbusterEntity, living))
                     .filter(entity -> entity.squaredDistanceTo(hulkbusterEntity) <= range * range)
                     .forEach(entity -> {
                         if (entity != hulkbusterEntity.getTarget()) {
@@ -34,9 +35,7 @@ public class HulkbusterEntitySkill {
         World world = hulkbusterEntity.getWorld();
         Box damageBox = hulkbusterEntity.getBoundingBox().expand(range, range, range);
         world.getOtherEntities(hulkbusterEntity, damageBox).stream()
-                .filter(entity -> entity instanceof LivingEntity)
-                .filter(entity -> !entity.isTeammate(hulkbusterEntity))
-                .filter(entity -> !entity.isSpectator() && entity.isAlive())
+                .filter(entity -> entity instanceof LivingEntity living && EntityUtil.isValidCombatTarget(hulkbusterEntity, living))
                 .filter(entity -> entity.squaredDistanceTo(hulkbusterEntity) <= range * range)
                 .forEach(entity -> {
                     float attackDamage = 250.0f;
@@ -46,8 +45,7 @@ public class HulkbusterEntitySkill {
         world.getOtherEntities(hulkbusterEntity, damageBox).stream()
                 .filter(e -> e instanceof LivingEntity)
                 .map(e -> (LivingEntity) e)
-                .filter(LivingEntity::isAlive)
-                .filter(e -> !e.isSpectator())
+                .filter(e -> e.isAlive() && !EntityUtil.isCreativeOrSpectator(e))
                 .filter(e -> e.isTeammate(hulkbusterEntity))
                 .forEach(ally -> {
                     ally.addStatusEffect(
@@ -62,19 +60,16 @@ public class HulkbusterEntitySkill {
         World world = hulkbusterEntity.getWorld();
         Box damageBox = hulkbusterEntity.getBoundingBox().expand(range, range, range);
         world.getOtherEntities(hulkbusterEntity, damageBox).stream()
-                .filter(entity -> entity instanceof LivingEntity)
-                .filter(entity -> !entity.isTeammate(hulkbusterEntity))
-                .filter(entity -> !entity.isSpectator() && entity.isAlive())
+                .filter(entity -> entity instanceof LivingEntity living && EntityUtil.isValidCombatTarget(hulkbusterEntity, living))
                 .filter(entity -> entity.squaredDistanceTo(hulkbusterEntity) <= range * range)
                 .forEach(entity -> {
-                    float attackDamage = 250.0f;
+                    float attackDamage = 350.0f;
                     hulkbusterEntity.tryAttackBaseDamage((ServerWorld) world, entity, attackDamage);
                 });
         world.getOtherEntities(hulkbusterEntity, damageBox).stream()
                 .filter(e -> e instanceof LivingEntity)
                 .map(e -> (LivingEntity) e)
-                .filter(LivingEntity::isAlive)
-                .filter(e -> !e.isSpectator())
+                .filter(e -> e.isAlive() && !EntityUtil.isCreativeOrSpectator(e))
                 .filter(e -> e.isTeammate(hulkbusterEntity))
                 .forEach(ally -> {
                     ally.heal(50.0f);
@@ -98,6 +93,50 @@ public class HulkbusterEntitySkill {
 
         world.spawnEntity(left_meteorite);
         world.spawnEntity(right_meteorite);
+    }
+    public static void runClapHandsSkill(HulkbusterEntity hulkbusterEntity) {
+        if (!(hulkbusterEntity.getWorld() instanceof ServerWorld world)) {
+            return;
+        }
+        Vec3d center = hulkbusterEntity.getPos();
+        world.syncWorldEvent(WorldEvents.SMASH_ATTACK, hulkbusterEntity.getSteppingPos(), 750);
+        for (int radius = 1; radius <= 3; radius++) {
+            for (int i = 0; i < 48; i++) {
+                double angle = Math.PI * 2.0D * i / 48.0D;
+                world.spawnParticles(ParticleTypes.SONIC_BOOM,
+                        center.x + Math.cos(angle) * radius,
+                        center.y + 0.25D,
+                        center.z + Math.sin(angle) * radius,
+                        1, 0.0D, 0.0D, 0.0D, 0.0D);
+            }
+        }
+        Box damageBox = hulkbusterEntity.getBoundingBox().expand(3.0D);
+        for (LivingEntity target : world.getEntitiesByClass(LivingEntity.class, damageBox,
+                living -> EntityUtil.isValidCombatTarget(hulkbusterEntity, living)
+                        && living.squaredDistanceTo(hulkbusterEntity) <= 9.0D)) {
+            target.timeUntilRegen = 0;
+            hulkbusterEntity.tryAttackBaseDamage(world, target, 280.0F);
+            target.takeKnockback(1.5D, hulkbusterEntity.getX() - target.getX(), hulkbusterEntity.getZ() - target.getZ());
+        }
+        hulkbusterEntity.playSound(SoundEvents.ENTITY_GENERIC_EXPLODE.value(), 1.4F, 0.75F);
+    }
+
+    public static void runPunchStartSkill(HulkbusterEntity hulkbusterEntity) {
+        hulkbusterEntity.startPunch();
+    }
+
+    public static void runPunchEndSkill(HulkbusterEntity hulkbusterEntity) {
+        if (!(hulkbusterEntity.getWorld() instanceof ServerWorld world)) {
+            return;
+        }
+        Box damageBox = hulkbusterEntity.getBoundingBox().expand(1.75D);
+        for (LivingEntity target : world.getEntitiesByClass(LivingEntity.class, damageBox,
+                living -> EntityUtil.isValidCombatTarget(hulkbusterEntity, living))) {
+            target.timeUntilRegen = 0;
+            hulkbusterEntity.tryAttackBaseDamage(world, target, 20.0F);
+        }
+        world.spawnParticles(ParticleTypes.EXPLOSION, hulkbusterEntity.getX(), hulkbusterEntity.getY() + 0.5D, hulkbusterEntity.getZ(),
+                8, 0.8D, 0.2D, 0.8D, 0.0D);
     }
     /**
      * 在服务端生成一个水平烟圈

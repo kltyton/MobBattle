@@ -37,6 +37,7 @@ public class ModEnglishLangProvider extends FabricLanguageProvider {
         translationBuilder.add(ModLangUtils.getTranslationKey(ModEffects.SUGAR), "Sugar");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModEffects.ARMOR_PIERCING), "Armor Piercing");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModEffects.VOID_ARMOR_PIERCING), "Void Armor Piercing");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModEffects.PIG_SPIRIT_MARK), "Pig Spirit Mark");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModEntities.HULKBUSTER), "Hulkbuster");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.HULKBUSTER_SPAWN_EGG), "Hulkbuster Spawn Egg");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModEntities.MISSILE), "Missile");
@@ -93,6 +94,28 @@ public class ModEnglishLangProvider extends FabricLanguageProvider {
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.SPAWN_EGG_ITEMS.get("magic_man")), "Magic Man Spawn Egg");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModEntities.HEAVEN_CRIPPLED_FEET), "Heaven Crippled Feet");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.SPAWN_EGG_ITEMS.get("heaven_crippled_feet")), "Heaven Crippled Feet Spawn Egg");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModEntities.ANGEL_CYBORG), "Angel Cyborg");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.SPAWN_EGG_ITEMS.get("angel_cyborg")), "Angel Cyborg Spawn Egg");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModEntities.LIVING_GHOST), "Living Ghost");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.SPAWN_EGG_ITEMS.get("living_ghost")), "Living Ghost Spawn Egg");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModEntities.SCATTERED_DEMON), "Scattered Demon");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.SPAWN_EGG_ITEMS.get("scattered_demon")), "Scattered Demon Spawn Egg");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModEntities.NINJA), "Ninja");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.SPAWN_EGG_ITEMS.get("ninja")), "Ninja Spawn Egg");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModEntities.LASER_MAN), "Laser Man");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.SPAWN_EGG_ITEMS.get("laser_man")), "Laser Man Spawn Egg");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModEntities.BLOOD_MAN), "Blood Man");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.SPAWN_EGG_ITEMS.get("blood_man")), "Blood Man Spawn Egg");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModEntities.ICE_MAN), "Ice Man");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.SPAWN_EGG_ITEMS.get("ice_man")), "Ice Man Spawn Egg");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModEntities.WITHER_SKELETON_DOG), "Wither Skeleton Dog");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.SPAWN_EGG_ITEMS.get("wither_skeleton_dog")), "Wither Skeleton Dog Spawn Egg");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModEntities.LASER), "Laser");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModEntities.BLOOD_SWORD_ENERGY), "Blood Sword Energy");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModEntities.ICE_SWORD_ENERGY), "Ice Sword Energy");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModEntities.ICE_BOMB), "Ice Bomb");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModEntities.ICE_FANGS), "Ice Fangs");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModEntities.NINJA_CLONE), "Ninja Clone");
 
         translationBuilder.add(ModLangUtils.getTranslationKey(ModEffects.TRUE_INVISIBLE), "True Invisible");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModEffects.BLOCK), "Block");
@@ -107,6 +130,7 @@ public class ModEnglishLangProvider extends FabricLanguageProvider {
         translationBuilder.add(ModLangUtils.getTranslationKey(ModEffects.BLINDNESS_IMMUNITY_FACTOR), "Blindness Immunity Factor");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModEffects.DARKNESS_IMMUNITY_FACTOR), "Darkness Immunity Factor");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModEffects.STUTTER), "Stutter");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModEffects.DECAY), "Decay");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.SMALL_BACKPACK), "Small Backpack");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.LARGE_BACKPACK), "Large Backpack");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.FINE_KNIFE), "Fine Knife");
@@ -174,6 +198,13 @@ public class ModEnglishLangProvider extends FabricLanguageProvider {
 
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.ICE_BOW), "Ice Bow");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.ICE_ARROW_ITEM), "Ice Arrow");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.PIGLIN_CANNON), "Zhuling Cannon");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModEntities.ENHANCED_WITHER), "Enhanced Wither");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.SPAWN_EGG_ITEMS.get("enhanced_wither")), "Enhanced Wither Spawn Egg");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModEntities.CBOT002), "cbot002");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.SPAWN_EGG_ITEMS.get("cbot002")), "cbot002 Spawn Egg");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModEntities.PIGLIN_GENERAL), "Piglin General");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.SPAWN_EGG_ITEMS.get("piglin_general")), "Piglin General Spawn Egg");
     }
 }
 

@@ -11,12 +11,16 @@ import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.world.World;
 
 public class TreatmentDroneEntity extends DroneEntity {
-    // 是否只治疗玩家（默认为 false，方便以后用染色或配置）
     public int healTickTimer = 0;
-    public static final int HEAL_INTERVAL = 20;   // 每20tick治疗一次`
-    public static final float HEAL_AMOUNT = 30.0F; // 每次恢复30血（15颗心）
-    public static final float PLAYER_HEAL_AMOUNT = 7F;
+    public static final int HEAL_INTERVAL = 40;
+    public static final float HEAL_AMOUNT = 13.0F;
+    public static final float PLAYER_HEAL_AMOUNT = 1.5F;
     public static final TrackedData<Boolean> ONLY_PLAYER = DataTracker.registerData(TreatmentDroneEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
+
+    public TreatmentDroneEntity(EntityType<? extends TameableEntity> entityType, World world) {
+        super(entityType, world);
+    }
+
     public void setOnlyPlayer(boolean onlyPlayer) {
         this.getDataTracker().set(ONLY_PLAYER, onlyPlayer);
     }
@@ -30,14 +34,13 @@ public class TreatmentDroneEntity extends DroneEntity {
         super.initDataTracker(builder);
         builder.add(ONLY_PLAYER, false);
     }
-    public TreatmentDroneEntity(EntityType<? extends TameableEntity> entityType, World world) {
-        super(entityType, world);
-    }
+
     @Override
     protected void initGoals() {
         super.initGoals();
         this.goalSelector.add(3, new HealTeamGoal(this, 1.2D));
     }
+
     @Override
     public void shootAt(LivingEntity target, float pullProgress) {
     }

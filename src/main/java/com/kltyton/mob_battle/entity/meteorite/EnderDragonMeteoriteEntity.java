@@ -3,6 +3,7 @@ package com.kltyton.mob_battle.entity.meteorite;
 import com.kltyton.mob_battle.effect.ModEffects;
 import com.kltyton.mob_battle.entity.customfireball.CustomFireballEntity;
 import com.kltyton.mob_battle.sounds.ModSounds;
+import com.kltyton.mob_battle.utils.EntityUtil;
 import com.kltyton.mob_battle.utils.TaskSchedulerUtil;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -124,7 +125,7 @@ public class EnderDragonMeteoriteEntity extends MeteoriteEntity implements GeoEn
             if (e instanceof LivingEntity living && !hitEntities.contains(e.getId())) {
                 double dist = Math.sqrt(e.squaredDistanceTo(center.x, e.getY(), center.z));
                 if (Math.abs(dist - radius) < thickness) {
-                    if (living.isTeammate(owner) || living == owner) continue;
+                    if (!EntityUtil.isValidSummonCombatTarget(this, owner, living)) continue;
 
                     living.damage(world, this.getDamageSources().magic(), 40.0F);
                     living.addStatusEffect(new StatusEffectInstance(ModEffects.HEART_EATER_ENTRY, 100, 7));

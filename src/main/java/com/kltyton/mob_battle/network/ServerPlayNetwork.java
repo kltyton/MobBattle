@@ -20,8 +20,10 @@ import com.kltyton.mob_battle.entity.littleperson.guard.LittlePersonGuardEntity;
 import com.kltyton.mob_battle.entity.littleperson.guard.skill.LittlePersonGuardSkill;
 import com.kltyton.mob_battle.entity.littleperson.king.LittlePersonKingEntity;
 import com.kltyton.mob_battle.entity.littleperson.king.skill.LittlePersonKingSkill;
+import com.kltyton.mob_battle.entity.littleperson.skillentity.KeyframedLittlePersonEntity;
 import com.kltyton.mob_battle.entity.littleperson.skillentity.base.BaseSkillLittlePersonEntity;
 import com.kltyton.mob_battle.entity.misc.shield.ShieldEntity;
+import com.kltyton.mob_battle.entity.piglingeneral.PiglinGeneralEntity;
 import com.kltyton.mob_battle.entity.player.PlayerEntitySkill;
 import com.kltyton.mob_battle.entity.skull.archer.SkullArcherEntity;
 import com.kltyton.mob_battle.entity.skull.archer.SkullArcherEntitySkill;
@@ -35,6 +37,8 @@ import com.kltyton.mob_battle.entity.vindicatorgeneral.VindicatorGeneralEntity;
 import com.kltyton.mob_battle.entity.vindicatorgeneral.VindicatorGeneralEntitySkill;
 import com.kltyton.mob_battle.entity.witherskeletonking.WitherSkeletonKingEntity;
 import com.kltyton.mob_battle.entity.witherskeletonking.skill.WitherSkeletonKingEntitySkill;
+import com.kltyton.mob_battle.entity.witherskeletonking.summon.DualBladeWitherSkeletonEntity;
+import com.kltyton.mob_battle.entity.witherskeletonking.summon.ShieldAxeWitherSkeletonEntity;
 import com.kltyton.mob_battle.event.masterscepter.MasterScepterManager;
 import com.kltyton.mob_battle.items.ModItems;
 import com.kltyton.mob_battle.items.ModMaterial;
@@ -42,6 +46,7 @@ import com.kltyton.mob_battle.items.armor.compressarmor.CompressArmorSkillManage
 import com.kltyton.mob_battle.items.tool.piglin.PiglinCannonModeUtil;
 import com.kltyton.mob_battle.network.packet.*;
 import com.kltyton.mob_battle.utils.ArmorUtil;
+import com.kltyton.mob_battle.utils.CombatEffectUtil;
 import com.kltyton.mob_battle.utils.EnchantmentUtil;
 import com.kltyton.mob_battle.utils.EntityUtil;
 import com.kltyton.mob_battle.utils.LeftClickUtil;
@@ -91,6 +96,14 @@ public class ServerPlayNetwork {
                     });
                 }
         );
+        ServerPlayNetworking.registerGlobalReceiver(PiglinGeneralBonePayload.ID,
+                (payload, context) -> context.server().execute(() -> {
+                    Entity entity = context.player().getWorld().getEntity(payload.uuid());
+                    if (entity instanceof PiglinGeneralEntity piglinGeneral) {
+                        piglinGeneral.setSwordEnergyPos(payload.swordEnergyPos());
+                    }
+                })
+        );
         ServerPlayNetworking.registerGlobalReceiver(SkillPayload.ID,
                 (payload, context) -> {
                     MinecraftServer server = context.server();
@@ -134,6 +147,8 @@ public class ServerPlayNetwork {
                                     case "shot_wither_skull" -> WitherSkeletonKingEntitySkill.runWitherSkullSkill(kingSkeletonKing);
                                     case "shot_all_wither_skull" -> WitherSkeletonKingEntitySkill.runWitherAllSkullSkill(kingSkeletonKing);
                                     case "super_shot_wither_skull" -> WitherSkeletonKingEntitySkill.runSuperWitherSkullSkill(kingSkeletonKing);
+                                    case "thorn" -> WitherSkeletonKingEntitySkill.runThornSkill(kingSkeletonKing);
+                                    case "enhance_wither_call" -> WitherSkeletonKingEntitySkill.runEnhanceWitherCallSkill(kingSkeletonKing);
                                     case "stop_ai" -> kingSkeletonKing.setAiDisabled(true);
                                     case "start_ai" -> kingSkeletonKing.setAiDisabled(false);
                                     case "stop" -> {
@@ -191,6 +206,10 @@ public class ServerPlayNetwork {
                                 }
                             }
                             case BaseSkillLittlePersonEntity baseSkillLittlePersonEntity -> {
+                                if (baseSkillLittlePersonEntity instanceof KeyframedLittlePersonEntity keyframedLittlePersonEntity
+                                        && keyframedLittlePersonEntity.handleSkillPayload(payload.skillName())) {
+                                    break;
+                                }
                                 switch (payload.skillName()) {
                                     case "attack2" -> baseSkillLittlePersonEntity.runSkill_2(baseSkillLittlePersonEntity);
                                     case "attack3" -> baseSkillLittlePersonEntity.runSkill_3(baseSkillLittlePersonEntity);
@@ -266,6 +285,10 @@ public class ServerPlayNetwork {
                                     case "max_attack_1" -> VindicatorGeneralEntitySkill.runMaxAttackSkill_1(vindicatorGeneralEntity);
                                     case "max_attack_2" -> VindicatorGeneralEntitySkill.runMaxAttackSkill_2(vindicatorGeneralEntity);
                                     case "max_attack_3" -> VindicatorGeneralEntitySkill.runMaxAttackSkill_3(vindicatorGeneralEntity);
+                                    case "collision_kill" -> VindicatorGeneralEntitySkill.runCollisionKillSkill(vindicatorGeneralEntity);
+                                    case "collision_kill_1" -> VindicatorGeneralEntitySkill.runCollisionKillDamageSkill(vindicatorGeneralEntity);
+                                    case "spin_chop" -> VindicatorGeneralEntitySkill.runSpinChopSkill(vindicatorGeneralEntity);
+                                    case "throw_axe" -> VindicatorGeneralEntitySkill.runThrowAxeSkill(vindicatorGeneralEntity);
                                     case "stop_ai" -> vindicatorGeneralEntity.setAiDisabled(true);
                                     case "start_ai" -> vindicatorGeneralEntity.setAiDisabled(false);
                                     case "stop" -> {
@@ -280,6 +303,9 @@ public class ServerPlayNetwork {
                                     case "super_attack" -> HulkbusterEntitySkill.runSuperAttackSkill(hulkbusterEntity);
                                     case "mini_attack" -> HulkbusterEntitySkill.runMiniAttackSkill(hulkbusterEntity);
                                     case "max_attack" -> HulkbusterEntitySkill.runMaxAttackSkill(hulkbusterEntity);
+                                    case "clap_hands" -> HulkbusterEntitySkill.runClapHandsSkill(hulkbusterEntity);
+                                    case "punch" -> HulkbusterEntitySkill.runPunchStartSkill(hulkbusterEntity);
+                                    case "punch_1" -> hulkbusterEntity.stopPunch();
                                     case "stop_ai" -> hulkbusterEntity.setAiDisabled(true);
                                     case "start_ai" -> hulkbusterEntity.setAiDisabled(false);
                                     case "stop" -> {
@@ -288,6 +314,9 @@ public class ServerPlayNetwork {
                                     }
                                 }
                             }
+
+                            case DualBladeWitherSkeletonEntity dualBlade -> dualBlade.handleSkillPayload(payload.skillName());
+                            case ShieldAxeWitherSkeletonEntity shieldAxe -> shieldAxe.handleSkillPayload(payload.skillName());
 
                             case null -> Mob_battle.LOGGER.warn("实体不存在或者已死亡");
 
@@ -436,12 +465,7 @@ public class ServerPlayNetwork {
                         }
                         List<LivingEntity> firstRangeTargets = EntityUtil.getNearbyEntity(player, LivingEntity.class, 5.0, false, EntityUtil.TeamFilter.EXCLUDE_TEAM);
                         for (LivingEntity target : firstRangeTargets) {
-                            int currentAmplifier = -1; // -1 表示当前没有该效果
-                            if (target.hasStatusEffect(ModEffects.PIG_SPIRIT_MARK_ENTRY)) {
-                                currentAmplifier = target.getStatusEffect(ModEffects.PIG_SPIRIT_MARK_ENTRY).getAmplifier();
-                            }
-                            int newAmplifier = Math.min(currentAmplifier + 5, 79);
-                            target.addStatusEffect(new StatusEffectInstance(ModEffects.PIG_SPIRIT_MARK_ENTRY, 20 * 20, newAmplifier, false, false));
+                            CombatEffectUtil.addPigSpiritMark(target, player, 5);
                         }
 
                         List<LivingEntity> secondRangeTargets = EntityUtil.getNearbyEntity(player, LivingEntity.class, 20.0, false, EntityUtil.TeamFilter.EXCLUDE_TEAM);
@@ -463,7 +487,7 @@ public class ServerPlayNetwork {
                         ItemStack cooldownItem = Items.COMMAND_BLOCK_MINECART.getDefaultStack();
                         if (player.getItemCooldownManager().isCoolingDown(cooldownItem)) {
                             float progress = player.getItemCooldownManager().getCooldownProgress(cooldownItem, 0);
-                            float remainingSeconds = (progress * 500) / 20.0F;
+                            float remainingSeconds = (progress * 300) / 20.0F;
                             player.sendMessage(
                                     Text.literal("套装技能冷却中！还需等待 " + String.format("%.1f", remainingSeconds) + " 秒")
                                             .formatted(Formatting.RED),
@@ -471,17 +495,11 @@ public class ServerPlayNetwork {
                             );
                             return;
                         }
-                        List<LivingEntity> targets = EntityUtil.getNearbyEntity(player, LivingEntity.class, 5.0, false, EntityUtil.TeamFilter.EXCLUDE_TEAM);
+                        List<LivingEntity> targets = EntityUtil.getNearbyEntity(player, LivingEntity.class, 6.0, false, EntityUtil.TeamFilter.EXCLUDE_TEAM);
                         for (LivingEntity target : targets) {
-                            target.damage(world, player.getDamageSources().playerAttack(player), 150.0F);
-                            int currentAmplifier = -1;
-                            if (target.hasStatusEffect(ModEffects.PIG_SPIRIT_MARK_ENTRY)) {
-                                currentAmplifier = target.getStatusEffect(ModEffects.PIG_SPIRIT_MARK_ENTRY).getAmplifier();
-                            }
-                            int newAmplifier = Math.min(currentAmplifier + 5, 79);
-                            target.addStatusEffect(new StatusEffectInstance(ModEffects.PIG_SPIRIT_MARK_ENTRY, 20 * 20, newAmplifier, false, false));
+                            CombatEffectUtil.addPigSpiritMark(target, player, 10);
                         }
-                        player.getItemCooldownManager().set(cooldownItem, 500);
+                        player.getItemCooldownManager().set(cooldownItem, 300);
                     }
                 }
             });

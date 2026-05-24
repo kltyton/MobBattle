@@ -99,6 +99,7 @@ public class WildManEntity extends BaseSkillLittlePersonEntity implements Ranged
                             entity.getYaw(),
                             entity.getPitch()
                     );
+                    wildBoar.setSummonOwner(this);
                     serverWorld.spawnEntity(wildBoar);
                 }
             }

@@ -25,6 +25,7 @@ import net.minecraft.storage.ReadView;
 import net.minecraft.storage.WriteView;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.Box;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib.animatable.processing.AnimationController;
@@ -216,7 +217,21 @@ public class SexEntity extends BaseSkillLittlePersonEntity {
     }
     @Override
     public void heal() {
-        this.heal(20f);
+        this.heal(5f);
+    }
+
+    @Override
+    protected void updatePostDeath() {
+        this.deathTime++;
+        if (this.deathTime == 1 && !this.getWorld().isClient()) {
+            this.setAiDisabled(true);
+            this.triggerAnim("skill_controller", "die");
+        }
+        if (this.deathTime >= 400 && !this.getWorld().isClient() && !this.isRemoved()) {
+            die(this);
+            this.getWorld().sendEntityStatus(this, net.minecraft.entity.EntityStatuses.ADD_DEATH_PARTICLES);
+            this.remove(Entity.RemovalReason.KILLED);
+        }
     }
     @Override
     public int blockProbability() {
@@ -242,7 +257,7 @@ public class SexEntity extends BaseSkillLittlePersonEntity {
                 if (!this.hasSkill() || grabbedEntity == null || !grabbedEntity.isAlive()) {
                     this.setGrabbedEntityId(-1);
                 } else {
-                    // 计算银鱼面前的位置 (例如面前 1.5 格)
+                    // 计算自己面前的安全位置，避免把目标强行塞进墙里。
                     double distance = 1.5;
                     double radians = Math.toRadians(this.getYaw());
                     double targetX = this.getX() - Math.sin(radians) * distance;
@@ -250,7 +265,10 @@ public class SexEntity extends BaseSkillLittlePersonEntity {
                     double targetY = this.getY();
                     // 强制传送目标并清除动能
                     if (grabbedEntity instanceof LivingEntity living) {
-                        living.teleport((ServerWorld) this.getWorld(), targetX, targetY, targetZ, Set.of(), grabbedEntity.getYaw(), grabbedEntity.getPitch(), true);
+                        Box movedBox = living.getBoundingBox().offset(targetX - living.getX(), targetY - living.getY(), targetZ - living.getZ());
+                        if (this.getWorld().isSpaceEmpty(living, movedBox)) {
+                            living.teleport((ServerWorld) this.getWorld(), targetX, targetY, targetZ, Set.of(), grabbedEntity.getYaw(), grabbedEntity.getPitch(), true);
+                        }
                         living.setVelocity(0, 0, 0);
                         living.velocityDirty = true;
                     }
@@ -292,7 +310,7 @@ public class SexEntity extends BaseSkillLittlePersonEntity {
         return BaseSkillLittlePersonEntity.createAttributes()
                 .add(EntityAttributes.MAX_HEALTH, 12000.0)
                 .add(EntityAttributes.ATTACK_DAMAGE, 75.0)
-                .add(EntityAttributes.MOVEMENT_SPEED, 0.25)
+                .add(EntityAttributes.MOVEMENT_SPEED, 0.55)
                 .add(EntityAttributes.KNOCKBACK_RESISTANCE, 0.5)
                 .add(ModEntityAttributes.DAMAGE_REDUCTION, 0.0);
     }

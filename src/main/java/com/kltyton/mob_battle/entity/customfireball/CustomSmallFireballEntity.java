@@ -1,5 +1,6 @@
 package com.kltyton.mob_battle.entity.customfireball;
 
+import com.kltyton.mob_battle.utils.EntityUtil;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
@@ -23,6 +24,9 @@ public class CustomSmallFireballEntity extends SmallFireballEntity {
         if (this.getWorld() instanceof ServerWorld serverWorld) {
             Entity entity = entityHitResult.getEntity();
             Entity entity2 = this.getOwner();
+            if (entity instanceof LivingEntity living && !EntityUtil.isValidSummonCombatTarget(this, entity2, living)) {
+                return;
+            }
             int i = entity.getFireTicks();
             entity.setOnFireFor(5.0F);
             DamageSource damageSource = this.getDamageSources().fireball(this, entity2);

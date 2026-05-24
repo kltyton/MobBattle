@@ -31,14 +31,13 @@ public class GeneralProtectionVillagerGoal extends TrackTargetGoal {
     public boolean canStart() {
         Box box = this.golem.getBoundingBox().expand(10.0, 8.0, 10.0);
         ServerWorld serverWorld = getServerWorld(this.golem);
-        List<? extends LivingEntity> list = serverWorld.getTargets(VillagerEntity.class, this.targetPredicate, this.golem, box);
+        List<LivingEntity> list = serverWorld.getEntitiesByClass(LivingEntity.class, box,
+                living -> isProtectedVillager(living) && this.targetPredicate.test(serverWorld, this.golem, living));
         List<LivingEntity> list2 = EntityUtil.getNearbyEntity(this.golem, LivingEntity.class, Object.class, box, false, EntityUtil.TeamFilter.EXCLUDE_TEAM, this.targetPredicate);
 
         for (LivingEntity livingEntity : list) {
-            VillagerEntity villagerEntity = (VillagerEntity)livingEntity;
-
             for (LivingEntity playerEntity : list2) {
-                LivingEntity attacker = villagerEntity.getAttacker();
+                LivingEntity attacker = livingEntity.getAttacker();
                 if (attacker == playerEntity) {
                     this.target = playerEntity;
                 }
@@ -46,6 +45,14 @@ public class GeneralProtectionVillagerGoal extends TrackTargetGoal {
         }
 
         return this.target != null && !(this.target instanceof PlayerEntity playerEntity2 && (playerEntity2.isSpectator() || playerEntity2.isCreative()));
+    }
+
+    private boolean isProtectedVillager(LivingEntity living) {
+        if (living instanceof VillagerEntity) {
+            return true;
+        }
+        Package pkg = living.getClass().getPackage();
+        return pkg != null && pkg.getName().contains(".entity.villager.");
     }
 
     @Override

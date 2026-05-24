@@ -1,5 +1,6 @@
 package com.kltyton.mob_battle.entity.littleperson.skillentity;
 
+import com.kltyton.mob_battle.entity.ModEntityAttributes;
 import com.kltyton.mob_battle.entity.littleperson.skillentity.base.BaseSkillLittlePersonEntity;
 import com.kltyton.mob_battle.utils.EntityUtil;
 import net.minecraft.entity.EntityType;
@@ -24,7 +25,8 @@ public class PoisonousSlashEntity extends BaseSkillLittlePersonEntity {
     public static DefaultAttributeContainer.Builder createLittlePersonAttributes() {
         return BaseSkillLittlePersonEntity.createAttributes()
                 .add(EntityAttributes.MAX_HEALTH, 4500.0)
-                .add(EntityAttributes.ATTACK_DAMAGE, 55.0);
+                .add(EntityAttributes.ATTACK_DAMAGE, 55.0)
+                .add(ModEntityAttributes.DAMAGE_REDUCTION, 0.25);
     }
     @Override
     public void heal() {

@@ -165,6 +165,7 @@ public interface GeneralEntity<T extends MobEntity> extends ModSkillEntityType, 
     RawAnimation ATTACK_ANIM_4 = RawAnimation.begin().thenPlay("attack4");
     RawAnimation ATTACK_ANIM_5 = RawAnimation.begin().thenPlay("attack5");
     RawAnimation ATTACK_ANIM_6 = RawAnimation.begin().thenPlay("attack6");
+    RawAnimation ATTACK_ANIM_7 = RawAnimation.begin().thenPlay("attack7");
     default void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>("main_controller", 5, this::mainController));
         controllers.add(new AnimationController<>( "skill_controller", 5,animTest -> {
@@ -179,6 +180,7 @@ public interface GeneralEntity<T extends MobEntity> extends ModSkillEntityType, 
                         .triggerableAnim("attack4", ATTACK_ANIM_4)
                         .triggerableAnim("attack5", ATTACK_ANIM_5)
                         .triggerableAnim("attack6", ATTACK_ANIM_6)
+                        .triggerableAnim("attack7", ATTACK_ANIM_7)
                         .setCustomInstructionKeyframeHandler(s -> {
                             if ("runAttack2;".equals(s.keyframeData().getInstructions())) {
                                 ClientPlayNetworking.send(new SkillPayload(
@@ -205,6 +207,11 @@ public interface GeneralEntity<T extends MobEntity> extends ModSkillEntityType, 
                                         "attack6", getEntity().getId()
                                 ));
                             }
+                            if ("runAttack7;".equals(s.keyframeData().getInstructions())) {
+                                ClientPlayNetworking.send(new SkillPayload(
+                                        "attack7", getEntity().getId()
+                                ));
+                            }
                         })
         );
     }
@@ -216,12 +223,37 @@ public interface GeneralEntity<T extends MobEntity> extends ModSkillEntityType, 
     }
     default void runSkill_2(T entity) {
     }
+    default void stopSkill_2(T entity) {
+    }
+    default void runSkill_1(T entity) {
+    }
+    default void runSkill_1_1(T entity) {
+        runSkill_1(entity);
+    }
+    default void runSkill_1_2(T entity) {
+        runSkill_1(entity);
+    }
+    default void runSkill_1_3(T entity) {
+        runSkill_1(entity);
+    }
     default void runSkill_3(T entity) {
     }
+    default void runSkill_3_1(T entity) {
+        runSkill_3(entity);
+    }
     default void runSkill_4(T entity) {
+    }
+    default void stopSkill_4(T entity) {
     }
     default void runSkill_5(T entity) {
     }
     default void runSkill_6(T entity) {
+    }
+    default void runSkill_7(T entity) {
+    }
+    default void runSkill_7_1(T entity) {
+        runSkill_7(entity);
+    }
+    default void runBuff(T entity) {
     }
 }

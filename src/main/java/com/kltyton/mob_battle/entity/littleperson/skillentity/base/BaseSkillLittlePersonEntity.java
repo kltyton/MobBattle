@@ -36,6 +36,7 @@ public class BaseSkillLittlePersonEntity extends LittlePersonMilitiaEntity imple
     public int COOL_DOWN_TIME_8 = -1;
     public int COOL_DOWN_TIME_9 = -1;
     public int COOL_DOWN_TIME_10 = -1;
+    private boolean normalAttackKnockbackAllowed;
 
     public static final TrackedData<Boolean> HAS_SKILL = DataTracker.registerData(BaseSkillLittlePersonEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
     public static final TrackedData<Integer> SKILL_COOLDOWN_1 = DataTracker.registerData(BaseSkillLittlePersonEntity.class, TrackedDataHandlerRegistry.INTEGER);
@@ -83,16 +84,30 @@ public class BaseSkillLittlePersonEntity extends LittlePersonMilitiaEntity imple
     }
     public boolean canSkill(String skill) {
         if (!canSkill()) return false;
-        return !this.getWorld().isClient() && !hasSkill() && getSkillCooldown(skill) == 0 && this.getTarget() != null;
+        return !this.getWorld().isClient()
+                && !hasSkill()
+                && getSkillCooldown(skill) == 0
+                && this.getTarget() != null
+                && isValidSummonTarget(this.getTarget());
     }
     public boolean hasSkill() {
         return this.dataTracker.get(HAS_SKILL);
     }
     public void setHasSkill(boolean hasSkill) {
         endDamage = false;
+        if (!hasSkill) {
+            setNormalAttackKnockbackAllowed(false);
+        }
         this.dataTracker.set(HAS_SKILL, hasSkill);
     }
+    public boolean allowsNormalAttackKnockback() {
+        return this.normalAttackKnockbackAllowed;
+    }
+    protected void setNormalAttackKnockbackAllowed(boolean normalAttackKnockbackAllowed) {
+        this.normalAttackKnockbackAllowed = normalAttackKnockbackAllowed;
+    }
     public void performSkill(String skill, boolean isAfterSkill) {
+        setNormalAttackKnockbackAllowed(false);
         this.setHasSkill(true);
         this.setAiDisabled(true);
         if (isAfterSkill) this.setSkillCooldown(skill);
@@ -148,6 +163,18 @@ public class BaseSkillLittlePersonEntity extends LittlePersonMilitiaEntity imple
             case "attack11" -> setSkillCooldown10(cooldown);
         }
     }
+    protected void clearSkillCooldowns() {
+        setSkillCooldown1(0);
+        setSkillCooldown2(0);
+        setSkillCooldown3(0);
+        setSkillCooldown4(0);
+        setSkillCooldown5(0);
+        setSkillCooldown6(0);
+        setSkillCooldown7(0);
+        setSkillCooldown8(0);
+        setSkillCooldown9(0);
+        setSkillCooldown10(0);
+    }
     public int getSkillCooldown1() {
         return this.dataTracker.get(SKILL_COOLDOWN_1);
     }
@@ -200,6 +227,9 @@ public class BaseSkillLittlePersonEntity extends LittlePersonMilitiaEntity imple
     }
     @Override
     public boolean tryAttack(ServerWorld world, Entity target) {
+        if (target instanceof net.minecraft.entity.LivingEntity living && !isValidSummonTarget(living)) {
+            return false;
+        }
         if (!ModSkillEntityType.canSkill(this)) return false;
 
         for (int i = this.skillCount; i >= 1; i--) {

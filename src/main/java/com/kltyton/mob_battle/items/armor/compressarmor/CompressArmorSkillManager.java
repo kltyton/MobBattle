@@ -69,13 +69,13 @@ public class CompressArmorSkillManager {
         }
         if (ArmorUtil.hasFullArmor(player, ModMaterial.COMPRESSED_DIAMOND_ARMOR_INSTANCE)) {
             if (skillId == SKILL_X) runPullSkill(player, ModItems.COMPRESSED_DIAMOND, 12, 45.0F, 0.0F, ModEffects.DIAMOND_MARK_ENTRY, 9, 0, 5);
-            if (skillId == SKILL_C) runDashSkill(player, ModItems.COMPRESSED_DIAMOND_SWORD, 13, 5.0, 50.0F, 5.0F, ModEffects.DIAMOND_MARK_ENTRY);
+            if (skillId == SKILL_C) runDashSkill(player, ModItems.COMPRESSED_DIAMOND_SWORD, 13, 5.0, 50.0F, 15.0F, ModEffects.DIAMOND_MARK_ENTRY);
             return;
         }
         if (ArmorUtil.hasFullArmor(player, ModMaterial.COMPRESSED_NETHERITE_ARMOR_INSTANCE)) {
             if (skillId == SKILL_Z) runNetheriteTeleportSkill(player);
             if (skillId == SKILL_X) runPullSkill(player, ModItems.COMPRESSED_NETHERITE_INGOT, 12, 100.0F, 5.0F, ModEffects.NETHERITE_MARK_ENTRY, 19, 0, 10);
-            if (skillId == SKILL_C) runDashSkill(player, ModItems.COMPRESSED_NETHERITE_SWORD, 13, 7.0, 95.0F, 10.0F, ModEffects.NETHERITE_MARK_ENTRY);
+            if (skillId == SKILL_C) runDashSkill(player, ModItems.COMPRESSED_NETHERITE_SWORD, 13, 7.0, 150.0F, 20.0F, ModEffects.NETHERITE_MARK_ENTRY);
         }
     }
 
@@ -295,6 +295,7 @@ public class CompressArmorSkillManager {
                 target != player
                         && target.isAlive()
                         && !target.isSpectator()
+                        && !(target instanceof net.minecraft.entity.player.PlayerEntity targetPlayer && targetPlayer.isCreative())
                         && !target.isTeammate(player)
                         && target.hasStatusEffect(mark))) {
             Vec3d toTarget = target.getBoundingBox().getCenter().subtract(eye);

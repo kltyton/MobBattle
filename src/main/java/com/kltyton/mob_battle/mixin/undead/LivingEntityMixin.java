@@ -4,10 +4,12 @@ import com.kltyton.mob_battle.Mob_battle;
 import com.kltyton.mob_battle.accessor.ILead;
 import com.kltyton.mob_battle.effect.ModEffects;
 import com.kltyton.mob_battle.entity.witherskeletonking.skill.WitherSkullKingEntity;
+import com.kltyton.mob_battle.entity.littleperson.skillentity.base.BaseSkillLittlePersonEntity;
 import com.kltyton.mob_battle.items.ModItems;
 import com.kltyton.mob_battle.items.ModMaterial;
 import com.kltyton.mob_battle.tags.ModTags;
 import com.kltyton.mob_battle.utils.ArmorUtil;
+import com.kltyton.mob_battle.utils.EntityUtil;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.component.type.DeathProtectionComponent;
 import net.minecraft.entity.*;
@@ -85,7 +87,7 @@ public abstract class LivingEntityMixin extends Entity implements Attackable, Se
     @Inject(method = "canTarget(Lnet/minecraft/entity/LivingEntity;)Z", at = @At("HEAD"), cancellable = true)
     private void preventTeamTargeting(LivingEntity target, CallbackInfoReturnable<Boolean> cir) {
         LivingEntity self = (LivingEntity) (Object) this;
-        if (self.isTeammate(target)) {
+        if (self.isTeammate(target) || EntityUtil.shouldBlockOwnedSummonDamage(self, target)) {
             cir.setReturnValue(false);
         }
     }
@@ -130,14 +132,12 @@ public abstract class LivingEntityMixin extends Entity implements Attackable, Se
 
         if (attacker instanceof AbstractPiglinEntity piglin) {
             if (currentTime - this.lastPigSpiritAbsorptionTime >= 200L) {
-                float absorptionAmount = 2.0F * (amplifier + 1);
-                piglin.setAbsorptionAmount(piglin.getAbsorptionAmount() + absorptionAmount);
+                piglin.addStatusEffect(new StatusEffectInstance(StatusEffects.ABSORPTION, 5 * 20, Math.max(0, amplifier), false, false));
                 this.lastPigSpiritAbsorptionTime = currentTime;
             }
         } else if (attacker instanceof PlayerEntity player && ArmorUtil.hasFullArmor(player, ModMaterial.ZIJIN_ARMOR_INSTANCE)) {
             if (currentTime - this.lastPigSpiritAbsorptionTime >= 200L) {
-                float absorptionAmount = 2.0F * (amplifier + 1);
-                player.setAbsorptionAmount(player.getAbsorptionAmount() + absorptionAmount);
+                player.addStatusEffect(new StatusEffectInstance(StatusEffects.ABSORPTION, 5 * 20, Math.max(0, amplifier), false, false));
                 this.lastPigSpiritAbsorptionTime = currentTime;
             }
         }
@@ -206,6 +206,15 @@ public abstract class LivingEntityMixin extends Entity implements Attackable, Se
     }
     @Inject(method = "damage", at = @At("HEAD"), cancellable = true)
     public void damage(ServerWorld world, DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
+        LivingEntity target = (LivingEntity) (Object) this;
+        Entity sourceEntity = source.getSource();
+        Entity attacker = source.getAttacker();
+        if ((sourceEntity != null && EntityUtil.shouldBlockOwnedSummonDamage(sourceEntity, target))
+                || (attacker != null && attacker != sourceEntity && EntityUtil.shouldBlockOwnedSummonDamage(attacker, target))) {
+            cir.setReturnValue(false);
+            cir.cancel();
+            return;
+        }
         if (source.isOf(DamageTypes.OUT_OF_WORLD) && (Object) this instanceof PlayerEntity player && (player.isCreative() || player.isSpectator())) {
             cir.setReturnValue(false);
             cir.cancel();
@@ -274,6 +283,9 @@ public abstract class LivingEntityMixin extends Entity implements Attackable, Se
     }
     @Inject(method = "takeKnockback", at = @At("HEAD"), cancellable = true)
     public void takeKnockback(double strength, double x, double z, CallbackInfo ci) {
+        if ((Object)this instanceof BaseSkillLittlePersonEntity skillEntity && skillEntity.allowsNormalAttackKnockback()) {
+            return;
+        }
         if ((Object)this instanceof MobEntity mob && mob.isAiDisabled()) {
             ci.cancel();
         }

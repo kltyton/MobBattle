@@ -56,7 +56,7 @@ public abstract class DroneEntity extends TameableEntity implements RangedAttack
 
     public static DefaultAttributeContainer.Builder createDroneAttributes() {
         return MobEntity.createMobAttributes()
-                .add(EntityAttributes.MAX_HEALTH, 500.0D)
+                .add(EntityAttributes.MAX_HEALTH, 250.0D)
                 .add(EntityAttributes.FLYING_SPEED, 0.6D)
                 .add(EntityAttributes.MOVEMENT_SPEED, 0.3D)
                 .add(EntityAttributes.ATTACK_DAMAGE, 0.1D)

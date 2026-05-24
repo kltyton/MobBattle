@@ -8,7 +8,6 @@ import net.minecraft.client.util.InputUtil;
 import org.jetbrains.annotations.Nullable;
 
 public class KeybindFixer {
-    // 这里的实例模拟了 Kotlin 的 INSTANCE
     public static final KeybindFixer INSTANCE = new KeybindFixer();
 
     private final Multimap<InputUtil.Key, KeyBinding> keyFixMap = ArrayListMultimap.create();
@@ -25,7 +24,7 @@ public class KeybindFixer {
         if (baseBinding == null || finalBinding != baseBinding) return;
 
         for (KeyBinding theKey : keyFixMap.get(key)) {
-            // 如果这个按键不是原版 Map 里那个“幸运儿”，我们就手动给它补一张票
+            // 核心: 如果这个按键被绑定了，并且不是最终绑定的按键，那么就强制修改它的 timesPressed
             if (theKey == null || theKey == baseBinding) continue;
 
             // 使用 Accessor 强制修改私有的 timesPressed

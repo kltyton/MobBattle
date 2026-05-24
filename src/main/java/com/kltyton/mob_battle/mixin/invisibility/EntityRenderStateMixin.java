@@ -16,6 +16,8 @@ public class EntityRenderStateMixin {
     private int iceAmplifier = -1;
     @Unique
     private int compressedArmorMarkerType = 0;
+    @Unique
+    private int pigSpiritMarkAmplifier = -1;
 
     public void custom$setIceAmplifier(int amplifier) {
         this.iceAmplifier = amplifier;
@@ -28,6 +30,12 @@ public class EntityRenderStateMixin {
     }
     public int custom$getCompressedArmorMarkerType() {
         return compressedArmorMarkerType;
+    }
+    public void custom$setPigSpiritMarkAmplifier(int amplifier) {
+        this.pigSpiritMarkAmplifier = amplifier;
+    }
+    public int custom$getPigSpiritMarkAmplifier() {
+        return pigSpiritMarkAmplifier;
     }
     public boolean custom$isTrueInvisible() {
         return trueInvisible;

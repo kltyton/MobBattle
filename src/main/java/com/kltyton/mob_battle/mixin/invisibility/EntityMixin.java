@@ -40,4 +40,14 @@ public abstract class EntityMixin {
     public int custom$getCompressedArmorMarkerType() {
         return 0;
     }
+
+    @Unique
+    public void custom$setPigSpiritMarkAmplifier(int amplifier) {
+
+    }
+
+    @Unique
+    public int custom$getPigSpiritMarkAmplifier() {
+        return -1;
+    }
 }

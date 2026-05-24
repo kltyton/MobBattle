@@ -33,7 +33,7 @@ public class PlayerEntitySkill {
     public static void runAttackSkill(ServerPlayerEntity player) {
         EntityUtil.getNearbyEntity(player, LivingEntity.class, 8, false, EntityUtil.TeamFilter.EXCLUDE_TEAM).forEach(livingEntity -> {
             if (!isValidSkillTarget(player, livingEntity)) return;
-            livingEntity.damage(player.getWorld(), player.getDamageSources().playerAttack(player), 80);
+            livingEntity.damage(player.getWorld(), player.getDamageSources().playerAttack(player), 130);
             livingEntity.takeKnockback(1.5, player.getX() - livingEntity.getX(), player.getZ() - livingEntity.getZ());
         });
     }
@@ -52,15 +52,15 @@ public class PlayerEntitySkill {
     public static void runUpperHookSkill(ServerPlayerEntity player) {
         EntityUtil.getNearbyEntity(player, LivingEntity.class, 8, false, EntityUtil.TeamFilter.EXCLUDE_TEAM).forEach(livingEntity -> {
             if (!isValidSkillTarget(player, livingEntity)) return;
-            livingEntity.damage(player.getWorld(), player.getDamageSources().playerAttack(player), 130);
+            livingEntity.damage(player.getWorld(), player.getDamageSources().playerAttack(player), 160);
             livingEntity.takeKnockback(1.5, player.getX() - livingEntity.getX(), player.getZ() - livingEntity.getZ());
         });
     }
     public static void runTopKneeSkill(ServerPlayerEntity player) {
         LivingEntity livingEntity = EntityUtil.getClosestNearbyEntity(player, LivingEntity.class, 8, EntityUtil.TeamFilter.EXCLUDE_TEAM);
         if (isValidSkillTarget(player, livingEntity)) {
-            livingEntity.damage(player.getWorld(), player.getDamageSources().playerAttack(player), 60);
-            livingEntity.addStatusEffect(new StatusEffectInstance(ModEffects.STUN_ENTRY, 20));
+            livingEntity.damage(player.getWorld(), player.getDamageSources().playerAttack(player), 120);
+            livingEntity.addStatusEffect(new StatusEffectInstance(ModEffects.STUN_ENTRY, 2 * 20));
             livingEntity.takeKnockback(1.5, player.getX() - livingEntity.getX(), player.getZ() - livingEntity.getZ());
             livingEntity.velocityDirty = true;
             livingEntity.setVelocity(livingEntity.getVelocity().x, 1.5, livingEntity.getVelocity().z);
@@ -89,8 +89,8 @@ public class PlayerEntitySkill {
     public static void runLeftWhipSkill(ServerPlayerEntity player) {
         LivingEntity livingEntity = EntityUtil.getClosestNearbyEntity(player, LivingEntity.class, 8, EntityUtil.TeamFilter.EXCLUDE_TEAM);
         if (isValidSkillTarget(player, livingEntity)) {
-            livingEntity.damage(player.getWorld(), player.getDamageSources().playerAttack(player), 70);
-            livingEntity.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 100, 2));
+            livingEntity.damage(player.getWorld(), player.getDamageSources().playerAttack(player), 120);
+            livingEntity.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 5 * 20, 4));
             livingEntity.takeKnockback(1.5, player.getX() - livingEntity.getX(), player.getZ() - livingEntity.getZ());
         }
     }
@@ -125,7 +125,7 @@ public class PlayerEntitySkill {
         EntityUtil.getNearbyEntity(player, LivingEntity.class, 8, false, EntityUtil.TeamFilter.EXCLUDE_TEAM).forEach(target -> {
             // 1. 造成 350 点巨额伤害
             if (!isValidSkillTarget(player, target)) return;
-            target.damage(world, player.getDamageSources().playerAttack(player), 350f);
+            target.damage(world, player.getDamageSources().playerAttack(player), 300f);
             target.takeKnockback(5.0, player.getX() - target.getX(), player.getZ() - target.getZ());
         });
 
@@ -152,8 +152,8 @@ public class PlayerEntitySkill {
     public static void runRunCollisionSkill(ServerPlayerEntity player) {
         EntityUtil.getNearbyEntity(player, LivingEntity.class, 8, false, EntityUtil.TeamFilter.EXCLUDE_TEAM).forEach(livingEntity -> {
             if (isValidSkillTarget(player, livingEntity)) {
-                livingEntity.damage(player.getWorld(), player.getDamageSources().playerAttack(player), 200);
-                livingEntity.addStatusEffect(new StatusEffectInstance(ModEffects.STUN_ENTRY, 30));
+                livingEntity.damage(player.getWorld(), player.getDamageSources().playerAttack(player), 210);
+                livingEntity.addStatusEffect(new StatusEffectInstance(ModEffects.STUN_ENTRY, 2 * 20));
                 if (livingEntity instanceof PlayerEntity) {
                     livingEntity.takeKnockback(1.2, player.getX() - livingEntity.getX(), player.getZ() - livingEntity.getZ());
                     livingEntity.setVelocity(livingEntity.getVelocity().x, Math.max(livingEntity.getVelocity().y, 0.35), livingEntity.getVelocity().z);
@@ -185,7 +185,7 @@ public class PlayerEntitySkill {
         // 从 Mixin 获取被抓取的实体
         LivingEntity target = ((IPlayerSkillAccessor)player).mobBattle$getGrabbedEntity();
         if (target != null && target.isAlive() && isValidSkillTarget(player, target)) {
-            target.damage(player.getWorld(), player.getDamageSources().playerAttack(player), 100f);
+            target.damage(player.getWorld(), player.getDamageSources().playerAttack(player), 135f);
             // 反胃 V (Nausea 5) - 10秒
             target.addStatusEffect(new StatusEffectInstance(StatusEffects.NAUSEA, 200, 4));
             // 虚弱 V (Weakness 5) - 10秒

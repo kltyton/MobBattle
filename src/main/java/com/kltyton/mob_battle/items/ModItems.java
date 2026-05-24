@@ -636,7 +636,7 @@ public class ModItems {
         ZIJIN_SWORD = registerItem("zijin_sword",
                 new ZiJinSword(
                         registryBaseItemSettings("zijin_sword")
-                        .sword(ModMaterial.ZIJIN_ARMOR_TOOL_MATERIAL, 99, 0f)
+                        .sword(ModMaterial.ZIJIN_ARMOR_TOOL_MATERIAL, 84, 0f)
                         .maxCount(1)
                         .component(DataComponentTypes.UNBREAKABLE, Unit.INSTANCE)
                 ),

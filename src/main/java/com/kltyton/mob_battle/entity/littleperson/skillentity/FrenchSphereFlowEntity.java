@@ -1,6 +1,7 @@
 package com.kltyton.mob_battle.entity.littleperson.skillentity;
 
 import com.kltyton.mob_battle.effect.ModEffects;
+import com.kltyton.mob_battle.entity.ModEntityAttributes;
 import com.kltyton.mob_battle.entity.littleperson.LittlePersonEntity;
 import com.kltyton.mob_battle.entity.littleperson.skillentity.base.BaseSkillLittlePersonEntity;
 import com.kltyton.mob_battle.utils.EntityUtil;
@@ -30,7 +31,8 @@ public class FrenchSphereFlowEntity extends BaseSkillLittlePersonEntity {
     public static DefaultAttributeContainer.Builder createLittlePersonAttributes() {
         return BaseSkillLittlePersonEntity.createAttributes()
                 .add(EntityAttributes.MAX_HEALTH, 3700.0)
-                .add(EntityAttributes.ATTACK_DAMAGE, 20.0);
+                .add(EntityAttributes.ATTACK_DAMAGE, 20.0)
+                .add(ModEntityAttributes.DAMAGE_REDUCTION, 0.25);
     }
     @Override
     public boolean blockAttack(@NotNull DamageSource source, float amount) {
@@ -49,7 +51,7 @@ public class FrenchSphereFlowEntity extends BaseSkillLittlePersonEntity {
     }
 
     public void runSkill() {
-        String[] skills = {"attack6", "attack4", "attack3", "attack2"};
+        String[] skills = {"attack6", "attack5", "attack4", "attack3", "attack2"};
         for (String skill : skills) {
             if (this.canSkill(skill)) {
                 performSkill(skill);

@@ -3,6 +3,7 @@ package com.kltyton.mob_battle.entity.meteorite;
 import com.kltyton.mob_battle.effect.ModEffects;
 import com.kltyton.mob_battle.entity.customfireball.CustomFireballEntity;
 import com.kltyton.mob_battle.sounds.ModSounds;
+import com.kltyton.mob_battle.utils.EntityUtil;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -62,7 +63,7 @@ public class MeteoriteEntity extends CustomFireballEntity {
 
             for (LivingEntity target : targets) {
                 // 3. 队友免伤判断
-                if (target.isTeammate(owner) || target == owner) {
+                if (!EntityUtil.isValidSummonCombatTarget(this, owner, target)) {
                     continue;
                 }
                 target.addStatusEffect(new StatusEffectInstance(ModEffects.STUN_ENTRY, 100, 0));

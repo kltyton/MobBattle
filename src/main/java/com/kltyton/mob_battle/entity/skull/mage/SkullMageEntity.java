@@ -5,6 +5,7 @@ import com.kltyton.mob_battle.entity.bullet.ITrueDamageProjectile;
 import com.kltyton.mob_battle.entity.skull.IModSkullEntity;
 import com.kltyton.mob_battle.entity.witherskeletonking.WitherSkeletonKingEntity;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
+import com.kltyton.mob_battle.utils.EntityUtil;
 import com.kltyton.mob_battle.utils.ModTrackedDataHandler;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.entity.Entity;
@@ -225,6 +226,9 @@ public class SkullMageEntity extends SkeletonEntity implements GeoEntity, IModSk
     }
     @Override
     public void shootAt(LivingEntity target, float pullProgress) {
+        if (!EntityUtil.isValidSummonCombatTarget(this, this.getOwner(), target)) {
+            return;
+        }
         if (canSkill()) {
             performAttack(target, pullProgress);
         }
@@ -320,7 +324,7 @@ public class SkullMageEntity extends SkeletonEntity implements GeoEntity, IModSk
     }
     @Override
     public boolean canTarget(LivingEntity target) {
-        return !this.isOwner(target) && super.canTarget(target);
+        return EntityUtil.isValidSummonCombatTarget(this, this.getOwner(), target) && super.canTarget(target);
     }
     @Override
     public boolean isOwner(LivingEntity entity) {

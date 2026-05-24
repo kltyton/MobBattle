@@ -36,19 +36,19 @@ public abstract class CustomHealthBarMixin {
     private static final int BAR_WIDTH = 224;
 
     @Unique
-    private static final int BAR_HEIGHT = 48;
+    private static final int BAR_HEIGHT = 32;
 
     @Unique
     private static final int PER_BOSS_OFFSET = 19;
 
     @Unique
-    private static final int CUSTOM_BAR_SPACING = 58;
+    private static final int CUSTOM_BAR_SPACING = 38;
 
     @Unique
     private static final int BASE_Y = 0;
 
     @Unique
-    private static final int PLAYER_HEAD_SIZE = 18;
+    private static final int PLAYER_HEAD_SIZE = 14;
 
     @Unique
     private boolean shouldUseCustomHealthBar(PlayerEntity player) {
@@ -152,7 +152,7 @@ public abstract class CustomHealthBarMixin {
 
         float progress = Math.min(1.0F, (currentHealth + absorption) / maxH);
 
-        renderPlayerHead(context, player, barX + 103, barY + 8);
+        renderPlayerHead(context, player, barX + 105, barY + 9);
 
         context.drawTexture(
                 RenderPipelines.GUI_TEXTURED,
@@ -200,9 +200,9 @@ public abstract class CustomHealthBarMixin {
                 client.textRenderer,
                 text,
                 barX + (BAR_WIDTH - textWidth) / 2,
-                barY + BAR_HEIGHT,
+                barY + (BAR_HEIGHT - 8) / 2,
                 0xFFFFFFFF,
-                false
+                true
         );
     }
 

@@ -40,7 +40,7 @@ public class CyborgEntity extends BaseSkillLittlePersonEntity {
         return BaseSkillLittlePersonEntity.createAttributes()
                 .add(EntityAttributes.MAX_HEALTH, 3600.0)
                 .add(EntityAttributes.ATTACK_DAMAGE, 50.0)
-                .add(ModEntityAttributes.DAMAGE_REDUCTION, 0.0);
+                .add(ModEntityAttributes.DAMAGE_REDUCTION, 0.20);
     }
     @Override
     public boolean tryAttack(ServerWorld world, Entity target) {
@@ -118,8 +118,8 @@ public class CyborgEntity extends BaseSkillLittlePersonEntity {
                     double newMaxHealth = originalMaxHealth + 10;
                     cyborg.getAttributeInstance(EntityAttributes.MAX_HEALTH).setBaseValue(newMaxHealth);
                     cyborg.setHealth((float) newMaxHealth);
+                    cyborg.setSummonOwner(this);
                     serverWorld.spawnEntity(cyborg);
-                    EntityUtil.joinSameTeam(cyborg, this);
                 }
             }
         }

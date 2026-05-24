@@ -1,5 +1,6 @@
 package com.kltyton.mob_battle.entity.witherskeletonking.skill;
 
+import com.kltyton.mob_battle.utils.EntityUtil;
 import net.minecraft.block.BlockState;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
@@ -53,8 +54,10 @@ public class WitherSkullKingEntity extends WitherSkullEntity {
         if (this.getWorld() instanceof ServerWorld serverWorld) {
             Entity var8 = entityHitResult.getEntity();
             boolean bl;
+            if (var8 instanceof LivingEntity living && !EntityUtil.isValidSummonCombatTarget(this, this.getOwner(), living)) {
+                return;
+            }
             if (this.getOwner() instanceof LivingEntity livingEntity) {
-                if (this.getOwner().isTeammate(var8)) return;
                 DamageSource damageSource = this.getDamageSources().witherSkull(this, livingEntity);
                 bl = var8.damage(serverWorld, damageSource, power);
                 var8.damage(serverWorld, this.getDamageSources().explosion(this, livingEntity), 160F);
@@ -88,6 +91,9 @@ public class WitherSkullKingEntity extends WitherSkullEntity {
         if (type == HitResult.Type.ENTITY) {
             EntityHitResult entityHitResult = (EntityHitResult)hitResult;
             Entity entity = entityHitResult.getEntity();
+            if (entity instanceof LivingEntity living && !EntityUtil.isValidSummonCombatTarget(this, this.getOwner(), living)) {
+                return;
+            }
             if (entity.getType().isIn(EntityTypeTags.REDIRECTABLE_PROJECTILE) && entity instanceof ProjectileEntity projectileEntity) {
                 projectileEntity.deflect(ProjectileDeflection.REDIRECTED, this.getOwner(), this.getOwner(), true);
             }
@@ -103,6 +109,11 @@ public class WitherSkullKingEntity extends WitherSkullEntity {
     }
     @Override
     protected void onCollision(HitResult hitResult) {
+        if (hitResult instanceof EntityHitResult entityHitResult
+                && entityHitResult.getEntity() instanceof LivingEntity living
+                && !EntityUtil.isValidSummonCombatTarget(this, this.getOwner(), living)) {
+            return;
+        }
         this.onCollisionBase(hitResult);
         if (!this.getWorld().isClient) {
             this.getWorld().createExplosion(

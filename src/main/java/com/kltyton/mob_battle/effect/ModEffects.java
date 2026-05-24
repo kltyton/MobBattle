@@ -35,6 +35,7 @@ public class ModEffects {
     public static BlindnessImmunityFactorEffect BLINDNESS_IMMUNITY_FACTOR;
     public static DarknessImmunityFactorEffect DARKNESS_IMMUNITY_FACTOR;
     public static StutterEffect STUTTER;
+    public static DecayEffect DECAY;
 
     public static RegistryEntry<StatusEffect> STUN_ENTRY;
     public static RegistryEntry<StatusEffect> INSECT_BITE_ENTRY;
@@ -60,6 +61,7 @@ public class ModEffects {
     public static RegistryEntry<StatusEffect> BLINDNESS_IMMUNITY_FACTOR_ENTRY;
     public static RegistryEntry<StatusEffect> DARKNESS_IMMUNITY_FACTOR_ENTRY;
     public static RegistryEntry<StatusEffect> STUTTER_ENTRY;
+    public static RegistryEntry<StatusEffect> DECAY_ENTRY;
 
     public static void init() {
         INSECT_BITE = register("insect_bite", new InsectBiteEffect());
@@ -86,6 +88,7 @@ public class ModEffects {
         BLINDNESS_IMMUNITY_FACTOR = register("blindness_immunity_factor", new BlindnessImmunityFactorEffect());
         DARKNESS_IMMUNITY_FACTOR = register("darkness_immunity_factor", new DarknessImmunityFactorEffect());
         STUTTER = register("stutter", new StutterEffect());
+        DECAY = register("decay", new DecayEffect());
 
         INSECT_BITE_ENTRY = getEntry("insect_bite");
         PRO_INSECT_BITE_ENTRY = getEntry("pro_insect_bite");
@@ -111,6 +114,7 @@ public class ModEffects {
         BLINDNESS_IMMUNITY_FACTOR_ENTRY = getEntry("blindness_immunity_factor");
         DARKNESS_IMMUNITY_FACTOR_ENTRY = getEntry("darkness_immunity_factor");
         STUTTER_ENTRY = getEntry("stutter");
+        DECAY_ENTRY = getEntry("decay");
     }
 
     private static <T extends StatusEffect> T register(String id, T effect) {

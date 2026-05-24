@@ -108,25 +108,18 @@ public class MagmaLobsterEntity extends LobsterEntity {
 
         LivingEntity target = this.getTarget();
 
-        if (target != null && this.canSkill("attack5") && this.squaredDistanceTo(target) > 9.0D) {
+        if (target != null && this.canSkill("attack5")) {
             performSkill("attack5");
             return true;
         }
 
-        String[] skills = {"attack2", "attack3", "attack4"};
-        int start = this.random.nextInt(skills.length);
+        String[] skills = {"attack4", "attack3", "attack2"};
 
-        for (int i = 0; i < skills.length; i++) {
-            String skill = skills[(start + i) % skills.length];
+        for (String skill : skills) {
             if (canSkill(skill)) {
                 performSkill(skill);
                 return true;
             }
-        }
-
-        if (this.canSkill("attack5")) {
-            performSkill("attack5");
-            return true;
         }
 
         return false;

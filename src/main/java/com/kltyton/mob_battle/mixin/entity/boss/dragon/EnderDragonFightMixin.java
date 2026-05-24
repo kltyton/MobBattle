@@ -30,14 +30,34 @@ public abstract class EnderDragonFightMixin {
     @Shadow @Final private ServerWorld world;
     @Shadow private List<EndCrystalEntity> crystals;
     @Shadow private BlockPos exitPortalLocation;
+    @Shadow private boolean previouslyKilled;
 
     // Unique 字段模拟数据包中的 trueEnding_storage
     @Unique
     private int customRespawnTimer = -1;
+    @Unique
+    private boolean wasPreviouslyKilledBeforeDragonKilled = false;
 
     @Inject(method = "updateFight", at = @At("TAIL"))
     private void updateDragonBossBarName(EnderDragonEntity dragon, CallbackInfo ci) {
         updateDragonBossBarName(dragon);
+    }
+
+    @Inject(method = "dragonKilled", at = @At("HEAD"))
+    private void rememberPreviouslyKilled(EnderDragonEntity dragon, CallbackInfo ci) {
+        this.wasPreviouslyKilledBeforeDragonKilled = this.previouslyKilled;
+    }
+
+    @Inject(method = "dragonKilled", at = @At("TAIL"))
+    private void spawnEggForRespawnedDragon(EnderDragonEntity dragon, CallbackInfo ci) {
+        if (!this.wasPreviouslyKilledBeforeDragonKilled) {
+            return;
+        }
+        BlockPos base = this.exitPortalLocation != null ? this.exitPortalLocation : BlockPos.ORIGIN;
+        BlockPos eggPos = base.up(4);
+        if (this.world.getBlockState(eggPos).isAir()) {
+            this.world.setBlockState(eggPos, Blocks.DRAGON_EGG.getDefaultState());
+        }
     }
 
     @Unique

@@ -104,7 +104,7 @@ public class HealTeamGoal extends Goal {
                 .sorted(Comparator.comparingDouble(drone::squaredDistanceTo))
                 .limit(2)
                 .forEach(entity -> {
-                    entity.heal(drone.isOnlyPlayer() ? TreatmentDroneEntity.PLAYER_HEAL_AMOUNT : TreatmentDroneEntity.HEAL_AMOUNT);
+                    entity.heal(entity instanceof PlayerEntity ? TreatmentDroneEntity.PLAYER_HEAL_AMOUNT : TreatmentDroneEntity.HEAL_AMOUNT);
                     world.sendEntityStatus(drone, (byte)7); // 爱心粒子
                     // 添加村民的绿色粒子效果
                     if (world.isClient) {

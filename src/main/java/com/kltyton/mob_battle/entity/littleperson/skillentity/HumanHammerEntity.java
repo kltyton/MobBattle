@@ -40,8 +40,10 @@ public class HumanHammerEntity extends BaseSkillLittlePersonEntity {
     public boolean damage(ServerWorld world, DamageSource source, float amount) {
         HumanShieldEntity shieldEntity = EntityUtil.getClosestNearbyEntity(this, HumanShieldEntity.class, 5, EntityUtil.TeamFilter.ONLY_TEAM);
         if (shieldEntity != null && shieldEntity.isAlive()) {
+            this.addStatusEffect(new StatusEffectInstance(StatusEffects.STRENGTH, 20 * 5, 14));
+            shieldEntity.addStatusEffect(new StatusEffectInstance(StatusEffects.RESISTANCE, 20 * 5, 2));
+            shieldEntity.timeUntilRegen = 0;
             boolean result = shieldEntity.damage(world, this.getDamageSources().mobAttack(this), amount);
-            if (result) this.addStatusEffect(new StatusEffectInstance(StatusEffects.STRENGTH, 20 * 5, 14));
             return result;
         } else return super.damage(world, source, amount);
     }

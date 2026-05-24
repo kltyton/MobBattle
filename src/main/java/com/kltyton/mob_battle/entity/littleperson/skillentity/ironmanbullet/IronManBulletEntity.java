@@ -3,6 +3,7 @@ package com.kltyton.mob_battle.entity.littleperson.skillentity.ironmanbullet;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.Lists;
 import com.kltyton.mob_battle.entity.ModEntities;
+import com.kltyton.mob_battle.utils.EntityUtil;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -206,7 +207,7 @@ public class IronManBulletEntity extends ProjectileEntity {
             }
 
             // 3. 目标不存在或死亡时的逻辑
-            if (entity == null || !entity.isAlive() || (entity instanceof PlayerEntity p && p.isSpectator())) {
+            if (entity == null || !entity.isAlive() || (entity instanceof PlayerEntity p && (p.isSpectator() || p.isCreative()))) {
                 this.applyGravity();
             } else {
                 this.targetX = MathHelper.clamp(this.targetX * 1.025, -1.0, 1.0);
@@ -265,7 +266,10 @@ public class IronManBulletEntity extends ProjectileEntity {
 
     @Override
     public boolean canHit(Entity entity) {
-        return !entity.isTeammate(this.getOwner()) && super.canHit(entity) && !entity.noClip;
+        if (entity instanceof LivingEntity living && !EntityUtil.isValidSummonCombatTarget(this, this.getOwner(), living)) {
+            return false;
+        }
+        return super.canHit(entity) && !entity.noClip;
     }
 
     @Override
@@ -289,6 +293,9 @@ public class IronManBulletEntity extends ProjectileEntity {
         super.onEntityHit(result);
         Entity victim   = result.getEntity();
         Entity owner    = this.getOwner();
+        if (victim instanceof LivingEntity living && !EntityUtil.isValidSummonCombatTarget(this, owner, living)) {
+            return;
+        }
         LivingEntity attacker = owner instanceof LivingEntity ? (LivingEntity) owner : null;
         DamageSource indirectMagicSrc = this.getDamageSources().indirectMagic(this, attacker);
         boolean damaged = victim.sidedDamage(indirectMagicSrc, 15.0F);

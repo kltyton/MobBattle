@@ -300,10 +300,12 @@ public class ModMaterial {
             armor.apply(DataComponentTypes.ATTRIBUTE_MODIFIERS, current, builder -> {
                 //最大生命值 +7.0
                 builder = builder.with(EntityAttributes.MAX_HEALTH,
-                    new EntityAttributeModifier(Identifier.of(Mob_battle.MOD_ID, "health_" + id), 7.0, EntityAttributeModifier.Operation.ADD_VALUE), slot);
+                    new EntityAttributeModifier(Identifier.of(Mob_battle.MOD_ID, "health_" + id), 13.0, EntityAttributeModifier.Operation.ADD_VALUE), slot);
                 // 攻击伤害 +7.5
                 builder = builder.with(EntityAttributes.ATTACK_DAMAGE,
-                        new EntityAttributeModifier(Identifier.of(Mob_battle.MOD_ID, "damage_" + id), 7.5, EntityAttributeModifier.Operation.ADD_VALUE), slot);
+                        new EntityAttributeModifier(Identifier.of(Mob_battle.MOD_ID, "damage_" + id), 10.0, EntityAttributeModifier.Operation.ADD_VALUE), slot);
+                builder = builder.with(EntityAttributes.MAX_ABSORPTION,
+                        new EntityAttributeModifier(Identifier.of(Mob_battle.MOD_ID, "absorption_" + id), 5.0, EntityAttributeModifier.Operation.ADD_VALUE), slot);
                 // 实体交互距离 +0.2
                 builder = builder.with(EntityAttributes.ENTITY_INTERACTION_RANGE,
                         new EntityAttributeModifier(Identifier.of(Mob_battle.MOD_ID, "range_" + id), 0.2, EntityAttributeModifier.Operation.ADD_VALUE), slot);
@@ -362,6 +364,11 @@ public class ModMaterial {
                 updated = updated.with(
                         EntityAttributes.SWEEPING_DAMAGE_RATIO,
                         new EntityAttributeModifier(Identifier.of(Mob_battle.MOD_ID, "swipe_" + id), 1.0, EntityAttributeModifier.Operation.ADD_VALUE),
+                        slot
+                );
+                updated = updated.with(
+                        EntityAttributes.ARMOR,
+                        new EntityAttributeModifier(Identifier.of(Mob_battle.MOD_ID, "armor_" + id), 3.0, EntityAttributeModifier.Operation.ADD_VALUE),
                         slot
                 );
                 return updated;

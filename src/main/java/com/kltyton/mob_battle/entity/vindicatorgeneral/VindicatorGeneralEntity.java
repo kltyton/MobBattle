@@ -7,6 +7,7 @@ import com.kltyton.mob_battle.entity.accessor.BigBossNavigation;
 import com.kltyton.mob_battle.bossbar.CustomBossBarStyles;
 import com.kltyton.mob_battle.bossbar.CustomBossBarSync;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
+import com.kltyton.mob_battle.utils.CombatEffectUtil;
 import com.kltyton.mob_battle.utils.EnchantmentUtil;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -33,6 +34,7 @@ import net.minecraft.storage.WriteView;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib.animatable.GeoEntity;
@@ -44,12 +46,11 @@ import software.bernie.geckolib.animation.PlayState;
 import software.bernie.geckolib.animation.RawAnimation;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
-import java.util.Objects;
 import java.util.Optional;
 
 public class VindicatorGeneralEntity extends VindicatorEntity implements GeoEntity, ModSkillEntityType {
     private final ServerBossBar bossBar = new ServerBossBar(
-            this.getDisplayName(),
+            Text.empty(),
             BossBar.Color.PURPLE,
             BossBar.Style.PROGRESS
     );
@@ -58,6 +59,13 @@ public class VindicatorGeneralEntity extends VindicatorEntity implements GeoEnti
     public static final TrackedData<Integer> SUPER_ATTACK_SKILL_COOLDOWN = DataTracker.registerData(VindicatorGeneralEntity.class, TrackedDataHandlerRegistry.INTEGER);
     public static final TrackedData<Integer> MINI_ATTACK_SKILL_COOLDOWN = DataTracker.registerData(VindicatorGeneralEntity.class, TrackedDataHandlerRegistry.INTEGER);
     public static final TrackedData<Integer> MAX_ATTACK_SKILL_COOLDOWN = DataTracker.registerData(VindicatorGeneralEntity.class, TrackedDataHandlerRegistry.INTEGER);
+    public static final TrackedData<Integer> COLLISION_KILL_COOLDOWN = DataTracker.registerData(VindicatorGeneralEntity.class, TrackedDataHandlerRegistry.INTEGER);
+    public static final TrackedData<Integer> SPIN_CHOP_COOLDOWN = DataTracker.registerData(VindicatorGeneralEntity.class, TrackedDataHandlerRegistry.INTEGER);
+    public static final TrackedData<Integer> THROW_AXE_COOLDOWN = DataTracker.registerData(VindicatorGeneralEntity.class, TrackedDataHandlerRegistry.INTEGER);
+    private static final int AXE_RECOVERY_TIMEOUT_MAX = 120;
+    private boolean waitingForAxeRecovery;
+    private int axeRecoveryTimeout;
+    private int deathAnimationTicks;
     @Override
     protected void initDataTracker(DataTracker.Builder builder) {
         super.initDataTracker(builder);
@@ -66,6 +74,9 @@ public class VindicatorGeneralEntity extends VindicatorEntity implements GeoEnti
         builder.add(SUPER_ATTACK_SKILL_COOLDOWN, 15 * 20);
         builder.add(MINI_ATTACK_SKILL_COOLDOWN, 10 * 20);
         builder.add(MAX_ATTACK_SKILL_COOLDOWN, 30 * 20);
+        builder.add(COLLISION_KILL_COOLDOWN, 25 * 20);
+        builder.add(SPIN_CHOP_COOLDOWN, 20 * 20);
+        builder.add(THROW_AXE_COOLDOWN, 45 * 20);
     }
     public VindicatorGeneralEntity(EntityType<? extends VindicatorEntity> entityType, World world) {
         super(entityType, world);
@@ -80,6 +91,10 @@ public class VindicatorGeneralEntity extends VindicatorEntity implements GeoEnti
     public void tick() {
         super.tick();
         if (!this.getWorld().isClient()) {
+            if (this.deathAnimationTicks > 0) {
+                tickDeathAnimation();
+                return;
+            }
             // 冷却递减
             int cd = getSkillCooldown();
             if (cd > 0) setSkillCooldown(cd - 1);
@@ -89,6 +104,15 @@ public class VindicatorGeneralEntity extends VindicatorEntity implements GeoEnti
             if (miniAttackCd > 0) setMiniAttackSkillCooldown(miniAttackCd - 1);
             int maxAttackCd = getMaxAttackSkillCooldown();
             if (maxAttackCd > 0) setMaxAttackSkillCooldown(maxAttackCd - 1);
+            int collisionCd = getCollisionKillCooldown();
+            if (collisionCd > 0) setCollisionKillCooldown(collisionCd - 1);
+            int spinCd = getSpinChopCooldown();
+            if (spinCd > 0) setSpinChopCooldown(spinCd - 1);
+            int throwAxeCd = getThrowAxeCooldown();
+            if (throwAxeCd > 0) setThrowAxeCooldown(throwAxeCd - 1);
+            if (this.waitingForAxeRecovery && this.axeRecoveryTimeout > 0 && --this.axeRecoveryTimeout <= 0) {
+                startAxeRecovery();
+            }
             if (!hasSkill()) {
                 this.setAiDisabled(false);
             }
@@ -101,7 +125,7 @@ public class VindicatorGeneralEntity extends VindicatorEntity implements GeoEnti
     @Override
     public void setCustomName(@Nullable Text name) {
         super.setCustomName(name);
-        this.bossBar.setName(Objects.requireNonNull(this.getDisplayName()).copy().append(" | " + (int)this.getHealth() + "/" + (int)this.getMaxHealth()));
+        updateBossBar();
     }
     @Override
     public void onStartedTrackingBy(ServerPlayerEntity player) {
@@ -118,14 +142,13 @@ public class VindicatorGeneralEntity extends VindicatorEntity implements GeoEnti
     @Override
     protected void mobTick(ServerWorld world) {
         super.mobTick(world);
-        this.bossBar.setPercent(this.getHealth() / this.getMaxHealth());
-        this.bossBar.setName(Objects.requireNonNull(this.getDisplayName()).copy().append(" | " + (int)this.getHealth() + "/" + (int)this.getMaxHealth()));
+        updateBossBar();
     }
     @Override
     public void readCustomData(ReadView nbt) {
         super.readCustomData(nbt);
         if (this.hasCustomName()) {
-            this.bossBar.setName(Objects.requireNonNull(this.getDisplayName()).copy().append(" | " + (int)this.getHealth() + "/" + (int)this.getMaxHealth()));
+            updateBossBar();
         }
     }
     @Override
@@ -136,9 +159,13 @@ public class VindicatorGeneralEntity extends VindicatorEntity implements GeoEnti
     public void setHealth(float health) {
         super.setHealth(health);
         if (this.bossBar != null) {
-            this.bossBar.setPercent(health / this.getMaxHealth());
-            this.bossBar.setName(Objects.requireNonNull(this.getDisplayName()).copy().append(" | " + (int)this.getHealth() + "/" + (int)this.getMaxHealth()));
+            updateBossBar();
         }
+    }
+
+    private void updateBossBar() {
+        this.bossBar.setPercent(this.getHealth() / this.getMaxHealth());
+        this.bossBar.setName(this.getDisplayName().copy().append(" | " + (int) Math.ceil(this.getHealth()) + "/" + (int) this.getMaxHealth()));
     }
     @Override
     public boolean isInAttackRange(LivingEntity entity) {
@@ -160,6 +187,9 @@ public class VindicatorGeneralEntity extends VindicatorEntity implements GeoEnti
         f += itemStack.getItem().getBonusAttackDamage(target, f, damageSource);
         boolean bl = target.damage(world, damageSource, f);
         if (bl) {
+            if (target instanceof LivingEntity livingEntity) {
+                CombatEffectUtil.addStackingArmorPiercing(livingEntity, this);
+            }
             float g = this.getAttackKnockbackAgainst(target, damageSource);
             if (g > 0.0F && target instanceof LivingEntity livingEntity) {
                 livingEntity.takeKnockback(g * 0.5F, MathHelper.sin(this.getYaw() * (float) (Math.PI / 180.0)), -MathHelper.cos(this.getYaw() * (float) (Math.PI / 180.0)));
@@ -179,7 +209,16 @@ public class VindicatorGeneralEntity extends VindicatorEntity implements GeoEnti
     }
     @Override
     public boolean tryAttack(ServerWorld world, Entity target) {
-        if (this.canMaxAttack()) {
+        if (this.canThrowAxe()) {
+            performThrowAxe();
+            return true;
+        } else if (this.canCollisionKill()) {
+            performCollisionKill();
+            return true;
+        } else if (this.canSpinChop()) {
+            performSpinChop();
+            return true;
+        } else if (this.canMaxAttack()) {
             performMaxAttack();
             return true;
         } else if (this.canMiniAttack()) {
@@ -221,6 +260,37 @@ public class VindicatorGeneralEntity extends VindicatorEntity implements GeoEnti
         setMaxAttackSkillCooldown(30 * 20);
         this.triggerAnim("skill_controller", "max_attack");
     }
+    public void performCollisionKill() {
+        setHasSkill(true);
+        this.setAiDisabled(true);
+        setSkillCooldown(20);
+        setCollisionKillCooldown(25 * 20);
+        this.triggerAnim("skill_controller", "collision_kill");
+    }
+    public void performSpinChop() {
+        setHasSkill(true);
+        this.setAiDisabled(true);
+        setSkillCooldown(20);
+        setSpinChopCooldown(20 * 20);
+        this.triggerAnim("skill_controller", "spin_chop");
+    }
+    public void performThrowAxe() {
+        setHasSkill(true);
+        this.setAiDisabled(true);
+        setSkillCooldown(20);
+        setThrowAxeCooldown(45 * 20);
+        this.waitingForAxeRecovery = true;
+        this.axeRecoveryTimeout = AXE_RECOVERY_TIMEOUT_MAX;
+        this.triggerAnim("skill_controller", "throw_axe");
+    }
+    public void startAxeRecovery() {
+        this.waitingForAxeRecovery = false;
+        this.axeRecoveryTimeout = 0;
+        if (this.deathAnimationTicks > 0) {
+            return;
+        }
+        this.triggerAnim("skill_controller", "recovery_axe");
+    }
     public boolean canSuperAttack() {
         return canSkill() && getSuperAttackSkillCooldown() == 0;
     }
@@ -230,12 +300,28 @@ public class VindicatorGeneralEntity extends VindicatorEntity implements GeoEnti
     public boolean canMaxAttack() {
         return canSkill() && getMaxAttackSkillCooldown() == 0;
     }
+    public boolean canCollisionKill() {
+        LivingEntity target = this.getTarget();
+        if (target == null) return false;
+        double distance = this.distanceTo(target);
+        return canSkill() && getCollisionKillCooldown() == 0 && distance > 4.0D && distance <= 20.0D;
+    }
+    public boolean canSpinChop() {
+        return canSkill() && getSpinChopCooldown() == 0;
+    }
+    public boolean canThrowAxe() {
+        LivingEntity target = this.getTarget();
+        return canSkill() && getThrowAxeCooldown() == 0 && target != null && this.distanceTo(target) <= 24.0D;
+    }
     public boolean canSkill() {
         if (!ModSkillEntityType.canSkill(this)) return false;
         return !this.getWorld().isClient() && !hasSkill() && getSkillCooldown() == 0 && this.getTarget() != null;
     }
     public boolean hasSkill() {
         return getDataTracker().get(HAS_SKILL);
+    }
+    public boolean isWaitingForAxeRecovery() {
+        return this.waitingForAxeRecovery;
     }
     public int getSkillCooldown() {
         return getDataTracker().get(SKILL_COOLDOWN);
@@ -248,6 +334,15 @@ public class VindicatorGeneralEntity extends VindicatorEntity implements GeoEnti
     }
     public int getMaxAttackSkillCooldown() {
         return getDataTracker().get(MAX_ATTACK_SKILL_COOLDOWN);
+    }
+    public int getCollisionKillCooldown() {
+        return getDataTracker().get(COLLISION_KILL_COOLDOWN);
+    }
+    public int getSpinChopCooldown() {
+        return getDataTracker().get(SPIN_CHOP_COOLDOWN);
+    }
+    public int getThrowAxeCooldown() {
+        return getDataTracker().get(THROW_AXE_COOLDOWN);
     }
     public void setHasSkill(boolean hasSkill) {
         getDataTracker().set(HAS_SKILL, hasSkill);
@@ -264,6 +359,15 @@ public class VindicatorGeneralEntity extends VindicatorEntity implements GeoEnti
     public void setMaxAttackSkillCooldown(int cooldown) {
         getDataTracker().set(MAX_ATTACK_SKILL_COOLDOWN, cooldown);
     }
+    public void setCollisionKillCooldown(int cooldown) {
+        getDataTracker().set(COLLISION_KILL_COOLDOWN, cooldown);
+    }
+    public void setSpinChopCooldown(int cooldown) {
+        getDataTracker().set(SPIN_CHOP_COOLDOWN, cooldown);
+    }
+    public void setThrowAxeCooldown(int cooldown) {
+        getDataTracker().set(THROW_AXE_COOLDOWN, cooldown);
+    }
     public static DefaultAttributeContainer.Builder addAttributes() {
         return HostileEntity.createHostileAttributes()
                 .add(EntityAttributes.MAX_HEALTH, 30000.0D)
@@ -272,6 +376,7 @@ public class VindicatorGeneralEntity extends VindicatorEntity implements GeoEnti
                 .add(EntityAttributes.ATTACK_DAMAGE, 80.0D)
                 .add(EntityAttributes.FOLLOW_RANGE, 24.0D)
                 .add(EntityAttributes.ARMOR, 30.0D)
+                .add(EntityAttributes.STEP_HEIGHT, 3.0D)
                 .add(EntityAttributes.ARMOR_TOUGHNESS, 20.0D);
     }
     protected static final RawAnimation IDEA_ANIM = RawAnimation.begin().thenPlay("walk2idle").thenLoop("idle");
@@ -280,15 +385,22 @@ public class VindicatorGeneralEntity extends VindicatorEntity implements GeoEnti
     protected static final RawAnimation SUPER_ATTACK_ANIM = RawAnimation.begin().thenPlay("super_attack");
     protected static final RawAnimation MINI_ATTACK_ANIM = RawAnimation.begin().thenPlay("mini_attack");
     protected static final RawAnimation MAX_ATTACK_ANIM = RawAnimation.begin().thenPlay("max_attack");
+    protected static final RawAnimation COLLISION_KILL_ANIM = RawAnimation.begin().thenPlay("collision_kill");
+    protected static final RawAnimation SPIN_CHOP_ANIM = RawAnimation.begin().thenPlay("spin_chop");
+    protected static final RawAnimation THROW_AXE_ANIM = RawAnimation.begin().thenPlay("throw_axe");
+    protected static final RawAnimation RECOVERY_AXE_ANIM = RawAnimation.begin().thenPlay("recovery_axe");
+    protected static final RawAnimation DEATH_ANIM = RawAnimation.begin().thenPlay("death");
 
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>("main_controller", this::animationController));
         controllers.add(new AnimationController<>("skill_controller", animTest -> {
             if (animTest.controller().getAnimationState() == AnimationController.State.STOPPED && this.hasSkill()) {
-                ClientPlayNetworking.send(new SkillPayload(
-                        "stop", this.getId()
-                ));
+                if (!this.isWaitingForAxeRecovery()) {
+                    ClientPlayNetworking.send(new SkillPayload(
+                            "stop", this.getId()
+                    ));
+                }
             }
             return PlayState.STOP;
         })
@@ -296,43 +408,61 @@ public class VindicatorGeneralEntity extends VindicatorEntity implements GeoEnti
                 .triggerableAnim("super_attack", SUPER_ATTACK_ANIM)
                 .triggerableAnim("mini_attack", MINI_ATTACK_ANIM)
                 .triggerableAnim("max_attack", MAX_ATTACK_ANIM)
+                .triggerableAnim("collision_kill", COLLISION_KILL_ANIM)
+                .triggerableAnim("spin_chop", SPIN_CHOP_ANIM)
+                .triggerableAnim("throw_axe", THROW_AXE_ANIM)
+                .triggerableAnim("recovery_axe", RECOVERY_AXE_ANIM)
+                .triggerableAnim("death", DEATH_ANIM)
                 .setSoundKeyframeHandler(s -> {})
                 .setCustomInstructionKeyframeHandler(s -> {
-                    if ("runAttack".equals(s.keyframeData().getInstructions())) {
+                    String instruction = s.keyframeData().getInstructions().replaceAll("\\s+", "");
+                    if ("runAttack".equals(instruction)) {
                         this.playSound(SoundEvents.ENTITY_PLAYER_ATTACK_SWEEP, 1.0F, 1.0F);
                         ClientPlayNetworking.send(new SkillPayload(
                                 "attack", this.getId()
                         ));
                     }
-                    if ("runSuperAttack".equals(s.keyframeData().getInstructions())) {
+                    if ("runSuperAttack".equals(instruction)) {
                         this.playSound(SoundEvents.ENTITY_PLAYER_SMALL_FALL, 1.0F, 1.0F);
                         ClientPlayNetworking.send(new SkillPayload(
                                 "super_attack", this.getId()
                         ));
                     }
-                    if ("runMiniAttack".equals(s.keyframeData().getInstructions())) {
+                    if ("runMiniAttack".equals(instruction)) {
                         this.playSound(SoundEvents.ENTITY_PLAYER_SMALL_FALL, 1.0F, 1.0F);
                         ClientPlayNetworking.send(new SkillPayload(
                                 "mini_attack", this.getId()
                         ));
                     }
-                    if ("runMaxAttack_1".equals(s.keyframeData().getInstructions())) {
+                    if ("runMaxAttack_1".equals(instruction)) {
                         this.playSound(SoundEvents.ENTITY_PLAYER_SMALL_FALL, 1.0F, 1.0F);
                         ClientPlayNetworking.send(new SkillPayload(
                                 "max_attack_1", this.getId()
                         ));
                     }
-                    if ("runMaxAttack_2".equals(s.keyframeData().getInstructions())) {
+                    if ("runMaxAttack_2".equals(instruction)) {
                         this.playSound(SoundEvents.ENTITY_PLAYER_SMALL_FALL, 1.0F, 1.0F);
                         ClientPlayNetworking.send(new SkillPayload(
                                 "max_attack_2", this.getId()
                         ));
                     }
-                    if ("runMaxAttack_3".equals(s.keyframeData().getInstructions())) {
+                    if ("runMaxAttack_3".equals(instruction)) {
                         this.playSound(SoundEvents.ENTITY_PLAYER_SMALL_FALL, 1.0F, 1.0F);
                         ClientPlayNetworking.send(new SkillPayload(
                                 "max_attack_3", this.getId()
                         ));
+                    }
+                    if ("runCollisionKill;".equals(instruction)) {
+                        ClientPlayNetworking.send(new SkillPayload("collision_kill", this.getId()));
+                    }
+                    if ("runCollisionKill_1;".equals(instruction)) {
+                        ClientPlayNetworking.send(new SkillPayload("collision_kill_1", this.getId()));
+                    }
+                    if ("runSpinChop;".equals(instruction)) {
+                        ClientPlayNetworking.send(new SkillPayload("spin_chop", this.getId()));
+                    }
+                    if ("runThrowAxe;".equals(instruction)) {
+                        ClientPlayNetworking.send(new SkillPayload("throw_axe", this.getId()));
                     }
                 }));
     }
@@ -347,5 +477,35 @@ public class VindicatorGeneralEntity extends VindicatorEntity implements GeoEnti
             return state.setAndContinue(WALK_ANIM);
         }
         return state.setAndContinue(IDEA_ANIM);
+    }
+
+    @Override
+    public boolean damage(ServerWorld world, DamageSource source, float amount) {
+        if (this.deathAnimationTicks > 0) {
+            return false;
+        }
+        if (this.getHealth() - amount <= 0.0F) {
+            startDeathAnimation();
+            return true;
+        }
+        return super.damage(world, source, amount);
+    }
+
+    private void startDeathAnimation() {
+        this.setHealth(1.0F);
+        this.setAiDisabled(true);
+        this.setHasSkill(true);
+        this.waitingForAxeRecovery = false;
+        this.axeRecoveryTimeout = 0;
+        this.deathAnimationTicks = 90;
+        this.triggerAnim("skill_controller", "death");
+    }
+
+    private void tickDeathAnimation() {
+        this.setHealth(1.0F);
+        this.deathAnimationTicks--;
+        if (this.deathAnimationTicks <= 0) {
+            this.remove(Entity.RemovalReason.KILLED);
+        }
     }
 }

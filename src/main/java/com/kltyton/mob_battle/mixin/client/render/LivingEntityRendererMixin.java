@@ -21,8 +21,14 @@ public class LivingEntityRendererMixin {
         if (effect != null) {
             amplifier = effect.getAmplifier();
         }
+        int pigSpiritMarkAmplifier = -1;
+        StatusEffectInstance pigSpiritMark = entity.getStatusEffect(ModEffects.PIG_SPIRIT_MARK_ENTRY);
+        if (pigSpiritMark != null) {
+            pigSpiritMarkAmplifier = pigSpiritMark.getAmplifier();
+        }
         IModEntityRenderState modState = (IModEntityRenderState) state;
         modState.setIceAmplifier(amplifier);
         modState.setCompressedArmorMarkerType(((ICompressedArmorMarker) entity).mobBattle$getCompressedArmorMarkerType());
+        modState.setPigSpiritMarkAmplifier(pigSpiritMarkAmplifier);
     }
 }

@@ -2,13 +2,13 @@ package com.kltyton.mob_battle.entity.bullet;
 
 import com.kltyton.mob_battle.effect.ModEffects;
 import com.kltyton.mob_battle.items.ModItems;
+import com.kltyton.mob_battle.utils.CombatEffectUtil;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
-import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.item.ItemStack;
 import net.minecraft.particle.DustParticleEffect;
 import net.minecraft.particle.ParticleTypes;
@@ -198,12 +198,8 @@ public class GoldenTrailProjectile extends TrueDamageProjectile {
     }
     public void applyStrengthenBulletEffect(ServerWorld world, LivingEntity target) {
         if (this.isStrengthen()) {
-            StatusEffectInstance current = target.getStatusEffect(ModEffects.PIG_SPIRIT_MARK_ENTRY);
-            int amplifier = 0;
-            if (current != null) {
-                amplifier = Math.min(current.getAmplifier() + 1, 79);
-            }
-            target.addStatusEffect(new StatusEffectInstance(ModEffects.PIG_SPIRIT_MARK_ENTRY, 20 * 20, amplifier));
+            Entity owner = this.getOwner();
+            CombatEffectUtil.addPigSpiritMark(target, owner instanceof LivingEntity living ? living : target, 1);
             target.damage(world, target.getDamageSources().magic(), 10.0F);
         }
     }

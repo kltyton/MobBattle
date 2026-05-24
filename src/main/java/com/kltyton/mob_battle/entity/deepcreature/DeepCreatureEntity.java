@@ -3,6 +3,7 @@ package com.kltyton.mob_battle.entity.deepcreature;
 import com.kltyton.mob_battle.entity.ModSkillEntityType;
 import com.kltyton.mob_battle.entity.deepcreature.goal.DeepCreatureEntityNavigation;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
+import com.kltyton.mob_battle.utils.EntityUtil;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -395,7 +396,7 @@ public class DeepCreatureEntity extends HostileEntity implements GeoEntity, ModS
                 // 4. 撞击检测：以当前碰撞盒稍扩大一点
                 Box hitBox = this.getBoundingBox().expand(8);
                 List<LivingEntity> list = getWorld().getOtherEntities(this, hitBox,
-                                e -> e instanceof LivingEntity && e.isAlive() && e != this)
+                                e -> e instanceof LivingEntity living && EntityUtil.isValidCombatTarget(this, living))
                         .stream()
                         .map(e -> (LivingEntity) e)
                         .toList();

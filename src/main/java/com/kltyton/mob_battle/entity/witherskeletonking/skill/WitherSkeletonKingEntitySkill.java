@@ -1,10 +1,19 @@
 package com.kltyton.mob_battle.entity.witherskeletonking.skill;
 
 import com.kltyton.mob_battle.entity.witherskeletonking.WitherSkeletonKingEntity;
+import com.kltyton.mob_battle.entity.ModEntities;
+import com.kltyton.mob_battle.entity.enhancedwither.EnhancedWitherEntity;
+import com.kltyton.mob_battle.entity.witherskeletonking.summon.DualBladeWitherSkeletonEntity;
+import com.kltyton.mob_battle.entity.witherskeletonking.summon.ShieldAxeWitherSkeletonEntity;
+import com.kltyton.mob_battle.utils.EntityUtil;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.SpawnReason;
+import net.minecraft.entity.boss.WitherEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
+import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.Box;
@@ -20,9 +29,7 @@ public class WitherSkeletonKingEntitySkill {
         if (witherSkeletonKingEntity.tryAttackBase2((ServerWorld)world, witherSkeletonKingEntity.getTarget())) {
             Box damageBox = witherSkeletonKingEntity.getBoundingBox().expand(range, range, range);
             world.getOtherEntities(witherSkeletonKingEntity, damageBox).stream()
-                    .filter(entity -> entity instanceof LivingEntity)
-                    .filter(entity -> !entity.isTeammate(witherSkeletonKingEntity))
-                    .filter(entity -> !entity.isSpectator() && entity.isAlive())
+                    .filter(entity -> entity instanceof LivingEntity living && EntityUtil.isValidCombatTarget(witherSkeletonKingEntity, living))
                     .filter(entity -> entity.squaredDistanceTo(witherSkeletonKingEntity) <= range * range)
                     .forEach(entity -> {
                         if (entity != witherSkeletonKingEntity.getTarget()) {
@@ -36,9 +43,7 @@ public class WitherSkeletonKingEntitySkill {
         World world = witherSkeletonKingEntity.getWorld();
         Box damageBox = witherSkeletonKingEntity.getBoundingBox().expand(range, range, range);
         world.getOtherEntities(witherSkeletonKingEntity, damageBox).stream()
-                .filter(entity -> entity instanceof LivingEntity)
-                .filter(entity -> !entity.isTeammate(witherSkeletonKingEntity))
-                .filter(entity -> !entity.isSpectator() && entity.isAlive())
+                .filter(entity -> entity instanceof LivingEntity living && EntityUtil.isValidCombatTarget(witherSkeletonKingEntity, living))
                 .filter(entity -> entity.squaredDistanceTo(witherSkeletonKingEntity) <= range * range)
                 .forEach(entity -> {
                     float attackDamage = 260.0f;
@@ -56,7 +61,7 @@ public class WitherSkeletonKingEntitySkill {
     }
     public static void runWitherSkullSkill(WitherSkeletonKingEntity king) {
         LivingEntity target = king.getTarget();
-        if (target == null || !target.isAlive()) return;
+        if (target == null || !EntityUtil.isValidCombatTarget(king, target)) return;
         World world = king.getWorld();
         if (!(world instanceof ServerWorld serverWorld)) return;
 
@@ -90,8 +95,7 @@ public class WitherSkeletonKingEntitySkill {
         world.getOtherEntities(king, area).stream()
                 .filter(e -> e instanceof LivingEntity)
                 .map(e -> (LivingEntity) e)
-                .filter(LivingEntity::isAlive)
-                .filter(e -> !e.isSpectator())
+                .filter(e -> e.isAlive() && !EntityUtil.isCreativeOrSpectator(e))
                 .filter(e -> e.isTeammate(king))
                 .forEach(ally -> {
                     ally.addStatusEffect(new StatusEffectInstance(
@@ -189,8 +193,7 @@ public class WitherSkeletonKingEntitySkill {
         world.getOtherEntities(king, area).stream()
                 .filter(e -> e instanceof LivingEntity)
                 .map(e -> (LivingEntity) e)
-                .filter(LivingEntity::isAlive)
-                .filter(e -> !e.isSpectator())
+                .filter(e -> e.isAlive() && !EntityUtil.isCreativeOrSpectator(e))
                 .filter(e -> e.isTeammate(king))
                 .forEach(ally -> {
                     ally.addStatusEffect(new StatusEffectInstance(
@@ -204,6 +207,54 @@ public class WitherSkeletonKingEntitySkill {
                             0,
                             true, true, true));
                 });
+    }
+
+    public static void runThornSkill(WitherSkeletonKingEntity king) {
+        LivingEntity target = king.getTarget();
+        if (target == null || !EntityUtil.isValidCombatTarget(king, target) || !(king.getWorld() instanceof ServerWorld world)) {
+            return;
+        }
+        Vec3d direction = target.getPos().subtract(king.getPos());
+        Vec3d horizontal = new Vec3d(direction.x, 0.0D, direction.z);
+        Vec3d pos = target.getPos();
+        if (horizontal.lengthSquared() > 1.0E-4D) {
+            pos = target.getPos().subtract(horizontal.normalize().multiply(0.75D));
+        }
+        king.requestTeleport(pos.x, target.getY(), pos.z);
+        king.lookAtEntity(target, 30.0F, 30.0F);
+        target.timeUntilRegen = 0;
+        target.damage(world, king.getDamageSources().mobAttack(king), 220.0F);
+        target.timeUntilRegen = 0;
+        target.damage(world, king.getDamageSources().indirectMagic(king, king), 70.0F);
+    }
+
+    public static void runEnhanceWitherCallSkill(WitherSkeletonKingEntity king) {
+        if (!(king.getWorld() instanceof ServerWorld world)) {
+            return;
+        }
+        spawnKingSummon(king, ModEntities.ENHANCED_WITHER.create(world, SpawnReason.MOB_SUMMONED), world, 0);
+        spawnKingSummon(king, ModEntities.DUAL_BLADE_WITHER_SKELETON.create(world, SpawnReason.MOB_SUMMONED), world, 1);
+        spawnKingSummon(king, ModEntities.SHIELD_AXE_WITHER_SKELETON.create(world, SpawnReason.MOB_SUMMONED), world, 2);
+    }
+
+    private static void spawnKingSummon(WitherSkeletonKingEntity king, Entity summon, ServerWorld world, int index) {
+        if (summon == null) {
+            return;
+        }
+        double angle = Math.PI * 2.0D * index / 3.0D;
+        Vec3d pos = king.getPos().add(Math.cos(angle) * 3.0D, 1.0D, Math.sin(angle) * 3.0D);
+        summon.refreshPositionAndAngles(pos.x, pos.y, pos.z, king.getYaw(), 0.0F);
+        if (summon instanceof EnhancedWitherEntity enhancedWither) {
+            enhancedWither.setSummonOwner(king);
+        } else if (summon instanceof DualBladeWitherSkeletonEntity dualBlade) {
+            dualBlade.setSummonOwner(king);
+        } else if (summon instanceof ShieldAxeWitherSkeletonEntity shieldAxe) {
+            shieldAxe.setSummonOwner(king);
+        }
+        if (summon instanceof MobEntity mob) {
+            mob.setTarget(king.getTarget());
+        }
+        world.spawnEntity(summon);
     }
 
 }

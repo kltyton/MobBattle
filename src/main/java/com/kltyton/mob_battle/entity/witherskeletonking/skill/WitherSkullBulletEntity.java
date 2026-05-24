@@ -3,6 +3,7 @@ package com.kltyton.mob_battle.entity.witherskeletonking.skill;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.Lists;
 import com.kltyton.mob_battle.entity.ModEntities;
+import com.kltyton.mob_battle.utils.EntityUtil;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -219,7 +220,7 @@ public class WitherSkullBulletEntity extends ProjectileEntity {
         HitResult hitResult = null;
         if (!this.getWorld().isClient) {
             // 如果 entity 依然为 null，说明目标可能被移除或从未找到
-            if (entity == null || !entity.isAlive() || (entity instanceof PlayerEntity p && p.isSpectator())) {
+            if (entity == null || !entity.isAlive() || (entity instanceof PlayerEntity p && (p.isSpectator() || p.isCreative()))) {
                 this.target = null; // 清除无效引用
                 this.applyGravity();
             } else {
@@ -280,7 +281,10 @@ public class WitherSkullBulletEntity extends ProjectileEntity {
 
     @Override
     public boolean canHit(Entity entity) {
-        return !entity.isTeammate(this.getOwner()) && super.canHit(entity) && !entity.noClip;
+        if (entity instanceof LivingEntity living && !EntityUtil.isValidSummonCombatTarget(this, this.getOwner(), living)) {
+            return false;
+        }
+        return super.canHit(entity) && !entity.noClip;
     }
 
     @Override
@@ -304,6 +308,9 @@ public class WitherSkullBulletEntity extends ProjectileEntity {
         super.onEntityHit(result);
         Entity victim   = result.getEntity();
         Entity owner    = this.getOwner();
+        if (victim instanceof LivingEntity living && !EntityUtil.isValidSummonCombatTarget(this, owner, living)) {
+            return;
+        }
         LivingEntity attacker = owner instanceof LivingEntity ? (LivingEntity) owner : null;
 
         DamageSource explosionSrc = this.getDamageSources().explosion(this, attacker);

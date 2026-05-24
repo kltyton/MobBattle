@@ -3,6 +3,7 @@ package com.kltyton.mob_battle.entity.skull.warrior;
 import com.kltyton.mob_battle.entity.skull.IModSkullEntity;
 import com.kltyton.mob_battle.entity.witherskeletonking.WitherSkeletonKingEntity;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
+import com.kltyton.mob_battle.utils.EntityUtil;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.block.Blocks;
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -121,7 +122,7 @@ public class SkullWarriorEntity extends WitherSkeletonEntity implements GeoEntit
         DamageSource damageSource = Optional.ofNullable(itemStack.getItem().getDamageSource(this)).orElse(this.getDamageSources().mobAttack(this));
         f = EnchantmentHelper.getDamage(world, itemStack, target, damageSource, f);
         f += itemStack.getItem().getBonusAttackDamage(target, f, damageSource);
-        if (this.isTeammate(target)) return false;
+        if (target instanceof LivingEntity living && !EntityUtil.isValidSummonCombatTarget(this, this.getOwner(), living)) return false;
         boolean bl = target.damage(world, damageSource, f);
         if (bl) {
             float g = this.getAttackKnockbackAgainst(target, damageSource);
@@ -140,6 +141,9 @@ public class SkullWarriorEntity extends WitherSkeletonEntity implements GeoEntit
     }
     @Override
     public boolean tryAttack(ServerWorld world, Entity target) {
+        if (target instanceof LivingEntity living && !EntityUtil.isValidSummonCombatTarget(this, this.getOwner(), living)) {
+            return false;
+        }
         if (canSkill()) {
             performAttack();
             return true;
@@ -256,7 +260,7 @@ public class SkullWarriorEntity extends WitherSkeletonEntity implements GeoEntit
     }
     @Override
     public boolean canTarget(LivingEntity target) {
-        return !this.isOwner(target) && super.canTarget(target);
+        return EntityUtil.isValidSummonCombatTarget(this, this.getOwner(), target) && super.canTarget(target);
     }
     @Override
     public boolean isOwner(LivingEntity entity) {

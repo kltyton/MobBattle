@@ -1,6 +1,7 @@
 package com.kltyton.mob_battle.entity.customfireball;
 
 import com.kltyton.mob_battle.entity.ModEntities;
+import com.kltyton.mob_battle.utils.EntityUtil;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -41,6 +42,9 @@ public class CustomSuperBigFireballEntity extends CustomFireballEntity {
         if (this.getWorld() instanceof ServerWorld serverWorld) {
             // 获取被击中的实体
             Entity entity = entityHitResult.getEntity();
+            if (entity instanceof LivingEntity living && !EntityUtil.isValidSummonCombatTarget(this, this.getOwner(), living)) {
+                return;
+            }
             // 获取攻击者实体（拥有者）
             //Entity entity2 = this.getOwner();
             // 创建火球伤害源，指定攻击者和拥有者

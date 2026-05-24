@@ -7,4 +7,6 @@ public interface IModEntityRenderState {
     int getIceAmplifier();
     void setCompressedArmorMarkerType(int markerType);
     int getCompressedArmorMarkerType();
+    void setPigSpiritMarkAmplifier(int amplifier);
+    int getPigSpiritMarkAmplifier();
 }

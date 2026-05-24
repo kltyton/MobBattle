@@ -8,6 +8,7 @@ public class ModCommands {
             TeamFightCommand.register(dispatcher);
             BgmCommand.register(dispatcher, registryAccess);
             AllianceCommand.register(dispatcher);
+            MobBattleDebugCommand.register(dispatcher);
         });
         FriendlyDamageCommand.init();
     }

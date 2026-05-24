@@ -142,7 +142,7 @@ public class EnderDragonSkillManager {
         lastSkillTime = world.getTime();
         skill4CD = world.getTime() + 360;
 
-        List<ServerPlayerEntity> players = world.getPlayers(p -> p.squaredDistanceTo(dragon) < 250 * 250);
+        List<ServerPlayerEntity> players = world.getPlayers(p -> canDragonTargetPlayer(p) && p.squaredDistanceTo(dragon) < 250 * 250);
         dragon.playSound(ModSounds.ENDER_DRAGON_SOUND_SKILL4_SOUND_EVENT, 6.0F, 0.5F);
 
         int lineCount = 4 + random.nextInt(3); // 强制4~6条
@@ -207,6 +207,9 @@ public class EnderDragonSkillManager {
         dragon.playSound(SoundEvents.ENTITY_ENDER_DRAGON_GROWL, 5.0F, 1.2F);
 
         LivingEntity target = dragon.getTarget();
+        if (target instanceof PlayerEntity player && !canDragonTargetPlayer(player)) {
+            target = null;
+        }
         if (target == null) {
             target = world.getClosestPlayer(
                     TargetPredicate.createAttackable().setBaseMaxDistance(96.0),
@@ -214,6 +217,7 @@ public class EnderDragonSkillManager {
                     dragon.getX(), dragon.getY(), dragon.getZ()
             );
         }
+        if (target instanceof PlayerEntity player && !canDragonTargetPlayer(player)) return;
         if (target == null) return;
 
         Vec3d dir = target.getPos().subtract(dragon.getPos()).normalize();
@@ -237,7 +241,7 @@ public class EnderDragonSkillManager {
         lastSkillTime = world.getTime();
         skill6CD = world.getTime() + 300;
 
-        List<ServerPlayerEntity> players = world.getPlayers(p -> p.squaredDistanceTo(dragon) < 200*200);
+        List<ServerPlayerEntity> players = world.getPlayers(p -> canDragonTargetPlayer(p) && p.squaredDistanceTo(dragon) < 200*200);
         for (PlayerEntity p : players) {
             for (int i = 0; i < 6; i++) {
                 Vec3d center = p.getPos().add(
@@ -279,7 +283,7 @@ public class EnderDragonSkillManager {
         dragon.playSound(SoundEvents.ENTITY_ENDER_DRAGON_GROWL, 4.0F, 0.7F);
 
         List<ServerPlayerEntity> flyingPlayers = world.getPlayers(p ->
-                !p.isOnGround() && p.squaredDistanceTo(dragon) < 150*150);
+                canDragonTargetPlayer(p) && !p.isOnGround() && p.squaredDistanceTo(dragon) < 150*150);
 
         for (PlayerEntity p : flyingPlayers) {
             p.setVelocity(p.getVelocity().add(0, -120.0, 0));
@@ -353,5 +357,9 @@ public class EnderDragonSkillManager {
                 });
             }
         }
+    }
+
+    private static boolean canDragonTargetPlayer(PlayerEntity player) {
+        return !player.isCreative() && !player.isSpectator();
     }
 }

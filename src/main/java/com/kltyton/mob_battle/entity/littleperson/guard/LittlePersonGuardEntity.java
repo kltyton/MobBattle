@@ -50,6 +50,9 @@ public class LittlePersonGuardEntity extends LittlePersonMilitiaEntity {
     }
     @Override
     public boolean tryAttack(ServerWorld world, Entity target) {
+        if (target instanceof net.minecraft.entity.LivingEntity living && !isValidSummonTarget(living)) {
+            return false;
+        }
         if (!ModSkillEntityType.canSkill(this)) return false;
         if (canSkillAttack()) {
             performSkill();

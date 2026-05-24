@@ -25,6 +25,10 @@ public class ModPackets {
                 HulkbusterEntityPayload.ID,
                 HulkbusterEntityPayload.CODEC
         );
+        PayloadTypeRegistry.playC2S().register(
+                PiglinGeneralBonePayload.ID,
+                PiglinGeneralBonePayload.CODEC
+        );
         PayloadTypeRegistry.playS2C().register(
                 SoundPayload.ID,
                 SoundPayload.CODEC

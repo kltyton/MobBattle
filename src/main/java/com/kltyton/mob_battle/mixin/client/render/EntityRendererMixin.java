@@ -1,5 +1,6 @@
 package com.kltyton.mob_battle.mixin.client.render;
 
+import com.kltyton.mob_battle.Mob_battle;
 import com.kltyton.mob_battle.accessor.ICompressedArmorMarker;
 import com.kltyton.mob_battle.accessor.ILead;
 import com.kltyton.mob_battle.accessor.ILeadRenderData;
@@ -27,6 +28,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemDisplayContext;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RotationAxis;
 import net.minecraft.util.math.Vec3d;
@@ -61,6 +63,8 @@ public abstract class EntityRendererMixin {
     private static final int DIAMOND_MARKER_MASK = 1;
     @Unique
     private static final int NETHERITE_MARKER_MASK = 2;
+    @Unique
+    private static final Identifier PIG_SPIRIT_MARK_TEXTURE = Identifier.of(Mob_battle.MOD_ID, "textures/mob_effect/pig_spirit_mark.png");
     @Unique
     private LivingEntity targetEntity;
 
@@ -178,6 +182,36 @@ public abstract class EntityRendererMixin {
             method = "render",
             at = @At("TAIL")
     )
+    private void mobBattle$renderPigSpiritMark(EntityRenderState state, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, CallbackInfo ci) {
+        int amplifier = ((IModEntityRenderState) state).getPigSpiritMarkAmplifier();
+        if (amplifier < 0) {
+            return;
+        }
+        String text = String.valueOf(amplifier + 1);
+        matrices.push();
+        matrices.translate(0.0F, state.height + 1.15F, 0.0F);
+        matrices.multiply(this.dispatcher.getRotation());
+        matrices.scale(0.025F, -0.025F, 0.025F);
+        mobBattle$drawPigSpiritMarkIcon(matrices, vertexConsumers, light, -15.0F, -8.0F, 16.0F, 16.0F);
+        Matrix4f matrix4f = matrices.peek().getPositionMatrix();
+        this.getTextRenderer().draw(
+                text,
+                4.0F,
+                3.0F,
+                TEXT_COLOR,
+                false,
+                matrix4f,
+                vertexConsumers,
+                TextRenderer.TextLayerType.NORMAL,
+                0,
+                light
+        );
+        matrices.pop();
+    }
+    @Inject(
+            method = "render",
+            at = @At("TAIL")
+    )
     private void renderHealthBar(EntityRenderState state, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, CallbackInfo ci) {
         ClientPlayerEntity player = MinecraftClient.getInstance().player;
         if (targetEntity == null) return;
@@ -266,5 +300,17 @@ public abstract class EntityRendererMixin {
                 .color(red, green, blue, alpha);
         buffer.vertex(entry.getPositionMatrix(), x, y, z)
                 .color(red, green, blue, alpha);
+    }
+
+    @Unique
+    private void mobBattle$drawPigSpiritMarkIcon(MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light,
+                                                float x, float y, float width, float height) {
+        Matrix4f matrix = matrices.peek().getPositionMatrix();
+        VertexConsumer buffer = vertexConsumers.getBuffer(RenderLayer.getEntityCutoutNoCull(PIG_SPIRIT_MARK_TEXTURE));
+        float z = 0.0F;
+        buffer.vertex(matrix, x, y + height, z).color(1.0F, 1.0F, 1.0F, 1.0F).texture(0.0F, 1.0F).overlay(OverlayTexture.DEFAULT_UV).light(light).normal(0.0F, 0.0F, 1.0F);
+        buffer.vertex(matrix, x + width, y + height, z).color(1.0F, 1.0F, 1.0F, 1.0F).texture(1.0F, 1.0F).overlay(OverlayTexture.DEFAULT_UV).light(light).normal(0.0F, 0.0F, 1.0F);
+        buffer.vertex(matrix, x + width, y, z).color(1.0F, 1.0F, 1.0F, 1.0F).texture(1.0F, 0.0F).overlay(OverlayTexture.DEFAULT_UV).light(light).normal(0.0F, 0.0F, 1.0F);
+        buffer.vertex(matrix, x, y, z).color(1.0F, 1.0F, 1.0F, 1.0F).texture(0.0F, 0.0F).overlay(OverlayTexture.DEFAULT_UV).light(light).normal(0.0F, 0.0F, 1.0F);
     }
 }

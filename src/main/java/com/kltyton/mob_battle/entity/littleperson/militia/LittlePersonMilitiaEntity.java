@@ -2,8 +2,10 @@ package com.kltyton.mob_battle.entity.littleperson.militia;
 
 import com.kltyton.mob_battle.entity.ModEntityAttributes;
 import com.kltyton.mob_battle.entity.ModSkillEntityType;
+import com.kltyton.mob_battle.entity.OwnedSummon;
 import com.kltyton.mob_battle.entity.littleperson.LittlePersonEntity;
 import com.kltyton.mob_battle.entity.villager.warriorvillager.WarriorVillager;
+import com.kltyton.mob_battle.utils.EntityUtil;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -22,6 +24,7 @@ import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.animatable.manager.AnimatableManager;
 import software.bernie.geckolib.animatable.processing.AnimationController;
@@ -30,8 +33,10 @@ import software.bernie.geckolib.animation.PlayState;
 import software.bernie.geckolib.animation.RawAnimation;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
-public class LittlePersonMilitiaEntity extends HostileEntity implements LittlePersonEntity {
+public class LittlePersonMilitiaEntity extends HostileEntity implements LittlePersonEntity, OwnedSummon {
     public String[] attackVariants;
+    @Nullable
+    private LivingEntity summonOwner;
     public LittlePersonMilitiaEntity(EntityType<? extends HostileEntity> entityType, World world) {
         super(entityType, world);
     }
@@ -41,10 +46,32 @@ public class LittlePersonMilitiaEntity extends HostileEntity implements LittlePe
         this.goalSelector.add(7, new WanderAroundFarGoal(this, 1.0)); // 添加远距离游荡目标
         this.goalSelector.add(8, new LookAtEntityGoal(this, PlayerEntity.class, 8.0F)); // 添加看向玩家的目标
         this.goalSelector.add(8, new LookAroundGoal(this)); // 添加环顾四周的目标
-        this.targetSelector.add(3, new ActiveTargetGoal<>(this, GolemEntity.class, true)); // 添加攻击傀儡目标
-        this.targetSelector.add(2, new ActiveTargetGoal<>(this, WarriorVillager.class, true));
-        this.targetSelector.add(2, new ActiveTargetGoal<>(this, PlayerEntity.class, true)); // 添加主动攻击玩家目标
-        this.targetSelector.add(3, new ActiveTargetGoal<>(this, MobEntity.class, 5, false, false, (entity, world) -> entity instanceof Monster && !(entity instanceof LittlePersonEntity)));
+        this.targetSelector.add(3, new ActiveTargetGoal<>(this, GolemEntity.class, 10, true, false, this::canTargetAsSummon)); // 添加攻击傀儡目标
+        this.targetSelector.add(2, new ActiveTargetGoal<>(this, WarriorVillager.class, 10, true, false, this::canTargetAsSummon));
+        this.targetSelector.add(2, new ActiveTargetGoal<>(this, PlayerEntity.class, 10, true, false, this::canTargetAsSummon)); // 添加主动攻击玩家目标
+        this.targetSelector.add(3, new ActiveTargetGoal<>(this, MobEntity.class, 5, false, false,
+                (entity, world) -> entity instanceof Monster && !(entity instanceof LittlePersonEntity) && canTargetAsSummon(entity, world)));
+    }
+
+    private boolean canTargetAsSummon(LivingEntity target, ServerWorld world) {
+        return EntityUtil.isValidSummonCombatTarget(this, this.summonOwner, target);
+    }
+
+    public void setSummonOwner(@Nullable LivingEntity summonOwner) {
+        this.summonOwner = summonOwner;
+        if (summonOwner != null) {
+            EntityUtil.joinSameTeam(this, summonOwner);
+        }
+    }
+
+    @Nullable
+    @Override
+    public LivingEntity getSummonOwner() {
+        return this.summonOwner;
+    }
+
+    protected boolean isValidSummonTarget(LivingEntity target) {
+        return EntityUtil.isValidSummonCombatTarget(this, this.summonOwner, target);
     }
     public static DefaultAttributeContainer.Builder createLittlePersonMilitiaAttributes() {
         return LittlePersonEntity.createLittlePersonAttributes()
@@ -68,6 +95,9 @@ public class LittlePersonMilitiaEntity extends HostileEntity implements LittlePe
     }
     @Override
     public boolean tryAttack(ServerWorld world, Entity target) {
+        if (target instanceof LivingEntity living && !isValidSummonTarget(living)) {
+            return false;
+        }
         if (!canSkill()) return false;
         if (attackVariants != null) {
 

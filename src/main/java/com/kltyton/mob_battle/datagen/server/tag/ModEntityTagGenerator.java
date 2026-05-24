@@ -34,7 +34,8 @@ public class ModEntityTagGenerator extends FabricTagProvider.EntityTypeTagProvid
                 ModEntities.SKULL_KING,
                 ModEntities.SKULL_ARCHER,
                 ModEntities.SKULL_MAGE,
-                ModEntities.SKULL_WARRIOR
+                ModEntities.SKULL_WARRIOR,
+                ModEntities.WITHER_SKELETON_DOG
         );
         valueLookupBuilder(EntityTypeTags.CAN_BREATHE_UNDER_WATER)
                 .add(ModEntities.MAGMA_LOBSTER)

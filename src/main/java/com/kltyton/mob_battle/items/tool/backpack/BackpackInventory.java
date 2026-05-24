@@ -1,10 +1,14 @@
 package com.kltyton.mob_battle.items.tool.backpack;
 
+import com.kltyton.mob_battle.components.ModComponents;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.ContainerComponent;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.collection.DefaultedList;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class BackpackInventory extends SimpleInventory {
     private final ItemStack stack;
@@ -15,10 +19,18 @@ public class BackpackInventory extends SimpleInventory {
     public BackpackInventory(ItemStack stack, int slotCount) {
         super(slotCount);
         this.stack = stack;
-        ContainerComponent component = stack.get(DataComponentTypes.CONTAINER);
-        if (component != null) {
-            DefaultedList<ItemStack> heldStacks = this.getHeldStacks();
-            component.copyTo(heldStacks);
+        DefaultedList<ItemStack> heldStacks = this.getHeldStacks();
+        List<ItemStack> storedStacks = stack.get(ModComponents.BACKPACK_CONTENTS);
+        if (storedStacks != null) {
+            int count = Math.min(storedStacks.size(), heldStacks.size());
+            for (int i = 0; i < count; i++) {
+                heldStacks.set(i, storedStacks.get(i).copy());
+            }
+        } else {
+            ContainerComponent component = stack.get(DataComponentTypes.CONTAINER);
+            if (component != null) {
+                component.copyTo(heldStacks);
+            }
         }
     }
     @Override
@@ -29,6 +41,11 @@ public class BackpackInventory extends SimpleInventory {
     @Override
     public void markDirty() {
         super.markDirty();
-        stack.set(DataComponentTypes.CONTAINER, ContainerComponent.fromStacks(this.getHeldStacks()));
+        List<ItemStack> storedStacks = new ArrayList<>(this.getHeldStacks().size());
+        for (ItemStack heldStack : this.getHeldStacks()) {
+            storedStacks.add(heldStack.copy());
+        }
+        stack.set(ModComponents.BACKPACK_CONTENTS, List.copyOf(storedStacks));
+        stack.remove(DataComponentTypes.CONTAINER);
     }
 }

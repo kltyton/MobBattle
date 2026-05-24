@@ -31,7 +31,7 @@ public class IronManTrueEntity extends BaseSkillLittlePersonEntity {
         return BaseSkillLittlePersonEntity.createAttributes()
                 .add(EntityAttributes.MAX_HEALTH, 2500.0)
                 .add(EntityAttributes.ATTACK_DAMAGE, 65.0)
-                .add(ModEntityAttributes.DAMAGE_REDUCTION, 0.0);
+                .add(ModEntityAttributes.DAMAGE_REDUCTION, 0.30);
     }
     @Override
     public void heal() {
@@ -54,7 +54,7 @@ public class IronManTrueEntity extends BaseSkillLittlePersonEntity {
         double range = 6.0;
         List<Entity> targets = world.getOtherEntities(entity, entity.getBoundingBox().expand(range));
         for (Entity target : targets) {
-            if (target instanceof LivingEntity livingTarget && target.isAlive()) {
+            if (target instanceof LivingEntity livingTarget && EntityUtil.isValidSummonCombatTarget(entity, entity.getSummonOwner(), livingTarget)) {
                 Vec3d relativePos = target.getPos().subtract(pos);
                 double distanceForward = relativePos.dotProduct(forward);
                 double distanceSide = Math.abs(relativePos.dotProduct(side));
@@ -76,6 +76,9 @@ public class IronManTrueEntity extends BaseSkillLittlePersonEntity {
         if (entity.getTarget() != null) {
             List<LivingEntity> targets = EntityUtil.getNearbyEntity(entity,LivingEntity.class, Object.class,4, false, EntityUtil.TeamFilter.EXCLUDE_TEAM);
             for (LivingEntity livingEntity : targets) {
+                if (!EntityUtil.isValidSummonCombatTarget(entity, entity.getSummonOwner(), livingEntity)) {
+                    continue;
+                }
                 livingEntity.damage((ServerWorld) entity.getWorld(), entity.getDamageSources().mobAttack(entity), 90);
             }
         }
@@ -90,7 +93,7 @@ public class IronManTrueEntity extends BaseSkillLittlePersonEntity {
         double range = 16.0;
         List<Entity> targets = world.getOtherEntities(entity, entity.getBoundingBox().expand(range));
         for (Entity target : targets) {
-            if (target instanceof LivingEntity livingTarget && target.isAlive()) {
+            if (target instanceof LivingEntity livingTarget && EntityUtil.isValidSummonCombatTarget(entity, entity.getSummonOwner(), livingTarget)) {
                 Vec3d relativePos = target.getPos().subtract(pos);
                 double distanceForward = relativePos.dotProduct(forward);
                 double distanceSide = Math.abs(relativePos.dotProduct(side));

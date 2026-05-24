@@ -86,6 +86,7 @@ public class ModItemGroups {
                 ModItems.XUN_SHENG_SPAWN_EGG,
                 ModItems.DEEP_CREATURE_SPAWN_EGG,
                 ModItems.WITHER_SKELETON_KING_SPAWN_EGG,
+                spawnEgg("enhanced_wither"),
                 ModItems.VINDICATOR_GENERAL_SPAWN_EGG,
                 ModItems.HULKBUSTER_SPAWN_EGG,
                 spawnEgg("super_evoker"),
@@ -133,7 +134,17 @@ public class ModItemGroups {
                 spawnEgg("bloody_blade"),
                 spawnEgg("human_shield"),
                 spawnEgg("human_hammer"),
-                spawnEgg("sex_entity")
+                spawnEgg("sex_entity"),
+                spawnEgg("cbot002"),
+                spawnEgg("piglin_general"),
+                spawnEgg("angel_cyborg"),
+                spawnEgg("living_ghost"),
+                spawnEgg("scattered_demon"),
+                spawnEgg("ninja"),
+                spawnEgg("laser_man"),
+                spawnEgg("blood_man"),
+                spawnEgg("ice_man"),
+                spawnEgg("wither_skeleton_dog")
         );
     }
 

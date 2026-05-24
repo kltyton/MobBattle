@@ -1,5 +1,6 @@
 package com.kltyton.mob_battle.entity.customfireball;
 
+import com.kltyton.mob_battle.utils.EntityUtil;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -56,6 +57,9 @@ public class CustomFireballEntity extends FireballEntity {
             // 处理命中实体的情况
             EntityHitResult entityHitResult = (EntityHitResult)hitResult;
             Entity entity = entityHitResult.getEntity();
+            if (entity instanceof LivingEntity living && !EntityUtil.isValidSummonCombatTarget(this, this.getOwner(), living)) {
+                return;
+            }
             // 如果命中的是可重定向的投射物实体，则进行重定向
             if (entity.getType().isIn(EntityTypeTags.REDIRECTABLE_PROJECTILE) && entity instanceof ProjectileEntity projectileEntity) {
                 projectileEntity.deflect(ProjectileDeflection.REDIRECTED, this.getOwner(), this.getOwner(), true);
@@ -84,11 +88,22 @@ public class CustomFireballEntity extends FireballEntity {
     }
 
     @Override
+    public boolean canHit(Entity entity) {
+        if (entity instanceof LivingEntity living && !EntityUtil.isValidSummonCombatTarget(this, this.getOwner(), living)) {
+            return false;
+        }
+        return super.canHit(entity);
+    }
+
+    @Override
     protected void onEntityHit(EntityHitResult entityHitResult) {
         // 检查当前世界是否为服务器世界，如果是则执行伤害处理逻辑
         if (this.getWorld() instanceof ServerWorld serverWorld) {
             // 获取被击中的实体
             Entity entity = entityHitResult.getEntity();
+            if (entity instanceof LivingEntity living && !EntityUtil.isValidSummonCombatTarget(this, this.getOwner(), living)) {
+                return;
+            }
             // 获取攻击者实体（拥有者）
             Entity entity2 = this.getOwner();
             // 创建火球伤害源，指定攻击者和拥有者

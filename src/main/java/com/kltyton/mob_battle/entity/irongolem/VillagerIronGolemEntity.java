@@ -3,6 +3,7 @@ package com.kltyton.mob_battle.entity.irongolem;
 import com.kltyton.mob_battle.entity.ModSkillEntityType;
 import com.kltyton.mob_battle.entity.ai.goal.GeneralProtectionVillagerGoal;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
+import com.kltyton.mob_battle.utils.CombatEffectUtil;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
@@ -131,6 +132,9 @@ public class VillagerIronGolemEntity extends IronGolemEntity implements GeoEntit
             this.setHasSkill(true);
         }
         if (bl) {
+            if (target instanceof LivingEntity livingEntity) {
+                CombatEffectUtil.addStackingArmorPiercing(livingEntity, this);
+            }
             double d = target instanceof LivingEntity livingEntity ? livingEntity.getAttributeValue(EntityAttributes.KNOCKBACK_RESISTANCE) : 0.0;
             double e = Math.max(0.0, 1.0 - d);
             target.setVelocity(target.getVelocity().add(0.0, 0.4F * e, 0.0));
@@ -148,6 +152,9 @@ public class VillagerIronGolemEntity extends IronGolemEntity implements GeoEntit
         DamageSource damageSource = this.getDamageSources().mobAttack(this);
         boolean bl = target.damage(world, damageSource, g * i);
         if (bl) {
+            if (target instanceof LivingEntity livingEntity) {
+                CombatEffectUtil.addStackingArmorPiercing(livingEntity, this);
+            }
             double d = target instanceof LivingEntity livingEntity ? livingEntity.getAttributeValue(EntityAttributes.KNOCKBACK_RESISTANCE) : 0.0;
             double e = Math.max(0.0, 1.0 - d);
             target.setVelocity(target.getVelocity().add(0.0, 0.4F * e, 0.0));

@@ -8,11 +8,14 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.screen.Property;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.slot.Slot;
+import net.minecraft.screen.slot.SlotActionType;
 
 public class PagedBackpackScreenHandler extends ScreenHandler {
     private final Inventory inventory;
     // 使用 Property 自动同步页码
     private final Property page = Property.create();
+    private int lastBackpackSlotClickAge = -100;
+    private int lastPageChangeAge = -100;
 
     public PagedBackpackScreenHandler(int syncId, PlayerInventory playerInventory, Inventory inventory) {
         super(ModScreenHandlers.PAGED_BACKPACK, syncId);
@@ -47,13 +50,31 @@ public class PagedBackpackScreenHandler extends ScreenHandler {
 
     @Override
     public boolean onButtonClick(PlayerEntity player, int id) {
+        if (player.age - this.lastBackpackSlotClickAge <= 2) {
+            return true;
+        }
         int currentPage = this.page.get();
         if (id == 0) { // 上一页
             this.page.set(Math.max(0, currentPage - 1));
         } else if (id == 1) { // 下一页
             this.page.set(Math.min(BackpackInventory.MAX_PAGES - 1, currentPage + 1));
         }
+        if (this.page.get() != currentPage) {
+            this.lastPageChangeAge = player.age;
+            this.sendContentUpdates();
+        }
         return true;
+    }
+
+    @Override
+    public void onSlotClick(int slotIndex, int button, SlotActionType actionType, PlayerEntity player) {
+        if (slotIndex >= 0 && slotIndex < BackpackInventory.PAGE_SIZE) {
+            if (player.age - this.lastPageChangeAge <= 2) {
+                return;
+            }
+            this.lastBackpackSlotClickAge = player.age;
+        }
+        super.onSlotClick(slotIndex, button, actionType, player);
     }
 
     @Override
@@ -80,11 +101,20 @@ public class PagedBackpackScreenHandler extends ScreenHandler {
     public int getPage() { return this.page.get(); }
 
     private class PagedSlot extends Slot {
+        private final int pageSlotIndex;
+
         public PagedSlot(Inventory inventory, int index, int x, int y) {
             super(inventory, index, x, y);
+            this.pageSlotIndex = index;
         }
+
         private int getActualIndex() {
-            return super.getIndex() + (page.get() * BackpackInventory.PAGE_SIZE);
+            return this.pageSlotIndex + (page.get() * BackpackInventory.PAGE_SIZE);
+        }
+
+        @Override
+        public int getIndex() {
+            return this.getActualIndex();
         }
 
         @Override
@@ -94,6 +124,17 @@ public class PagedBackpackScreenHandler extends ScreenHandler {
 
         @Override
         public void setStack(ItemStack stack) {
+            this.inventory.setStack(this.getActualIndex(), stack);
+            this.markDirty();
+        }
+
+        @Override
+        public void setStack(ItemStack stack, ItemStack previousStack) {
+            this.setStack(stack);
+        }
+
+        @Override
+        public void setStackNoCallbacks(ItemStack stack) {
             this.inventory.setStack(this.getActualIndex(), stack);
             this.markDirty();
         }

@@ -9,9 +9,9 @@ import java.util.Optional;
 
 public final class CustomBossBarStyles {
     public static final int DEFAULT_TEXTURE_WIDTH = 224;
-    public static final int DEFAULT_TEXTURE_HEIGHT = 48;
+    public static final int DEFAULT_TEXTURE_HEIGHT = 32;
     public static final int DEFAULT_RENDER_WIDTH = 224;
-    public static final int DEFAULT_RENDER_HEIGHT = 48;
+    public static final int DEFAULT_RENDER_HEIGHT = 32;
 
     public static final Identifier VINDICATOR_GENERAL = Identifier.of(Mob_battle.MOD_ID, "vindicator_general");
     public static final Identifier WITHER_SKELETON_KING = Identifier.of(Mob_battle.MOD_ID, "wither_skeleton_king");

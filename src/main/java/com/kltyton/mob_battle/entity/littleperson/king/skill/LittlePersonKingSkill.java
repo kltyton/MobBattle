@@ -61,10 +61,9 @@ public class LittlePersonKingSkill {
             littlePersonGuard.refreshPositionAndAngles(x, y, z, serverWorld.random.nextFloat() * 360.0F, 0.0F);
             littlePersonGuard.initialize(serverWorld, serverWorld.getLocalDifficulty(spawnPos), SpawnReason.EVENT, null);
             littlePersonGuard.setLife(1200);
+            littlePersonGuard.setSummonOwner(littlePersonKingEntity);
             littlePersonGuard.setPosition(EntityUtil.findSafeSpawnPosition(serverWorld, littlePersonGuard, spawnPos.toCenterPos()).orElse(spawnPos.toCenterPos()));
-            EntityUtil.joinSameTeam(littlePersonGuard, littlePersonKingEntity);
             serverWorld.spawnEntity(littlePersonGuard);
-            EntityUtil.joinSameTeam(littlePersonGuard, littlePersonKingEntity);
         }
         serverWorld.spawnParticles(ParticleTypes.POOF,
                 kingPos.x, kingPos.y + 1, kingPos.z,

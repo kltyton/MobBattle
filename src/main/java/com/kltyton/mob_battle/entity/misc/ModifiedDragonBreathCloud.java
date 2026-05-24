@@ -1,6 +1,7 @@
 package com.kltyton.mob_battle.entity.misc;
 
 import com.kltyton.mob_battle.entity.ModEntities;
+import com.kltyton.mob_battle.utils.EntityUtil;
 import net.minecraft.entity.AreaEffectCloudEntity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -35,7 +36,7 @@ public class ModifiedDragonBreathCloud extends AreaEffectCloudEntity {
             for (LivingEntity living : serverWorld.getNonSpectatingEntities(
                     LivingEntity.class, this.getBoundingBox().expand(0.5))) {
                 if (!living.isSpectator()) {
-                    if (living.isTeammate(this.getOwner())) continue;
+                    if (!EntityUtil.isValidSummonCombatTarget(this, this.getOwner(), living)) continue;
                     living.damage(serverWorld, source, 50.0F);  // 50点魔法伤害
                 }
             }

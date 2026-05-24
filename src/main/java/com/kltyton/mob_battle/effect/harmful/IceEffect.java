@@ -30,6 +30,7 @@ public class IceEffect extends StatusEffect {
         }
         // 让实体持续处于“在细雪中”的判定效果
         entity.setInPowderSnow(true);
+        entity.damage(world, entity.getDamageSources().freeze(), 3.0F);
 
         return true;
     }

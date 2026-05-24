@@ -1,6 +1,7 @@
 package com.kltyton.mob_battle.entity.deepcreature.skill;
 
 import com.kltyton.mob_battle.entity.deepcreature.DeepCreatureEntity;
+import com.kltyton.mob_battle.utils.EntityUtil;
 import com.kltyton.mob_battle.utils.TaskSchedulerUtil;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.particle.ParticleTypes;
@@ -154,7 +155,7 @@ public class Skill {
         // === 命中检测 ===
         List<LivingEntity> players = world.getEntitiesByClass(LivingEntity.class,
                 entity.getBoundingBox().expand(distance + 16),
-                p -> p.isAlive() && !p.isSpectator() && p != entity);
+                p -> EntityUtil.isValidCombatTarget(entity, p));
 
         for (LivingEntity player : players) {
             Vec3d playerPos = player.getPos().add(0, player.getStandingEyeHeight() * 0.5, 0);

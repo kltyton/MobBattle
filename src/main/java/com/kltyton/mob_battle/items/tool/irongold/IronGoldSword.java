@@ -23,8 +23,11 @@ import org.jetbrains.annotations.Nullable;
 
 public class IronGoldSword extends BaseSword implements ModFabricItem {
     private static final Identifier BONUS_ID = Identifier.of(Mob_battle.MOD_ID, "iron_gold_full_attack_bonus");
+    private static final Identifier ARMOR_ID = Identifier.of(Mob_battle.MOD_ID, "iron_gold_sword_armor");
     private static final EntityAttributeModifier BONUS_MODIFIER =
             new EntityAttributeModifier(BONUS_ID, 30, EntityAttributeModifier.Operation.ADD_VALUE);
+    private static final EntityAttributeModifier ARMOR_MODIFIER =
+            new EntityAttributeModifier(ARMOR_ID, 3, EntityAttributeModifier.Operation.ADD_VALUE);
     public IronGoldSword(Settings settings) {
         super(settings);
     }
@@ -34,15 +37,19 @@ public class IronGoldSword extends BaseSword implements ModFabricItem {
         if (entity instanceof LivingEntity living) {
             AttributeModifiersComponent current = stack.getOrDefault(DataComponentTypes.ATTRIBUTE_MODIFIERS, AttributeModifiersComponent.DEFAULT);
             boolean shouldHaveBonus = ArmorUtil.hasFullArmor(living, ModMaterial.IRON_GOLD_INSTANCE);
-            AttributeModifiersComponent updated;
+            AttributeModifiersComponent updated = current.with(
+                    EntityAttributes.ARMOR,
+                    ARMOR_MODIFIER,
+                    AttributeModifierSlot.MAINHAND
+            );
             if (shouldHaveBonus) {
-                updated = current.with(
+                updated = updated.with(
                         EntityAttributes.ATTACK_DAMAGE,
                         BONUS_MODIFIER,
                         AttributeModifierSlot.MAINHAND
                 );
             } else {
-                updated = removeBonusById(current);
+                updated = removeBonusById(updated);
             }
             if (updated != current) {
                 stack.set(DataComponentTypes.ATTRIBUTE_MODIFIERS, updated);

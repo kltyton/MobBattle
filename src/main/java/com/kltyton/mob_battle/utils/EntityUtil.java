@@ -1,8 +1,13 @@
 package com.kltyton.mob_battle.utils;
 
+import com.kltyton.mob_battle.entity.OwnedSummon;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.Ownable;
 import net.minecraft.entity.ai.TargetPredicate;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.projectile.ProjectileEntity;
+import net.minecraft.entity.Tameable;
 import net.minecraft.scoreboard.AbstractTeam;
 import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.scoreboard.Team;
@@ -18,6 +23,97 @@ import java.util.Optional;
 import java.util.function.Predicate;
 
 public class EntityUtil {
+    public static boolean isCreativeOrSpectator(Entity entity) {
+        return entity instanceof PlayerEntity player && (player.isCreative() || player.isSpectator());
+    }
+
+    public static boolean isValidCombatTarget(LivingEntity source, LivingEntity target) {
+        return target != null
+                && target != source
+                && target.isAlive()
+                && !isCreativeOrSpectator(target)
+                && !target.isTeammate(source);
+    }
+
+    @Nullable
+    public static Entity getSummonOwner(Entity entity) {
+        if (entity instanceof OwnedSummon ownedSummon) {
+            return ownedSummon.getSummonOwner();
+        }
+        return null;
+    }
+
+    @Nullable
+    public static Entity getKnownOwner(Entity entity) {
+        Entity summonOwner = getSummonOwner(entity);
+        if (summonOwner != null) {
+            return summonOwner;
+        }
+        if (entity instanceof ProjectileEntity projectile) {
+            return projectile.getOwner();
+        }
+        if (entity instanceof Tameable tameable) {
+            return tameable.getOwner();
+        }
+        if (entity instanceof Ownable ownable) {
+            return ownable.getOwner();
+        }
+        return null;
+    }
+
+    public static boolean isFriendlyToSummon(Entity summon, @Nullable Entity owner, Entity target) {
+        if (target == null || target == summon) {
+            return true;
+        }
+        if (target.isTeammate(summon) || summon.isTeammate(target)) {
+            return true;
+        }
+
+        Entity resolvedOwner = owner == null ? getKnownOwner(summon) : owner;
+        if (resolvedOwner == null) {
+            return false;
+        }
+        if (isSameOrTeammate(target, resolvedOwner)) {
+            return true;
+        }
+
+        Entity rootOwner = getSummonOwner(resolvedOwner);
+        if (rootOwner != null && isSameOrTeammate(target, rootOwner)) {
+            return true;
+        }
+
+        Entity targetOwner = getKnownOwner(target);
+        if (targetOwner == null) {
+            return false;
+        }
+        return isSameOrTeammate(targetOwner, resolvedOwner)
+                || rootOwner != null && isSameOrTeammate(targetOwner, rootOwner);
+    }
+
+    public static boolean isValidSummonCombatTarget(Entity summon, @Nullable Entity owner, LivingEntity target) {
+        return target != null
+                && target.isAlive()
+                && !isCreativeOrSpectator(target)
+                && !isFriendlyToSummon(summon, owner, target);
+    }
+
+    public static boolean shouldBlockOwnedSummonDamage(Entity damagingEntity, LivingEntity target) {
+        Entity owner = getSummonOwner(damagingEntity);
+        if (owner == null && damagingEntity instanceof ProjectileEntity projectile) {
+            Entity projectileOwner = projectile.getOwner();
+            Entity projectileOwnerSummoner = projectileOwner == null ? null : getSummonOwner(projectileOwner);
+            return projectileOwnerSummoner != null && isFriendlyToSummon(projectileOwner, projectileOwnerSummoner, target);
+        }
+        if (owner == null) {
+            owner = getKnownOwner(damagingEntity);
+        }
+        return owner != null && isFriendlyToSummon(damagingEntity, owner, target);
+    }
+
+    private static boolean isSameOrTeammate(Entity target, Entity owner) {
+        return target == owner || target.isTeammate(owner) || owner.isTeammate(target);
+    }
+
     /**
      * 将实体 targetA 加入到实体 sourceB 所在的队伍中
      * @param targetA 要加入队伍的实体
@@ -123,7 +219,7 @@ public class EntityUtil {
         if (box == null) box = center.getBoundingBox().expand(radius);
         Predicate<T> predicate = entity -> {
             if (!entity.isAlive()) return false;
-            if (entity.isSpectator()) return false;
+            if (isCreativeOrSpectator(entity)) return false;
             if (!includeSelf && entity == center) return false;
             if (!filterClass.isInstance(entity)) return false;
             boolean isTeammate = entity.isTeammate(center);

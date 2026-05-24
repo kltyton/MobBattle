@@ -21,6 +21,7 @@ import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.particle.ParticleTypes;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.registry.tag.DamageTypeTags;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
@@ -155,6 +156,7 @@ public abstract class EnderDragonEntityMixin extends MobEntity {
             if (world.getTime() > skillManager.rushEndTime) return;
             for (Entity entity : world.getOtherEntities(self, headBox.union(bodyBox))) {
                 if (entity instanceof LivingEntity living && !entity.isSpectator() && living != self) {
+                    if (living instanceof PlayerEntity player && (player.isCreative() || player.isSpectator())) continue;
                     if (living.isTeammate(self)) continue;  // 跳过队友
                     // 330点物理伤害（用mobAttack来源）
                     DamageSource source = self.getDamageSources().mobAttack(self);
@@ -289,6 +291,7 @@ public abstract class EnderDragonEntityMixin extends MobEntity {
 
         for (Entity entity : entities) {
             if (entity instanceof LivingEntity livingEntity) {
+                if (livingEntity instanceof PlayerEntity player && (player.isCreative() || player.isSpectator())) continue;
                 if (livingEntity.isTeammate(this)) continue;
                 double f = entity.getX() - d;
                 double g = entity.getZ() - e;
@@ -307,6 +310,7 @@ public abstract class EnderDragonEntityMixin extends MobEntity {
         ci.cancel();
         for (Entity entity : entities) {
             if (entity instanceof LivingEntity) {
+                if (entity instanceof PlayerEntity player && (player.isCreative() || player.isSpectator())) continue;
                 if (entity.isTeammate(this)) continue;
                 DamageSource damageSource = this.getDamageSources().mobAttack(this);
                 entity.damage(world, damageSource, 10.0F);

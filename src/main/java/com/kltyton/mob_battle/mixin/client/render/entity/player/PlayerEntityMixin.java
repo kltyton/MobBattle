@@ -112,7 +112,10 @@ public abstract class PlayerEntityMixin extends LivingEntity implements GeoEntit
     }
     @Unique
     private boolean mobBattle$isValidCollisionTarget(LivingEntity target) {
-        return target != null && target != this && !target.getUuid().equals(this.getUuid());
+        return target != null
+                && target != this
+                && !target.getUuid().equals(this.getUuid())
+                && !EntityUtil.isCreativeOrSpectator(target);
     }
     @Unique
     @Override
@@ -179,7 +182,7 @@ public abstract class PlayerEntityMixin extends LivingEntity implements GeoEntit
             Vec3d lookVec = this.getRotationVec(1.0F);
             Vec3d velocity = new Vec3d(lookVec.x, 0, lookVec.z).normalize().multiply(1.5); // 冲锋速度 0.5
             if (this.grabbedEntity != null) {
-                if (!this.grabbedEntity.isAlive()) {
+                if (!this.grabbedEntity.isAlive() || !this.mobBattle$isValidCollisionTarget(this.grabbedEntity)) {
                     this.grabbedEntity = null;
                 } else {
                     Vec3d targetPos = this.getPos().add(velocity.multiply(1.5));
@@ -221,7 +224,7 @@ public abstract class PlayerEntityMixin extends LivingEntity implements GeoEntit
                         this.collidingEntity.requestTeleport(targetPos.x, targetPos.y + 4, targetPos.z);
                         // 每 20 刻给予 70 点伤害
                         if (this.age % 20 == 0) {
-                            this.collidingEntity.damage((ServerWorld) this.getWorld(), this.getDamageSources().playerAttack((PlayerEntity) (Object) this), 70f);
+                            this.collidingEntity.damage((ServerWorld) this.getWorld(), this.getDamageSources().playerAttack((PlayerEntity) (Object) this), 150f);
                             this.playSound(ModSounds.PLAYER_ATTACK_4_SOUND_EVENT);
                         }
                     }

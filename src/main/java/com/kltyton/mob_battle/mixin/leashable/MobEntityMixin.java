@@ -2,6 +2,7 @@ package com.kltyton.mob_battle.mixin.leashable;
 
 import com.kltyton.mob_battle.accessor.ILead;
 import com.kltyton.mob_battle.entity.ModEntityAttributes;
+import com.kltyton.mob_battle.utils.EntityUtil;
 import net.minecraft.entity.*;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -35,7 +36,13 @@ public abstract class MobEntityMixin extends LivingEntity implements EquipmentHo
     }
     @Inject(method = "setTarget", at = @At("HEAD"), cancellable = true)
     private void allowUniversalLead(LivingEntity target, CallbackInfo ci) {
-        if (target != null && target.isTeammate(this)) ci.cancel();
+        if (target != null && (target.isTeammate(this) || EntityUtil.shouldBlockOwnedSummonDamage(this, target))) ci.cancel();
+    }
+    @Inject(method = "tryAttack", at = @At("HEAD"), cancellable = true)
+    private void preventOwnedSummonMelee(ServerWorld world, Entity target, CallbackInfoReturnable<Boolean> cir) {
+        if (target instanceof LivingEntity living && EntityUtil.shouldBlockOwnedSummonDamage(this, living)) {
+            cir.setReturnValue(false);
+        }
     }
     @Inject(method = "tryAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;damage(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/entity/damage/DamageSource;F)Z"))
     private void cancelMeleeAttack(ServerWorld world, Entity target, CallbackInfoReturnable<Boolean> cir) {

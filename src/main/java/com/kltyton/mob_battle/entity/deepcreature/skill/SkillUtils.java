@@ -1,6 +1,7 @@
 package com.kltyton.mob_battle.entity.deepcreature.skill;
 
 import com.kltyton.mob_battle.entity.deepcreature.DeepCreatureEntity;
+import com.kltyton.mob_battle.utils.EntityUtil;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.EvokerFangsEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -21,7 +22,7 @@ public class SkillUtils {
         return entity.getWorld().getEntitiesByClass(
                 LivingEntity.class,
                 entity.getBoundingBox().expand(radius),
-                p -> p.isAlive() && entity.distanceTo(p) <= radius && p != entity
+                p -> EntityUtil.isValidCombatTarget(entity, p) && entity.distanceTo(p) <= radius
         );
     }
 

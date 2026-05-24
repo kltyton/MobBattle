@@ -41,7 +41,7 @@ public class PiglinCannonItem extends Item {
     private static final String LAST_HEAVY_DRAIN_STEP_KEY = "LastHeavyDrainStep";
     private static final String HEAVY_FAILED_KEY = "HeavyFailed";
 
-    private static final int FAST_FIRE_INTERVAL = 5;
+    private static final int FAST_FIRE_INTERVAL = 3;
     private static final int HEAVY_CHARGE_TICKS = 120;
 
     public PiglinCannonItem(Settings settings) {
@@ -211,7 +211,7 @@ public class PiglinCannonItem extends Item {
     private void fireHeavyBlast(ServerWorld world, PlayerEntity player, ItemStack stack) {
         Vec3d start = player.getEyePos();
         Vec3d dir = player.getRotationVec(1.0F).normalize();
-        Vec3d end = start.add(dir.multiply(30.0D));
+        Vec3d end = start.add(dir.multiply(50.0D));
         Mob_battle.LOGGER.info("Heavy blast: " + start + " -> " + end);
 
         spawnHeavyLaserLine(world, start, end);

@@ -2,10 +2,15 @@ package com.kltyton.mob_battle.mixin;
 
 import com.kltyton.mob_battle.command.FriendlyDamageCommand;
 import com.kltyton.mob_battle.entity.bullet.ITrueDamageProjectile;
+import com.kltyton.mob_battle.entity.villager.militia.MilitiaArcherVillager;
+import com.kltyton.mob_battle.utils.EntityUtil;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.damage.DamageSources;
+import net.minecraft.entity.passive.GolemEntity;
+import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -62,11 +67,19 @@ public abstract class PersistentProjectileEntityMixin extends ProjectileEntity{
         PersistentProjectileEntity projectile = (PersistentProjectileEntity) (Object) this;
         Entity owner = projectile.getOwner();
         World world = projectile.getWorld();
+        if (owner instanceof MilitiaArcherVillager && target instanceof LivingEntity living && mobBattle$isMilitiaArrowPassThroughTarget(living)) {
+            ci.cancel();
+            return;
+        }
+        if (owner != null && target instanceof LivingEntity living && EntityUtil.shouldBlockOwnedSummonDamage(owner, living)) {
+            ci.cancel();
+            return;
+        }
         if (world instanceof ServerWorld serverWorld) {
             if (!serverWorld.getGameRules().getBoolean(FriendlyDamageCommand.ENABLE_FRIENDLY_PROJECTILE_DAMAGE)) {
-                if (owner != null && target != null) {
+                if (owner != null && target instanceof LivingEntity living) {
                     // 使用原版团队匹配逻辑（包含null安全处理）
-                    if (owner.isTeammate(target)) {
+                    if (!EntityUtil.isValidSummonCombatTarget(projectile, owner, living)) {
                         ci.cancel(); // 取消同队成员的伤害
                     }
                 }
@@ -82,10 +95,18 @@ public abstract class PersistentProjectileEntityMixin extends ProjectileEntity{
         Entity owner = projectile.getOwner();
         World world = projectile.getWorld();
 
+        if (owner instanceof MilitiaArcherVillager && entity instanceof LivingEntity living && mobBattle$isMilitiaArrowPassThroughTarget(living)) {
+            cir.setReturnValue(false);
+            return;
+        }
+        if (owner != null && entity instanceof LivingEntity living && EntityUtil.shouldBlockOwnedSummonDamage(owner, living)) {
+            cir.setReturnValue(false);
+            return;
+        }
         if (world instanceof ServerWorld serverWorld) {
             if (!serverWorld.getGameRules().getBoolean(FriendlyDamageCommand.ENABLE_FRIENDLY_PROJECTILE_DAMAGE)) {
-                if (owner != null && entity != null) {
-                    if (owner.isTeammate(entity)) {
+                if (owner != null && entity instanceof LivingEntity living) {
+                    if (!EntityUtil.isValidSummonCombatTarget(projectile, owner, living)) {
                         cir.setReturnValue(false);
                     }
                 }
@@ -108,5 +129,13 @@ public abstract class PersistentProjectileEntityMixin extends ProjectileEntity{
             this.discard();
             ci.cancel();
         }
+    }
+
+    private boolean mobBattle$isMilitiaArrowPassThroughTarget(LivingEntity target) {
+        if (target instanceof GolemEntity || target instanceof VillagerEntity) {
+            return true;
+        }
+        Package pkg = target.getClass().getPackage();
+        return pkg != null && pkg.getName().contains(".entity.villager.");
     }
 }

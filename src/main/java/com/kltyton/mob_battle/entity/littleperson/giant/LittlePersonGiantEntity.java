@@ -106,6 +106,9 @@ public class LittlePersonGiantEntity extends LittlePersonMilitiaEntity {
                 decrementCooldownIfPositive(SKILL_COOLDOWN_1);
                 decrementCooldownIfPositive(SKILL_COOLDOWN_2);
                 decrementCooldownIfPositive(SKILL_COOLDOWN_3);
+                if (this.getTarget() != null && this.squaredDistanceTo(this.getTarget()) <= 20.0D * 20.0D && canSkill("attack4")) {
+                    performSkill("attack4");
+                }
             }
         }
     }
