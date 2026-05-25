@@ -9,6 +9,7 @@ import com.kltyton.mob_battle.bossbar.CustomBossBarSync;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
 import com.kltyton.mob_battle.utils.CombatEffectUtil;
 import com.kltyton.mob_battle.utils.EnchantmentUtil;
+import com.kltyton.mob_battle.utils.EntityUtil;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
@@ -114,6 +115,9 @@ public class VindicatorGeneralEntity extends VindicatorEntity implements GeoEnti
                 startAxeRecovery();
             }
             if (!hasSkill()) {
+                tryUseTargetedSkill();
+            }
+            if (!hasSkill()) {
                 this.setAiDisabled(false);
             }
             if (this.age % 20 == 0) this.heal(1);
@@ -209,13 +213,7 @@ public class VindicatorGeneralEntity extends VindicatorEntity implements GeoEnti
     }
     @Override
     public boolean tryAttack(ServerWorld world, Entity target) {
-        if (this.canThrowAxe()) {
-            performThrowAxe();
-            return true;
-        } else if (this.canCollisionKill()) {
-            performCollisionKill();
-            return true;
-        } else if (this.canSpinChop()) {
+        if (this.canSpinChop()) {
             performSpinChop();
             return true;
         } else if (this.canMaxAttack()) {
@@ -232,6 +230,13 @@ public class VindicatorGeneralEntity extends VindicatorEntity implements GeoEnti
             return true;
         }
         return true;
+    }
+    private void tryUseTargetedSkill() {
+        if (this.canThrowAxe()) {
+            performThrowAxe();
+        } else if (this.canCollisionKill()) {
+            performCollisionKill();
+        }
     }
     public void performAttack() {
         setHasSkill(true);
@@ -304,14 +309,21 @@ public class VindicatorGeneralEntity extends VindicatorEntity implements GeoEnti
         LivingEntity target = this.getTarget();
         if (target == null) return false;
         double distance = this.distanceTo(target);
-        return canSkill() && getCollisionKillCooldown() == 0 && distance > 4.0D && distance <= 20.0D;
+        return canSkill()
+                && EntityUtil.isValidCombatTarget(this, target)
+                && getCollisionKillCooldown() == 0
+                && distance > 4.0D
+                && distance <= 20.0D;
     }
     public boolean canSpinChop() {
         return canSkill() && getSpinChopCooldown() == 0;
     }
     public boolean canThrowAxe() {
         LivingEntity target = this.getTarget();
-        return canSkill() && getThrowAxeCooldown() == 0 && target != null && this.distanceTo(target) <= 24.0D;
+        return canSkill()
+                && getThrowAxeCooldown() == 0
+                && target != null
+                && EntityUtil.isValidCombatTarget(this, target);
     }
     public boolean canSkill() {
         if (!ModSkillEntityType.canSkill(this)) return false;

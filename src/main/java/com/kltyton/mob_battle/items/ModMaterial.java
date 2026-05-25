@@ -385,6 +385,11 @@ public class ModMaterial {
         } else if (toolMaterial == ZIJIN_ARMOR_TOOL_MATERIAL) {
             sword.apply(DataComponentTypes.ATTRIBUTE_MODIFIERS, current, updated -> {
                 updated = updated.with(
+                        EntityAttributes.MAX_ABSORPTION,
+                        new EntityAttributeModifier(Identifier.of(Mob_battle.MOD_ID, "absorption_" + id), 80.0, EntityAttributeModifier.Operation.ADD_VALUE),
+                        slot
+                );
+                updated = updated.with(
                         EntityAttributes.ENTITY_INTERACTION_RANGE,
                         new EntityAttributeModifier(Identifier.of(Mob_battle.MOD_ID, "range_" + id), 1.0, EntityAttributeModifier.Operation.ADD_VALUE),
                         slot
@@ -392,5 +397,6 @@ public class ModMaterial {
                 return updated;
             });
         }
+
     }
 }

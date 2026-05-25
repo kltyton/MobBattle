@@ -12,7 +12,7 @@ public class DecayEffect extends StatusEffect {
 
     @Override
     public boolean canApplyUpdateEffect(int duration, int amplifier) {
-        return true;
+        return duration % 20 == 0;
     }
 
     @Override
@@ -20,7 +20,7 @@ public class DecayEffect extends StatusEffect {
         if (entity.getHealth() <= 1.0F) {
             return true;
         }
-        float damage = Math.min(1.0F, entity.getHealth() - 1.0F);
+        float damage = Math.min(20.0F, entity.getHealth() - 1.0F);
         entity.damage(world, entity.getDamageSources().magic(), damage);
         return true;
     }

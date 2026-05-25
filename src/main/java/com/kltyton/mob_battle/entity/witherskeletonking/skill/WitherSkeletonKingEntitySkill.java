@@ -1,7 +1,9 @@
 package com.kltyton.mob_battle.entity.witherskeletonking.skill;
 
+import com.kltyton.mob_battle.effect.ModEffects;
 import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.entity.enhancedwither.EnhancedWitherEntity;
+import com.kltyton.mob_battle.entity.littleperson.skillentity.WitherSkeletonDogEntity;
 import com.kltyton.mob_battle.entity.witherskeletonking.WitherSkeletonKingEntity;
 import com.kltyton.mob_battle.entity.witherskeletonking.summon.DualBladeWitherSkeletonEntity;
 import com.kltyton.mob_battle.entity.witherskeletonking.summon.ShieldAxeWitherSkeletonEntity;
@@ -54,6 +56,9 @@ public class WitherSkeletonKingEntitySkill {
                     }
                     entity.damage((ServerWorld) world, entity.getDamageSources().mobAttack(witherSkeletonKingEntity), attackDamage);
                     entity.damage((ServerWorld) world, entity.getDamageSources().magic(), magicDamage);
+                    if (entity instanceof LivingEntity living) {
+                        applyDecay(living, witherSkeletonKingEntity);
+                    }
                     ((LivingEntity) entity).takeKnockback(2.0D, witherSkeletonKingEntity.getX() - entity.getX(), witherSkeletonKingEntity.getZ() - entity.getZ());
                 });
 
@@ -223,6 +228,7 @@ public class WitherSkeletonKingEntitySkill {
         king.lookAtEntity(target, 30.0F, 30.0F);
         target.damage(world, king.getDamageSources().mobAttack(king), 220.0F);
         target.damage(world, king.getDamageSources().indirectMagic(king, king), 70.0F);
+        applyDecay(target, king);
     }
 
     public static void runEnhanceWitherCallSkill(WitherSkeletonKingEntity king) {
@@ -234,24 +240,44 @@ public class WitherSkeletonKingEntitySkill {
         spawnKingSummon(king, ModEntities.SHIELD_AXE_WITHER_SKELETON.create(world, SpawnReason.MOB_SUMMONED), world, 2);
     }
 
+    public static void spawnWitherSkeletonDogs(WitherSkeletonKingEntity king) {
+        if (!(king.getWorld() instanceof ServerWorld world)) {
+            return;
+        }
+        spawnKingSummon(king, ModEntities.WITHER_SKELETON_DOG.create(world, SpawnReason.MOB_SUMMONED), world, 0, 2);
+        spawnKingSummon(king, ModEntities.WITHER_SKELETON_DOG.create(world, SpawnReason.MOB_SUMMONED), world, 1, 2);
+    }
+
     private static void spawnKingSummon(WitherSkeletonKingEntity king, Entity summon, ServerWorld world, int index) {
+        spawnKingSummon(king, summon, world, index, 3);
+    }
+
+    private static void spawnKingSummon(WitherSkeletonKingEntity king, Entity summon, ServerWorld world, int index, int count) {
         if (summon == null) {
             return;
         }
-        double angle = Math.PI * 2.0D * index / 3.0D;
-        Vec3d pos = king.getPos().add(Math.cos(angle) * 3.0D, 1.0D, Math.sin(angle) * 3.0D);
+        double angle = Math.PI * 2.0D * index / count;
+        Vec3d desiredPos = king.getPos().add(Math.cos(angle) * 3.0D, 1.0D, Math.sin(angle) * 3.0D);
+        Vec3d pos = EntityUtil.findSafeSpawnPosition(world, summon, desiredPos).orElse(desiredPos);
         summon.refreshPositionAndAngles(pos.x, pos.y, pos.z, king.getYaw(), 0.0F);
+        EntityUtil.joinSameTeam(summon, king);
         if (summon instanceof EnhancedWitherEntity enhancedWither) {
             enhancedWither.setSummonOwner(king);
         } else if (summon instanceof DualBladeWitherSkeletonEntity dualBlade) {
             dualBlade.setSummonOwner(king);
         } else if (summon instanceof ShieldAxeWitherSkeletonEntity shieldAxe) {
             shieldAxe.setSummonOwner(king);
+        } else if (summon instanceof WitherSkeletonDogEntity dog) {
+            dog.setSummonOwner(king);
         }
         if (summon instanceof MobEntity mob) {
             mob.setTarget(king.getTarget());
         }
         world.spawnEntity(summon);
+    }
+
+    private static void applyDecay(LivingEntity target, Entity source) {
+        target.addStatusEffect(new StatusEffectInstance(ModEffects.DECAY_ENTRY, 3 * 20, 0), source);
     }
 
 }

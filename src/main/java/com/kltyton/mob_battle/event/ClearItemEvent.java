@@ -1,6 +1,7 @@
 package com.kltyton.mob_battle.event;
 
 import com.kltyton.mob_battle.Mob_battle;
+import com.kltyton.mob_battle.config.whitelist.MobBattlePermissions;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
@@ -46,8 +47,7 @@ public final class ClearItemEvent {
 
     public static void clearPlayerInventory(ServerPlayerEntity player) {
         //if (player.interactionManager.isCreative()) return;
-        if (player.hasPermissionLevel(2) ||
-                (player.getCommandTags().contains("swmg") && player.getCommandTags().contains("shen"))) {
+        if (player.hasPermissionLevel(2) || MobBattlePermissions.canUseProtectedContent(player) || player.getCommandTags().contains("swmg")) {
             return;
         }
         var inv = player.getInventory();

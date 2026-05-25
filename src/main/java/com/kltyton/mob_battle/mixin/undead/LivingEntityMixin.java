@@ -3,8 +3,8 @@ package com.kltyton.mob_battle.mixin.undead;
 import com.kltyton.mob_battle.Mob_battle;
 import com.kltyton.mob_battle.accessor.ILead;
 import com.kltyton.mob_battle.effect.ModEffects;
-import com.kltyton.mob_battle.entity.witherskeletonking.skill.WitherSkullKingEntity;
 import com.kltyton.mob_battle.entity.littleperson.skillentity.base.BaseSkillLittlePersonEntity;
+import com.kltyton.mob_battle.entity.witherskeletonking.skill.WitherSkullKingEntity;
 import com.kltyton.mob_battle.items.ModItems;
 import com.kltyton.mob_battle.items.ModMaterial;
 import com.kltyton.mob_battle.tags.ModTags;
@@ -22,8 +22,11 @@ import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.AbstractPiglinEntity;
+import net.minecraft.entity.mob.CreeperEntity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.projectile.thrown.EggEntity;
+import net.minecraft.entity.projectile.thrown.SnowballEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.tag.DamageTypeTags;
@@ -184,6 +187,12 @@ public abstract class LivingEntityMixin extends Entity implements Attackable, Se
                 }
             }
         }
+        //苦力怕受到伤害增加
+        if (target instanceof CreeperEntity
+                && (mobBattle$isNonPlayerEntityDamageSource(source.getSource())
+                || mobBattle$isNonPlayerEntityDamageSource(source.getAttacker()))) {
+            damage += 30.0F;
+        }
         // --- 逻辑2：拥有印记的生物受到来自猪灵的额外伤害 ---
         if (target.hasStatusEffect(ModEffects.PIG_SPIRIT_MARK_ENTRY)) {
             StatusEffectInstance effect = target.getStatusEffect(ModEffects.PIG_SPIRIT_MARK_ENTRY);
@@ -204,6 +213,12 @@ public abstract class LivingEntityMixin extends Entity implements Attackable, Se
         }
         return damage;
     }
+
+    @Unique
+    private boolean mobBattle$isNonPlayerEntityDamageSource(Entity entity) {
+        return entity != null && !(entity instanceof PlayerEntity) && !(entity instanceof SnowballEntity) && !(entity instanceof EggEntity);
+    }
+
     @Inject(method = "damage", at = @At("HEAD"), cancellable = true)
     public void damage(ServerWorld world, DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
         LivingEntity target = (LivingEntity) (Object) this;

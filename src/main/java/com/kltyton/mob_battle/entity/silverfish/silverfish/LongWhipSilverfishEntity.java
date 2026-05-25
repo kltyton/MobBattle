@@ -171,6 +171,9 @@ public class LongWhipSilverfishEntity extends SilverfishEntity implements Genera
     public void tick() {
         super.tick();
         entityTick();
+        if (!this.getWorld().isClient()) {
+            this.setAttacking(this.getTarget() != null);
+        }
         // 处理抓取逻辑
         int grabbedId = this.getGrabbedEntityId();
         if (grabbedId != -1 && !this.getWorld().isClient) {
@@ -256,7 +259,7 @@ public class LongWhipSilverfishEntity extends SilverfishEntity implements Genera
             return PlayState.CONTINUE;
         }
         if (event.isMoving()) {
-            return this.getTarget() == null ? event.setAndContinue(WALK_ANIM) : event.setAndContinue(RUN_ANIM);
+            return this.isAttacking() ? event.setAndContinue(RUN_ANIM) : event.setAndContinue(WALK_ANIM);
         } else return event.setAndContinue(IDLE_ANIM);
     }
 

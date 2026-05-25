@@ -97,6 +97,7 @@ public class DualBladeWitherSkeletonEntity extends WitherSkeletonEntity implemen
             this.birthTicks--;
         }
         if (!this.getWorld().isClient()) {
+            this.setAttacking(this.getTarget() != null);
             if (this.birthTicks > 0) {
                 this.setAiDisabled(true);
             } else if (!hasSkill()) {
@@ -129,7 +130,7 @@ public class DualBladeWitherSkeletonEntity extends WitherSkeletonEntity implemen
         switch (skillName) {
             case "attack1" -> damageTarget(100.0F);
             case "attack2" -> damageTarget(100.0F);
-            case "attack3" -> areaDamage(1.0D, 180.0F);
+            case "attack3" -> areaDamage(3.0D, 180.0F);
             case "attack4" -> damageTarget(200.0F);
             case "attack5" -> damageTarget(120.0F);
             case "stop" -> {
@@ -199,7 +200,7 @@ public class DualBladeWitherSkeletonEntity extends WitherSkeletonEntity implemen
             return PlayState.CONTINUE;
         }
         if (state.isMoving()) {
-            return this.getTarget() == null ? state.setAndContinue(WALK_ANIM) : state.setAndContinue(RUN_ANIM);
+            return this.isAttacking() ? state.setAndContinue(RUN_ANIM) : state.setAndContinue(WALK_ANIM);
         }
         return state.setAndContinue(IDLE_ANIM);
     }

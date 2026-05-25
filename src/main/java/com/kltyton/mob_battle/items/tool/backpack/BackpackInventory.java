@@ -38,6 +38,12 @@ public class BackpackInventory extends SimpleInventory {
         if (stack.getItem() instanceof BackpackItem) return false;
         return super.canInsert(stack);
     }
+
+    @Override
+    public boolean isValid(int slot, ItemStack stack) {
+        return !(stack.getItem() instanceof BackpackItem);
+    }
+
     @Override
     public void markDirty() {
         super.markDirty();

@@ -3,49 +3,51 @@ package com.kltyton.mob_battle.items.tool.backpack;
 import com.kltyton.mob_battle.client.screen.ModScreenHandlers;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.Inventory;
+import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.Property;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.screen.slot.SlotActionType;
+import net.minecraft.util.collection.DefaultedList;
 
 public class PagedBackpackScreenHandler extends ScreenHandler {
-    private final Inventory inventory;
-    // 使用 Property 自动同步页码
+    private final BackpackInventory inventory;
+    private final PageInventory pageInventory;
+    private final PlayerEntity player;
     private final Property page = Property.create();
+    private boolean loadingPage;
     private int lastBackpackSlotClickAge = -100;
     private int lastPageChangeAge = -100;
 
-    public PagedBackpackScreenHandler(int syncId, PlayerInventory playerInventory, Inventory inventory) {
+    public PagedBackpackScreenHandler(int syncId, PlayerInventory playerInventory, BackpackInventory inventory) {
         super(ModScreenHandlers.PAGED_BACKPACK, syncId);
         this.inventory = inventory;
+        this.pageInventory = new PageInventory();
+        this.player = playerInventory.player;
         this.addProperty(this.page);
         inventory.onOpen(playerInventory.player);
-        checkSize(inventory, 54);
-        // 添加 54 个映射 Slot
-        int rows = 6;
-        // 1. 添加背包容器 Slot (保持不变)
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < 9; j++) {
-                this.addSlot(new PagedSlot(inventory, j + i * 9, 8 + j * 18, 18 + i * 18));
-            }
-        }
-
-        // 2. 添加玩家主背包 (3x9)
-        int playerInvY = 139; // 核心修正点
-        for (int i = 0; i < 3; i++) {
-            for (int j = 0; j < 9; j++) {
-                this.addSlot(new Slot(playerInventory, j + i * 9 + 9, 8 + j * 18, playerInvY + i * 18));
-            }
-        }
-
-        // 3. 添加玩家快捷栏 (1x9)
-        int hotbarY = playerInvY + 58; // 139 + 3*18 + 4
-        for (int i = 0; i < 9; i++) {
-            this.addSlot(new Slot(playerInventory, i, 8 + i * 18, hotbarY));
-        }
+        checkSize(inventory, BackpackInventory.PAGED_TOTAL_SLOTS);
         this.page.set(0);
+        this.loadVisiblePage();
+
+        for (int row = 0; row < 6; row++) {
+            for (int column = 0; column < 9; column++) {
+                this.addSlot(new BackpackSlot(this.pageInventory, column + row * 9, 8 + column * 18, 18 + row * 18));
+            }
+        }
+
+        int playerInvY = 139;
+        for (int row = 0; row < 3; row++) {
+            for (int column = 0; column < 9; column++) {
+                this.addSlot(new Slot(playerInventory, column + row * 9 + 9, 8 + column * 18, playerInvY + row * 18));
+            }
+        }
+
+        int hotbarY = playerInvY + 58;
+        for (int slot = 0; slot < 9; slot++) {
+            this.addSlot(new Slot(playerInventory, slot, 8 + slot * 18, hotbarY));
+        }
     }
 
     @Override
@@ -53,16 +55,24 @@ public class PagedBackpackScreenHandler extends ScreenHandler {
         if (player.age - this.lastBackpackSlotClickAge <= 2) {
             return true;
         }
+
         int currentPage = this.page.get();
-        if (id == 0) { // 上一页
-            this.page.set(Math.max(0, currentPage - 1));
-        } else if (id == 1) { // 下一页
-            this.page.set(Math.min(BackpackInventory.MAX_PAGES - 1, currentPage + 1));
+        int nextPage = switch (id) {
+            case 0 -> Math.max(0, currentPage - 1);
+            case 1 -> Math.min(BackpackInventory.MAX_PAGES - 1, currentPage + 1);
+            default -> currentPage;
+        };
+
+        if (nextPage == currentPage) {
+            return id == 0 || id == 1;
         }
-        if (this.page.get() != currentPage) {
-            this.lastPageChangeAge = player.age;
-            this.sendContentUpdates();
-        }
+
+        this.endQuickCraft();
+        this.saveVisiblePage();
+        this.page.set(nextPage);
+        this.loadVisiblePage();
+        this.lastPageChangeAge = player.age;
+        this.sendContentUpdates();
         return true;
     }
 
@@ -79,74 +89,104 @@ public class PagedBackpackScreenHandler extends ScreenHandler {
 
     @Override
     public ItemStack quickMove(PlayerEntity player, int index) {
+        if (index < 0 || index >= this.slots.size()) {
+            return ItemStack.EMPTY;
+        }
+
         ItemStack itemStack = ItemStack.EMPTY;
         Slot slot = this.slots.get(index);
         if (slot.hasStack()) {
-            ItemStack itemStack2 = slot.getStack();
-            itemStack = itemStack2.copy();
-            if (index < 54) {
-                if (!this.insertItem(itemStack2, 54, this.slots.size(), true)) return ItemStack.EMPTY;
-            } else if (!this.insertItem(itemStack2, 0, 54, false)) {
+            ItemStack slotStack = slot.getStack();
+            itemStack = slotStack.copy();
+            if (index < BackpackInventory.PAGE_SIZE) {
+                if (!this.insertItem(slotStack, BackpackInventory.PAGE_SIZE, this.slots.size(), true)) {
+                    return ItemStack.EMPTY;
+                }
+            } else if (!this.insertItem(slotStack, 0, BackpackInventory.PAGE_SIZE, false)) {
                 return ItemStack.EMPTY;
             }
-            if (itemStack2.isEmpty()) slot.setStack(ItemStack.EMPTY);
-            else slot.markDirty();
+
+            if (slotStack.isEmpty()) {
+                slot.setStack(ItemStack.EMPTY);
+            } else {
+                slot.markDirty();
+            }
         }
         return itemStack;
     }
 
     @Override
-    public boolean canUse(PlayerEntity player) { return this.inventory.canPlayerUse(player); }
+    public void onClosed(PlayerEntity player) {
+        super.onClosed(player);
+        this.saveVisiblePage();
+        this.inventory.onClose(player);
+    }
 
-    public int getPage() { return this.page.get(); }
+    @Override
+    public boolean canUse(PlayerEntity player) {
+        return this.inventory.canPlayerUse(player);
+    }
 
-    private class PagedSlot extends Slot {
-        private final int pageSlotIndex;
+    public int getPage() {
+        return this.page.get();
+    }
 
-        public PagedSlot(Inventory inventory, int index, int x, int y) {
+    private int getPageStart() {
+        return this.page.get() * BackpackInventory.PAGE_SIZE;
+    }
+
+    private void loadVisiblePage() {
+        this.loadingPage = true;
+        try {
+            int pageStart = this.getPageStart();
+            for (int slot = 0; slot < BackpackInventory.PAGE_SIZE; slot++) {
+                this.pageInventory.setStack(slot, this.inventory.getStack(pageStart + slot).copy());
+            }
+        } finally {
+            this.loadingPage = false;
+        }
+    }
+
+    private void saveVisiblePage() {
+        if (this.player.getWorld().isClient()) {
+            return;
+        }
+
+        int pageStart = this.getPageStart();
+        DefaultedList<ItemStack> storedStacks = this.inventory.getHeldStacks();
+        for (int slot = 0; slot < BackpackInventory.PAGE_SIZE; slot++) {
+            storedStacks.set(pageStart + slot, this.pageInventory.getStack(slot).copy());
+        }
+        this.inventory.markDirty();
+    }
+
+    private class PageInventory extends SimpleInventory {
+        private PageInventory() {
+            super(BackpackInventory.PAGE_SIZE);
+        }
+
+        @Override
+        public void markDirty() {
+            super.markDirty();
+            if (!loadingPage) {
+                saveVisiblePage();
+            }
+        }
+
+        @Override
+        public boolean isValid(int slot, ItemStack stack) {
+            return !(stack.getItem() instanceof BackpackItem);
+        }
+    }
+
+    private static class BackpackSlot extends Slot {
+        private BackpackSlot(PageInventory inventory, int index, int x, int y) {
             super(inventory, index, x, y);
-            this.pageSlotIndex = index;
-        }
-
-        private int getActualIndex() {
-            return this.pageSlotIndex + (page.get() * BackpackInventory.PAGE_SIZE);
-        }
-
-        @Override
-        public int getIndex() {
-            return this.getActualIndex();
-        }
-
-        @Override
-        public ItemStack getStack() {
-            return this.inventory.getStack(this.getActualIndex());
-        }
-
-        @Override
-        public void setStack(ItemStack stack) {
-            this.inventory.setStack(this.getActualIndex(), stack);
-            this.markDirty();
-        }
-
-        @Override
-        public void setStack(ItemStack stack, ItemStack previousStack) {
-            this.setStack(stack);
-        }
-
-        @Override
-        public void setStackNoCallbacks(ItemStack stack) {
-            this.inventory.setStack(this.getActualIndex(), stack);
-            this.markDirty();
-        }
-
-        @Override
-        public ItemStack takeStack(int amount) {
-            return this.inventory.removeStack(this.getActualIndex(), amount);
         }
 
         @Override
         public boolean canInsert(ItemStack stack) {
-            return this.inventory.isValid(this.getActualIndex(), stack);
+            return !(stack.getItem() instanceof BackpackItem) && super.canInsert(stack);
         }
     }
 }

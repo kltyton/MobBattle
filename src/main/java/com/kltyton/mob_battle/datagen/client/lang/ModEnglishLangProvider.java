@@ -201,6 +201,10 @@ public class ModEnglishLangProvider extends FabricLanguageProvider {
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.PIGLIN_CANNON), "Zhuling Cannon");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModEntities.ENHANCED_WITHER), "Enhanced Wither");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.SPAWN_EGG_ITEMS.get("enhanced_wither")), "Enhanced Wither Spawn Egg");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModEntities.DUAL_BLADE_WITHER_SKELETON), "Dual Blade Wither Skeleton");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.SPAWN_EGG_ITEMS.get("dual_blade_wither_skeleton")), "Dual Blade Wither Skeleton Spawn Egg");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModEntities.SHIELD_AXE_WITHER_SKELETON), "Shield Axe Wither Skeleton");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.SPAWN_EGG_ITEMS.get("shield_axe_wither_skeleton")), "Shield Axe Wither Skeleton Spawn Egg");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModEntities.CBOT002), "cbot002");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.SPAWN_EGG_ITEMS.get("cbot002")), "cbot002 Spawn Egg");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModEntities.PIGLIN_GENERAL), "Piglin General");

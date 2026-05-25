@@ -5,6 +5,7 @@ import com.kltyton.mob_battle.entity.ModSkillEntityType;
 import com.kltyton.mob_battle.entity.littleperson.LittlePersonEntity;
 import com.kltyton.mob_battle.entity.littleperson.militia.LittlePersonMilitiaEntity;
 import com.kltyton.mob_battle.entity.littleperson.skillentity.IronManEntity;
+import com.kltyton.mob_battle.entity.littleperson.skillentity.KeyframedLittlePersonEntity;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.entity.Entity;
@@ -23,7 +24,7 @@ import software.bernie.geckolib.animatable.processing.AnimationController;
 import software.bernie.geckolib.animation.PlayState;
 import software.bernie.geckolib.animation.RawAnimation;
 
-public class BaseSkillLittlePersonEntity extends LittlePersonMilitiaEntity implements ModSkillEntityType {
+public class BaseSkillLittlePersonEntity extends LittlePersonMilitiaEntity implements ModSkillEntityType, KeyframedLittlePersonEntity {
     public boolean endDamage = false;
     public int skillCount = 0;
     public int COOL_DOWN_TIME_1 = -1;
@@ -245,6 +246,7 @@ public class BaseSkillLittlePersonEntity extends LittlePersonMilitiaEntity imple
     public void tick() {
         super.tick();
         if (!this.getWorld().isClient) {
+            this.setAttacking(this.getTarget() != null);
             if (this.isDead()) {
                 this.setAiDisabled(true);
                 this.triggerAnim("skill_controller", "die");
@@ -311,81 +313,93 @@ public class BaseSkillLittlePersonEntity extends LittlePersonMilitiaEntity imple
             .triggerableAnim("attack10", ATTACK_ANIM_10)
             .triggerableAnim("attack11", ATTACK_ANIM_11)
             .triggerableAnim("die", DIE_ANIM)
-            .setCustomInstructionKeyframeHandler(s -> {
-                if ("runAttack2;".equals(s.keyframeData().getInstructions())) {
-                    ClientPlayNetworking.send(new SkillPayload(
-                            "attack2", this.getId()
-                    ));
-                }
-                if ("runAttack3;".equals(s.keyframeData().getInstructions())) {
-                    ClientPlayNetworking.send(new SkillPayload(
-                            "attack3", this.getId()
-                    ));
-                }
-                if ("runAttack4;".equals(s.keyframeData().getInstructions())) {
-                    ClientPlayNetworking.send(new SkillPayload(
-                            "attack4", this.getId()
-                    ));
-                }
-                if ("runAttack5;".equals(s.keyframeData().getInstructions())) {
-                    ClientPlayNetworking.send(new SkillPayload(
-                            "attack5", this.getId()
-                    ));
-                }
-                if ("runAttack6;".equals(s.keyframeData().getInstructions())) {
-                    ClientPlayNetworking.send(new SkillPayload(
-                            "attack6", this.getId()
-                    ));
-                }
-                if ("runAttack7;".equals(s.keyframeData().getInstructions())) {
-                    ClientPlayNetworking.send(new SkillPayload(
-                            "attack7", this.getId()
-                    ));
-                }
-                if ("runAttack8;".equals(s.keyframeData().getInstructions())) {
-                    ClientPlayNetworking.send(new SkillPayload(
-                            "attack8", this.getId()
-                    ));
-                }
-                if ("runAttack9;".equals(s.keyframeData().getInstructions())) {
-                    ClientPlayNetworking.send(new SkillPayload(
-                            "attack9", this.getId()
-                    ));
-                }
-                if ("runAttack10;".equals(s.keyframeData().getInstructions())) {
-                    ClientPlayNetworking.send(new SkillPayload(
-                            "attack10", this.getId()
-                    ));
-                }
-                if ("runAttack11;".equals(s.keyframeData().getInstructions())) {
-                    ClientPlayNetworking.send(new SkillPayload(
-                            "attack11", this.getId()
-                    ));
-                }
-                if ("runDie;".equals(s.keyframeData().getInstructions())) {
-                    ClientPlayNetworking.send(new SkillPayload(
-                            "die", this.getId()
-                    ));
-                }
-                if ("runStop;".equals(s.keyframeData().getInstructions())) {
-                    ClientPlayNetworking.send(new SkillPayload(
-                            "stop", this.getId()
-                    ));
-                }
-                if ("runStopAi;".equals(s.keyframeData().getInstructions())) {
-                    ClientPlayNetworking.send(new SkillPayload(
-                            "stop_ai", this.getId()
-                    ));
-                }
-                if ("runStartAi;".equals(s.keyframeData().getInstructions())) {
-                    ClientPlayNetworking.send(new SkillPayload(
-                            "start_ai", this.getId()
-                    ));
-                }
-            });
+            .setCustomInstructionKeyframeHandler(s -> dispatchSkillKeyframe(s.keyframeData().getInstructions()));
     public AnimationController<?> getSkillController() {
         return this.skillController;
     }
+
+    protected void dispatchSkillKeyframe(String rawInstruction) {
+        String instruction = rawInstruction.replaceAll("\\s+", "");
+        switch (instruction) {
+            case "runDie;" -> ClientPlayNetworking.send(new SkillPayload("die", this.getId()));
+            case "runStop;" -> ClientPlayNetworking.send(new SkillPayload("stop", this.getId()));
+            case "runStopAi;" -> ClientPlayNetworking.send(new SkillPayload("stop_ai", this.getId()));
+            case "runStartAi;" -> ClientPlayNetworking.send(new SkillPayload("start_ai", this.getId()));
+            default -> {
+                if (instruction.startsWith("runAttack")) {
+                    String attack = instruction.substring("run".length());
+                    if (attack.endsWith(";")) {
+                        attack = attack.substring(0, attack.length() - 1);
+                    }
+                    if (!attack.isEmpty()) {
+                        String payload = Character.toLowerCase(attack.charAt(0)) + attack.substring(1);
+                        ClientPlayNetworking.send(new SkillPayload(payload, this.getId()));
+                    }
+                }
+            }
+        }
+    }
+
+    @Override
+    public boolean handleSkillPayload(String skillName) {
+        return switch (skillName) {
+            case "stop_ai" -> {
+                this.setAiDisabled(true);
+                yield true;
+            }
+            case "start_ai" -> {
+                this.setAiDisabled(false);
+                yield true;
+            }
+            case "die" -> {
+                this.deathTime = 400;
+                yield true;
+            }
+            case "stop" -> {
+                this.setHasSkill(false);
+                this.setAiDisabled(false);
+                yield true;
+            }
+            default -> skillName.startsWith("attack") && handleAttackPayload(skillName);
+        };
+    }
+
+    protected boolean handleAttackPayload(String skillName) {
+        String suffix = skillName.substring("attack".length());
+        if (suffix.isEmpty()) {
+            return false;
+        }
+        String[] parts = suffix.split("_", 2);
+        try {
+            int attack = Integer.parseInt(parts[0]);
+            int phase = parts.length > 1 ? Integer.parseInt(parts[1]) : 0;
+            runSkill(attack, phase);
+            return true;
+        } catch (NumberFormatException ignored) {
+            return false;
+        }
+    }
+
+    protected void runSkill(int attack, int phase) {
+        if (phase != 0) {
+            return;
+        }
+        switch (attack) {
+            case 2 -> runSkill_2(this);
+            case 3 -> runSkill_3(this);
+            case 4 -> runSkill_4(this);
+            case 5 -> runSkill_5(this);
+            case 6 -> runSkill_6(this);
+            case 7 -> runSkill_7(this);
+            case 8 -> runSkill_8(this);
+            case 9 -> runSkill_9(this);
+            case 10 -> runSkill_10(this);
+            case 11 -> runSkill_11(this);
+            default -> {
+            }
+        }
+    }
+
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         super.registerControllers(controllers);

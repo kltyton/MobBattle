@@ -2,6 +2,7 @@ package com.kltyton.mob_battle.entity.witherskeletonking.skill;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.Lists;
+import com.kltyton.mob_battle.effect.ModEffects;
 import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.utils.EntityUtil;
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -331,7 +332,7 @@ public class WitherSkullBulletEntity extends ProjectileEntity {
                         new StatusEffectInstance(StatusEffects.NAUSEA, 60, 4), /* 200 tick = 10 s */
                         MoreObjects.firstNonNull(owner, this));
                 lv.addStatusEffect(
-                        new StatusEffectInstance(StatusEffects.WITHER, 60, 4), /* 200 tick = 10 s */
+                        new StatusEffectInstance(ModEffects.DECAY_ENTRY, 3 * 20, 0),
                         MoreObjects.firstNonNull(owner, this));
             }
         }

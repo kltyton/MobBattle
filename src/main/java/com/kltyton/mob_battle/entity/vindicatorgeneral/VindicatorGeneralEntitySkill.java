@@ -1,12 +1,9 @@
 package com.kltyton.mob_battle.entity.vindicatorgeneral;
 
-import com.kltyton.mob_battle.effect.ModEffects;
 import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.utils.EntityUtil;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.SpawnReason;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
@@ -75,11 +72,6 @@ public class VindicatorGeneralEntitySkill {
                 .forEach(entity -> {
                     float attackDamage = 200.0f;
                     vindicatorGeneralEntity.tryAttackBaseDamage((ServerWorld) world, entity, attackDamage);
-                    ((LivingEntity) entity).addStatusEffect(new StatusEffectInstance(
-                            StatusEffects.SLOWNESS,
-                            20,
-                            4
-                    ));
                 });
     }
     public static void runMaxAttackSkill_3(VindicatorGeneralEntity vindicatorGeneralEntity) {
@@ -92,10 +84,6 @@ public class VindicatorGeneralEntitySkill {
                 .forEach(entity -> {
                     float attackDamage = 280.0f;
                     vindicatorGeneralEntity.tryAttackBaseDamage((ServerWorld) world, entity, attackDamage);
-                    ((LivingEntity) entity).addStatusEffect(new StatusEffectInstance(
-                            ModEffects.STUN_ENTRY,
-                            20
-                    ));
                 });
     }
     public static void runCollisionKillSkill(VindicatorGeneralEntity vindicatorGeneralEntity) {

@@ -21,6 +21,10 @@ public class FineKnifeItem extends Item {
 
     @Override
     public ActionResult useOnEntity(ItemStack stack, PlayerEntity user, LivingEntity entity, Hand hand) {
+        if (user.getItemCooldownManager().isCoolingDown(stack)) {
+            return ActionResult.FAIL;
+        }
+
         World world = user.getWorld();
         if (!world.isClient &&
                 entity instanceof AnimalEntity &&
@@ -44,6 +48,7 @@ public class FineKnifeItem extends Item {
 
             world.playSound(null, entity.getBlockPos(), SoundEvents.ENTITY_SHEEP_SHEAR, SoundCategory.NEUTRAL, 1.0f, 1.0f);
             stack.damage(1, user, hand);
+            user.getItemCooldownManager().set(stack, 20);
             return ActionResult.SUCCESS;
         }
         return super.useOnEntity(stack, user, entity, hand);

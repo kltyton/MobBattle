@@ -13,6 +13,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.server.world.ServerWorld;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(PlayerEntity.class)
@@ -40,6 +41,18 @@ public abstract class PlayerEntityMixin {
         }
     }
 
+    @Inject(
+            method = "attack",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/entity/player/PlayerEntity;spawnSweepAttackParticles()V",
+                    shift = At.Shift.AFTER
+            )
+    )
+    private void afterSuccessfulSweepMainTarget(Entity target, CallbackInfo ci) {
+        notifySuccessfulSweepHit(target);
+    }
+
     /**
      * 成功横扫到某个实体后执行。
      * 注意：这里不是主目标，而是被横扫波及的周围实体。
@@ -58,17 +71,21 @@ public abstract class PlayerEntityMixin {
             float amount,
             Operation<Boolean> original
     ) {
-        PlayerEntity player = (PlayerEntity) (Object) this;
-
         boolean damaged = original.call(sweptEntity, world, damageSource, amount);
 
         if (damaged) {
-            ItemStack stack = player.getMainHandStack();
-            if (stack.getItem() instanceof ModFabricItem modfabricItem) {
-                modfabricItem.onSuccessfulSweepHit(player, sweptEntity, stack);
-            }
+            notifySuccessfulSweepHit(sweptEntity);
         }
 
         return damaged;
+    }
+
+    @Unique
+    private void notifySuccessfulSweepHit(Entity target) {
+        PlayerEntity player = (PlayerEntity) (Object) this;
+        ItemStack stack = player.getMainHandStack();
+        if (stack.getItem() instanceof ModFabricItem modfabricItem) {
+            modfabricItem.onSuccessfulSweepHit(player, target, stack);
+        }
     }
 }

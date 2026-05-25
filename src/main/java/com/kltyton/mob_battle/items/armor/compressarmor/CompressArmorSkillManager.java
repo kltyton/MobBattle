@@ -359,7 +359,8 @@ public class CompressArmorSkillManager {
         ServerWorld world = player.getWorld();
         Vec3d start = player.getPos();
         Vec3d direction = horizontalDirection(player);
-        Vec3d end = start.add(direction.multiply(distance));
+        Vec3d end = findDashEnd(player, direction, distance);
+        double dashDistance = start.distanceTo(end);
 
         boolean netherite = mark == ModEffects.NETHERITE_MARK_ENTRY;
         Vector3f color = netherite ? COLOR_NETHERITE : COLOR_DIAMOND;
@@ -367,12 +368,12 @@ public class CompressArmorSkillManager {
 
         spawnDashChargeParticles(world, player, color, netherite);
 
-        Box attackBox = player.getBoundingBox().stretch(direction.multiply(distance)).expand(1.5);
+        Box attackBox = player.getBoundingBox().stretch(direction.multiply(dashDistance)).expand(1.5);
         List<LivingEntity> targets = EntityUtil.getNearbyEntity(
                 player,
                 LivingEntity.class,
                 Object.class,
-                distance + 2.0,
+                dashDistance + 2.0,
                 attackBox,
                 false,
                 EntityUtil.TeamFilter.EXCLUDE_TEAM,
@@ -403,8 +404,8 @@ public class CompressArmorSkillManager {
         spawnDashSweepBlades(world, start, end, direction, color, netherite);
         spawnDashEndBurst(world, end, color, netherite);
 
-        player.requestTeleport(end.x, end.y, end.z);
-        player.setVelocity(direction.multiply(1.2));
+        double dashSpeed = Math.min(2.2D, Math.max(0.0D, dashDistance * 0.45D));
+        player.setVelocity(direction.multiply(dashSpeed).add(0.0D, player.getVelocity().y, 0.0D));
         player.velocityModified = true;
 
         world.playSound(null, start.x, start.y, start.z, SoundEvents.ENTITY_PLAYER_ATTACK_SWEEP, SoundCategory.PLAYERS, 1.1F, netherite ? 0.55F : 1.35F);
@@ -413,6 +414,25 @@ public class CompressArmorSkillManager {
         if (!markedHit) {
             player.getItemCooldownManager().set(cooldownStack, cooldownSeconds * 20);
         }
+    }
+
+    private static Vec3d findDashEnd(ServerPlayerEntity player, Vec3d direction, double distance) {
+        ServerWorld world = player.getWorld();
+        Vec3d start = player.getPos();
+        Vec3d safeEnd = start;
+        int steps = Math.max(1, MathHelper.ceil(distance / 0.25D));
+
+        for (int i = 1; i <= steps; i++) {
+            double stepDistance = distance * i / steps;
+            Vec3d candidate = start.add(direction.multiply(stepDistance));
+            Box candidateBox = player.getBoundingBox().offset(candidate.subtract(start));
+            if (!world.isSpaceEmpty(player, candidateBox)) {
+                break;
+            }
+            safeEnd = candidate;
+        }
+
+        return safeEnd;
     }
 
     private static void runNetheriteTeleportSkill(ServerPlayerEntity player) {

@@ -1,5 +1,6 @@
 package com.kltyton.mob_battle.entity.witherskeletonking.skill;
 
+import com.kltyton.mob_battle.effect.ModEffects;
 import com.kltyton.mob_battle.utils.EntityUtil;
 import net.minecraft.block.BlockState;
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -9,7 +10,6 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ProjectileDeflection;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.entity.projectile.WitherSkullEntity;
 import net.minecraft.fluid.FluidState;
@@ -20,7 +20,6 @@ import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.BlockView;
-import net.minecraft.world.Difficulty;
 import net.minecraft.world.World;
 import net.minecraft.world.event.GameEvent;
 import net.minecraft.world.explosion.Explosion;
@@ -73,16 +72,7 @@ public class WitherSkullKingEntity extends WitherSkullEntity {
             }
 
             if (bl && var8 instanceof LivingEntity livingEntityx) {
-                int i = 0;
-                if (this.getWorld().getDifficulty() == Difficulty.NORMAL) {
-                    i = 10;
-                } else if (this.getWorld().getDifficulty() == Difficulty.HARD) {
-                    i = 40;
-                }
-
-                if (i > 0) {
-                    livingEntityx.addStatusEffect(new StatusEffectInstance(StatusEffects.WITHER, 20 * i, 1), this.getEffectCause());
-                }
+                livingEntityx.addStatusEffect(new StatusEffectInstance(ModEffects.DECAY_ENTRY, 3 * 20, 0), this.getEffectCause());
             }
         }
     }

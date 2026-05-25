@@ -221,7 +221,7 @@ public class AngelCyborgEntity extends RequestedLittlePersonEntity {
      * 向上跳起。
      */
     private void runAttack9() {
-        this.setVelocity(this.getVelocity().x, 1.25D, this.getVelocity().z);
+        this.setVelocity(this.getVelocity().x, 0.8D, this.getVelocity().z);
         this.velocityModified = true;
     }
 

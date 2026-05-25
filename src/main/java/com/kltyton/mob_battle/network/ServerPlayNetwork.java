@@ -1,6 +1,7 @@
 package com.kltyton.mob_battle.network;
 
 import com.kltyton.mob_battle.Mob_battle;
+import com.kltyton.mob_battle.config.whitelist.MobBattlePermissions;
 import com.kltyton.mob_battle.effect.ModEffects;
 import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.entity.deepcreature.DeepCreatureEntity;
@@ -65,6 +66,8 @@ import net.minecraft.util.Formatting;
 import java.util.List;
 
 public class ServerPlayNetwork {
+    private static final int ZIJIN_SKILL_0_COOLDOWN_TICKS = 12 * 20;
+
     public static void init() {
         // 注册服务器端接收器
         ServerPlayNetworking.registerGlobalReceiver(HighbirdAttackPayload.ID,
@@ -146,10 +149,7 @@ public class ServerPlayNetwork {
                                     case "enhance_wither_call" -> WitherSkeletonKingEntitySkill.runEnhanceWitherCallSkill(kingSkeletonKing);
                                     case "stop_ai" -> kingSkeletonKing.setAiDisabled(true);
                                     case "start_ai" -> kingSkeletonKing.setAiDisabled(false);
-                                    case "stop" -> {
-                                        kingSkeletonKing.setHasSkill(false);
-                                        kingSkeletonKing.setAiDisabled(false);
-                                    }
+                                    case "stop" -> kingSkeletonKing.finishSkill();
                                 }
                             }
                             case VillagerIronGolemEntity villagerIronGolemEntity -> {
@@ -401,7 +401,7 @@ public class ServerPlayNetwork {
         });
         ServerPlayNetworking.registerGlobalReceiver(ItemGroupPayload.ID, (payload, context) -> {
             ServerPlayerEntity player = context.player();
-            context.server().execute(() -> ServerPlayNetworking.send(player, new ItemGroupPayload(player.getCommandTags().contains("shen"))));
+            context.server().execute(() -> ServerPlayNetworking.send(player, new ItemGroupPayload(MobBattlePermissions.canUseProtectedContent(player))));
         });
         ServerPlayNetworking.registerGlobalReceiver(MasterScepterPayload.ID, (payload, context) -> {
             context.server().execute(() -> { // 切换到主线程
@@ -450,7 +450,7 @@ public class ServerPlayNetwork {
                         if (player.getItemCooldownManager().isCoolingDown(cooldownItem)) {
                             // 获取剩余冷却进度 (0.0 到 1.0 之间的浮点数)
                             float progress = player.getItemCooldownManager().getCooldownProgress(cooldownItem, 0);
-                            float remainingSeconds = (progress * 700) / 20.0F;
+                            float remainingSeconds = (progress * ZIJIN_SKILL_0_COOLDOWN_TICKS) / 20.0F;
                             player.sendMessage(
                                     Text.literal("套装技能冷却中！还需等待 " + String.format("%.1f", remainingSeconds) + " 秒")
                                             .formatted(Formatting.RED),
@@ -482,7 +482,7 @@ public class ServerPlayNetwork {
                             }
                         }
                         ParticleUtils.spawnZiJinSkill0DetonateParticles(world, player, secondRangeTargets);
-                        player.getItemCooldownManager().set(cooldownItem, 12 * 20);
+                        player.getItemCooldownManager().set(cooldownItem, ZIJIN_SKILL_0_COOLDOWN_TICKS);
                     } else if (payload.skill_id() == 1) {
                         ItemStack cooldownItem = Items.COMMAND_BLOCK_MINECART.getDefaultStack();
                         if (player.getItemCooldownManager().isCoolingDown(cooldownItem)) {

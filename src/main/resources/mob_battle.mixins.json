@@ -27,6 +27,7 @@
     "disarm.MobEntityDisarmMixin",
     "disarm.SlimeEntityMixin",
     "effect.LivingEntityStatusEffectMixin",
+    "effect.MobEntityStunMixin",
     "ender.EndermanEntityMixin",
     "entity.ai.goal.GoalSelectorMixin",
     "entity.boss.dragon.DragonFireballMixin",

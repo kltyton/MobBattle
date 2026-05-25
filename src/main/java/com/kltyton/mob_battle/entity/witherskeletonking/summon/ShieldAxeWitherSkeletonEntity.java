@@ -43,6 +43,7 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 public class ShieldAxeWitherSkeletonEntity extends WitherSkeletonEntity implements GeoEntity, ModSkillEntityType, OwnedSummon {
     public static final TrackedData<Boolean> HAS_SKILL = DataTracker.registerData(ShieldAxeWitherSkeletonEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
     public static final TrackedData<Integer> ATTACK3_COOLDOWN = DataTracker.registerData(ShieldAxeWitherSkeletonEntity.class, TrackedDataHandlerRegistry.INTEGER);
+    public static final TrackedData<Boolean> WALK2_BLOCKING = DataTracker.registerData(ShieldAxeWitherSkeletonEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
 
     private static final RawAnimation IDLE_ANIM = RawAnimation.begin().thenLoop("idle");
     private static final RawAnimation WALK_ANIM = RawAnimation.begin().thenLoop("walk");
@@ -100,6 +101,7 @@ public class ShieldAxeWitherSkeletonEntity extends WitherSkeletonEntity implemen
         super.initDataTracker(builder);
         builder.add(HAS_SKILL, false);
         builder.add(ATTACK3_COOLDOWN, 8 * 20);
+        builder.add(WALK2_BLOCKING, false);
     }
 
     @Override
@@ -109,6 +111,8 @@ public class ShieldAxeWitherSkeletonEntity extends WitherSkeletonEntity implemen
             this.birthTicks--;
         }
         if (!this.getWorld().isClient()) {
+            this.setAttacking(this.getTarget() != null);
+            updateWalk2BlockingState();
             tickMovementSpeed();
             if (getAttack3Cooldown() > 0 && !hasSkill()) {
                 setAttack3Cooldown(getAttack3Cooldown() - 1);
@@ -122,6 +126,20 @@ public class ShieldAxeWitherSkeletonEntity extends WitherSkeletonEntity implemen
                 this.setAiDisabled(false);
             }
         }
+    }
+
+    private void updateWalk2BlockingState() {
+        LivingEntity target = this.getTarget();
+        boolean moving = this.getVelocity().horizontalLengthSquared() > 1.0E-4D;
+        boolean blocking = target != null
+                && !hasSkill()
+                && !this.shieldBroken
+                && this.birthTicks <= 0
+                && this.shatterTicks <= 0
+                && moving
+                && this.isAttacking()
+                && this.distanceTo(target) <= 3.0D;
+        setWalk2Blocking(blocking);
     }
 
     private void tickMovementSpeed() {
@@ -191,7 +209,7 @@ public class ShieldAxeWitherSkeletonEntity extends WitherSkeletonEntity implemen
 
     @Override
     public boolean damage(ServerWorld world, DamageSource source, float amount) {
-        if (!this.shieldBroken && isDamageFromFront(source)) {
+        if (isWalk2Blocking() && isDamageFromFront(source)) {
             this.blockedDamage += amount;
             this.playSound(SoundEvents.ITEM_SHIELD_BLOCK.value(), 1.0F, 0.9F + this.random.nextFloat() * 0.2F);
             if (isShieldBreakingWeapon(source) || this.blockedDamage >= 600.0F) {
@@ -278,11 +296,10 @@ public class ShieldAxeWitherSkeletonEntity extends WitherSkeletonEntity implemen
             return PlayState.CONTINUE;
         }
         if (state.isMoving()) {
-            LivingEntity target = this.getTarget();
-            if (target == null) {
+            if (!this.isAttacking()) {
                 return state.setAndContinue(WALK_ANIM);
             }
-            return this.distanceTo(target) <= 3.0D ? state.setAndContinue(WALK_2_ANIM) : state.setAndContinue(RUN_ANIM);
+            return isWalk2Blocking() ? state.setAndContinue(WALK_2_ANIM) : state.setAndContinue(RUN_ANIM);
         }
         return state.setAndContinue(IDLE_ANIM);
     }
@@ -301,6 +318,14 @@ public class ShieldAxeWitherSkeletonEntity extends WitherSkeletonEntity implemen
 
     public void setAttack3Cooldown(int cooldown) {
         this.dataTracker.set(ATTACK3_COOLDOWN, cooldown);
+    }
+
+    public boolean isWalk2Blocking() {
+        return this.dataTracker.get(WALK2_BLOCKING);
+    }
+
+    public void setWalk2Blocking(boolean blocking) {
+        this.dataTracker.set(WALK2_BLOCKING, blocking);
     }
 
     @Override

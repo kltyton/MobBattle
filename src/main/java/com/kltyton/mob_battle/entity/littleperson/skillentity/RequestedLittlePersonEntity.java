@@ -118,7 +118,7 @@ public abstract class RequestedLittlePersonEntity extends BaseSkillLittlePersonE
             return PlayState.CONTINUE;
         }
         if (event.isMoving()) {
-            return this.getTarget() == null ? event.setAndContinue(WALK_ANIM) : event.setAndContinue(RUN_ANIM);
+            return this.isAttacking() ? event.setAndContinue(RUN_ANIM) : event.setAndContinue(WALK_ANIM);
         }
         return event.setAndContinue(IDLE_ANIM);
     }
@@ -232,7 +232,8 @@ public abstract class RequestedLittlePersonEntity extends BaseSkillLittlePersonE
         }
     }
 
-    private boolean handleAttackPayload(String skillName) {
+    @Override
+    protected boolean handleAttackPayload(String skillName) {
         String suffix = skillName.substring("attack".length());
         if (suffix.isEmpty()) {
             runAttack();
@@ -250,28 +251,7 @@ public abstract class RequestedLittlePersonEntity extends BaseSkillLittlePersonE
     }
 
     private void dispatchKeyframe(String rawInstruction) {
-        String instruction = rawInstruction.replaceAll("\\s+", "");
-        if ("runStop;".equals(instruction)) {
-            ClientPlayNetworking.send(new SkillPayload("stop", this.getId()));
-            return;
-        }
-        if ("runStopAi;".equals(instruction)) {
-            ClientPlayNetworking.send(new SkillPayload("stop_ai", this.getId()));
-            return;
-        }
-        if ("runStartAi;".equals(instruction)) {
-            ClientPlayNetworking.send(new SkillPayload("start_ai", this.getId()));
-            return;
-        }
-        if ("runDie;".equals(instruction)) {
-            ClientPlayNetworking.send(new SkillPayload("die", this.getId()));
-            return;
-        }
-        if (instruction.startsWith("runAttack") && instruction.endsWith(";")) {
-            String attack = instruction.substring("run".length(), instruction.length() - 1);
-            String payload = Character.toLowerCase(attack.charAt(0)) + attack.substring(1);
-            ClientPlayNetworking.send(new SkillPayload(payload, this.getId()));
-        }
+        dispatchSkillKeyframe(rawInstruction);
     }
 
     @Override

@@ -103,7 +103,7 @@ public class SexEntity extends BaseSkillLittlePersonEntity {
     @Override
     public PlayState mainController(final AnimationTest<LittlePersonMilitiaEntity> event) {
         if (event.isMoving()) {
-            return this.getTarget() == null ? event.setAndContinue(WALK_ANIM) : event.setAndContinue(RUN_ANIM);
+            return this.isAttacking() ? event.setAndContinue(RUN_ANIM) : event.setAndContinue(WALK_ANIM);
         } else return event.setAndContinue(IDLE_ANIM);
     }
     public AnimationController<?> sexEntitySkillController = new AnimationController<>( "skill_controller", animTest -> {
@@ -129,78 +129,7 @@ public class SexEntity extends BaseSkillLittlePersonEntity {
             .triggerableAnim("attack10", ATTACK_ANIM_10)
             .triggerableAnim("attack11", ATTACK_ANIM_11)
             .triggerableAnim("die", DIE_ANIM)
-            .setCustomInstructionKeyframeHandler(s -> {
-                if ("runAttack2;".equals(s.keyframeData().getInstructions())) {
-                    ClientPlayNetworking.send(new SkillPayload(
-                            "attack2", this.getId()
-                    ));
-                }
-                if ("runAttack3;".equals(s.keyframeData().getInstructions())) {
-                    ClientPlayNetworking.send(new SkillPayload(
-                            "attack3", this.getId()
-                    ));
-                }
-                if ("runAttack4;".equals(s.keyframeData().getInstructions())) {
-                    ClientPlayNetworking.send(new SkillPayload(
-                            "attack4", this.getId()
-                    ));
-                }
-                if ("runAttack5;".equals(s.keyframeData().getInstructions())) {
-                    ClientPlayNetworking.send(new SkillPayload(
-                            "attack5", this.getId()
-                    ));
-                }
-                if ("runAttack6;".equals(s.keyframeData().getInstructions())) {
-                    ClientPlayNetworking.send(new SkillPayload(
-                            "attack6", this.getId()
-                    ));
-                }
-                if ("runAttack7;".equals(s.keyframeData().getInstructions())) {
-                    ClientPlayNetworking.send(new SkillPayload(
-                            "attack7", this.getId()
-                    ));
-                }
-                if ("runAttack8;".equals(s.keyframeData().getInstructions())) {
-                    ClientPlayNetworking.send(new SkillPayload(
-                            "attack8", this.getId()
-                    ));
-                }
-                if ("runAttack9;".equals(s.keyframeData().getInstructions())) {
-                    ClientPlayNetworking.send(new SkillPayload(
-                            "attack9", this.getId()
-                    ));
-                }
-                if ("runAttack10;".equals(s.keyframeData().getInstructions())) {
-                    ClientPlayNetworking.send(new SkillPayload(
-                            "attack10", this.getId()
-                    ));
-                }
-                if ("runAttack11;".equals(s.keyframeData().getInstructions())) {
-                    ClientPlayNetworking.send(new SkillPayload(
-                            "attack11", this.getId()
-                    ));
-                }
-                if ("runDie;".equals(s.keyframeData().getInstructions())) {
-                    ClientPlayNetworking.send(new SkillPayload(
-                            "die", this.getId()
-                    ));
-                }
-                if ("runStop;".equals(s.keyframeData().getInstructions())) {
-                    ClientPlayNetworking.send(new SkillPayload(
-                            "stop", this.getId()
-                    ));
-                }
-                if ("runStopAi;".equals(s.keyframeData().getInstructions())) {
-                    ClientPlayNetworking.send(new SkillPayload(
-                            "stop_ai", this.getId()
-                    ));
-                }
-                if ("runStartAi;".equals(s.keyframeData().getInstructions())) {
-                    ClientPlayNetworking.send(new SkillPayload(
-                            "start_ai", this.getId()
-                    ));
-                }
-            });
+            .setCustomInstructionKeyframeHandler(s -> dispatchSkillKeyframe(s.keyframeData().getInstructions()));
     @Override
     public AnimationController<?> getSkillController() {
         return this.sexEntitySkillController;

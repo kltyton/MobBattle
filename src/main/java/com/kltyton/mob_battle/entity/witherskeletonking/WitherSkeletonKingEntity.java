@@ -2,14 +2,13 @@ package com.kltyton.mob_battle.entity.witherskeletonking;
 
 import com.kltyton.mob_battle.bossbar.CustomBossBarStyles;
 import com.kltyton.mob_battle.bossbar.CustomBossBarSync;
-import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.entity.ModSkillEntityType;
 import com.kltyton.mob_battle.entity.accessor.BigBossLookControl;
 import com.kltyton.mob_battle.entity.accessor.BigBossMoveControl;
 import com.kltyton.mob_battle.entity.accessor.BigBossNavigation;
+import com.kltyton.mob_battle.entity.witherskeletonking.skill.WitherSkeletonKingEntitySkill;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
 import com.kltyton.mob_battle.utils.CombatEffectUtil;
-import com.kltyton.mob_battle.utils.EntityUtil;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.block.Blocks;
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -77,6 +76,7 @@ public class WitherSkeletonKingEntity extends WitherSkeletonEntity implements Ge
     public static final TrackedData<Integer> THORN_COOLDOWN = DataTracker.registerData(WitherSkeletonKingEntity.class, TrackedDataHandlerRegistry.INTEGER);
     public static final TrackedData<Integer> ENHANCE_WITHER_CALL_COOLDOWN = DataTracker.registerData(WitherSkeletonKingEntity.class, TrackedDataHandlerRegistry.INTEGER);
     private int deathAnimationTicks;
+    private boolean summonDogsAfterSuperShot;
     @Override
     protected void initDataTracker(DataTracker.Builder builder) {
         super.initDataTracker(builder);
@@ -271,7 +271,7 @@ public class WitherSkeletonKingEntity extends WitherSkeletonEntity implements Ge
             return false;
         } else {
             if (target instanceof LivingEntity livingEntity) {
-                livingEntity.addStatusEffect(new StatusEffectInstance(StatusEffects.WITHER, 200), this);
+                livingEntity.addStatusEffect(new StatusEffectInstance(StatusEffects.WITHER, 5 * 20, 4), this);
                 if (livingEntity.isDead()) this.heal(5.0F);
                 if (!(target instanceof PlayerEntity)) {
                     livingEntity.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 100, 1), this);
@@ -328,6 +328,7 @@ public class WitherSkeletonKingEntity extends WitherSkeletonEntity implements Ge
         setHasSkill(true);
         setSkillCooldown(20);
         this.setAiDisabled(true);
+        this.summonDogsAfterSuperShot = true;
         setSuperShotWitherSkullCooldown(42 * 20);
         this.triggerAnim("skill_controller", "super_shot_wither_skull");
     }
@@ -553,6 +554,16 @@ public class WitherSkeletonKingEntity extends WitherSkeletonEntity implements Ge
     public void setEnhanceWitherCallCooldown(int cooldown) {
         getDataTracker().set(ENHANCE_WITHER_CALL_COOLDOWN, cooldown);
     }
+
+    public void finishSkill() {
+        if (!this.getWorld().isClient() && this.summonDogsAfterSuperShot) {
+            WitherSkeletonKingEntitySkill.spawnWitherSkeletonDogs(this);
+        }
+        this.summonDogsAfterSuperShot = false;
+        this.setHasSkill(false);
+        this.setAiDisabled(false);
+    }
+
     @Override
     public boolean damage(ServerWorld world, DamageSource source, float amount) {
         if (this.deathAnimationTicks > 0) {
@@ -569,6 +580,7 @@ public class WitherSkeletonKingEntity extends WitherSkeletonEntity implements Ge
         this.setHealth(1.0F);
         this.setAiDisabled(true);
         this.setHasSkill(true);
+        this.summonDogsAfterSuperShot = false;
         this.deathAnimationTicks = 90;
         this.triggerAnim("skill_controller", "death");
     }

@@ -195,6 +195,10 @@ public class ModChineseLangProvider extends FabricLanguageProvider {
         translationBuilder.add(ModLangUtils.getTranslationKey(ModKeyBinding.keyPiglinCannonItemMode), "切换朱凌炮模式");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModEntities.ENHANCED_WITHER), "强化凋零");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.SPAWN_EGG_ITEMS.get("enhanced_wither")), "强化凋零刷怪蛋");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModEntities.DUAL_BLADE_WITHER_SKELETON), "双刀凋零骷髅");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.SPAWN_EGG_ITEMS.get("dual_blade_wither_skeleton")), "双刀凋零骷髅刷怪蛋");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModEntities.SHIELD_AXE_WITHER_SKELETON), "盾斧凋零骷髅");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.SPAWN_EGG_ITEMS.get("shield_axe_wither_skeleton")), "盾斧凋零骷髅刷怪蛋");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModEntities.CBOT002), "cbot002");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.SPAWN_EGG_ITEMS.get("cbot002")), "cbot002刷怪蛋");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModEntities.PIGLIN_GENERAL), "猪灵将军");

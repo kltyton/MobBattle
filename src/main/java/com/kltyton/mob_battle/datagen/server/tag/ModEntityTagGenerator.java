@@ -35,7 +35,9 @@ public class ModEntityTagGenerator extends FabricTagProvider.EntityTypeTagProvid
                 ModEntities.SKULL_ARCHER,
                 ModEntities.SKULL_MAGE,
                 ModEntities.SKULL_WARRIOR,
-                ModEntities.WITHER_SKELETON_DOG
+                ModEntities.WITHER_SKELETON_DOG,
+                ModEntities.DUAL_BLADE_WITHER_SKELETON,
+                ModEntities.SHIELD_AXE_WITHER_SKELETON
         );
         valueLookupBuilder(EntityTypeTags.CAN_BREATHE_UNDER_WATER)
                 .add(ModEntities.MAGMA_LOBSTER)

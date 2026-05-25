@@ -1,8 +1,10 @@
 package com.kltyton.mob_battle.entity.littleperson.skillentity;
 
 import com.kltyton.mob_battle.entity.ModEntityAttributes;
+import com.kltyton.mob_battle.entity.OwnedSummon;
 import com.kltyton.mob_battle.entity.general.GeneralEntity;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
+import com.kltyton.mob_battle.utils.EntityUtil;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -19,6 +21,7 @@ import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.mob.WitherSkeletonEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.animatable.manager.AnimatableManager;
 import software.bernie.geckolib.animatable.processing.AnimationController;
@@ -27,7 +30,7 @@ import software.bernie.geckolib.animation.PlayState;
 import software.bernie.geckolib.animation.RawAnimation;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
-public class WitherSkeletonDogEntity extends WitherSkeletonEntity implements GeneralEntity<WitherSkeletonDogEntity> {
+public class WitherSkeletonDogEntity extends WitherSkeletonEntity implements GeneralEntity<WitherSkeletonDogEntity>, OwnedSummon {
     public static final TrackedData<Boolean> HAS_SKILL = DataTracker.registerData(WitherSkeletonDogEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
     public static final TrackedData<Integer> SKILL_COOLDOWN_1 = DataTracker.registerData(WitherSkeletonDogEntity.class, TrackedDataHandlerRegistry.INTEGER);
     public static final TrackedData<Integer> SKILL_COOLDOWN_2 = DataTracker.registerData(WitherSkeletonDogEntity.class, TrackedDataHandlerRegistry.INTEGER);
@@ -42,10 +45,29 @@ public class WitherSkeletonDogEntity extends WitherSkeletonEntity implements Gen
     private static final RawAnimation ATTACK_3_ANIM = RawAnimation.begin().thenPlay("attack3");
 
     private final AnimatableInstanceCache geoCache = GeckoLibUtil.createInstanceCache(this);
+    @Nullable
+    private LivingEntity summonOwner;
 
     public WitherSkeletonDogEntity(EntityType<? extends WitherSkeletonEntity> entityType, World world) {
         super(entityType, world);
         this.setHasSkill(false);
+    }
+
+    public void setSummonOwner(@Nullable LivingEntity summonOwner) {
+        this.summonOwner = summonOwner;
+        if (summonOwner != null) {
+            EntityUtil.joinSameTeam(this, summonOwner);
+        }
+    }
+
+    @Nullable
+    @Override
+    public LivingEntity getSummonOwner() {
+        return this.summonOwner;
+    }
+
+    private boolean isValidSummonTarget(LivingEntity target) {
+        return EntityUtil.isValidSummonCombatTarget(this, this.summonOwner, target);
     }
 
     @Override
@@ -54,7 +76,7 @@ public class WitherSkeletonDogEntity extends WitherSkeletonEntity implements Gen
         this.goalSelector.add(2, new MeleeAttackGoal(this, 1.0D, true));
         this.goalSelector.add(7, new WanderAroundFarGoal(this, 0.8D));
         this.targetSelector.add(1, new ActiveTargetGoal<>(this, LivingEntity.class, 10, true, false,
-                (entity, world) -> entity != this && !entity.isTeammate(this)));
+                (entity, world) -> isValidSummonTarget(entity)));
     }
 
     @Override
@@ -68,6 +90,7 @@ public class WitherSkeletonDogEntity extends WitherSkeletonEntity implements Gen
         super.tick();
         entityTick();
         if (!this.getWorld().isClient()) {
+            this.setAttacking(this.getTarget() != null);
             double speed = this.getTarget() == null ? 0.3D : 0.6D;
             this.getAttributeInstance(EntityAttributes.MOVEMENT_SPEED).setBaseValue(speed);
         }
@@ -75,7 +98,7 @@ public class WitherSkeletonDogEntity extends WitherSkeletonEntity implements Gen
 
     @Override
     public boolean tryAttack(ServerWorld world, Entity target) {
-        if (!(target instanceof LivingEntity living) || living.isTeammate(this) || hasSkill() || !canSkill()) {
+        if (!(target instanceof LivingEntity living) || !isValidSummonTarget(living) || hasSkill() || !canSkill()) {
             return false;
         }
         this.setHasSkill(true);
@@ -87,7 +110,7 @@ public class WitherSkeletonDogEntity extends WitherSkeletonEntity implements Gen
     @Override
     public void runSkill_1(WitherSkeletonDogEntity entity) {
         LivingEntity target = this.getTarget();
-        if (target == null || !(this.getWorld() instanceof ServerWorld world)) {
+        if (target == null || !isValidSummonTarget(target) || !(this.getWorld() instanceof ServerWorld world)) {
             return;
         }
         target.damage(world, this.getDamageSources().mobAttack(this), 80.0F);
@@ -119,7 +142,7 @@ public class WitherSkeletonDogEntity extends WitherSkeletonEntity implements Gen
             return PlayState.CONTINUE;
         }
         if (state.isMoving()) {
-            return this.getTarget() == null ? state.setAndContinue(WALK_ANIM) : state.setAndContinue(RUN_ANIM);
+            return this.isAttacking() ? state.setAndContinue(RUN_ANIM) : state.setAndContinue(WALK_ANIM);
         }
         return state.setAndContinue(IDLE_ANIM);
     }

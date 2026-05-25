@@ -4,8 +4,6 @@ import net.minecraft.server.network.ServerPlayerEntity;
 
 public final class MobBattlePermissions {
 
-    private MobBattlePermissions() {}
-
     public static boolean canUseProtectedContent(ServerPlayerEntity player) {
         //return true;
         if (player == null) return false;
