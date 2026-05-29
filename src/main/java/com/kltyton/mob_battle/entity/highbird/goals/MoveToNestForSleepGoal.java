@@ -2,10 +2,9 @@ package com.kltyton.mob_battle.entity.highbird.goals;
 
 import com.kltyton.mob_battle.entity.highbird.HighbirdBaseEntity;
 import com.kltyton.mob_battle.entity.highbird.adulthood.HighbirdAdulthoodEntity;
-import net.minecraft.entity.ai.goal.Goal;
-import net.minecraft.util.math.BlockPos;
-
 import java.util.EnumSet;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.ai.goal.Goal;
 
 public class MoveToNestForSleepGoal extends Goal {
     private final HighbirdAdulthoodEntity mob;
@@ -13,11 +12,11 @@ public class MoveToNestForSleepGoal extends Goal {
 
     public MoveToNestForSleepGoal(HighbirdAdulthoodEntity mob) {
         this.mob = mob;
-        this.setControls(EnumSet.of(Control.MOVE));
+        this.setFlags(EnumSet.of(Flag.MOVE));
     }
 
     @Override
-    public boolean canStart() {
+    public boolean canUse() {
         // 只在夜晚、未睡觉、有有效巢穴且不在巢穴附近时触发
         return mob.shouldSleep() &&
                 !mob.isSleeping &&
@@ -31,7 +30,7 @@ public class MoveToNestForSleepGoal extends Goal {
         BlockPos nest = mob.getNestPos();
         if (nest != null) {
             // 尝试寻找路径到巢穴
-            mob.getNavigation().startMovingTo(
+            mob.getNavigation().moveTo(
                     nest.getX() + 0.5,
                     nest.getY(),
                     nest.getZ() + 0.5,
@@ -41,7 +40,7 @@ public class MoveToNestForSleepGoal extends Goal {
     }
 
     @Override
-    public boolean shouldContinue() {
+    public boolean canContinueToUse() {
         // 继续执行直到到达巢穴附近或开始睡觉
         return !mob.isNearNest() &&
                 !mob.isSleeping &&

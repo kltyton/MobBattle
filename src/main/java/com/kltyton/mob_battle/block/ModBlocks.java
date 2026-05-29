@@ -6,23 +6,22 @@ import com.kltyton.mob_battle.block.doubleblock.scarecrow.ScarecrowBlock;
 import com.kltyton.mob_battle.block.doubleblock.target.TargetBlock;
 import com.kltyton.mob_battle.block.mushroom.MushroomBlock;
 import com.kltyton.mob_battle.block.nest.NestBlock;
-import net.minecraft.block.AbstractBlock;
-import net.minecraft.block.Block;
-import net.minecraft.block.MapColor;
-import net.minecraft.block.enums.NoteBlockInstrument;
-import net.minecraft.block.piston.PistonBehavior;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.Item;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.sound.BlockSoundGroup;
-import net.minecraft.util.Identifier;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
+import net.minecraft.world.level.material.MapColor;
+import net.minecraft.world.level.material.PushReaction;
 
 public class ModBlocks {
     public static final Map<String, Block> BLOCKS = new HashMap<>();
@@ -39,65 +38,65 @@ public class ModBlocks {
         SCARECROW_BLOCK = register(
                 "scarecrow",
                 ScarecrowBlock::new,
-                AbstractBlock.Settings.create()
+                BlockBehaviour.Properties.of()
                         .instrument(NoteBlockInstrument.BASS)
                         .strength(3.0F)
-                        .nonOpaque()
-                        .burnable()
-                        .pistonBehavior(PistonBehavior.DESTROY),
+                        .noOcclusion()
+                        .ignitedByLava()
+                        .pushReaction(PushReaction.DESTROY),
                 true
         );
         TARGET_BLOCK = register(
                 "target",
                 TargetBlock::new,
-                AbstractBlock.Settings.create()
+                BlockBehaviour.Properties.of()
                         .instrument(NoteBlockInstrument.BASS)
                         .strength(3.0F)
-                        .nonOpaque()
-                        .burnable()
-                        .pistonBehavior(PistonBehavior.DESTROY),
+                        .noOcclusion()
+                        .ignitedByLava()
+                        .pushReaction(PushReaction.DESTROY),
                 true
         );
         MACHINE_WORKTABLE_BLOCK = register(
                 "machine_worktable",
                 MachineWorktableBlock::new,
-                AbstractBlock.Settings.create()
-                        .mapColor(MapColor.IRON_GRAY)
+                BlockBehaviour.Properties.of()
+                        .mapColor(MapColor.METAL)
                         .instrument(NoteBlockInstrument.IRON_XYLOPHONE)
                         .strength(3.5F)
-                        .nonOpaque()
-                        .sounds(BlockSoundGroup.METAL)
-                        .requiresTool()
-                        .pistonBehavior(PistonBehavior.DESTROY),
+                        .noOcclusion()
+                        .sound(SoundType.METAL)
+                        .requiresCorrectToolForDrops()
+                        .pushReaction(PushReaction.DESTROY),
                 true
         );
         NEST_BLOCK = register(
                 "nest",
                 NestBlock::new,
-                AbstractBlock.Settings.create()
-                        .mapColor(MapColor.PALE_YELLOW)
+                BlockBehaviour.Properties.of()
+                        .mapColor(MapColor.SAND)
                         .instrument(NoteBlockInstrument.BASS)
                         .strength(0.6F)
-                        .nonOpaque()
-                        .sounds(BlockSoundGroup.GRASS)
-                        .requiresTool(),
+                        .noOcclusion()
+                        .sound(SoundType.GRASS)
+                        .requiresCorrectToolForDrops(),
                 true
         );
         MUSHROOM_BLOCK = register(
                 "mushroom",
                 MushroomBlock::new,
-                AbstractBlock.Settings.create()
-                        .mapColor(MapColor.PALE_YELLOW)
+                BlockBehaviour.Properties.of()
+                        .mapColor(MapColor.SAND)
                         .instrument(NoteBlockInstrument.BASS)
                         .strength(0.6F)
-                        .nonOpaque()
-                        .sounds(BlockSoundGroup.GRASS),
+                        .noOcclusion()
+                        .sound(SoundType.GRASS),
                 true
         );
         COMPRESSED_IRON_BLOCK = register(
                 "compressed_iron_block",
                 Block::new,
-                compressedBlockSettings(MapColor.IRON_GRAY, NoteBlockInstrument.IRON_XYLOPHONE),
+                compressedBlockSettings(MapColor.METAL, NoteBlockInstrument.IRON_XYLOPHONE),
                 true
         );
         COMPRESSED_GOLD_BLOCK = register(
@@ -109,52 +108,52 @@ public class ModBlocks {
         COMPRESSED_DIAMOND_BLOCK = register(
                 "compressed_diamond_block",
                 Block::new,
-                compressedBlockSettings(MapColor.DIAMOND_BLUE, NoteBlockInstrument.BIT),
+                compressedBlockSettings(MapColor.DIAMOND, NoteBlockInstrument.BIT),
                 true
         );
         COMPRESSED_NETHERITE_BLOCK = register(
                 "compressed_netherite_block",
                 Block::new,
-                compressedBlockSettings(MapColor.BLACK, NoteBlockInstrument.BASEDRUM),
+                compressedBlockSettings(MapColor.COLOR_BLACK, NoteBlockInstrument.BASEDRUM),
                 true
         );
     }
 
-    private static AbstractBlock.Settings compressedBlockSettings(MapColor mapColor, NoteBlockInstrument instrument) {
-        return AbstractBlock.Settings.create()
+    private static BlockBehaviour.Properties compressedBlockSettings(MapColor mapColor, NoteBlockInstrument instrument) {
+        return BlockBehaviour.Properties.of()
                 .mapColor(mapColor)
                 .instrument(instrument)
                 .strength(5.0F, 6.0F)
-                .sounds(BlockSoundGroup.METAL)
-                .requiresTool();
+                .sound(SoundType.METAL)
+                .requiresCorrectToolForDrops();
     }
 
     public static <T extends Block> T register(
             String name,
-            Function<AbstractBlock.Settings, T> factory,
-            AbstractBlock.Settings settings,
+            Function<BlockBehaviour.Properties, T> factory,
+            BlockBehaviour.Properties settings,
             boolean shouldRegisterItem
     ) {
-        RegistryKey<Block> blockKey = keyOfBlock(name);
-        T block = factory.apply(settings.registryKey(blockKey));
+        ResourceKey<Block> blockKey = keyOfBlock(name);
+        T block = factory.apply(settings.setId(blockKey));
 
         if (shouldRegisterItem) {
-            RegistryKey<Item> itemKey = keyOfItem(name);
-            BlockItem blockItem = new BlockItem(block, new Item.Settings().registryKey(itemKey).useBlockPrefixedTranslationKey());
-            Registry.register(Registries.ITEM, itemKey, blockItem);
+            ResourceKey<Item> itemKey = keyOfItem(name);
+            BlockItem blockItem = new BlockItem(block, new Item.Properties().setId(itemKey).useBlockDescriptionPrefix());
+            Registry.register(BuiltInRegistries.ITEM, itemKey, blockItem);
         }
 
-        T blockRegistered = Registry.register(Registries.BLOCK, blockKey, block);
+        T blockRegistered = Registry.register(BuiltInRegistries.BLOCK, blockKey, block);
         BLOCKS.put(name, blockRegistered);
 
         return blockRegistered;
     }
 
-    private static RegistryKey<Block> keyOfBlock(String name) {
-        return RegistryKey.of(RegistryKeys.BLOCK, Identifier.of(Mob_battle.MOD_ID, name));
+    private static ResourceKey<Block> keyOfBlock(String name) {
+        return ResourceKey.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, name));
     }
 
-    private static RegistryKey<Item> keyOfItem(String name) {
-        return RegistryKey.of(RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, name));
+    private static ResourceKey<Item> keyOfItem(String name) {
+        return ResourceKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, name));
     }
 }

@@ -6,20 +6,20 @@ import com.kltyton.mob_battle.entity.littleperson.LittlePersonEntity;
 import com.kltyton.mob_battle.entity.littleperson.skillentity.base.BaseSkillLittlePersonEntity;
 import com.kltyton.mob_battle.utils.EntityUtil;
 import com.kltyton.mob_battle.utils.TaskSchedulerUtil;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.attribute.DefaultAttributeContainer;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.entity.mob.HostileEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.world.World;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 
 public class FrenchSphereFlowEntity extends BaseSkillLittlePersonEntity {
-    public FrenchSphereFlowEntity(EntityType<? extends HostileEntity> entityType, World world) {
+    public FrenchSphereFlowEntity(EntityType<? extends Monster> entityType, Level world) {
         super(entityType, world, 3);
         COOL_DOWN_TIME_1 = 15 * 20;
         COOL_DOWN_TIME_2 = 20 * 20;
@@ -28,10 +28,10 @@ public class FrenchSphereFlowEntity extends BaseSkillLittlePersonEntity {
         COOL_DOWN_TIME_5 = 80 * 20;
         init();
     }
-    public static DefaultAttributeContainer.Builder createLittlePersonAttributes() {
+    public static AttributeSupplier.Builder createLittlePersonAttributes() {
         return BaseSkillLittlePersonEntity.createAttributes()
-                .add(EntityAttributes.MAX_HEALTH, 3700.0)
-                .add(EntityAttributes.ATTACK_DAMAGE, 20.0)
+                .add(Attributes.MAX_HEALTH, 3700.0)
+                .add(Attributes.ATTACK_DAMAGE, 20.0)
                 .add(ModEntityAttributes.DAMAGE_REDUCTION, 0.25);
     }
     @Override
@@ -40,12 +40,12 @@ public class FrenchSphereFlowEntity extends BaseSkillLittlePersonEntity {
     }
     @Override
     public void attackAdditional(LivingEntity target) {
-        target.damage((ServerWorld) this.getWorld(), this.getDamageSources().indirectMagic(this, this), 25);
+        target.hurtServer((ServerLevel) this.level(), this.damageSources().indirectMagic(this, this), 25);
     }
     @Override
     public void tick() {
         super.tick();
-        if (!this.getWorld().isClient()) {
+        if (!this.level().isClientSide()) {
             runSkill();
         }
     }
@@ -66,7 +66,7 @@ public class FrenchSphereFlowEntity extends BaseSkillLittlePersonEntity {
     @Override
     public void runSkill_2(BaseSkillLittlePersonEntity entity) {
         for (LivingEntity livingEntity : EntityUtil.getNearbyEntity(entity, LivingEntity.class, LittlePersonEntity.class, 10, true, EntityUtil.TeamFilter.ALL)) {
-            livingEntity.addStatusEffect(new StatusEffectInstance(StatusEffects.ABSORPTION, 5 * 20, 19));
+            livingEntity.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, 5 * 20, 19));
         }
     }
     @Override
@@ -78,29 +78,29 @@ public class FrenchSphereFlowEntity extends BaseSkillLittlePersonEntity {
     @Override
     public void runSkill_4(BaseSkillLittlePersonEntity entity) {
         for (LivingEntity livingEntity : EntityUtil.getNearbyEntity(entity, LivingEntity.class, Object.class, 10, false, EntityUtil.TeamFilter.EXCLUDE_TEAM)) {
-            livingEntity.addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS, 5 * 20, 9));
+            livingEntity.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 5 * 20, 9));
         }
     }
     @Override
     public void runSkill_5(BaseSkillLittlePersonEntity entity) {
         for (LivingEntity livingEntity : EntityUtil.getNearbyEntity(entity, LivingEntity.class, Object.class, 10, false, EntityUtil.TeamFilter.EXCLUDE_TEAM)) {
-            livingEntity.addStatusEffect(new StatusEffectInstance(ModEffects.ARMOR_PIERCING_ENTRY, 10 * 20, 1));
+            livingEntity.addEffect(new MobEffectInstance(ModEffects.ARMOR_PIERCING_ENTRY, 10 * 20, 1));
         }
     }
     @Override
     public void runSkill_6(BaseSkillLittlePersonEntity entity) {
         for (LivingEntity livingEntity : EntityUtil.getNearbyEntity(entity, LivingEntity.class, Object.class, 10, false, EntityUtil.TeamFilter.EXCLUDE_TEAM)) {
-            livingEntity.addStatusEffect(new StatusEffectInstance(ModEffects.ARMOR_PIERCING_ENTRY, 10 * 20, 2));
-            livingEntity.addStatusEffect(new StatusEffectInstance(ModEffects.STUN_ENTRY, 20, 0));
+            livingEntity.addEffect(new MobEffectInstance(ModEffects.ARMOR_PIERCING_ENTRY, 10 * 20, 2));
+            livingEntity.addEffect(new MobEffectInstance(ModEffects.STUN_ENTRY, 20, 0));
         }
         for (LivingEntity livingEntity : EntityUtil.getNearbyEntity(entity, LivingEntity.class, LittlePersonEntity.class, 10, true, EntityUtil.TeamFilter.ONLY_TEAM)) {
-            livingEntity.addStatusEffect(new StatusEffectInstance(StatusEffects.RESISTANCE, 20 * 20, 1));
+            livingEntity.addEffect(new MobEffectInstance(MobEffects.RESISTANCE, 20 * 20, 1));
             livingEntity.heal(100f);
         }
         TaskSchedulerUtil.runLater(40, () -> {
             if (entity.getTarget() != null) {
-                entity.getTarget().damage((ServerWorld) entity.getWorld(), entity.getTarget().getDamageSources().explosion(entity, entity), 200);
-                entity.getTarget().damage((ServerWorld) entity.getWorld(), entity.getTarget().getDamageSources().indirectMagic(entity, entity), 70);
+                entity.getTarget().hurtServer((ServerLevel) entity.level(), entity.getTarget().damageSources().explosion(entity, entity), 200);
+                entity.getTarget().hurtServer((ServerLevel) entity.level(), entity.getTarget().damageSources().indirectMagic(entity, entity), 70);
             }
 
         });

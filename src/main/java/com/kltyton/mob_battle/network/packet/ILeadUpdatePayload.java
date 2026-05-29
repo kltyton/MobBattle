@@ -1,19 +1,19 @@
 package com.kltyton.mob_battle.network.packet;
 
 import com.kltyton.mob_battle.Mob_battle;
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.codec.PacketCodecs;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.util.Identifier;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
 
-public record ILeadUpdatePayload(int entityId, int iLead_1, int iLead_2) implements CustomPayload {
-    public static final Id<ILeadUpdatePayload> ID = new Id<>(Identifier.of(Mob_battle.MOD_ID, "lead_update_payload"));
-    public static final PacketCodec<RegistryByteBuf, ILeadUpdatePayload> CODEC = PacketCodec.tuple(
-            PacketCodecs.VAR_INT, ILeadUpdatePayload::entityId,
-            PacketCodecs.VAR_INT, ILeadUpdatePayload::iLead_1,
-            PacketCodecs.VAR_INT, ILeadUpdatePayload::iLead_2,
+public record ILeadUpdatePayload(int entityId, int iLead_1, int iLead_2) implements CustomPacketPayload {
+    public static final Type<ILeadUpdatePayload> ID = new Type<>(ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "lead_update_payload"));
+    public static final StreamCodec<RegistryFriendlyByteBuf, ILeadUpdatePayload> CODEC = StreamCodec.composite(
+            ByteBufCodecs.VAR_INT, ILeadUpdatePayload::entityId,
+            ByteBufCodecs.VAR_INT, ILeadUpdatePayload::iLead_1,
+            ByteBufCodecs.VAR_INT, ILeadUpdatePayload::iLead_2,
             ILeadUpdatePayload::new
     );
-    @Override public Id<? extends CustomPayload> getId() { return ID; }
+    @Override public Type<? extends CustomPacketPayload> type() { return ID; }
 }

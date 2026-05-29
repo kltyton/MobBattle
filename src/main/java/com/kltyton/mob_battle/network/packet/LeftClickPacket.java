@@ -1,17 +1,17 @@
 package com.kltyton.mob_battle.network.packet;
 
 import com.kltyton.mob_battle.Mob_battle;
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.codec.PacketCodecs;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.util.Identifier;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
 
-public record LeftClickPacket(boolean pressing) implements CustomPayload {
-    public static final Id<LeftClickPacket> ID = new Id<>(Identifier.of(Mob_battle.MOD_ID, "left_click"));
-    public static final PacketCodec<RegistryByteBuf, LeftClickPacket> CODEC = PacketCodec.tuple(
-            PacketCodecs.BOOLEAN, LeftClickPacket::pressing,
+public record LeftClickPacket(boolean pressing) implements CustomPacketPayload {
+    public static final Type<LeftClickPacket> ID = new Type<>(ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "left_click"));
+    public static final StreamCodec<RegistryFriendlyByteBuf, LeftClickPacket> CODEC = StreamCodec.composite(
+            ByteBufCodecs.BOOL, LeftClickPacket::pressing,
             LeftClickPacket::new
     );
-    @Override public Id<? extends CustomPayload> getId() { return ID; }
+    @Override public Type<? extends CustomPacketPayload> type() { return ID; }
 }

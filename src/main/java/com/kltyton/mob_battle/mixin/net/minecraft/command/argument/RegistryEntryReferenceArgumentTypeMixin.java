@@ -6,7 +6,6 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.Suggestion;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import net.minecraft.command.argument.RegistryEntryReferenceArgumentType;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -14,8 +13,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import net.minecraft.commands.arguments.ResourceArgument;
 
-@Mixin(RegistryEntryReferenceArgumentType.class)
+@Mixin(ResourceArgument.class)
 public abstract class RegistryEntryReferenceArgumentTypeMixin {
 
     @Inject(method = "listSuggestions", at = @At("RETURN"), cancellable = true)

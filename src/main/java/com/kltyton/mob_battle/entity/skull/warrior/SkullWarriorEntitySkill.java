@@ -1,24 +1,24 @@
 package com.kltyton.mob_battle.entity.skull.warrior;
 
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.Box;
-import net.minecraft.world.World;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
 
 public class SkullWarriorEntitySkill {
     public static void runAttackSkill(SkullWarriorEntity witherSkeletonKingEntity) {
         double range = 0.3D;
-        World world = witherSkeletonKingEntity.getWorld();
-        if (witherSkeletonKingEntity.tryAttackBase((ServerWorld)world, witherSkeletonKingEntity.getTarget())) {
-            Box damageBox = witherSkeletonKingEntity.getBoundingBox().expand(range, range, range);
-            world.getOtherEntities(witherSkeletonKingEntity, damageBox).stream()
+        Level world = witherSkeletonKingEntity.level();
+        if (witherSkeletonKingEntity.tryAttackBase((ServerLevel)world, witherSkeletonKingEntity.getTarget())) {
+            AABB damageBox = witherSkeletonKingEntity.getBoundingBox().inflate(range, range, range);
+            world.getEntities(witherSkeletonKingEntity, damageBox).stream()
                     .filter(entity -> entity instanceof LivingEntity)
-                    .filter(entity -> entity.isTeammate(witherSkeletonKingEntity))
+                    .filter(entity -> entity.isAlliedTo(witherSkeletonKingEntity))
                     .filter(entity -> !entity.isSpectator() && entity.isAlive())
-                    .filter(entity -> entity.squaredDistanceTo(witherSkeletonKingEntity) <= range * range)
+                    .filter(entity -> entity.distanceToSqr(witherSkeletonKingEntity) <= range * range)
                     .forEach(entity -> {
                         if (entity != witherSkeletonKingEntity.getTarget()) {
-                            witherSkeletonKingEntity.tryAttackBase((ServerWorld) world, entity);
+                            witherSkeletonKingEntity.tryAttackBase((ServerLevel) world, entity);
                         }
                     });
         }

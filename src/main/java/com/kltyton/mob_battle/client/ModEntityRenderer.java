@@ -61,10 +61,10 @@ import com.kltyton.mob_battle.entity.witherskeletonking.WitherSkeletonKingRender
 import com.kltyton.mob_battle.entity.witherskeletonking.skill.WitherSkullBulletEntityRenderer;
 import com.kltyton.mob_battle.entity.xunsheng.XunShengEntityRenderer;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
-import net.minecraft.client.render.entity.EmptyEntityRenderer;
-import net.minecraft.client.render.entity.EvokerEntityRenderer;
-import net.minecraft.client.render.entity.WitherEntityRenderer;
-import net.minecraft.entity.EntityType;
+import net.minecraft.client.renderer.entity.EvokerRenderer;
+import net.minecraft.client.renderer.entity.NoopRenderer;
+import net.minecraft.client.renderer.entity.WitherBossRenderer;
+import net.minecraft.world.entity.EntityType;
 
 public class ModEntityRenderer {
     public static void init() {
@@ -123,16 +123,16 @@ public class ModEntityRenderer {
         EntityRendererRegistry.register(ModEntities.SNOWMAN_ICE_BLOCK, SnowmanIceBlockRenderer::new);
         EntityRendererRegistry.register(ModEntities.CBOT_SNOWBALL, CbotSnowballRenderer::new);
         EntityRendererRegistry.register(ModEntities.PIGLIN_GENERAL, PiglinGeneralEntityRenderer::new);
-        EntityRendererRegistry.register(ModEntities.MODIFIED_DRAGON_BREATH_CLOUD, EmptyEntityRenderer::new);
+        EntityRendererRegistry.register(ModEntities.MODIFIED_DRAGON_BREATH_CLOUD, NoopRenderer::new);
         EntityRendererRegistry.register(ModEntities.COAL_SILVERFISH, ctx -> new GeneralEntityRenderer<>(ctx, "coal_silverfish", false));
         EntityRendererRegistry.register(ModEntities.SILENCE_PHANTOM, ctx -> new GeneralEntityRenderer<>(ctx, "silence_phantom", false));
         EntityRendererRegistry.register(ModEntities.SHIELD, ctx -> new GeneralEntityRenderer<>(ctx, "shield_force_field", false, GeneralEntityModel.RenderTypes.TRANSLUCENT));
-        EntityRendererRegistry.register(ModEntities.SUPER_EVOKER, EvokerEntityRenderer::new);
+        EntityRendererRegistry.register(ModEntities.SUPER_EVOKER, EvokerRenderer::new);
         EntityRendererRegistry.register(ModEntities.LOBSTER, LobsterEntityRenderer::new);
         EntityRendererRegistry.register(ModEntities.MAGMA_LOBSTER, MagmaLobsterEntityRenderer::new);
         EntityRendererRegistry.register(ModEntities.ENDER_DRAGON_METEORITE, ctx -> new GeneralEntityRenderer<>(ctx, "ender_dragon_meteorite", false));
         EntityRendererRegistry.register(ModEntities.MAGMA_LOBBER_BIG_FIREBALL, ctx -> new GeneralEntityRenderer<>(ctx, "magma_lobber_big_fireball", false));
-        EntityRendererRegistry.register(ModEntities.ENHANCED_WITHER, WitherEntityRenderer::new);
+        EntityRendererRegistry.register(ModEntities.ENHANCED_WITHER, WitherBossRenderer::new);
         EntityRendererRegistry.register(ModEntities.DUAL_BLADE_WITHER_SKELETON, ctx -> new GeneralEntityRenderer<>(ctx, "dual_blade_wither_skeleton", false));
         EntityRendererRegistry.register(ModEntities.SHIELD_AXE_WITHER_SKELETON, ctx -> new GeneralEntityRenderer<>(ctx, "shield_axe_wither_skeleton", false));
         EntityRendererRegistry.register(ModEntities.LASER, LaserEntityRenderer::new);

@@ -1,10 +1,9 @@
 package com.kltyton.mob_battle.entity.highbird.goals;
 
 import com.kltyton.mob_battle.entity.highbird.adulthood.HighbirdAdulthoodEntity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.ai.goal.Goal;
-
 import java.util.EnumSet;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.goal.Goal;
 
 public class AngerAnimationGoal extends Goal {
     private final HighbirdAdulthoodEntity bird;
@@ -12,14 +11,14 @@ public class AngerAnimationGoal extends Goal {
 
     public AngerAnimationGoal(HighbirdAdulthoodEntity bird) {
         this.bird = bird;
-        setControls(EnumSet.of(Control.MOVE, Goal.Control.LOOK));
+        setFlags(EnumSet.of(Flag.MOVE, Goal.Flag.LOOK));
     }
     @Override
-    public boolean shouldRunEveryTick() {
+    public boolean requiresUpdateEveryTick() {
         return true;
     }
     @Override
-    public boolean canStart() {
+    public boolean canUse() {
         LivingEntity target = bird.getTarget();
         if (target == null || !target.isAlive()) return false;
 
@@ -43,13 +42,13 @@ public class AngerAnimationGoal extends Goal {
             // 每 tick 把头部转向当前目标
             LivingEntity target = bird.getTarget();
             if (target != null) {
-                bird.getLookControl().lookAt(target, 90.0F, 90.0F);
+                bird.getLookControl().setLookAt(target, 90.0F, 90.0F);
             }
         }
     }
 
     @Override
-    public boolean shouldContinue() {
+    public boolean canContinueToUse() {
         return timer > 0;
     }
 

@@ -1,51 +1,50 @@
 package com.kltyton.mob_battle.items.manager;
 
 import com.kltyton.mob_battle.Mob_battle;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.attribute.EntityAttributeInstance;
-import net.minecraft.entity.attribute.EntityAttributeModifier;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.particle.DustColorTransitionParticleEffect;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Vec3d;
-
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import net.minecraft.core.particles.DustColorTransitionOptions;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 public final class AreaGravityFieldManager {
     private AreaGravityFieldManager() {}
 
-    private static final Identifier GRAVITY_FIELD_MODIFIER_ID =
-            Identifier.of(Mob_battle.MOD_ID, "area_gravity_device_field");
+    private static final ResourceLocation GRAVITY_FIELD_MODIFIER_ID =
+            ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "area_gravity_device_field");
 
     /**
      * “高重力”的强度。
      */
     private static final double HIGH_GRAVITY_AMOUNT = 1.0D;
 
-    private static final EntityAttributeModifier GRAVITY_MODIFIER =
-            new EntityAttributeModifier(
+    private static final AttributeModifier GRAVITY_MODIFIER =
+            new AttributeModifier(
                     GRAVITY_FIELD_MODIFIER_ID,
                     HIGH_GRAVITY_AMOUNT,
-                    EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE
+                    AttributeModifier.Operation.ADD_MULTIPLIED_BASE
             );
 
-    private static final Map<ServerWorld, List<FieldInstance>> ACTIVE_FIELDS = new ConcurrentHashMap<>();
+    private static final Map<ServerLevel, List<FieldInstance>> ACTIVE_FIELDS = new ConcurrentHashMap<>();
 
-    public static void addField(ServerWorld world, LivingEntity owner, Vec3d center, double radius, int durationTicks) {
+    public static void addField(ServerLevel world, LivingEntity owner, Vec3 center, double radius, int durationTicks) {
         ACTIVE_FIELDS.computeIfAbsent(world, w -> new ArrayList<>())
-                .add(new FieldInstance(owner.getUuid(), center, radius, world.getTime() + durationTicks));
+                .add(new FieldInstance(owner.getUUID(), center, radius, world.getGameTime() + durationTicks));
     }
 
-    public static void tickWorld(ServerWorld world) {
+    public static void tickWorld(ServerLevel world) {
         List<FieldInstance> fields = ACTIVE_FIELDS.get(world);
         if (fields == null || fields.isEmpty()) {
             return;
         }
 
-        long now = world.getTime();
+        long now = world.getGameTime();
         Iterator<FieldInstance> iterator = fields.iterator();
 
         while (iterator.hasNext()) {
@@ -65,18 +64,18 @@ public final class AreaGravityFieldManager {
         }
     }
 
-    private static void tickField(ServerWorld world, FieldInstance field) {
-        Box box = Box.of(field.center, field.radius * 2.0, field.radius * 2.0, field.radius * 2.0);
+    private static void tickField(ServerLevel world, FieldInstance field) {
+        AABB box = AABB.ofSize(field.center, field.radius * 2.0, field.radius * 2.0, field.radius * 2.0);
 
-        List<LivingEntity> nearby = world.getEntitiesByClass(
+        List<LivingEntity> nearby = world.getEntitiesOfClass(
                 LivingEntity.class,
                 box,
-                entity -> entity.isAlive() && entity.squaredDistanceTo(field.center) <= field.radius * field.radius
+                entity -> entity.isAlive() && entity.distanceToSqr(field.center) <= field.radius * field.radius
         );
 
         Set<UUID> currentInside = new HashSet<>();
         for (LivingEntity living : nearby) {
-            currentInside.add(living.getUuid());
+            currentInside.add(living.getUUID());
             applyHighGravity(living);
         }
 
@@ -97,7 +96,7 @@ public final class AreaGravityFieldManager {
         spawnSphereParticles(world, field.center, field.radius);
     }
 
-    private static void removeAllInField(ServerWorld world, FieldInstance field) {
+    private static void removeAllInField(ServerLevel world, FieldInstance field) {
         for (UUID uuid : field.affectedEntities) {
             LivingEntity entity = findEntity(world, uuid);
             if (entity != null) {
@@ -107,7 +106,7 @@ public final class AreaGravityFieldManager {
         field.affectedEntities.clear();
     }
 
-    private static LivingEntity findEntity(ServerWorld world, UUID uuid) {
+    private static LivingEntity findEntity(ServerLevel world, UUID uuid) {
         if (world.getEntity(uuid) instanceof LivingEntity living) {
             return living;
         }
@@ -115,18 +114,18 @@ public final class AreaGravityFieldManager {
     }
 
     private static void applyHighGravity(LivingEntity entity) {
-        EntityAttributeInstance gravity = entity.getAttributeInstance(EntityAttributes.GRAVITY);
+        AttributeInstance gravity = entity.getAttribute(Attributes.GRAVITY);
         if (gravity == null) {
             return;
         }
 
         if (gravity.getModifier(GRAVITY_FIELD_MODIFIER_ID) == null) {
-            gravity.addPersistentModifier(GRAVITY_MODIFIER);
+            gravity.addPermanentModifier(GRAVITY_MODIFIER);
         }
     }
 
     private static void removeHighGravity(LivingEntity entity) {
-        EntityAttributeInstance gravity = entity.getAttributeInstance(EntityAttributes.GRAVITY);
+        AttributeInstance gravity = entity.getAttribute(Attributes.GRAVITY);
         if (gravity == null) {
             return;
         }
@@ -134,9 +133,9 @@ public final class AreaGravityFieldManager {
         gravity.removeModifier(GRAVITY_FIELD_MODIFIER_ID);
     }
 
-    private static void spawnSphereParticles(ServerWorld world, Vec3d center, double radius) {
+    private static void spawnSphereParticles(ServerLevel world, Vec3 center, double radius) {
         // 青蓝 -> 白色 过渡
-        DustColorTransitionParticleEffect particle = new DustColorTransitionParticleEffect(
+        DustColorTransitionOptions particle = new DustColorTransitionOptions(
                 0x40CCFF,
                 0xFFFFFF,
                 1.3F
@@ -155,7 +154,7 @@ public final class AreaGravityFieldManager {
                 double x = ringRadius * Math.cos(theta);
                 double z = ringRadius * Math.sin(theta);
 
-                world.spawnParticles(
+                world.sendParticles(
                         particle,
                         center.x + x,
                         center.y + y,
@@ -170,12 +169,12 @@ public final class AreaGravityFieldManager {
 
     private static final class FieldInstance {
         private final UUID ownerUuid;
-        private final Vec3d center;
+        private final Vec3 center;
         private final double radius;
         private final long expireTime;
         private final Set<UUID> affectedEntities = new HashSet<>();
 
-        private FieldInstance(UUID ownerUuid, Vec3d center, double radius, long expireTime) {
+        private FieldInstance(UUID ownerUuid, Vec3 center, double radius, long expireTime) {
             this.ownerUuid = ownerUuid;
             this.center = center;
             this.radius = radius;

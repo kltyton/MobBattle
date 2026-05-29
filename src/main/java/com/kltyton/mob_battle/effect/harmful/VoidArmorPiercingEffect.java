@@ -1,11 +1,11 @@
 package com.kltyton.mob_battle.effect.harmful;
 
-import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.entity.effect.StatusEffectCategory;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectCategory;
 
-public class VoidArmorPiercingEffect extends StatusEffect {
+public class VoidArmorPiercingEffect extends MobEffect {
     public VoidArmorPiercingEffect() {
-        super(StatusEffectCategory.HARMFUL, 0x708090);
+        super(MobEffectCategory.HARMFUL, 0x708090);
     }
 
 }

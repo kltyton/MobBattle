@@ -5,43 +5,43 @@ import com.google.common.collect.Lists;
 import com.kltyton.mob_battle.effect.ModEffects;
 import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.utils.EntityUtil;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LazyEntityReference;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.data.DataTracker;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.projectile.ProjectileEntity;
-import net.minecraft.entity.projectile.ProjectileUtil;
-import net.minecraft.network.packet.s2c.play.EntitySpawnS2CPacket;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.storage.ReadView;
-import net.minecraft.storage.WriteView;
-import net.minecraft.util.Uuids;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.EntityHitResult;
-import net.minecraft.util.hit.HitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.UUIDUtil;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Mth;
 import net.minecraft.world.Difficulty;
-import net.minecraft.world.World;
-import net.minecraft.world.event.GameEvent;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityReference;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.entity.projectile.ProjectileUtil;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-public class WitherSkullBulletEntity extends ProjectileEntity {
+public class WitherSkullBulletEntity extends Projectile {
     @Nullable
-    private LazyEntityReference<Entity> target;
+    private EntityReference<Entity> target;
     @Nullable
     private Direction direction;
     private int stepCount;
@@ -49,34 +49,34 @@ public class WitherSkullBulletEntity extends ProjectileEntity {
     private double targetY;
     private double targetZ;
 
-    public WitherSkullBulletEntity(EntityType<? extends WitherSkullBulletEntity> entityType, World world) {
+    public WitherSkullBulletEntity(EntityType<? extends WitherSkullBulletEntity> entityType, Level world) {
         super(entityType, world);
-        this.noClip = true;
+        this.noPhysics = true;
     }
 
-    public WitherSkullBulletEntity(World world, LivingEntity owner, Entity target, Direction.Axis axis) {
+    public WitherSkullBulletEntity(Level world, LivingEntity owner, Entity target, Direction.Axis axis) {
         this(ModEntities.WITHER_SKULL_BULLET_ENTITY, world);
         this.setOwner(owner);
-        Vec3d vec3d = owner.getBoundingBox().getCenter();
-        this.refreshPositionAndAngles(vec3d.x, vec3d.y, vec3d.z, this.getYaw(), this.getPitch());
-        this.target = new LazyEntityReference<>(target);
+        Vec3 vec3d = owner.getBoundingBox().getCenter();
+        this.snapTo(vec3d.x, vec3d.y, vec3d.z, this.getYRot(), this.getXRot());
+        this.target = new EntityReference<>(target);
         this.direction = Direction.UP;
         this.changeTargetDirection(axis, target);
     }
 
     @Override
-    public SoundCategory getSoundCategory() {
-        return SoundCategory.HOSTILE;
+    public SoundSource getSoundSource() {
+        return SoundSource.HOSTILE;
     }
 
     @Override
-    protected void writeCustomData(WriteView view) {
-        super.writeCustomData(view);
+    protected void addAdditionalSaveData(ValueOutput view) {
+        super.addAdditionalSaveData(view);
         if (this.target != null) {
-            view.put("Target", Uuids.INT_STREAM_CODEC, this.target.getUuid());
+            view.store("Target", UUIDUtil.CODEC, this.target.getUUID());
         }
 
-        view.putNullable("Dir", Direction.INDEX_CODEC, this.direction);
+        view.storeNullable("Dir", Direction.LEGACY_ID_CODEC, this.direction);
         view.putInt("Steps", this.stepCount);
         view.putDouble("TXD", this.targetX);
         view.putDouble("TYD", this.targetY);
@@ -84,18 +84,18 @@ public class WitherSkullBulletEntity extends ProjectileEntity {
     }
 
     @Override
-    protected void readCustomData(ReadView view) {
-        super.readCustomData(view);
-        this.stepCount = view.getInt("Steps", 0);
-        this.targetX = view.getDouble("TXD", 0.0);
-        this.targetY = view.getDouble("TYD", 0.0);
-        this.targetZ = view.getDouble("TZD", 0.0);
-        this.direction = view.read("Dir", Direction.INDEX_CODEC).orElse(null);
+    protected void readAdditionalSaveData(ValueInput view) {
+        super.readAdditionalSaveData(view);
+        this.stepCount = view.getIntOr("Steps", 0);
+        this.targetX = view.getDoubleOr("TXD", 0.0);
+        this.targetY = view.getDoubleOr("TYD", 0.0);
+        this.targetZ = view.getDoubleOr("TZD", 0.0);
+        this.direction = view.read("Dir", Direction.LEGACY_ID_CODEC).orElse(null);
 
         // 防御性读取：只有当 NBT 包含 Target 时才尝试恢复引用
         if (view.contains("Target")) {
             try {
-                this.target = LazyEntityReference.fromData(view, "Target");
+                this.target = EntityReference.read(view, "Target");
             } catch (Exception e) {
                 this.target = null; // 如果数据格式损坏，直接重置
             }
@@ -105,11 +105,11 @@ public class WitherSkullBulletEntity extends ProjectileEntity {
     }
 
     @Override
-    protected void initDataTracker(DataTracker.Builder builder) {
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
     }
 
     @Nullable
-    private Direction getDirection() {
+    private Direction getProjectileDirection() {
         return this.direction;
     }
 
@@ -121,55 +121,55 @@ public class WitherSkullBulletEntity extends ProjectileEntity {
         double d = 0.5;
         BlockPos blockPos;
         if (target == null) {
-            blockPos = this.getBlockPos().down();
+            blockPos = this.blockPosition().below();
         } else {
-            d = target.getHeight() * 0.5;
-            blockPos = BlockPos.ofFloored(target.getX(), target.getY() + d, target.getZ());
+            d = target.getBbHeight() * 0.5;
+            blockPos = BlockPos.containing(target.getX(), target.getY() + d, target.getZ());
         }
 
         double e = blockPos.getX() + 0.5;
         double f = blockPos.getY() + d;
         double g = blockPos.getZ() + 0.5;
         Direction direction = null;
-        if (!blockPos.isWithinDistance(this.getPos(), 2.0)) {
-            BlockPos blockPos2 = this.getBlockPos();
+        if (!blockPos.closerToCenterThan(this.position(), 2.0)) {
+            BlockPos blockPos2 = this.blockPosition();
             List<Direction> list = Lists.newArrayList();
             if (axis != Direction.Axis.X) {
-                if (blockPos2.getX() < blockPos.getX() && this.getWorld().isAir(blockPos2.east())) {
+                if (blockPos2.getX() < blockPos.getX() && this.level().isEmptyBlock(blockPos2.east())) {
                     list.add(Direction.EAST);
-                } else if (blockPos2.getX() > blockPos.getX() && this.getWorld().isAir(blockPos2.west())) {
+                } else if (blockPos2.getX() > blockPos.getX() && this.level().isEmptyBlock(blockPos2.west())) {
                     list.add(Direction.WEST);
                 }
             }
 
             if (axis != Direction.Axis.Y) {
-                if (blockPos2.getY() < blockPos.getY() && this.getWorld().isAir(blockPos2.up())) {
+                if (blockPos2.getY() < blockPos.getY() && this.level().isEmptyBlock(blockPos2.above())) {
                     list.add(Direction.UP);
-                } else if (blockPos2.getY() > blockPos.getY() && this.getWorld().isAir(blockPos2.down())) {
+                } else if (blockPos2.getY() > blockPos.getY() && this.level().isEmptyBlock(blockPos2.below())) {
                     list.add(Direction.DOWN);
                 }
             }
 
             if (axis != Direction.Axis.Z) {
-                if (blockPos2.getZ() < blockPos.getZ() && this.getWorld().isAir(blockPos2.south())) {
+                if (blockPos2.getZ() < blockPos.getZ() && this.level().isEmptyBlock(blockPos2.south())) {
                     list.add(Direction.SOUTH);
-                } else if (blockPos2.getZ() > blockPos.getZ() && this.getWorld().isAir(blockPos2.north())) {
+                } else if (blockPos2.getZ() > blockPos.getZ() && this.level().isEmptyBlock(blockPos2.north())) {
                     list.add(Direction.NORTH);
                 }
             }
 
-            direction = Direction.random(this.random);
+            direction = Direction.getRandom(this.random);
             if (list.isEmpty()) {
-                for (int i = 5; !this.getWorld().isAir(blockPos2.offset(direction)) && i > 0; i--) {
-                    direction = Direction.random(this.random);
+                for (int i = 5; !this.level().isEmptyBlock(blockPos2.relative(direction)) && i > 0; i--) {
+                    direction = Direction.getRandom(this.random);
                 }
             } else {
                 direction = list.get(this.random.nextInt(list.size()));
             }
 
-            e = this.getX() + direction.getOffsetX();
-            f = this.getY() + direction.getOffsetY();
-            g = this.getZ() + direction.getOffsetZ();
+            e = this.getX() + direction.getStepX();
+            f = this.getY() + direction.getStepY();
+            g = this.getZ() + direction.getStepZ();
         }
 
         this.setDirection(direction);
@@ -187,19 +187,19 @@ public class WitherSkullBulletEntity extends ProjectileEntity {
             this.targetZ = k / l * 0.15;
         }
 
-        this.velocityDirty = true;
+        this.hasImpulse = true;
         this.stepCount = 10 + this.random.nextInt(5) * 10;
     }
 
     @Override
     public void checkDespawn() {
-        if (this.getWorld().getDifficulty() == Difficulty.PEACEFUL) {
+        if (this.level().getDifficulty() == Difficulty.PEACEFUL) {
             this.discard();
         }
     }
 
     @Override
-    protected double getGravity() {
+    protected double getDefaultGravity() {
         return 0.04;
     }
 
@@ -208,10 +208,10 @@ public class WitherSkullBulletEntity extends ProjectileEntity {
         super.tick();
         Entity entity = null;
 
-        if (!this.getWorld().isClient() && this.target != null) {
+        if (!this.level().isClientSide() && this.target != null) {
             try {
                 // 包装解析过程，防止内部 Optional.of(null) 崩溃
-                entity = LazyEntityReference.resolve(this.target, this.getWorld(), Entity.class);
+                entity = EntityReference.get(this.target, this.level(), Entity.class);
             } catch (NullPointerException | IllegalArgumentException e) {
                 // 如果解析失败，说明引用已失效
                 this.target = null;
@@ -219,37 +219,37 @@ public class WitherSkullBulletEntity extends ProjectileEntity {
         }
 
         HitResult hitResult = null;
-        if (!this.getWorld().isClient) {
+        if (!this.level().isClientSide) {
             // 如果 entity 依然为 null，说明目标可能被移除或从未找到
-            if (entity == null || !entity.isAlive() || (entity instanceof PlayerEntity p && (p.isSpectator() || p.isCreative()))) {
+            if (entity == null || !entity.isAlive() || (entity instanceof Player p && (p.isSpectator() || p.isCreative()))) {
                 this.target = null; // 清除无效引用
                 this.applyGravity();
             } else {
                 // 原有的追踪逻辑...
-                this.targetX = MathHelper.clamp(this.targetX * 1.025, -1.0, 1.0);
-                this.targetY = MathHelper.clamp(this.targetY * 1.025, -1.0, 1.0);
-                this.targetZ = MathHelper.clamp(this.targetZ * 1.025, -1.0, 1.0);
-                Vec3d v = this.getVelocity();
-                this.setVelocity(v.add((this.targetX - v.x) * 0.2, (this.targetY - v.y) * 0.2, (this.targetZ - v.z) * 0.2));
+                this.targetX = Mth.clamp(this.targetX * 1.025, -1.0, 1.0);
+                this.targetY = Mth.clamp(this.targetY * 1.025, -1.0, 1.0);
+                this.targetZ = Mth.clamp(this.targetZ * 1.025, -1.0, 1.0);
+                Vec3 v = this.getDeltaMovement();
+                this.setDeltaMovement(v.add((this.targetX - v.x) * 0.2, (this.targetY - v.y) * 0.2, (this.targetZ - v.z) * 0.2));
             }
 
-            hitResult = ProjectileUtil.getCollision(this, this::canHit);
+            hitResult = ProjectileUtil.getHitResultOnMoveVector(this, this::canHitEntity);
         }
 
-        Vec3d vec3d = this.getVelocity();
-        this.setPosition(this.getPos().add(vec3d));
-        this.tickBlockCollision();
-        if (this.portalManager != null && this.portalManager.isInPortal()) {
-            this.tickPortalTeleportation();
+        Vec3 vec3d = this.getDeltaMovement();
+        this.setPos(this.position().add(vec3d));
+        this.applyEffectsFromBlocks();
+        if (this.portalProcess != null && this.portalProcess.isInsidePortalThisTick()) {
+            this.handlePortal();
         }
 
         if (hitResult != null && this.isAlive() && hitResult.getType() != HitResult.Type.MISS) {
-            this.hitOrDeflect(hitResult);
+            this.hitTargetOrDeflectSelf(hitResult);
         }
 
-        ProjectileUtil.setRotationFromVelocity(this, 0.5F);
-        if (this.getWorld().isClient) {
-            this.getWorld().addParticleClient(ParticleTypes.END_ROD, this.getX() - vec3d.x, this.getY() - vec3d.y + 0.15, this.getZ() - vec3d.z, 0.0, 0.0, 0.0);
+        ProjectileUtil.rotateTowardsMovement(this, 0.5F);
+        if (this.level().isClientSide) {
+            this.level().addParticle(ParticleTypes.END_ROD, this.getX() - vec3d.x, this.getY() - vec3d.y + 0.15, this.getZ() - vec3d.z, 0.0, 0.0, 0.0);
         } else if (entity != null) {
             if (this.stepCount > 0) {
                 this.stepCount--;
@@ -259,12 +259,12 @@ public class WitherSkullBulletEntity extends ProjectileEntity {
             }
 
             if (this.direction != null) {
-                BlockPos blockPos = this.getBlockPos();
+                BlockPos blockPos = this.blockPosition();
                 Direction.Axis axis = this.direction.getAxis();
-                if (this.getWorld().isTopSolid(blockPos.offset(this.direction), this)) {
+                if (this.level().loadedAndEntityCanStandOn(blockPos.relative(this.direction), this)) {
                     this.changeTargetDirection(axis, entity);
                 } else {
-                    BlockPos blockPos2 = entity.getBlockPos();
+                    BlockPos blockPos2 = entity.blockPosition();
                     if (axis == Direction.Axis.X && blockPos.getX() == blockPos2.getX()
                             || axis == Direction.Axis.Z && blockPos.getZ() == blockPos2.getZ()
                             || axis == Direction.Axis.Y && blockPos.getY() == blockPos2.getY()) {
@@ -276,16 +276,16 @@ public class WitherSkullBulletEntity extends ProjectileEntity {
     }
 
     @Override
-    protected boolean shouldTickBlockCollision() {
+    protected boolean isAffectedByBlocks() {
         return !this.isRemoved();
     }
 
     @Override
-    public boolean canHit(Entity entity) {
+    public boolean canHitEntity(Entity entity) {
         if (entity instanceof LivingEntity living && !EntityUtil.isValidSummonCombatTarget(this, this.getOwner(), living)) {
             return false;
         }
-        return super.canHit(entity) && !entity.noClip;
+        return super.canHitEntity(entity) && !entity.noPhysics;
     }
 
     @Override
@@ -294,19 +294,19 @@ public class WitherSkullBulletEntity extends ProjectileEntity {
     }
 
     @Override
-    public boolean shouldRender(double distance) {
+    public boolean shouldRenderAtSqrDistance(double distance) {
         return distance < 16384.0;
     }
 
     @Override
-    public float getBrightnessAtEyes() {
+    public float getLightLevelDependentMagicValue() {
         return 1.0F;
     }
 
     /* 命中实体 → 伤害 + 漂浮效果 */
     @Override
-    protected void onEntityHit(EntityHitResult result) {
-        super.onEntityHit(result);
+    protected void onHitEntity(EntityHitResult result) {
+        super.onHitEntity(result);
         Entity victim   = result.getEntity();
         Entity owner    = this.getOwner();
         if (victim instanceof LivingEntity living && !EntityUtil.isValidSummonCombatTarget(this, owner, living)) {
@@ -314,72 +314,72 @@ public class WitherSkullBulletEntity extends ProjectileEntity {
         }
         LivingEntity attacker = owner instanceof LivingEntity ? (LivingEntity) owner : null;
 
-        DamageSource explosionSrc = this.getDamageSources().explosion(this, attacker);
-        DamageSource projectileSrc = this.getDamageSources().mobProjectile(this, attacker);
-        DamageSource indirectMagicSrc = this.getDamageSources().indirectMagic(this, attacker);
-        boolean damaged  = victim.sidedDamage(explosionSrc, 200.0F);
-        victim.sidedDamage(projectileSrc, 100.0F);
-        victim.sidedDamage(indirectMagicSrc, 30.0F);
+        DamageSource explosionSrc = this.damageSources().explosion(this, attacker);
+        DamageSource projectileSrc = this.damageSources().mobProjectile(this, attacker);
+        DamageSource indirectMagicSrc = this.damageSources().indirectMagic(this, attacker);
+        boolean damaged  = victim.hurtOrSimulate(explosionSrc, 200.0F);
+        victim.hurtOrSimulate(projectileSrc, 100.0F);
+        victim.hurtOrSimulate(indirectMagicSrc, 30.0F);
 
         if (damaged) {
-            if (this.getWorld() instanceof ServerWorld sw) {
-                EnchantmentHelper.onTargetDamaged(sw, victim, explosionSrc);
-                EnchantmentHelper.onTargetDamaged(sw, victim, projectileSrc);
-                EnchantmentHelper.onTargetDamaged(sw, victim, indirectMagicSrc);
+            if (this.level() instanceof ServerLevel sw) {
+                EnchantmentHelper.doPostAttackEffects(sw, victim, explosionSrc);
+                EnchantmentHelper.doPostAttackEffects(sw, victim, projectileSrc);
+                EnchantmentHelper.doPostAttackEffects(sw, victim, indirectMagicSrc);
             }
             if (victim instanceof LivingEntity lv) {
-                lv.addStatusEffect(
-                        new StatusEffectInstance(StatusEffects.NAUSEA, 60, 4), /* 200 tick = 10 s */
+                lv.addEffect(
+                        new MobEffectInstance(MobEffects.NAUSEA, 60, 4), /* 200 tick = 10 s */
                         MoreObjects.firstNonNull(owner, this));
-                lv.addStatusEffect(
-                        new StatusEffectInstance(ModEffects.DECAY_ENTRY, 3 * 20, 0),
+                lv.addEffect(
+                        new MobEffectInstance(ModEffects.DECAY_ENTRY, 3 * 20, 0),
                         MoreObjects.firstNonNull(owner, this));
             }
         }
     }
 
     @Override
-    protected void onBlockHit(BlockHitResult blockHitResult) {
-        super.onBlockHit(blockHitResult);
-        ((ServerWorld)this.getWorld()).spawnParticles(ParticleTypes.EXPLOSION, this.getX(), this.getY(), this.getZ(), 2, 0.2, 0.2, 0.2, 0.0);
-        this.playSound(SoundEvents.ENTITY_SHULKER_BULLET_HIT, 1.0F, 1.0F);
+    protected void onHitBlock(BlockHitResult blockHitResult) {
+        super.onHitBlock(blockHitResult);
+        ((ServerLevel)this.level()).sendParticles(ParticleTypes.EXPLOSION, this.getX(), this.getY(), this.getZ(), 2, 0.2, 0.2, 0.2, 0.0);
+        this.playSound(SoundEvents.SHULKER_BULLET_HIT, 1.0F, 1.0F);
     }
 
     private void destroy() {
         this.discard();
-        this.getWorld().emitGameEvent(GameEvent.ENTITY_DAMAGE, this.getPos(), GameEvent.Emitter.of(this));
+        this.level().gameEvent(GameEvent.ENTITY_DAMAGE, this.position(), GameEvent.Context.of(this));
     }
 
     @Override
-    protected void onCollision(HitResult hitResult) {
-        super.onCollision(hitResult);
+    protected void onHit(HitResult hitResult) {
+        super.onHit(hitResult);
         this.destroy();
     }
 
     @Override
-    public boolean canHit() {
+    public boolean isPickable() {
         return true;
     }
 
     @Override
-    public boolean clientDamage(DamageSource source) {
+    public boolean hurtClient(DamageSource source) {
         return true;
     }
 
     @Override
-    public boolean damage(ServerWorld world, DamageSource source, float amount) {
-        this.playSound(SoundEvents.ENTITY_SHULKER_BULLET_HURT, 1.0F, 1.0F);
-        world.spawnParticles(ParticleTypes.CRIT, this.getX(), this.getY(), this.getZ(), 15, 0.2, 0.2, 0.2, 0.0);
+    public boolean hurtServer(ServerLevel world, DamageSource source, float amount) {
+        this.playSound(SoundEvents.SHULKER_BULLET_HURT, 1.0F, 1.0F);
+        world.sendParticles(ParticleTypes.CRIT, this.getX(), this.getY(), this.getZ(), 15, 0.2, 0.2, 0.2, 0.0);
         this.destroy();
         return true;
     }
 
     @Override
-    public void onSpawnPacket(EntitySpawnS2CPacket packet) {
-        super.onSpawnPacket(packet);
-        double d = packet.getVelocityX();
-        double e = packet.getVelocityY();
-        double f = packet.getVelocityZ();
-        this.setVelocity(d, e, f);
+    public void recreateFromPacket(ClientboundAddEntityPacket packet) {
+        super.recreateFromPacket(packet);
+        double d = packet.getXa();
+        double e = packet.getYa();
+        double f = packet.getZa();
+        this.setDeltaMovement(d, e, f);
     }
 }

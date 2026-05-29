@@ -1,21 +1,21 @@
 package com.kltyton.mob_battle.network.packet;
 
 import com.kltyton.mob_battle.Mob_battle;
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.codec.PacketCodecs;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.util.Identifier;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
 
-public record ZiJinPayload(int skill_id) implements CustomPayload {
-    public static final CustomPayload.Id<ZiJinPayload> ID = new Id<>(Identifier.of(Mob_battle.MOD_ID, "zi_jin"));
+public record ZiJinPayload(int skill_id) implements CustomPacketPayload {
+    public static final CustomPacketPayload.Type<ZiJinPayload> ID = new Type<>(ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "zi_jin"));
     //public static final PacketCodec<RegistryByteBuf, ZiJinPayload> CODEC = PacketCodec.unit(new ZiJinPayload());
-    public static final PacketCodec<RegistryByteBuf, ZiJinPayload> CODEC = PacketCodec.tuple(
-            PacketCodecs.VAR_INT, ZiJinPayload::skill_id,
+    public static final StreamCodec<RegistryFriendlyByteBuf, ZiJinPayload> CODEC = StreamCodec.composite(
+            ByteBufCodecs.VAR_INT, ZiJinPayload::skill_id,
             ZiJinPayload::new
     );
     @Override
-    public Id<? extends CustomPayload> getId() {
+    public Type<? extends CustomPacketPayload> type() {
         return ID;
     }
 }

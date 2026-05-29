@@ -1,29 +1,29 @@
 package com.kltyton.mob_battle.mixin.client.render;
 
-import net.minecraft.client.render.entity.BipedEntityRenderer;
-import net.minecraft.client.render.entity.model.BipedEntityModel;
-import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.entity.mob.PiglinBruteEntity;
-import net.minecraft.item.BowItem;
-import net.minecraft.util.Arm;
-import net.minecraft.util.Hand;
+import net.minecraft.client.model.HumanoidModel;
+import net.minecraft.client.renderer.entity.HumanoidMobRenderer;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.HumanoidArm;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.monster.piglin.PiglinBrute;
+import net.minecraft.world.item.BowItem;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(BipedEntityRenderer.class)
+@Mixin(HumanoidMobRenderer.class)
 public abstract class PiglinBruteBowArmPoseMixin {
     @Inject(method = "getArmPose", at = @At("HEAD"), cancellable = true)
-    private void mob_battle$getPiglinBruteBowArmPose(MobEntity entity, Arm arm, CallbackInfoReturnable<BipedEntityModel.ArmPose> cir) {
-        if (!(entity instanceof PiglinBruteEntity piglinBrute)) return;
-        if (!piglinBrute.isUsingItem() || !(piglinBrute.getActiveItem().getItem() instanceof BowItem)) return;
+    private void mob_battle$getPiglinBruteBowArmPose(Mob entity, HumanoidArm arm, CallbackInfoReturnable<HumanoidModel.ArmPose> cir) {
+        if (!(entity instanceof PiglinBrute piglinBrute)) return;
+        if (!piglinBrute.isUsingItem() || !(piglinBrute.getUseItem().getItem() instanceof BowItem)) return;
 
-        Arm activeArm = piglinBrute.getActiveHand() == Hand.MAIN_HAND
+        HumanoidArm activeArm = piglinBrute.getUsedItemHand() == InteractionHand.MAIN_HAND
                 ? piglinBrute.getMainArm()
                 : piglinBrute.getMainArm().getOpposite();
         if (arm == activeArm) {
-            cir.setReturnValue(BipedEntityModel.ArmPose.BOW_AND_ARROW);
+            cir.setReturnValue(HumanoidModel.ArmPose.BOW_AND_ARROW);
         }
     }
 }

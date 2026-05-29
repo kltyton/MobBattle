@@ -4,22 +4,21 @@ import com.kltyton.mob_battle.entity.ModEntityAttributes;
 import com.kltyton.mob_battle.entity.littleperson.skillentity.base.BaseSkillLittlePersonEntity;
 import com.kltyton.mob_battle.entity.littleperson.skillentity.ironmanbullet.IronManBulletEntity;
 import com.kltyton.mob_battle.utils.EntityUtil;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.attribute.DefaultAttributeContainer;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.mob.HostileEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.random.Random;
-import net.minecraft.world.World;
-
 import java.util.List;
+import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 
 public class IronManTrueEntity extends BaseSkillLittlePersonEntity {
-    public IronManTrueEntity(EntityType<? extends HostileEntity> entityType, World world) {
+    public IronManTrueEntity(EntityType<? extends Monster> entityType, Level world) {
         super(entityType, world, 4);
         COOL_DOWN_TIME_1 = 8 * 20;
         COOL_DOWN_TIME_2 = 15 * 20;
@@ -27,10 +26,10 @@ public class IronManTrueEntity extends BaseSkillLittlePersonEntity {
         COOL_DOWN_TIME_4 = 20 * 20;
         init();
     }
-    public static DefaultAttributeContainer.Builder createLittlePersonAttributes() {
+    public static AttributeSupplier.Builder createLittlePersonAttributes() {
         return BaseSkillLittlePersonEntity.createAttributes()
-                .add(EntityAttributes.MAX_HEALTH, 2500.0)
-                .add(EntityAttributes.ATTACK_DAMAGE, 65.0)
+                .add(Attributes.MAX_HEALTH, 2500.0)
+                .add(Attributes.ATTACK_DAMAGE, 65.0)
                 .add(ModEntityAttributes.DAMAGE_REDUCTION, 0.30);
     }
     @Override
@@ -46,18 +45,18 @@ public class IronManTrueEntity extends BaseSkillLittlePersonEntity {
         return 220f;
     }
     public void runSkill_2(BaseSkillLittlePersonEntity entity) {
-        if (!(entity.getWorld() instanceof ServerWorld world)) return;
+        if (!(entity.level() instanceof ServerLevel world)) return;
 
-        Vec3d pos = entity.getPos();
-        Vec3d forward = entity.getRotationVec(1.0F);
-        Vec3d side = new Vec3d(-forward.z, 0.0, forward.x).normalize();
+        Vec3 pos = entity.position();
+        Vec3 forward = entity.getViewVector(1.0F);
+        Vec3 side = new Vec3(-forward.z, 0.0, forward.x).normalize();
         double range = 6.0;
-        List<Entity> targets = world.getOtherEntities(entity, entity.getBoundingBox().expand(range));
+        List<Entity> targets = world.getEntities(entity, entity.getBoundingBox().inflate(range));
         for (Entity target : targets) {
             if (target instanceof LivingEntity livingTarget && EntityUtil.isValidSummonCombatTarget(entity, entity.getSummonOwner(), livingTarget)) {
-                Vec3d relativePos = target.getPos().subtract(pos);
-                double distanceForward = relativePos.dotProduct(forward);
-                double distanceSide = Math.abs(relativePos.dotProduct(side));
+                Vec3 relativePos = target.position().subtract(pos);
+                double distanceForward = relativePos.dot(forward);
+                double distanceSide = Math.abs(relativePos.dot(side));
                 // 5. 范围判定：
                 // 长度：在前方 0 到 5 格之间
                 // 宽度：中心线左右各 1.5 格（总宽3格）
@@ -66,7 +65,7 @@ public class IronManTrueEntity extends BaseSkillLittlePersonEntity {
                         distanceSide <= 0.5 &&
                         Math.abs(relativePos.y) <= 2.0) {
 
-                    livingTarget.damage(world, entity.getDamageSources().mobAttack(entity), 70.0f);
+                    livingTarget.hurtServer(world, entity.damageSources().mobAttack(entity), 70.0f);
                 }
             }
         }
@@ -79,24 +78,24 @@ public class IronManTrueEntity extends BaseSkillLittlePersonEntity {
                 if (!EntityUtil.isValidSummonCombatTarget(entity, entity.getSummonOwner(), livingEntity)) {
                     continue;
                 }
-                livingEntity.damage((ServerWorld) entity.getWorld(), entity.getDamageSources().mobAttack(entity), 90);
+                livingEntity.hurtServer((ServerLevel) entity.level(), entity.damageSources().mobAttack(entity), 90);
             }
         }
     }
     @Override
     public void runSkill_4(BaseSkillLittlePersonEntity entity) {
-        if (!(entity.getWorld() instanceof ServerWorld world)) return;
+        if (!(entity.level() instanceof ServerLevel world)) return;
 
-        Vec3d pos = entity.getPos();
-        Vec3d forward = entity.getRotationVec(1.0F);
-        Vec3d side = new Vec3d(-forward.z, 0.0, forward.x).normalize();
+        Vec3 pos = entity.position();
+        Vec3 forward = entity.getViewVector(1.0F);
+        Vec3 side = new Vec3(-forward.z, 0.0, forward.x).normalize();
         double range = 16.0;
-        List<Entity> targets = world.getOtherEntities(entity, entity.getBoundingBox().expand(range));
+        List<Entity> targets = world.getEntities(entity, entity.getBoundingBox().inflate(range));
         for (Entity target : targets) {
             if (target instanceof LivingEntity livingTarget && EntityUtil.isValidSummonCombatTarget(entity, entity.getSummonOwner(), livingTarget)) {
-                Vec3d relativePos = target.getPos().subtract(pos);
-                double distanceForward = relativePos.dotProduct(forward);
-                double distanceSide = Math.abs(relativePos.dotProduct(side));
+                Vec3 relativePos = target.position().subtract(pos);
+                double distanceForward = relativePos.dot(forward);
+                double distanceSide = Math.abs(relativePos.dot(side));
                 // 5. 范围判定：
                 // 长度：在前方 0 到 5 格之间
                 // 宽度：中心线左右各 1.5 格（总宽3格）
@@ -105,22 +104,22 @@ public class IronManTrueEntity extends BaseSkillLittlePersonEntity {
                         distanceSide <= 1.5 &&
                         Math.abs(relativePos.y) <= 2.0) {
 
-                    livingTarget.damage(world, entity.getDamageSources().mobAttack(entity), 95.0f);
+                    livingTarget.hurtServer(world, entity.damageSources().mobAttack(entity), 95.0f);
                 }
             }
         }
     }
     @Override
     public void runSkill_5(BaseSkillLittlePersonEntity entity) {
-        World world = entity.getWorld();
+        Level world = entity.level();
         int skullCount = 3;
-        Random random = world.getRandom();
+        RandomSource random = world.getRandom();
         for (int i = 0; i < skullCount; i++) {
             double xOffset = (random.nextDouble() - 0.5) * 8.0;
             double yOffset = (random.nextDouble() - 0.5) * 8.0; // 围绕眼睛上下浮动
             double zOffset = (random.nextDouble() - 0.5) * 8.0;
-            Vec3d lookDir = entity.getRotationVec(1.0F);
-            Vec3d velocity = lookDir.add(
+            Vec3 lookDir = entity.getViewVector(1.0F);
+            Vec3 velocity = lookDir.add(
                     (random.nextDouble() - 0.5) * 8.0, // X轴扰动
                     (random.nextDouble() - 0.5) * 8.0, // Y轴扰动
                     (random.nextDouble() - 0.5) * 8.0  // Z轴扰动
@@ -134,8 +133,8 @@ public class IronManTrueEntity extends BaseSkillLittlePersonEntity {
                     entity.getTarget(),
                     mainAxis);
             // 把子弹加到世界
-            bullet.setPosition(entity.getX() + xOffset, entity.getEyeY() + yOffset, entity.getZ() + zOffset);
-            world.spawnEntity(bullet);
+            bullet.setPos(entity.getX() + xOffset, entity.getEyeY() + yOffset, entity.getZ() + zOffset);
+            world.addFreshEntity(bullet);
         }
     }
 

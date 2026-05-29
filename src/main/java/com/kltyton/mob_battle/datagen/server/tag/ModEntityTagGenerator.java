@@ -4,20 +4,19 @@ import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.tags.ModTags;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagProvider;
-import net.minecraft.entity.EntityType;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.registry.tag.EntityTypeTags;
-
+import net.minecraft.core.HolderLookup;
+import net.minecraft.tags.EntityTypeTags;
+import net.minecraft.world.entity.EntityType;
 import java.util.concurrent.CompletableFuture;
 
 public class ModEntityTagGenerator extends FabricTagProvider.EntityTypeTagProvider {
 
-    public ModEntityTagGenerator(FabricDataOutput output, CompletableFuture<RegistryWrapper.WrapperLookup> registriesFuture) {
+    public ModEntityTagGenerator(FabricDataOutput output, CompletableFuture<HolderLookup.Provider> registriesFuture) {
         super(output, registriesFuture);
     }
 
     @Override
-    protected void configure(RegistryWrapper.WrapperLookup wrapperLookup) {
+    protected void addTags(HolderLookup.Provider wrapperLookup) {
         valueLookupBuilder(ModTags.SILENCE_PHANTOM_CANNOT_ATTACK)
                 .add(EntityType.WARDEN)
                 .add(ModEntities.XUN_SHENG)

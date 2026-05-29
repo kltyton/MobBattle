@@ -7,16 +7,16 @@ import com.kltyton.mob_battle.items.itemgroup.ClientTagManager;
 import com.kltyton.mob_battle.network.packet.*;
 import com.kltyton.mob_battle.sounds.bgm.ClientBgmManager;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.Minecraft;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.Entity;
 
 public class ClientPlayNetwork {
     public static void init() {
         ClientPlayNetworking.registerGlobalReceiver(SoundPayload.ID, (payload, context)  -> {
             String soundName = payload.soundNmae();
             float volume = payload.volume();
-            MinecraftClient client = context.client();
+            Minecraft client = context.client();
             client.execute(() -> {
                 if ("fade_out".equals(soundName)) {
                     // 收到淡出指令
@@ -27,7 +27,7 @@ public class ClientPlayNetwork {
                     ClientBgmManager.forcedVolume = 0f;
                 } else {
                     // 收到正常播放指令
-                    Identifier id = Identifier.of(soundName);
+                    ResourceLocation id = ResourceLocation.parse(soundName);
 
                     // 如果正在淡出且是同一首音乐，则开始淡入恢复
                     if (ClientBgmManager.isFadingOut &&
@@ -44,13 +44,13 @@ public class ClientPlayNetwork {
             });
         });
         ClientPlayNetworking.registerGlobalReceiver(ItemGroupPayload.ID, (payload, context) -> {
-            MinecraftClient client = context.client();
+            Minecraft client = context.client();
             boolean isOpen = payload.isOpen();
             client.execute(() -> ClientTagManager.isShen = isOpen);
         });
         ClientPlayNetworking.registerGlobalReceiver(ILeadUpdatePayload.ID, (payload, context) -> {
-            MinecraftClient client = context.client();
-            Entity entity = client.world.getEntityById(payload.entityId());
+            Minecraft client = context.client();
+            Entity entity = client.level.getEntity(payload.entityId());
             int iLead_1 = payload.iLead_1();
             int iLead_2 = payload.iLead_2();
             client.execute(() -> {
@@ -61,7 +61,7 @@ public class ClientPlayNetwork {
             });
         });
         ClientPlayNetworking.registerGlobalReceiver(PlayerSkillUtilPayload.ID, (payload, context) -> {
-            MinecraftClient client = context.client();
+            Minecraft client = context.client();
             client.execute(() -> {
                 if (client.player != null) {
                     switch (payload.name()) {
@@ -73,14 +73,14 @@ public class ClientPlayNetwork {
             });
         });
         ClientPlayNetworking.registerGlobalReceiver(PermissionPayload.ID, (payload, context) -> {
-            MinecraftClient client = context.client();
+            Minecraft client = context.client();
             boolean isWhitelisted = payload.isWhitelisted();
             client.execute(() -> {
                 ClientPermissionState.setWhitelisted(isWhitelisted);
             });
         });
         ClientPlayNetworking.registerGlobalReceiver(CustomBossBarPayload.ID, (payload, context) -> {
-            MinecraftClient client = context.client();
+            Minecraft client = context.client();
             client.execute(() -> {
                 if (payload.visible()) {
                     CustomBossBarClientState.set(payload.bossBarUuid(), payload.styleId());

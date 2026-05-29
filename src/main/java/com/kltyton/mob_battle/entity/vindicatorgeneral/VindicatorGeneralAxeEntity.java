@@ -1,20 +1,20 @@
 package com.kltyton.mob_battle.entity.vindicatorgeneral;
 
 import com.kltyton.mob_battle.utils.EntityUtil;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.MovementType;
-import net.minecraft.entity.data.DataTracker;
-import net.minecraft.entity.projectile.ProjectileEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.storage.ReadView;
-import net.minecraft.storage.WriteView;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import software.bernie.geckolib.animatable.GeoEntity;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.animatable.manager.AnimatableManager;
@@ -22,7 +22,7 @@ import software.bernie.geckolib.animatable.processing.AnimationController;
 import software.bernie.geckolib.animation.RawAnimation;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
-public class VindicatorGeneralAxeEntity extends ProjectileEntity implements GeoEntity {
+public class VindicatorGeneralAxeEntity extends Projectile implements GeoEntity {
     private static final RawAnimation FLY_ANIM = RawAnimation.begin().thenLoop("fly");
     private final AnimatableInstanceCache geoCache = GeckoLibUtil.createInstanceCache(this);
     private final ItemStack unusedDisplayStack = new ItemStack(Items.IRON_AXE);
@@ -30,19 +30,19 @@ public class VindicatorGeneralAxeEntity extends ProjectileEntity implements GeoE
     private boolean returning;
     private int ownerId = -1;
 
-    public VindicatorGeneralAxeEntity(EntityType<? extends VindicatorGeneralAxeEntity> entityType, World world) {
+    public VindicatorGeneralAxeEntity(EntityType<? extends VindicatorGeneralAxeEntity> entityType, Level world) {
         super(entityType, world);
-        this.noClip = false;
+        this.noPhysics = false;
         this.setNoGravity(true);
     }
 
-    public void configure(VindicatorGeneralEntity owner, Vec3d position, Vec3d velocity) {
+    public void configure(VindicatorGeneralEntity owner, Vec3 position, Vec3 velocity) {
         this.setOwner(owner);
         this.ownerId = owner.getId();
-        this.setPosition(position);
-        this.setVelocity(velocity);
-        this.velocityModified = true;
-        this.noClip = false;
+        this.setPos(position);
+        this.setDeltaMovement(velocity);
+        this.hurtMarked = true;
+        this.noPhysics = false;
         this.setNoGravity(true);
     }
 
@@ -51,42 +51,42 @@ public class VindicatorGeneralAxeEntity extends ProjectileEntity implements GeoE
     }
 
     @Override
-    protected void initDataTracker(DataTracker.Builder builder) {
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
     }
 
     @Override
-    protected void readCustomData(ReadView view) {
+    protected void readAdditionalSaveData(ValueInput view) {
     }
 
     @Override
-    protected void writeCustomData(WriteView view) {
+    protected void addAdditionalSaveData(ValueOutput view) {
     }
 
     @Override
     public void tick() {
         super.tick();
-        if (this.getWorld().isClient()) {
+        if (this.level().isClientSide()) {
             return;
         }
 
         Entity owner = getOwnerEntity();
-        if (this.age > 200 || owner == null && this.age > 20) {
+        if (this.tickCount > 200 || owner == null && this.tickCount > 20) {
             finishRecovery();
             return;
         }
 
         if (this.returning && owner != null) {
-            this.noClip = true;
-            Vec3d toOwner = owner.getEyePos().subtract(this.getPos());
-            if (toOwner.lengthSquared() < 2.25D) {
+            this.noPhysics = true;
+            Vec3 toOwner = owner.getEyePosition().subtract(this.position());
+            if (toOwner.lengthSqr() < 2.25D) {
                 finishRecovery();
                 return;
             }
-            this.setVelocity(toOwner.normalize().multiply(1.8D));
-            this.velocityModified = true;
+            this.setDeltaMovement(toOwner.normalize().scale(1.8D));
+            this.hurtMarked = true;
         }
 
-        this.move(MovementType.SELF, this.getVelocity());
+        this.move(MoverType.SELF, this.getDeltaMovement());
 
         if (!this.returning) {
             if (this.horizontalCollision || this.verticalCollision || touchesSolidBlock()) {
@@ -94,23 +94,23 @@ public class VindicatorGeneralAxeEntity extends ProjectileEntity implements GeoE
                 return;
             }
             hitNearbyTargets(owner);
-        } else if (owner != null && this.squaredDistanceTo(owner) < 2.25D) {
+        } else if (owner != null && this.distanceToSqr(owner) < 2.25D) {
             finishRecovery();
         }
     }
 
     private boolean touchesSolidBlock() {
-        return this.getWorld().getBlockState(this.getBlockPos()).isSolidBlock(this.getWorld(), this.getBlockPos());
+        return this.level().getBlockState(this.blockPosition()).isRedstoneConductor(this.level(), this.blockPosition());
     }
 
     private void hitNearbyTargets(Entity owner) {
-        if (!(owner instanceof VindicatorGeneralEntity vindicatorGeneral) || !(this.getWorld() instanceof ServerWorld world)) {
+        if (!(owner instanceof VindicatorGeneralEntity vindicatorGeneral) || !(this.level() instanceof ServerLevel world)) {
             return;
         }
-        Box box = this.getBoundingBox().expand(0.85D);
-        for (LivingEntity target : world.getEntitiesByClass(LivingEntity.class, box,
+        AABB box = this.getBoundingBox().inflate(0.85D);
+        for (LivingEntity target : world.getEntitiesOfClass(LivingEntity.class, box,
                 living -> EntityUtil.isValidCombatTarget(vindicatorGeneral, living))) {
-            target.damage(world, this.getDamageSources().mobProjectile(this, vindicatorGeneral), 280.0F);
+            target.hurtServer(world, this.damageSources().mobProjectile(this, vindicatorGeneral), 280.0F);
             startReturning();
             return;
         }
@@ -118,8 +118,8 @@ public class VindicatorGeneralAxeEntity extends ProjectileEntity implements GeoE
 
     private void startReturning() {
         this.returning = true;
-        this.noClip = true;
-        this.velocityModified = true;
+        this.noPhysics = true;
+        this.hurtMarked = true;
     }
 
     private Entity getOwnerEntity() {
@@ -127,8 +127,8 @@ public class VindicatorGeneralAxeEntity extends ProjectileEntity implements GeoE
         if (owner != null) {
             return owner;
         }
-        if (this.ownerId >= 0 && this.getWorld() instanceof ServerWorld world) {
-            return world.getEntityById(this.ownerId);
+        if (this.ownerId >= 0 && this.level() instanceof ServerLevel world) {
+            return world.getEntity(this.ownerId);
         }
         return null;
     }

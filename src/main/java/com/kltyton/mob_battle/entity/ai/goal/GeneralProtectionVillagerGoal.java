@@ -1,54 +1,54 @@
 package com.kltyton.mob_battle.entity.ai.goal;
 
 import com.kltyton.mob_battle.utils.EntityUtil;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.ai.TargetPredicate;
-import net.minecraft.entity.ai.goal.Goal;
-import net.minecraft.entity.ai.goal.TrackTargetGoal;
-import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.entity.passive.VillagerEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.Box;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.EnumSet;
 import java.util.List;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.ai.goal.Goal;
+import net.minecraft.world.entity.ai.goal.target.TargetGoal;
+import net.minecraft.world.entity.ai.targeting.TargetingConditions;
+import net.minecraft.world.entity.npc.Villager;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.AABB;
 
-public class GeneralProtectionVillagerGoal extends TrackTargetGoal {
-    private final MobEntity golem;
+public class GeneralProtectionVillagerGoal extends TargetGoal {
+    private final Mob golem;
     @Nullable
     private LivingEntity target;
-    private final TargetPredicate targetPredicate = TargetPredicate.createAttackable().setBaseMaxDistance(64.0);
+    private final TargetingConditions targetPredicate = TargetingConditions.forCombat().range(64.0);
 
-    public GeneralProtectionVillagerGoal(MobEntity golem) {
+    public GeneralProtectionVillagerGoal(Mob golem) {
         super(golem, false, true);
         this.golem = golem;
-        this.setControls(EnumSet.of(Goal.Control.TARGET));
+        this.setFlags(EnumSet.of(Goal.Flag.TARGET));
     }
 
     @Override
-    public boolean canStart() {
-        Box box = this.golem.getBoundingBox().expand(10.0, 8.0, 10.0);
-        ServerWorld serverWorld = getServerWorld(this.golem);
-        List<LivingEntity> list = serverWorld.getEntitiesByClass(LivingEntity.class, box,
+    public boolean canUse() {
+        AABB box = this.golem.getBoundingBox().inflate(10.0, 8.0, 10.0);
+        ServerLevel serverWorld = getServerLevel(this.golem);
+        List<LivingEntity> list = serverWorld.getEntitiesOfClass(LivingEntity.class, box,
                 living -> isProtectedVillager(living) && this.targetPredicate.test(serverWorld, this.golem, living));
         List<LivingEntity> list2 = EntityUtil.getNearbyEntity(this.golem, LivingEntity.class, Object.class, box, false, EntityUtil.TeamFilter.EXCLUDE_TEAM, this.targetPredicate);
 
         for (LivingEntity livingEntity : list) {
             for (LivingEntity playerEntity : list2) {
-                LivingEntity attacker = livingEntity.getAttacker();
+                LivingEntity attacker = livingEntity.getLastHurtByMob();
                 if (attacker == playerEntity) {
-                    this.target = playerEntity;
+                    this.targetMob = playerEntity;
                 }
             }
         }
 
-        return this.target != null && !(this.target instanceof PlayerEntity playerEntity2 && (playerEntity2.isSpectator() || playerEntity2.isCreative()));
+        return this.targetMob != null && !(this.targetMob instanceof Player playerEntity2 && (playerEntity2.isSpectator() || playerEntity2.isCreative()));
     }
 
     private boolean isProtectedVillager(LivingEntity living) {
-        if (living instanceof VillagerEntity) {
+        if (living instanceof Villager) {
             return true;
         }
         Package pkg = living.getClass().getPackage();
@@ -57,7 +57,7 @@ public class GeneralProtectionVillagerGoal extends TrackTargetGoal {
 
     @Override
     public void start() {
-        this.golem.setTarget(this.target);
+        this.golem.setTarget(this.targetMob);
         super.start();
     }
 }

@@ -3,16 +3,16 @@ package com.kltyton.mob_battle.utils.keybind;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import com.kltyton.mob_battle.mixin.accessor.keybind.TimesPressedAccessor;
-import net.minecraft.client.option.KeyBinding;
-import net.minecraft.client.util.InputUtil;
+import com.mojang.blaze3d.platform.InputConstants;
+import net.minecraft.client.KeyMapping;
 import org.jetbrains.annotations.Nullable;
 
 public class KeybindFixer {
     public static final KeybindFixer INSTANCE = new KeybindFixer();
 
-    private final Multimap<InputUtil.Key, KeyBinding> keyFixMap = ArrayListMultimap.create();
+    private final Multimap<InputConstants.Key, KeyMapping> keyFixMap = ArrayListMultimap.create();
 
-    public void putKey(InputUtil.Key key, KeyBinding keyBinding) {
+    public void putKey(InputConstants.Key key, KeyMapping keyBinding) {
         keyFixMap.put(key, keyBinding);
     }
 
@@ -20,10 +20,10 @@ public class KeybindFixer {
         keyFixMap.clear();
     }
 
-    public void onKeyPressed(InputUtil.Key key, @Nullable KeyBinding finalBinding, @Nullable KeyBinding baseBinding) {
+    public void onKeyPressed(InputConstants.Key key, @Nullable KeyMapping finalBinding, @Nullable KeyMapping baseBinding) {
         if (baseBinding == null || finalBinding != baseBinding) return;
 
-        for (KeyBinding theKey : keyFixMap.get(key)) {
+        for (KeyMapping theKey : keyFixMap.get(key)) {
             // 核心: 如果这个按键被绑定了，并且不是最终绑定的按键，那么就强制修改它的 timesPressed
             if (theKey == null || theKey == baseBinding) continue;
 
@@ -32,12 +32,12 @@ public class KeybindFixer {
         }
     }
 
-    public void setKeyPressed(InputUtil.Key key, boolean pressed, @Nullable KeyBinding finalBinding, @Nullable KeyBinding baseBinding) {
+    public void setKeyPressed(InputConstants.Key key, boolean pressed, @Nullable KeyMapping finalBinding, @Nullable KeyMapping baseBinding) {
         if (baseBinding == null || finalBinding != baseBinding) return;
 
-        for (KeyBinding theKey : keyFixMap.get(key)) {
+        for (KeyMapping theKey : keyFixMap.get(key)) {
             if (theKey == null || theKey == baseBinding) continue;
-            theKey.setPressed(pressed);
+            theKey.setDown(pressed);
         }
     }
 }

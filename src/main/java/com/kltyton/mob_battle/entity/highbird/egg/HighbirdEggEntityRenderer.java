@@ -1,14 +1,14 @@
 package com.kltyton.mob_battle.entity.highbird.egg;
 
-import net.minecraft.client.render.entity.EntityRendererFactory;
-import net.minecraft.client.render.entity.state.LivingEntityRenderState;
+import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import org.jetbrains.annotations.ApiStatus;
 import software.bernie.geckolib.renderer.GeoEntityRenderer;
 import software.bernie.geckolib.renderer.base.GeoRenderState;
 
 public class HighbirdEggEntityRenderer<R extends LivingEntityRenderState & GeoRenderState> extends GeoEntityRenderer<HighbirdEggEntity, R> {
 
-    public HighbirdEggEntityRenderer(EntityRendererFactory.Context context) {
+    public HighbirdEggEntityRenderer(EntityRendererProvider.Context context) {
         super(context, new HighbirdEggEntityModel());
     }
     @ApiStatus.Internal

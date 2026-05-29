@@ -1,11 +1,11 @@
 package com.kltyton.mob_battle.entity.player;
 
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.VertexConsumer;
-import net.minecraft.client.render.entity.EntityRendererFactory;
-import net.minecraft.client.render.entity.state.PlayerEntityRenderState;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.Identifier;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.client.renderer.entity.state.PlayerRenderState;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.player.Player;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -16,13 +16,13 @@ import software.bernie.geckolib.renderer.GeoEntityRenderer;
 import software.bernie.geckolib.renderer.base.GeoRenderState;
 import software.bernie.geckolib.renderer.layer.CustomBoneTextureGeoLayer;
 
-public class PlayerReplacedEntityRenderer<T extends PlayerEntity & GeoAnimatable, R extends PlayerEntityRenderState & GeoRenderState> extends GeoEntityRenderer<T, R> {
-    public PlayerReplacedEntityRenderer(EntityRendererFactory.Context context) {
+public class PlayerReplacedEntityRenderer<T extends Player & GeoAnimatable, R extends PlayerRenderState & GeoRenderState> extends GeoEntityRenderer<T, R> {
+    public PlayerReplacedEntityRenderer(EntityRendererProvider.Context context) {
         super(context, new PlayerReplacedEntityModel<>());
         addRenderLayer(new CustomBoneTextureGeoLayer<>(this, "Head", null) {
             @Override
-            protected Identifier getTextureResource(R renderState) {
-                return renderState.skinTextures.texture();
+            protected ResourceLocation getTextureResource(R renderState) {
+                return renderState.skin.texture();
             }
             @Override
             protected void createVerticesOfQuad(R renderState, GeoQuad quad, Matrix4f poseState, Vector3f normal, VertexConsumer buffer,
@@ -61,19 +61,19 @@ public class PlayerReplacedEntityRenderer<T extends PlayerEntity & GeoAnimatable
                     float finalV = (targetV + relativeV * 8) / 64f;
 
                     // 注意：最后的法线依然使用变换后的 normal，以保证光照阴影正确
-                    buffer.vertex(vector4f.x(), vector4f.y(), vector4f.z(), renderColor,
+                    buffer.addVertex(vector4f.x(), vector4f.y(), vector4f.z(), renderColor,
                             finalU, finalV,
                             packedOverlay, packedLight, normal.x(), normal.y(), normal.z());
                 }
             }
             @Override
-            protected RenderLayer getRenderType(R renderState, Identifier texture) {
-                return RenderLayer.getEntityTranslucent(texture);
+            protected RenderType getRenderType(R renderState, ResourceLocation texture) {
+                return RenderType.entityTranslucent(texture);
             }
         });
     }
     @Override
     protected R createBaseRenderState(T entity) {
-        return (R) new PlayerEntityRenderState();
+        return (R) new PlayerRenderState();
     }
 }

@@ -1,16 +1,16 @@
 package com.kltyton.mob_battle.network.packet;
 
 import com.kltyton.mob_battle.Mob_battle;
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.util.Identifier;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
 
-public record PiglinCannonModePayload() implements CustomPayload {
-    public static final CustomPayload.Id<PiglinCannonModePayload> ID = new Id<>(Identifier.of(Mob_battle.MOD_ID, "piglin_cannon_mode"));
-    public static final PacketCodec<RegistryByteBuf, PiglinCannonModePayload> CODEC = PacketCodec.unit(new PiglinCannonModePayload());
+public record PiglinCannonModePayload() implements CustomPacketPayload {
+    public static final CustomPacketPayload.Type<PiglinCannonModePayload> ID = new Type<>(ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "piglin_cannon_mode"));
+    public static final StreamCodec<RegistryFriendlyByteBuf, PiglinCannonModePayload> CODEC = StreamCodec.unit(new PiglinCannonModePayload());
     @Override
-    public Id<? extends CustomPayload> getId() {
+    public Type<? extends CustomPacketPayload> type() {
         return ID;
     }
 }

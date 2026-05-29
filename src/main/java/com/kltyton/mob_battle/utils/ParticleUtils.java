@@ -1,21 +1,20 @@
 package com.kltyton.mob_battle.utils;
 
 import com.kltyton.mob_battle.effect.ModEffects;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.particle.ParticleEffect;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.MathHelper;
-
 import java.util.List;
+import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.LivingEntity;
 
 public class ParticleUtils {
     /**
      * 计算基于中心点、旋转角度和偏移量的世界坐标
      * 模拟数据包中的: execute rotated yaw 0 positioned ~ ~ ~ run particle ... ^x ^y ^z
      */
-    public static void spawnLocalParticle(ServerWorld world, ParticleEffect particle,
+    public static void spawnLocalParticle(ServerLevel world, ParticleOptions particle,
                                           double centerX, double centerY, double centerZ,
                                           float yaw, float pitch,
                                           double localX, double localY, double localZ,
@@ -24,19 +23,19 @@ public class ParticleUtils {
         // 将角度转换为弧度
         float f = pitch * ((float)Math.PI / 180F);
         float g = -yaw * ((float)Math.PI / 180F);
-        float h = MathHelper.cos(g);
-        float i = MathHelper.sin(g);
-        float j = MathHelper.cos(f);
-        float k = MathHelper.sin(f);
+        float h = Mth.cos(g);
+        float i = Mth.sin(g);
+        float j = Mth.cos(f);
+        float k = Mth.sin(f);
 
         // 局部坐标转世界坐标的矩阵变换 (Simplified for local Z/X)
         double worldX = centerX + (localX * h - localZ * i);
         double worldY = centerY + localY; // 数据包中 y 通常是固定偏移
         double worldZ = centerZ + (localZ * h + localX * i);
 
-        world.spawnParticles(particle, worldX, worldY, worldZ, count, 0, 0, 0, speed);
+        world.sendParticles(particle, worldX, worldY, worldZ, count, 0, 0, 0, speed);
     }
-    public static void spawnZiJinSkill0MarkParticles(ServerWorld world, ServerPlayerEntity player, List<LivingEntity> targets) {
+    public static void spawnZiJinSkill0MarkParticles(ServerLevel world, ServerPlayer player, List<LivingEntity> targets) {
         double px = player.getX();
         double py = player.getY() + 0.15D;
         double pz = player.getZ();
@@ -48,7 +47,7 @@ public class ParticleUtils {
             double x = px + Math.cos(angle) * radius;
             double z = pz + Math.sin(angle) * radius;
 
-            world.spawnParticles(
+            world.sendParticles(
                     ParticleTypes.WITCH,
                     x,
                     py,
@@ -61,7 +60,7 @@ public class ParticleUtils {
             );
 
             if (i % 3 == 0) {
-                world.spawnParticles(
+                world.sendParticles(
                         ParticleTypes.ENCHANT,
                         x,
                         py + 0.25D,
@@ -76,10 +75,10 @@ public class ParticleUtils {
         }
 
         // 玩家身上向外扩散的紫金能量
-        world.spawnParticles(
+        world.sendParticles(
                 ParticleTypes.REVERSE_PORTAL,
                 px,
-                player.getBodyY(0.5D),
+                player.getY(0.5D),
                 pz,
                 80,
                 1.2D,
@@ -88,10 +87,10 @@ public class ParticleUtils {
                 0.08D
         );
 
-        world.spawnParticles(
+        world.sendParticles(
                 ParticleTypes.END_ROD,
                 px,
-                player.getBodyY(0.8D),
+                player.getY(0.8D),
                 pz,
                 24,
                 0.5D,
@@ -106,7 +105,7 @@ public class ParticleUtils {
         }
     }
 
-    public static void spawnZiJinSkill0DetonateParticles(ServerWorld world, ServerPlayerEntity player, List<LivingEntity> targets) {
+    public static void spawnZiJinSkill0DetonateParticles(ServerLevel world, ServerPlayer player, List<LivingEntity> targets) {
         double px = player.getX();
         double py = player.getY() + 0.1D;
         double pz = player.getZ();
@@ -120,7 +119,7 @@ public class ParticleUtils {
                 double x = px + Math.cos(angle) * radius;
                 double z = pz + Math.sin(angle) * radius;
 
-                world.spawnParticles(
+                world.sendParticles(
                         ParticleTypes.ENCHANT,
                         x,
                         py,
@@ -133,7 +132,7 @@ public class ParticleUtils {
                 );
 
                 if (i % 5 == 0) {
-                    world.spawnParticles(
+                    world.sendParticles(
                             ParticleTypes.WITCH,
                             x,
                             py + 0.15D,
@@ -149,10 +148,10 @@ public class ParticleUtils {
         }
 
         // 中心爆发
-        world.spawnParticles(
+        world.sendParticles(
                 ParticleTypes.EXPLOSION,
                 px,
-                player.getBodyY(0.5D),
+                player.getY(0.5D),
                 pz,
                 3,
                 0.8D,
@@ -161,10 +160,10 @@ public class ParticleUtils {
                 0.0D
         );
 
-        world.spawnParticles(
+        world.sendParticles(
                 ParticleTypes.SONIC_BOOM,
                 px,
-                player.getBodyY(0.6D),
+                player.getY(0.6D),
                 pz,
                 1,
                 0.0D,
@@ -173,10 +172,10 @@ public class ParticleUtils {
                 0.0D
         );
 
-        world.spawnParticles(
+        world.sendParticles(
                 ParticleTypes.REVERSE_PORTAL,
                 px,
-                player.getBodyY(0.6D),
+                player.getY(0.6D),
                 pz,
                 120,
                 2.5D,
@@ -187,14 +186,14 @@ public class ParticleUtils {
 
         // 被引爆印记的目标身上爆开
         for (LivingEntity target : targets) {
-            if (!target.hasStatusEffect(ModEffects.PIG_SPIRIT_MARK_ENTRY)) {
+            if (!target.hasEffect(ModEffects.PIG_SPIRIT_MARK_ENTRY)) {
                 continue;
             }
 
-            world.spawnParticles(
+            world.sendParticles(
                     ParticleTypes.EXPLOSION,
                     target.getX(),
-                    target.getBodyY(0.5D),
+                    target.getY(0.5D),
                     target.getZ(),
                     1,
                     0.2D,
@@ -203,10 +202,10 @@ public class ParticleUtils {
                     0.0D
             );
 
-            world.spawnParticles(
+            world.sendParticles(
                     ParticleTypes.DAMAGE_INDICATOR,
                     target.getX(),
-                    target.getBodyY(0.7D),
+                    target.getY(0.7D),
                     target.getZ(),
                     12,
                     0.35D,
@@ -215,10 +214,10 @@ public class ParticleUtils {
                     0.15D
             );
 
-            world.spawnParticles(
+            world.sendParticles(
                     ParticleTypes.SOUL_FIRE_FLAME,
                     target.getX(),
-                    target.getBodyY(0.5D),
+                    target.getY(0.5D),
                     target.getZ(),
                     18,
                     0.35D,
@@ -229,7 +228,7 @@ public class ParticleUtils {
         }
     }
 
-    public static void spawnZiJinSkill1MarkParticles(ServerWorld world, ServerPlayerEntity player, List<LivingEntity> targets) {
+    public static void spawnZiJinSkill1MarkParticles(ServerLevel world, ServerPlayer player, List<LivingEntity> targets) {
         double px = player.getX();
         double py = player.getY() + 0.15D;
         double pz = player.getZ();
@@ -244,7 +243,7 @@ public class ParticleUtils {
                 double x = px + Math.cos(angle) * radius;
                 double z = pz + Math.sin(angle) * radius;
 
-                world.spawnParticles(
+                world.sendParticles(
                         layer % 2 == 0 ? ParticleTypes.WITCH : ParticleTypes.ENCHANT,
                         x,
                         py + layer * 0.15D,
@@ -259,10 +258,10 @@ public class ParticleUtils {
         }
 
         // 玩家身上升起能量柱
-        world.spawnParticles(
+        world.sendParticles(
                 ParticleTypes.END_ROD,
                 px,
-                player.getBodyY(0.5D),
+                player.getY(0.5D),
                 pz,
                 36,
                 0.45D,
@@ -271,10 +270,10 @@ public class ParticleUtils {
                 0.04D
         );
 
-        world.spawnParticles(
+        world.sendParticles(
                 ParticleTypes.REVERSE_PORTAL,
                 px,
-                player.getBodyY(0.6D),
+                player.getY(0.6D),
                 pz,
                 70,
                 1.0D,
@@ -289,9 +288,9 @@ public class ParticleUtils {
         }
     }
 
-    private static void spawnPigSpiritMarkTargetParticles(ServerWorld world, LivingEntity target, boolean strong) {
+    private static void spawnPigSpiritMarkTargetParticles(ServerLevel world, LivingEntity target, boolean strong) {
         double x = target.getX();
-        double y = target.getBodyY(0.5D);
+        double y = target.getY(0.5D);
         double z = target.getZ();
 
         int ringCount = strong ? 36 : 24;
@@ -303,7 +302,7 @@ public class ParticleUtils {
             double px = x + Math.cos(angle) * radius;
             double pz = z + Math.sin(angle) * radius;
 
-            world.spawnParticles(
+            world.sendParticles(
                     ParticleTypes.WITCH,
                     px,
                     y,
@@ -317,7 +316,7 @@ public class ParticleUtils {
         }
 
         // 目标身上冒紫金能量
-        world.spawnParticles(
+        world.sendParticles(
                 ParticleTypes.ENCHANT,
                 x,
                 y + 0.2D,
@@ -329,7 +328,7 @@ public class ParticleUtils {
                 0.3D
         );
 
-        world.spawnParticles(
+        world.sendParticles(
                 ParticleTypes.SOUL_FIRE_FLAME,
                 x,
                 y,
@@ -342,7 +341,7 @@ public class ParticleUtils {
         );
 
         if (strong) {
-            world.spawnParticles(
+            world.sendParticles(
                     ParticleTypes.CRIT,
                     x,
                     y + 0.3D,

@@ -1,10 +1,10 @@
 package com.kltyton.mob_battle.effect.beneficial;
 
-import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.entity.effect.StatusEffectCategory;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectCategory;
 
-public class BlindnessImmunityFactorEffect extends StatusEffect {
+public class BlindnessImmunityFactorEffect extends MobEffect {
     public BlindnessImmunityFactorEffect() {
-        super(StatusEffectCategory.BENEFICIAL, 0xC8C8C8);
+        super(MobEffectCategory.BENEFICIAL, 0xC8C8C8);
     }
 }

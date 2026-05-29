@@ -1,21 +1,20 @@
 package com.kltyton.mob_battle.entity.littleperson.skillentity;
 
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.attribute.DefaultAttributeContainer;
-import net.minecraft.entity.boss.BossBar;
-import net.minecraft.entity.boss.ServerBossBar;
-import net.minecraft.entity.mob.HostileEntity;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.Text;
-import net.minecraft.world.World;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerBossEvent;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.BossEvent;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
 public class LivingGhostEntity extends RequestedLittlePersonEntity {
-    private final ServerBossBar bossBar = new ServerBossBar(this.getDisplayName(), BossBar.Color.PURPLE, BossBar.Style.PROGRESS);
+    private final ServerBossEvent bossBar = new ServerBossEvent(this.getDisplayName(), BossEvent.BossBarColor.PURPLE, BossEvent.BossBarOverlay.PROGRESS);
 
-    public LivingGhostEntity(EntityType<? extends HostileEntity> entityType, World world) {
+    public LivingGhostEntity(EntityType<? extends Monster> entityType, Level world) {
         super(entityType, world, 7);
         this.healPerSecond = 5.0F;
         this.blockChance = 15;
@@ -24,36 +23,36 @@ public class LivingGhostEntity extends RequestedLittlePersonEntity {
         setCooldownSeconds(18, 16, 25, 18, 18, 20, 15);
     }
 
-    public static DefaultAttributeContainer.Builder createLittlePersonAttributes() {
+    public static AttributeSupplier.Builder createLittlePersonAttributes() {
         return createRequestedAttributes(20000.0D, 125.0D, 0.6D, 40.0D, 0.0D);
     }
 
     @Override
-    protected void mobTick(ServerWorld world) {
-        super.mobTick(world);
+    protected void customServerAiStep(ServerLevel world) {
+        super.customServerAiStep(world);
         updateBossBar();
     }
 
     @Override
-    public void onStartedTrackingBy(ServerPlayerEntity player) {
-        super.onStartedTrackingBy(player);
+    public void startSeenByPlayer(ServerPlayer player) {
+        super.startSeenByPlayer(player);
         this.bossBar.addPlayer(player);
     }
 
     @Override
-    public void onStoppedTrackingBy(ServerPlayerEntity player) {
-        super.onStoppedTrackingBy(player);
+    public void stopSeenByPlayer(ServerPlayer player) {
+        super.stopSeenByPlayer(player);
         this.bossBar.removePlayer(player);
     }
 
     @Override
-    public void setCustomName(@Nullable Text name) {
+    public void setCustomName(@Nullable Component name) {
         super.setCustomName(name);
         updateBossBar();
     }
 
     private void updateBossBar() {
-        this.bossBar.setPercent(Math.max(0.0F, this.getHealth() / this.getMaxHealth()));
+        this.bossBar.setProgress(Math.max(0.0F, this.getHealth() / this.getMaxHealth()));
         this.bossBar.setName(this.getDisplayName().copy().append(" | " + (int) this.getHealth() + "/" + (int) this.getMaxHealth()));
     }
 

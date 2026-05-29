@@ -4,98 +4,116 @@ import com.kltyton.mob_battle.entity.ModSkillEntityType;
 import com.kltyton.mob_battle.entity.ai.goal.GeneralProtectionVillagerGoal;
 import com.kltyton.mob_battle.entity.irongolem.ModBaseIronGolemEntity;
 import com.kltyton.mob_battle.utils.EntityUtil;
-import net.minecraft.block.BlockState;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.entity.*;
-import net.minecraft.entity.ai.goal.*;
-import net.minecraft.entity.ai.pathing.EntityNavigation;
-import net.minecraft.entity.ai.pathing.MobNavigation;
-import net.minecraft.entity.attribute.DefaultAttributeContainer;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.data.DataTracker;
-import net.minecraft.entity.data.TrackedData;
-import net.minecraft.entity.data.TrackedDataHandlerRegistry;
-import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.entity.mob.Monster;
-import net.minecraft.entity.passive.GolemEntity;
-import net.minecraft.entity.passive.IronGolemEntity;
-import net.minecraft.entity.passive.VillagerEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundEvent;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.storage.ReadView;
-import net.minecraft.storage.WriteView;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.random.Random;
-import net.minecraft.village.VillagerType;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.Difficulty;
-import net.minecraft.world.ServerWorldAccess;
-import net.minecraft.world.World;
-import net.minecraft.world.biome.Biome;
-
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityEvent;
+import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.goal.FloatGoal;
+import net.minecraft.world.entity.ai.goal.GolemRandomStrollInVillageGoal;
+import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
+import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
+import net.minecraft.world.entity.ai.goal.MoveBackToVillageGoal;
+import net.minecraft.world.entity.ai.goal.MoveTowardsTargetGoal;
+import net.minecraft.world.entity.ai.goal.OfferFlowerGoal;
+import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
+import net.minecraft.world.entity.ai.goal.target.DefendVillageTargetGoal;
+import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
+import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
+import net.minecraft.world.entity.ai.goal.target.ResetUniversalAngerTargetGoal;
+import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
+import net.minecraft.world.entity.ai.navigation.PathNavigation;
+import net.minecraft.world.entity.animal.AbstractGolem;
+import net.minecraft.world.entity.animal.IronGolem;
+import net.minecraft.world.entity.monster.Enemy;
+import net.minecraft.world.entity.npc.Villager;
+import net.minecraft.world.entity.npc.VillagerType;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import java.util.List;
 
-// 近战村民
-public class MilitiaWarriorVillager extends IronGolemEntity implements ModBaseIronGolemEntity {
-    public static DefaultAttributeContainer.Builder createVillagerAttributes() {
-        return MobEntity.createMobAttributes()
-                .add(EntityAttributes.MOVEMENT_SPEED, 0.5)
-                .add(EntityAttributes.MAX_HEALTH, 30)
-                .add(EntityAttributes.ATTACK_DAMAGE, 10);
+// 杩戞垬鏉戞皯
+public class MilitiaWarriorVillager extends IronGolem implements ModBaseIronGolemEntity {
+    public static AttributeSupplier.Builder createVillagerAttributes() {
+        return Mob.createMobAttributes()
+                .add(Attributes.MOVEMENT_SPEED, 0.5)
+                .add(Attributes.MAX_HEALTH, 30)
+                .add(Attributes.ATTACK_DAMAGE, 10);
     }
-    // 添加群体仇恨的检测范围（64格）
+    // 娣诲姞缇や綋浠囨仺鐨勬娴嬭寖鍥达紙64鏍硷級
     private static final double ALERT_RANGE = 64.0;
 
-    public static final TrackedData<BlockPos> HOME_POS = DataTracker.registerData(MilitiaWarriorVillager.class, TrackedDataHandlerRegistry.BLOCK_POS);
+    public static final EntityDataAccessor<BlockPos> HOME_POS = SynchedEntityData.defineId(MilitiaWarriorVillager.class, EntityDataSerializers.BLOCK_POS);
     public BlockPos getHomePos() {
-        return this.dataTracker.get(HOME_POS);
+        return this.entityData.get(HOME_POS);
     }
     public void setHomePos(BlockPos pos) {
-        this.dataTracker.set(HOME_POS, pos);
+        this.entityData.set(HOME_POS, pos);
     }
     @Override
-    public void writeData(WriteView view) {
-        super.writeData(view);
+    public void saveWithoutId(ValueOutput view) {
+        super.saveWithoutId(view);
         BlockPos homePos = this.getHomePos();
         if (homePos != null) {
-            view.put("HomePos", BlockPos.CODEC, homePos);
+            view.store("HomePos", BlockPos.CODEC, homePos);
         }
     }
 
     @Override
-    public void readData(ReadView view) {
-        super.readData(view);
+    public void load(ValueInput view) {
+        super.load(view);
         setHomePos(view.read("HomePos", BlockPos.CODEC).orElse(new BlockPos(0, -9999, 0)));
     }
     @Override
-    protected void initDataTracker(DataTracker.Builder builder) {
-        super.initDataTracker(builder);
-        builder.add(HOME_POS, new BlockPos(0, -9999, 0));
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(HOME_POS, new BlockPos(0, -9999, 0));
     }
     @Override
     public void tick() {
         super.tick();
-        if (!this.getWorld().isClient() && this.age % 20 == 0) {
+        if (!this.level().isClientSide() && this.tickCount % 20 == 0) {
             this.heal(1f);
             if (getHomePos().equals(new BlockPos(0, 9999, 0))) {
-                VillagerEntity villager = EntityType.VILLAGER.create(this.getWorld(), SpawnReason.CONVERSION);
+                Villager villager = EntityType.VILLAGER.create(this.level(), EntitySpawnReason.CONVERSION);
                 if (villager != null) {
-                    // 1. 获取实体当前位置的群系注册项
-                    RegistryEntry<Biome> biomeEntry = this.getWorld().getBiome(this.getBlockPos());
-                    // 2. 根据群系获取对应的村民类型 (例如：沙漠、雪地、平原等)
-                    RegistryKey<VillagerType> type = VillagerType.forBiome(biomeEntry);
-                    // 3. 设置村民的职业数据，保留默认职业（或设定为无业），但更新外观类型
-                    RegistryEntry<VillagerType> typeEntry = Registries.VILLAGER_TYPE.getOrThrow(type);
+                    // 1. 鑾峰彇瀹炰綋褰撳墠浣嶇疆鐨勭兢绯绘敞鍐岄」
+                    Holder<Biome> biomeEntry = this.level().getBiome(this.blockPosition());
+                    // 2. 鏍规嵁缇ょ郴鑾峰彇瀵瑰簲鐨勬潙姘戠被鍨?(渚嬪锛氭矙婕犮€侀洩鍦般€佸钩鍘熺瓑)
+                    ResourceKey<VillagerType> type = VillagerType.byBiome(biomeEntry);
+                    // 3. 璁剧疆鏉戞皯鐨勮亴涓氭暟鎹紝淇濈暀榛樿鑱屼笟锛堟垨璁惧畾涓烘棤涓氾級锛屼絾鏇存柊澶栬绫诲瀷
+                    Holder<VillagerType> typeEntry = BuiltInRegistries.VILLAGER_TYPE.getOrThrow(type);
                     villager.setVillagerData(villager.getVillagerData().withType(typeEntry));
 
-                    villager.refreshPositionAndAngles(this.getX(), this.getY(), this.getZ(), this.getYaw(), this.getPitch());
-                    this.getWorld().spawnEntity(villager);
+                    villager.snapTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), this.getXRot());
+                    this.level().addFreshEntity(villager);
 
                     EntityUtil.joinSameTeam(villager, this);
                     this.discard();
@@ -103,65 +121,60 @@ public class MilitiaWarriorVillager extends IronGolemEntity implements ModBaseIr
             }
         }
     }
-    public MilitiaWarriorVillager(EntityType<? extends IronGolemEntity> entityType, World world) {
+    public MilitiaWarriorVillager(EntityType<? extends IronGolem> entityType, Level world) {
         super(entityType, world);
-        this.getNavigation().setCanSwim(true);
+        this.getNavigation().setCanFloat(true);
         this.setCanPickUpLoot(true);
     }
     @Override
-    public boolean tryAttack(ServerWorld world, Entity target) {
+    public boolean doHurtTarget(ServerLevel world, Entity target) {
         if (!ModSkillEntityType.canSkill(this)) return false;
-        this.attackTicksLeft = 10;
-        ItemStack itemStack = this.getWeaponStack();
-        world.sendEntityStatus(this, EntityStatuses.PLAY_ATTACK_SOUND);
-        DamageSource damageSource = this.getDamageSources().mobAttack(this);
-        float f = this.getAttackDamage();
-        f = EnchantmentHelper.getDamage(world, itemStack, target, damageSource, f);
-        f += itemStack.getItem().getBonusAttackDamage(target, f, damageSource);
+        ItemStack itemStack = this.getWeaponItem();
+        world.broadcastEntityEvent(this, EntityEvent.START_ATTACKING);
+        DamageSource damageSource = this.damageSources().mobAttack(this);
+        float f = (float)this.getAttributeValue(Attributes.ATTACK_DAMAGE);
+        f = EnchantmentHelper.modifyDamage(world, itemStack, target, damageSource, f);
+        f += itemStack.getItem().getAttackDamageBonus(target, f, damageSource);
         float g = (int)f > 0 ? f / 2.0F + this.random.nextInt((int)f) : f;
 
-        boolean bl = target.damage(world, damageSource, g);
+        boolean bl = target.hurtServer(world, damageSource, g);
         if (bl) {
-            // 获取目标的击退抗性
-            double d = target instanceof LivingEntity livingEntity ?
-                    livingEntity.getAttributeValue(EntityAttributes.KNOCKBACK_RESISTANCE) : 0.0;
+            double d = target instanceof LivingEntity livingEntity
+                    ? livingEntity.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE)
+                    : 0.0;
             double e = Math.max(0.0, 1.0 - d);
-            target.setVelocity(target.getVelocity().add(0.1 * e, 0.0, 0.1 * e));
-            EnchantmentHelper.onTargetDamaged(world, target, damageSource);
+            target.setDeltaMovement(target.getDeltaMovement().add(0.1 * e, 0.0, 0.1 * e));
+            EnchantmentHelper.doPostAttackEffects(world, target, damageSource);
         }
         return bl;
     }
     @Override
-    public boolean damage(ServerWorld world, DamageSource source, float amount) {
-        boolean bl = super.damage(world, source, amount);
-        if (bl && !world.isClient) {
-            Entity attacker = source.getAttacker();
-            // 确保攻击者是有效生物且不是铁傀儡
-            if (attacker instanceof LivingEntity) {
-                this.alertOthers((LivingEntity)attacker);
+    public boolean hurtServer(ServerLevel world, DamageSource source, float amount) {
+        boolean bl = super.hurtServer(world, source, amount);
+        if (bl && !world.isClientSide) {
+            Entity attacker = source.getEntity();
+            if (attacker instanceof LivingEntity livingAttacker) {
+                this.alertOthers(livingAttacker);
             }
         }
         return bl;
     }
     private void alertOthers(LivingEntity attacker) {
-        // 获取64格范围内所有铁傀儡
-        List<IronGolemEntity> golems = this.getWorld().getEntitiesByClass(
-                IronGolemEntity.class,
-                this.getBoundingBox().expand(ALERT_RANGE),
+        List<IronGolem> golems = this.level().getEntitiesOfClass(
+                IronGolem.class,
+                this.getBoundingBox().inflate(ALERT_RANGE),
                 golem -> golem != this && golem.isAlive()
         );
 
-        for (IronGolemEntity golem : golems) {
-            // 跳过玩家创建的且攻击者是玩家的铁傀儡
-            if (attacker instanceof GolemEntity) {
+        for (IronGolem golem : golems) {
+            if (attacker instanceof AbstractGolem) {
                 continue;
             }
 
-            // 设置仇恨目标和愤怒时间
-            golem.setAngryAt(attacker.getUuid());
-            golem.setAngerTime(ANGER_TIME_RANGE.get(this.random));
+            golem.setPersistentAngerTarget(attacker.getUUID());
+            golem.startPersistentAngerTimer();
 
-            // 立即更新目标选择
+            // 绔嬪嵆鏇存柊鐩爣閫夋嫨
             if (golem.getTarget() != attacker) {
                 golem.setTarget(attacker);
             }
@@ -172,36 +185,36 @@ public class MilitiaWarriorVillager extends IronGolemEntity implements ModBaseIr
     }
     @Override
     protected SoundEvent getHurtSound(DamageSource source) {
-        return SoundEvents.ENTITY_VILLAGER_HURT;
+        return SoundEvents.VILLAGER_HURT;
     }
     @Override
     protected SoundEvent getDeathSound() {
-        return SoundEvents.ENTITY_VILLAGER_DEATH;
+        return SoundEvents.VILLAGER_DEATH;
     }
 
-    public static boolean checkWarriorSpawnRules(EntityType<MilitiaWarriorVillager> warriorVillagerEntityType, ServerWorldAccess world, SpawnReason spawnReason, BlockPos pos, Random random) {
-        return world.getLocalDifficulty(pos).getGlobalDifficulty() != Difficulty.PEACEFUL;
+    public static boolean checkWarriorSpawnRules(EntityType<MilitiaWarriorVillager> warriorVillagerEntityType, ServerLevelAccessor world, EntitySpawnReason spawnReason, BlockPos pos, RandomSource random) {
+        return world.getCurrentDifficultyAt(pos).getDifficulty() != Difficulty.PEACEFUL;
     }
     @Override
-    protected void initGoals() {
-        this.goalSelector.add(0, new SwimGoal(this)); // 添加游泳AI
-        this.goalSelector.add(1, new MeleeAttackGoal(this, 1.0, true));
-        this.goalSelector.add(2, new WanderNearTargetGoal(this, 0.9, 32.0F));
-        this.goalSelector.add(2, new WanderAroundPointOfInterestGoal(this, 0.6, false));
-        this.goalSelector.add(4, new IronGolemWanderAroundGoal(this, 0.6));
-        this.goalSelector.add(5, new IronGolemLookGoal(this));
-        this.goalSelector.add(7, new LookAtEntityGoal(this, PlayerEntity.class, 6.0F));
-        this.goalSelector.add(8, new LookAroundGoal(this));
-        this.targetSelector.add(1, new TrackIronGolemTargetGoal(this));
-        this.targetSelector.add(1, new GeneralProtectionVillagerGoal(this));
-        this.targetSelector.add(2, new RevengeGoal(this));
-        this.targetSelector.add(3, new ActiveTargetGoal<>(this, PlayerEntity.class, 10, true, false, this::shouldAngerAt));
-        this.targetSelector.add(3, new ActiveTargetGoal<>(this, MobEntity.class, 5, false, false, (entity, world) -> entity instanceof Monster));
-        this.targetSelector.add(4, new UniversalAngerGoal<>(this, false));
+    protected void registerGoals() {
+        this.goalSelector.addGoal(0, new FloatGoal(this)); // 娣诲姞娓告吵AI
+        this.goalSelector.addGoal(1, new MeleeAttackGoal(this, 1.0, true));
+        this.goalSelector.addGoal(2, new MoveTowardsTargetGoal(this, 0.9, 32.0F));
+        this.goalSelector.addGoal(2, new MoveBackToVillageGoal(this, 0.6, false));
+        this.goalSelector.addGoal(4, new GolemRandomStrollInVillageGoal(this, 0.6));
+        this.goalSelector.addGoal(5, new OfferFlowerGoal(this));
+        this.goalSelector.addGoal(7, new LookAtPlayerGoal(this, Player.class, 6.0F));
+        this.goalSelector.addGoal(8, new RandomLookAroundGoal(this));
+        this.targetSelector.addGoal(1, new DefendVillageTargetGoal(this));
+        this.targetSelector.addGoal(1, new GeneralProtectionVillagerGoal(this));
+        this.targetSelector.addGoal(2, new HurtByTargetGoal(this));
+        this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, Player.class, 10, true, false, this::isAngryAt));
+        this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, Mob.class, 5, false, false, (entity, world) -> entity instanceof Enemy));
+        this.targetSelector.addGoal(4, new ResetUniversalAngerTargetGoal<>(this, false));
     }
     @Override
-    protected EntityNavigation createNavigation(World world) {
-        return new MobNavigation(this, world); // 允许基础游泳
+    protected PathNavigation createNavigation(Level world) {
+        return new GroundPathNavigation(this, world);
     }
 
 }

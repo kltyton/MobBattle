@@ -1,54 +1,54 @@
 package com.kltyton.mob_battle.entity.bullet;
 
-import net.minecraft.block.Blocks;
-import net.minecraft.client.render.OverlayTexture;
-import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.block.BlockRenderManager;
-import net.minecraft.client.render.entity.EntityRenderer;
-import net.minecraft.client.render.entity.EntityRendererFactory;
-import net.minecraft.client.render.entity.state.ProjectileEntityRenderState;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.math.RotationAxis;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.block.BlockRenderDispatcher;
+import net.minecraft.client.renderer.entity.EntityRenderer;
+import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.client.renderer.entity.state.ArrowRenderState;
+import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.world.level.block.Blocks;
 
-public class BulletEntityRenderer extends EntityRenderer<BulletEntity, ProjectileEntityRenderState> {
+public class BulletEntityRenderer extends EntityRenderer<BulletEntity, ArrowRenderState> {
 
-    private final BlockRenderManager blockRenderManager;
+    private final BlockRenderDispatcher blockRenderManager;
 
-    public BulletEntityRenderer(EntityRendererFactory.Context context) {
+    public BulletEntityRenderer(EntityRendererProvider.Context context) {
         super(context);
-        this.blockRenderManager = context.getBlockRenderManager();
+        this.blockRenderManager = context.getBlockRenderDispatcher();
     }
 
     @Override
-    public void render(ProjectileEntityRenderState state, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light) {
-        matrices.push();
-        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(state.yaw - 90.0F));
-        matrices.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(state.pitch));
+    public void render(ArrowRenderState state, PoseStack matrices, MultiBufferSource vertexConsumers, int light) {
+        matrices.pushPose();
+        matrices.mulPose(Axis.YP.rotationDegrees(state.yRot - 90.0F));
+        matrices.mulPose(Axis.ZP.rotationDegrees(state.xRot));
 
         matrices.scale(0.1f, 0.1f, 0.1f);
 
-        blockRenderManager.renderBlockAsEntity(
-                Blocks.IRON_BLOCK.getDefaultState(),
+        blockRenderManager.renderSingleBlock(
+                Blocks.IRON_BLOCK.defaultBlockState(),
                 matrices,
                 vertexConsumers,
                 light,
-                OverlayTexture.DEFAULT_UV
+                OverlayTexture.NO_OVERLAY
         );
-        matrices.pop();
+        matrices.popPose();
         super.render(state, matrices, vertexConsumers, light);
     }
 
     @Override
-    public void updateRenderState(BulletEntity entity, ProjectileEntityRenderState state, float tickDelta) {
-        super.updateRenderState(entity, state, tickDelta);
-        state.pitch = entity.getLerpedPitch(tickDelta);
-        state.yaw = entity.getLerpedYaw(tickDelta);
-        state.shake = entity.shake - tickDelta;
+    public void extractRenderState(BulletEntity entity, ArrowRenderState state, float tickDelta) {
+        super.extractRenderState(entity, state, tickDelta);
+        state.xRot = entity.getXRot(tickDelta);
+        state.yRot = entity.getYRot(tickDelta);
+        state.shake = entity.shakeTime - tickDelta;
     }
 
     @Override
-    public ProjectileEntityRenderState createRenderState() {
-        return new ProjectileEntityRenderState();
+    public ArrowRenderState createRenderState() {
+        return new ArrowRenderState();
     }
 
 }

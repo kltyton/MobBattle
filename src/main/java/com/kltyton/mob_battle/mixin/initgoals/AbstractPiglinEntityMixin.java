@@ -1,23 +1,23 @@
 package com.kltyton.mob_battle.mixin.initgoals;
 
 import com.kltyton.mob_battle.accessor.IPiglinEntity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.mob.AbstractPiglinEntity;
-import net.minecraft.entity.mob.HostileEntity;
-import net.minecraft.world.World;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.entity.monster.piglin.AbstractPiglin;
+import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Implements;
 import org.spongepowered.asm.mixin.Interface;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
-@Mixin(AbstractPiglinEntity.class)
+@Mixin(AbstractPiglin.class)
 @Implements(@Interface(iface = IPiglinEntity.class, prefix = "piglin$"))
-public abstract class AbstractPiglinEntityMixin extends HostileEntity {
+public abstract class AbstractPiglinEntityMixin extends Monster {
     @Unique
     public LivingEntity livingEntity;
 
-    protected AbstractPiglinEntityMixin(EntityType<? extends HostileEntity> entityType, World world) {
+    protected AbstractPiglinEntityMixin(EntityType<? extends Monster> entityType, Level world) {
         super(entityType, world);
     }
 

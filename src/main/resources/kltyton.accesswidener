@@ -1,44 +1,44 @@
 accessWidener v2 named
-accessible field net/minecraft/entity/passive/IronGolemEntity attackTicksLeft I
-accessible method net/minecraft/entity/passive/IronGolemEntity getAttackDamage ()F
-accessible field net/minecraft/entity/passive/IronGolemEntity ANGER_TIME_RANGE Lnet/minecraft/util/math/intprovider/UniformIntProvider;
-accessible method net/minecraft/entity/projectile/ProjectileEntity canHit (Lnet/minecraft/entity/Entity;)Z
-accessible method net/minecraft/entity/mob/WardenEntity updateAnger ()V
-accessible field net/minecraft/entity/Entity dataTracker Lnet/minecraft/entity/data/DataTracker;
-accessible field net/minecraft/entity/ai/goal/TrackTargetGoal timeWithoutVisibility I
-accessible field net/minecraft/client/render/entity/FlyingItemEntityRenderer scale F
-accessible field net/minecraft/entity/Entity type Lnet/minecraft/entity/EntityType;
-accessible field net/minecraft/entity/projectile/FireballEntity explosionPower I
-accessible class net/minecraft/entity/effect/InstantHealthOrDamageStatusEffect
-accessible method net/minecraft/entity/LivingEntity getHitbox ()Lnet/minecraft/util/math/Box;
-accessible field net/minecraft/item/ItemGroup$DisplayContext hasPermissions Z
-accessible method net/minecraft/entity/ai/control/MoveControl isPosWalkable (FF)Z
-accessible method net/minecraft/client/render/entity/feature/ArmorFeatureRenderer hasModel (Lnet/minecraft/component/type/EquippableComponent;Lnet/minecraft/entity/EquipmentSlot;)Z
-accessible field net/minecraft/entity/mob/PhantomEntity movementType Lnet/minecraft/entity/mob/PhantomEntity$PhantomMovementType;
-accessible method net/minecraft/entity/mob/PhantomEntity testTargetPredicate (Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/entity/LivingEntity;Lnet/minecraft/entity/ai/TargetPredicate;)Z
-accessible class net/minecraft/entity/mob/PhantomEntity$FindTargetGoal
-accessible class net/minecraft/entity/mob/PhantomEntity$CircleMovementGoal
-accessible class net/minecraft/entity/mob/PhantomEntity$PhantomMovementType
-accessible field net/minecraft/entity/mob/PhantomEntity circlingCenter Lnet/minecraft/util/math/BlockPos;
-accessible field net/minecraft/entity/mob/PhantomEntity targetPosition Lnet/minecraft/util/math/Vec3d;
-accessible class net/minecraft/entity/mob/PhantomEntity$MovementGoal
-accessible method net/minecraft/entity/mob/EvokerEntity setWololoTarget (Lnet/minecraft/entity/passive/SheepEntity;)V
-accessible method net/minecraft/entity/mob/EvokerEntity getWololoTarget ()Lnet/minecraft/entity/passive/SheepEntity;
-accessible field net/minecraft/screen/HopperScreenHandler inventory Lnet/minecraft/inventory/Inventory;
-accessible field net/minecraft/entity/boss/dragon/EnderDragonEntity rightWing Lnet/minecraft/entity/boss/dragon/EnderDragonPart;
-accessible field net/minecraft/entity/boss/dragon/EnderDragonEntity leftWing Lnet/minecraft/entity/boss/dragon/EnderDragonPart;
-accessible field net/minecraft/entity/boss/dragon/EnderDragonEntity CLOSE_PLAYER_PREDICATE Lnet/minecraft/entity/ai/TargetPredicate;
-accessible field net/minecraft/entity/boss/dragon/EnderDragonEntity body Lnet/minecraft/entity/boss/dragon/EnderDragonPart;
-accessible field net/minecraft/client/render/entity/EntityRenderer state Lnet/minecraft/client/render/entity/state/EntityRenderState;
-mutable field net/minecraft/client/render/entity/EntityRenderer state Lnet/minecraft/client/render/entity/state/EntityRenderState;
-extendable method net/minecraft/client/render/entity/EntityRenderer getAndUpdateRenderState (Lnet/minecraft/entity/Entity;F)Lnet/minecraft/client/render/entity/state/EntityRenderState;
-accessible method net/minecraft/client/render/entity/LivingEntityRenderer clampBodyYaw (Lnet/minecraft/entity/LivingEntity;FF)F
-extendable class net/minecraft/entity/effect/RegenerationStatusEffect
-accessible field net/minecraft/client/gui/hud/BossBarHud bossBars Ljava/util/Map;
-accessible method net/minecraft/client/render/entity/feature/ArmorFeatureRenderer renderArmor (Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;Lnet/minecraft/item/ItemStack;Lnet/minecraft/entity/EquipmentSlot;ILnet/minecraft/client/render/entity/model/BipedEntityModel;)V
-accessible method net/minecraft/entity/projectile/PersistentProjectileEntity setPierceLevel (B)V
-accessible field net/minecraft/entity/ai/control/JumpControl active Z
-accessible class net/minecraft/item/ItemGroup$EntriesImpl
-accessible class net/minecraft/command/suggestion/SuggestionProviders$LocalProvider
-accessible method net/minecraft/client/gui/screen/recipebook/GhostRecipe addInputs (Lnet/minecraft/screen/slot/Slot;Lnet/minecraft/util/context/ContextParameterMap;Lnet/minecraft/recipe/display/SlotDisplay;)V
-accessible method net/minecraft/client/gui/screen/recipebook/GhostRecipe addResults (Lnet/minecraft/screen/slot/Slot;Lnet/minecraft/util/context/ContextParameterMap;Lnet/minecraft/recipe/display/SlotDisplay;)V
+accessible field net/minecraft/world/entity/animal/IronGolem attackAnimationTick I
+accessible method net/minecraft/world/entity/animal/IronGolem getAttackDamage ()F
+accessible field net/minecraft/world/entity/animal/IronGolem PERSISTENT_ANGER_TIME Lnet/minecraft/util/valueproviders/UniformInt;
+accessible method net/minecraft/world/entity/projectile/Projectile canHitEntity (Lnet/minecraft/world/entity/Entity;)Z
+accessible method net/minecraft/world/entity/monster/warden/Warden syncClientAngerLevel ()V
+accessible field net/minecraft/world/entity/Entity entityData Lnet/minecraft/network/syncher/SynchedEntityData;
+accessible field net/minecraft/world/entity/ai/goal/target/TargetGoal unseenTicks I
+accessible field net/minecraft/client/renderer/entity/ThrownItemRenderer scale F
+accessible field net/minecraft/world/entity/Entity type Lnet/minecraft/world/entity/EntityType;
+accessible field net/minecraft/world/entity/projectile/LargeFireball explosionPower I
+accessible class net/minecraft/world/effect/HealOrHarmMobEffect
+accessible method net/minecraft/world/entity/LivingEntity getHitbox ()Lnet/minecraft/world/phys/AABB;
+accessible field net/minecraft/world/item/CreativeModeTab$ItemDisplayParameters hasPermissions Z
+accessible method net/minecraft/world/entity/ai/control/MoveControl isWalkable (FF)Z
+accessible method net/minecraft/client/renderer/entity/layers/HumanoidArmorLayer shouldRender (Lnet/minecraft/world/item/equipment/Equippable;Lnet/minecraft/world/entity/EquipmentSlot;)Z
+accessible field net/minecraft/world/entity/monster/Phantom attackPhase Lnet/minecraft/world/entity/monster/Phantom$AttackPhase;
+accessible method net/minecraft/world/entity/monster/Phantom canAttack (Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/entity/ai/targeting/TargetingConditions;)Z
+accessible class net/minecraft/world/entity/monster/Phantom$PhantomAttackPlayerTargetGoal
+accessible class net/minecraft/world/entity/monster/Phantom$PhantomCircleAroundAnchorGoal
+accessible class net/minecraft/world/entity/monster/Phantom$AttackPhase
+accessible field net/minecraft/world/entity/monster/Phantom anchorPoint Lnet/minecraft/core/BlockPos;
+accessible field net/minecraft/world/entity/monster/Phantom moveTargetPoint Lnet/minecraft/world/phys/Vec3;
+accessible class net/minecraft/world/entity/monster/Phantom$PhantomMoveTargetGoal
+accessible method net/minecraft/world/entity/monster/Evoker setWololoTarget (Lnet/minecraft/world/entity/animal/sheep/Sheep;)V
+accessible method net/minecraft/world/entity/monster/Evoker getWololoTarget ()Lnet/minecraft/world/entity/animal/sheep/Sheep;
+accessible field net/minecraft/world/inventory/HopperMenu hopper Lnet/minecraft/world/Container;
+accessible field net/minecraft/world/entity/boss/enderdragon/EnderDragon wing1 Lnet/minecraft/world/entity/boss/EnderDragonPart;
+accessible field net/minecraft/world/entity/boss/enderdragon/EnderDragon wing2 Lnet/minecraft/world/entity/boss/EnderDragonPart;
+accessible field net/minecraft/world/entity/boss/enderdragon/EnderDragon CRYSTAL_DESTROY_TARGETING Lnet/minecraft/world/entity/ai/targeting/TargetingConditions;
+accessible field net/minecraft/world/entity/boss/enderdragon/EnderDragon body Lnet/minecraft/world/entity/boss/EnderDragonPart;
+accessible field net/minecraft/client/renderer/entity/EntityRenderer reusedState Lnet/minecraft/client/renderer/entity/state/EntityRenderState;
+mutable field net/minecraft/client/renderer/entity/EntityRenderer reusedState Lnet/minecraft/client/renderer/entity/state/EntityRenderState;
+extendable method net/minecraft/client/renderer/entity/EntityRenderer createRenderState (Lnet/minecraft/world/entity/Entity;F)Lnet/minecraft/client/renderer/entity/state/EntityRenderState;
+accessible method net/minecraft/client/renderer/entity/LivingEntityRenderer solveBodyRot (Lnet/minecraft/world/entity/LivingEntity;FF)F
+extendable class net/minecraft/world/effect/RegenerationMobEffect
+accessible field net/minecraft/client/gui/components/BossHealthOverlay events Ljava/util/Map;
+accessible method net/minecraft/client/renderer/entity/layers/HumanoidArmorLayer renderArmorPiece (Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/EquipmentSlot;ILnet/minecraft/client/model/HumanoidModel;)V
+accessible method net/minecraft/world/entity/projectile/AbstractArrow setPierceLevel (B)V
+accessible field net/minecraft/world/entity/ai/control/JumpControl jump Z
+accessible class net/minecraft/world/item/CreativeModeTab$ItemDisplayBuilder
+accessible class net/minecraft/commands/synchronization/SuggestionProviders$RegisteredSuggestion
+accessible method net/minecraft/client/gui/screens/recipebook/GhostSlots setInput (Lnet/minecraft/world/inventory/Slot;Lnet/minecraft/util/context/ContextMap;Lnet/minecraft/world/item/crafting/display/SlotDisplay;)V
+accessible method net/minecraft/client/gui/screens/recipebook/GhostSlots setResult (Lnet/minecraft/world/inventory/Slot;Lnet/minecraft/util/context/ContextMap;Lnet/minecraft/world/item/crafting/display/SlotDisplay;)V

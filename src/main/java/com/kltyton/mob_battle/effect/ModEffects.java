@@ -4,11 +4,11 @@ import com.kltyton.mob_battle.Mob_battle;
 import com.kltyton.mob_battle.effect.beneficial.*;
 import com.kltyton.mob_battle.effect.harmful.*;
 import com.kltyton.mob_battle.effect.neutral.*;
-import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.Holder;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.effect.MobEffect;
 
 public class ModEffects {
     public static InsectBiteEffect INSECT_BITE;
@@ -37,31 +37,31 @@ public class ModEffects {
     public static StutterEffect STUTTER;
     public static DecayEffect DECAY;
 
-    public static RegistryEntry<StatusEffect> STUN_ENTRY;
-    public static RegistryEntry<StatusEffect> INSECT_BITE_ENTRY;
-    public static RegistryEntry<StatusEffect> PRO_INSECT_BITE_ENTRY;
-    public static RegistryEntry<StatusEffect> SELF_DESTRUCT_ENTRY;
-    public static RegistryEntry<StatusEffect> SUPER_SELF_DESTRUCT_ENTRY;
-    public static RegistryEntry<StatusEffect> SUGAR_ENTRY;
-    public static RegistryEntry<StatusEffect> ARMOR_PIERCING_ENTRY;
-    public static RegistryEntry<StatusEffect> VOID_ARMOR_PIERCING_ENTRY;
-    public static RegistryEntry<StatusEffect> TRUE_INVISIBLE_ENTRY;
-    public static RegistryEntry<StatusEffect> PROTEIN_ENTRY;
-    public static RegistryEntry<StatusEffect> BLOCK_ENTRY;
-    public static RegistryEntry<StatusEffect> HEART_EATER_ENTRY;
-    public static RegistryEntry<StatusEffect> INFESTATION_ENTRY;
-    public static RegistryEntry<StatusEffect> DISARM_ENTRY;
-    public static RegistryEntry<StatusEffect> SUPER_REGENERATION_ENTRY;
-    public static RegistryEntry<StatusEffect> PIG_SPIRIT_MARK_ENTRY;
-    public static RegistryEntry<StatusEffect> ICE_ENTRY;
-    public static RegistryEntry<StatusEffect> EXCITEMENT_ENTRY;
-    public static RegistryEntry<StatusEffect> FATIGUE_ENTRY;
-    public static RegistryEntry<StatusEffect> DIAMOND_MARK_ENTRY;
-    public static RegistryEntry<StatusEffect> NETHERITE_MARK_ENTRY;
-    public static RegistryEntry<StatusEffect> BLINDNESS_IMMUNITY_FACTOR_ENTRY;
-    public static RegistryEntry<StatusEffect> DARKNESS_IMMUNITY_FACTOR_ENTRY;
-    public static RegistryEntry<StatusEffect> STUTTER_ENTRY;
-    public static RegistryEntry<StatusEffect> DECAY_ENTRY;
+    public static Holder<MobEffect> STUN_ENTRY;
+    public static Holder<MobEffect> INSECT_BITE_ENTRY;
+    public static Holder<MobEffect> PRO_INSECT_BITE_ENTRY;
+    public static Holder<MobEffect> SELF_DESTRUCT_ENTRY;
+    public static Holder<MobEffect> SUPER_SELF_DESTRUCT_ENTRY;
+    public static Holder<MobEffect> SUGAR_ENTRY;
+    public static Holder<MobEffect> ARMOR_PIERCING_ENTRY;
+    public static Holder<MobEffect> VOID_ARMOR_PIERCING_ENTRY;
+    public static Holder<MobEffect> TRUE_INVISIBLE_ENTRY;
+    public static Holder<MobEffect> PROTEIN_ENTRY;
+    public static Holder<MobEffect> BLOCK_ENTRY;
+    public static Holder<MobEffect> HEART_EATER_ENTRY;
+    public static Holder<MobEffect> INFESTATION_ENTRY;
+    public static Holder<MobEffect> DISARM_ENTRY;
+    public static Holder<MobEffect> SUPER_REGENERATION_ENTRY;
+    public static Holder<MobEffect> PIG_SPIRIT_MARK_ENTRY;
+    public static Holder<MobEffect> ICE_ENTRY;
+    public static Holder<MobEffect> EXCITEMENT_ENTRY;
+    public static Holder<MobEffect> FATIGUE_ENTRY;
+    public static Holder<MobEffect> DIAMOND_MARK_ENTRY;
+    public static Holder<MobEffect> NETHERITE_MARK_ENTRY;
+    public static Holder<MobEffect> BLINDNESS_IMMUNITY_FACTOR_ENTRY;
+    public static Holder<MobEffect> DARKNESS_IMMUNITY_FACTOR_ENTRY;
+    public static Holder<MobEffect> STUTTER_ENTRY;
+    public static Holder<MobEffect> DECAY_ENTRY;
 
     public static void init() {
         INSECT_BITE = register("insect_bite", new InsectBiteEffect());
@@ -117,12 +117,12 @@ public class ModEffects {
         DECAY_ENTRY = getEntry("decay");
     }
 
-    private static <T extends StatusEffect> T register(String id, T effect) {
-        return Registry.register(Registries.STATUS_EFFECT, Identifier.of(Mob_battle.MOD_ID, id), effect);
+    private static <T extends MobEffect> T register(String id, T effect) {
+        return Registry.register(BuiltInRegistries.MOB_EFFECT, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, id), effect);
     }
 
-    private static RegistryEntry<StatusEffect> getEntry(String id) {
-        return Registries.STATUS_EFFECT.getEntry(Identifier.of(Mob_battle.MOD_ID, id))
+    private static Holder<MobEffect> getEntry(String id) {
+        return BuiltInRegistries.MOB_EFFECT.get(ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, id))
                 .orElseThrow(() -> new IllegalStateException("Missing status effect entry: " + id));
     }
 }

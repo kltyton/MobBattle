@@ -4,34 +4,34 @@ import com.kltyton.mob_battle.entity.drone.goal.FlyFollowOwnerGoal;
 import com.kltyton.mob_battle.entity.drone.goal.FlyWanderAroundFarGoal;
 import com.kltyton.mob_battle.items.ModMaterial;
 import com.kltyton.mob_battle.utils.ArmorUtil;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.LeavesBlock;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.Flutterer;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.ai.RangedAttackMob;
-import net.minecraft.entity.ai.control.FlightMoveControl;
-import net.minecraft.entity.ai.goal.LookAtEntityGoal;
-import net.minecraft.entity.ai.goal.SitGoal;
-import net.minecraft.entity.ai.goal.SwimGoal;
-import net.minecraft.entity.ai.pathing.BirdNavigation;
-import net.minecraft.entity.ai.pathing.EntityNavigation;
-import net.minecraft.entity.ai.pathing.LandPathNodeMaker;
-import net.minecraft.entity.ai.pathing.PathNodeType;
-import net.minecraft.entity.attribute.DefaultAttributeContainer;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.entity.passive.PassiveEntity;
-import net.minecraft.entity.passive.TameableEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundEvent;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.AgeableMob;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.TamableAnimal;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.control.FlyingMoveControl;
+import net.minecraft.world.entity.ai.goal.FloatGoal;
+import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
+import net.minecraft.world.entity.ai.goal.SitWhenOrderedToGoal;
+import net.minecraft.world.entity.ai.navigation.FlyingPathNavigation;
+import net.minecraft.world.entity.ai.navigation.PathNavigation;
+import net.minecraft.world.entity.animal.FlyingAnimal;
+import net.minecraft.world.entity.monster.RangedAttackMob;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.LeavesBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.pathfinder.PathType;
+import net.minecraft.world.level.pathfinder.WalkNodeEvaluator;
 import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib.animatable.GeoEntity;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
@@ -42,31 +42,31 @@ import software.bernie.geckolib.animation.PlayState;
 import software.bernie.geckolib.animation.RawAnimation;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
-public abstract class DroneEntity extends TameableEntity implements RangedAttackMob, Flutterer, GeoEntity {
-    public DroneEntity(EntityType<? extends TameableEntity> entityType, World world) {
+public abstract class DroneEntity extends TamableAnimal implements RangedAttackMob, FlyingAnimal, GeoEntity {
+    public DroneEntity(EntityType<? extends TamableAnimal> entityType, Level world) {
         super(entityType, world);
-        this.moveControl = new FlightMoveControl(this, 20, true);
+        this.moveControl = new FlyingMoveControl(this, 20, true);
         this.setNoGravity(true);
-        this.setPathfindingPenalty(PathNodeType.DANGER_FIRE, -1.0F);
-        this.setPathfindingPenalty(PathNodeType.WATER, -1.0F);
-        this.setPathfindingPenalty(PathNodeType.WATER_BORDER, 16.0F);
-        this.setPathfindingPenalty(PathNodeType.DANGER_OTHER, -10.0F);
-        this.setPathfindingPenalty(PathNodeType.WALKABLE, -10.0F); // 讨厌可站立方块
+        this.setPathfindingMalus(PathType.DANGER_FIRE, -1.0F);
+        this.setPathfindingMalus(PathType.WATER, -1.0F);
+        this.setPathfindingMalus(PathType.WATER_BORDER, 16.0F);
+        this.setPathfindingMalus(PathType.DANGER_OTHER, -10.0F);
+        this.setPathfindingMalus(PathType.WALKABLE, -10.0F); // 讨厌可站立方块
     }
 
-    public static DefaultAttributeContainer.Builder createDroneAttributes() {
-        return MobEntity.createMobAttributes()
-                .add(EntityAttributes.MAX_HEALTH, 250.0D)
-                .add(EntityAttributes.FLYING_SPEED, 0.6D)
-                .add(EntityAttributes.MOVEMENT_SPEED, 0.3D)
-                .add(EntityAttributes.ATTACK_DAMAGE, 0.1D)
-                .add(EntityAttributes.FOLLOW_RANGE, 5.0D);
+    public static AttributeSupplier.Builder createDroneAttributes() {
+        return Mob.createMobAttributes()
+                .add(Attributes.MAX_HEALTH, 250.0D)
+                .add(Attributes.FLYING_SPEED, 0.6D)
+                .add(Attributes.MOVEMENT_SPEED, 0.3D)
+                .add(Attributes.ATTACK_DAMAGE, 0.1D)
+                .add(Attributes.FOLLOW_RANGE, 5.0D);
     }
 
     @Override
-    protected EntityNavigation createNavigation(World world) {
-        BirdNavigation navigation = new BirdNavigation(this, world);
-        navigation.setCanSwim(false);
+    protected PathNavigation createNavigation(Level world) {
+        FlyingPathNavigation navigation = new FlyingPathNavigation(this, world);
+        navigation.setCanFloat(false);
         navigation.setCanOpenDoors(true);
         return navigation;
     }
@@ -76,12 +76,12 @@ public abstract class DroneEntity extends TameableEntity implements RangedAttack
     public void tick() {
         super.tick();
 
-        if (!this.getWorld().isClient) {
+        if (!this.level().isClientSide) {
             LivingEntity owner = this.getOwner();
-            if (owner instanceof ServerPlayerEntity player && (!DroneManager.isPlayersDrone(this, player) || !ArmorUtil.hasFullArmor(owner, ModMaterial.IRON_GOLD_INSTANCE))) {
+            if (owner instanceof ServerPlayer player && (!DroneManager.isPlayersDrone(this, player) || !ArmorUtil.hasFullArmor(owner, ModMaterial.IRON_GOLD_INSTANCE))) {
                 this.discard();
             }
-            if (this.age % 20 == 0) this.heal(10.0F);
+            if (this.tickCount % 20 == 0) this.heal(10.0F);
             if (owner == null || owner.isRemoved() || !owner.isAlive()) {
                 this.ownerMissingTicks++;
                 if (this.ownerMissingTicks >= MAX_OWNER_MISSING_TICKS) {
@@ -94,68 +94,68 @@ public abstract class DroneEntity extends TameableEntity implements RangedAttack
     }
 
     @Override
-    protected void initGoals() {
-        this.goalSelector.add(0, new SwimGoal(this));
+    protected void registerGoals() {
+        this.goalSelector.addGoal(0, new FloatGoal(this));
 
-        this.goalSelector.add(1, new SitGoal(this));
-        this.goalSelector.add(2, new FlyFollowOwnerGoal(this, 1.5D, 5.0F, 1.0F));
-        this.goalSelector.add(4, new FlyWanderAroundFarGoal(this, 1.0D));
-        this.goalSelector.add(5, new LookAtEntityGoal(this, PlayerEntity.class, 5.0F));
+        this.goalSelector.addGoal(1, new SitWhenOrderedToGoal(this));
+        this.goalSelector.addGoal(2, new FlyFollowOwnerGoal(this, 1.5D, 5.0F, 1.0F));
+        this.goalSelector.addGoal(4, new FlyWanderAroundFarGoal(this, 1.0D));
+        this.goalSelector.addGoal(5, new LookAtPlayerGoal(this, Player.class, 5.0F));
     }
     @Override
-    public void tryTeleportToOwner() {
+    public void tryToTeleportToOwner() {
         LivingEntity livingEntity = this.getOwner();
         if (livingEntity != null) {
-            this.tryTeleportNear(livingEntity.getBlockPos());
+            this.teleportToAroundBlockPos(livingEntity.blockPosition());
         }
     }
-    private void tryTeleportNear(BlockPos pos) {
+    private void teleportToAroundBlockPos(BlockPos pos) {
         for (int i = 0; i < 10; i++) {
-            int j = this.random.nextBetween(-3, 3);
-            int k = this.random.nextBetween(-3, 3);
+            int j = this.random.nextIntBetweenInclusive(-3, 3);
+            int k = this.random.nextIntBetweenInclusive(-3, 3);
             if (Math.abs(j) >= 2 || Math.abs(k) >= 2) {
-                int l = this.random.nextBetween(-1, 1);
-                if (this.tryTeleportTo(pos.getX() + j, pos.getY() + l, pos.getZ() + k)) {
+                int l = this.random.nextIntBetweenInclusive(-1, 1);
+                if (this.maybeTeleportTo(pos.getX() + j, pos.getY() + l, pos.getZ() + k)) {
                     return;
                 }
             }
         }
     }
-    private boolean tryTeleportTo(int x, int y, int z) {
+    private boolean maybeTeleportTo(int x, int y, int z) {
         if (!this.canTeleportTo(new BlockPos(x, y, z))) {
             return false;
         } else {
-            this.refreshPositionAndAngles(x + 0.5, y + 2, z + 0.5, this.getYaw(), this.getPitch());
+            this.snapTo(x + 0.5, y + 2, z + 0.5, this.getYRot(), this.getXRot());
             this.navigation.stop();
             return true;
         }
     }
     private boolean canTeleportTo(BlockPos pos) {
-        PathNodeType pathNodeType = LandPathNodeMaker.getLandNodeType(this, pos);
-        if (pathNodeType != PathNodeType.WALKABLE) {
+        PathType pathNodeType = WalkNodeEvaluator.getPathTypeStatic(this, pos);
+        if (pathNodeType != PathType.WALKABLE) {
             return false;
         } else {
-            BlockState blockState = this.getWorld().getBlockState(pos.down());
-            if (!this.canTeleportOntoLeaves() && blockState.getBlock() instanceof LeavesBlock) {
+            BlockState blockState = this.level().getBlockState(pos.below());
+            if (!this.canFlyToOwner() && blockState.getBlock() instanceof LeavesBlock) {
                 return false;
             } else {
-                BlockPos blockPos = pos.subtract(this.getBlockPos());
-                return this.getWorld().isSpaceEmpty(this, this.getBoundingBox().offset(blockPos));
+                BlockPos blockPos = pos.subtract(this.blockPosition());
+                return this.level().noCollision(this, this.getBoundingBox().move(blockPos));
             }
         }
     }
     @Override
-    public void tickMovement() {
-        super.tickMovement();
+    public void aiStep() {
+        super.aiStep();
         this.setNoGravity(true); // 强制无重力
     }
     @Override
     public boolean shouldTryTeleportToOwner() {
         LivingEntity livingEntity = this.getOwner();
-        return livingEntity != null && this.squaredDistanceTo(this.getOwner()) >= 64.0;
+        return livingEntity != null && this.distanceToSqr(this.getOwner()) >= 64.0;
     }
     @Override
-    public boolean isBreedingItem(ItemStack stack) {
+    public boolean isFood(ItemStack stack) {
         return false;
     }
 
@@ -174,23 +174,23 @@ public abstract class DroneEntity extends TameableEntity implements RangedAttack
     }*/
 
     @Override
-    public boolean isInAir() {
-        return !this.isOnGround();
+    public boolean isFlying() {
+        return !this.onGround();
     }
 
     @Nullable
     @Override
     protected SoundEvent getHurtSound(DamageSource source) {
-        return SoundEvents.BLOCK_ANVIL_LAND; // 金属撞击声
+        return SoundEvents.ANVIL_LAND; // 金属撞击声
     }
 
     @Nullable
     @Override
     protected SoundEvent getDeathSound() {
-        return SoundEvents.ENTITY_IRON_GOLEM_DEATH;
+        return SoundEvents.IRON_GOLEM_DEATH;
     }
     @Override
-    public @Nullable PassiveEntity createChild(ServerWorld world, PassiveEntity entity) {
+    public @Nullable AgeableMob getBreedOffspring(ServerLevel world, AgeableMob entity) {
         return null;
     }
 

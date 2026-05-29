@@ -1,15 +1,15 @@
 package com.kltyton.mob_battle.entity.silverfish.silverfish;
 
 import com.kltyton.mob_battle.entity.ModEntityAttributes;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.attribute.DefaultAttributeContainer;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.mob.SilverfishEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.world.World;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.monster.Silverfish;
+import net.minecraft.world.level.Level;
 
 public class LiruiSilverfishEntity extends CoalSilverfishEntity {
-    public LiruiSilverfishEntity(EntityType<? extends SilverfishEntity> entityType, World world) {
+    public LiruiSilverfishEntity(EntityType<? extends Silverfish> entityType, Level world) {
         super(entityType, world);
     }
     @Override
@@ -22,12 +22,12 @@ public class LiruiSilverfishEntity extends CoalSilverfishEntity {
     }
     @Override
     public void runSkill(CoalSilverfishEntity entity) {
-        if (entity.getTarget() != null && !this.getWorld().isClient) entity.getTarget().damage((ServerWorld) this.getWorld(), this.getDamageSources().mobAttack(this), 230);
+        if (entity.getTarget() != null && !this.level().isClientSide) entity.getTarget().hurtServer((ServerLevel) this.level(), this.damageSources().mobAttack(this), 230);
     }
-    public static DefaultAttributeContainer.Builder createAttributes() {
-        return SilverfishEntity.createSilverfishAttributes()
-                .add(EntityAttributes.MAX_HEALTH, 300.0D)
-                .add(EntityAttributes.ATTACK_DAMAGE, 100.0D)
+    public static AttributeSupplier.Builder createAttributes() {
+        return Silverfish.createAttributes()
+                .add(Attributes.MAX_HEALTH, 300.0D)
+                .add(Attributes.ATTACK_DAMAGE, 100.0D)
                 .add(ModEntityAttributes.DAMAGE_REDUCTION, 0.5);
     }
 }

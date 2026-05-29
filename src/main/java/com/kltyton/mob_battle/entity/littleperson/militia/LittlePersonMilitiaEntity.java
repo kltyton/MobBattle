@@ -6,23 +6,28 @@ import com.kltyton.mob_battle.entity.OwnedSummon;
 import com.kltyton.mob_battle.entity.littleperson.LittlePersonEntity;
 import com.kltyton.mob_battle.entity.villager.warriorvillager.WarriorVillager;
 import com.kltyton.mob_battle.utils.EntityUtil;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.ai.goal.*;
-import net.minecraft.entity.attribute.DefaultAttributeContainer;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.mob.HostileEntity;
-import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.entity.mob.Monster;
-import net.minecraft.entity.passive.GolemEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.registry.tag.DamageTypeTags;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundEvent;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.world.World;
+import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
+import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
+import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
+import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
+import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
+import net.minecraft.world.entity.animal.AbstractGolem;
+import net.minecraft.world.entity.monster.Enemy;
+import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
@@ -33,27 +38,27 @@ import software.bernie.geckolib.animation.PlayState;
 import software.bernie.geckolib.animation.RawAnimation;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
-public class LittlePersonMilitiaEntity extends HostileEntity implements LittlePersonEntity, OwnedSummon {
+public class LittlePersonMilitiaEntity extends Monster implements LittlePersonEntity, OwnedSummon {
     public String[] attackVariants;
     @Nullable
     private LivingEntity summonOwner;
-    public LittlePersonMilitiaEntity(EntityType<? extends HostileEntity> entityType, World world) {
+    public LittlePersonMilitiaEntity(EntityType<? extends Monster> entityType, Level world) {
         super(entityType, world);
     }
     @Override
-    protected void initGoals() {
-        this.goalSelector.add(2, new MeleeAttackGoal(this, 1.0, false)); // 添加僵尸攻击目标
-        this.goalSelector.add(7, new WanderAroundFarGoal(this, 1.0)); // 添加远距离游荡目标
-        this.goalSelector.add(8, new LookAtEntityGoal(this, PlayerEntity.class, 8.0F)); // 添加看向玩家的目标
-        this.goalSelector.add(8, new LookAroundGoal(this)); // 添加环顾四周的目标
-        this.targetSelector.add(3, new ActiveTargetGoal<>(this, GolemEntity.class, 10, true, false, this::canTargetAsSummon)); // 添加攻击傀儡目标
-        this.targetSelector.add(2, new ActiveTargetGoal<>(this, WarriorVillager.class, 10, true, false, this::canTargetAsSummon));
-        this.targetSelector.add(2, new ActiveTargetGoal<>(this, PlayerEntity.class, 10, true, false, this::canTargetAsSummon)); // 添加主动攻击玩家目标
-        this.targetSelector.add(3, new ActiveTargetGoal<>(this, MobEntity.class, 5, false, false,
-                (entity, world) -> entity instanceof Monster && !(entity instanceof LittlePersonEntity) && canTargetAsSummon(entity, world)));
+    protected void registerGoals() {
+        this.goalSelector.addGoal(2, new MeleeAttackGoal(this, 1.0, false)); // 添加僵尸攻击目标
+        this.goalSelector.addGoal(7, new WaterAvoidingRandomStrollGoal(this, 1.0)); // 添加远距离游荡目标
+        this.goalSelector.addGoal(8, new LookAtPlayerGoal(this, Player.class, 8.0F)); // 添加看向玩家的目标
+        this.goalSelector.addGoal(8, new RandomLookAroundGoal(this)); // 添加环顾四周的目标
+        this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, AbstractGolem.class, 10, true, false, this::canTargetAsSummon)); // 添加攻击傀儡目标
+        this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, WarriorVillager.class, 10, true, false, this::canTargetAsSummon));
+        this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, 10, true, false, this::canTargetAsSummon)); // 添加主动攻击玩家目标
+        this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, Mob.class, 5, false, false,
+                (entity, world) -> entity instanceof Enemy && !(entity instanceof LittlePersonEntity) && canTargetAsSummon(entity, world)));
     }
 
-    private boolean canTargetAsSummon(LivingEntity target, ServerWorld world) {
+    private boolean canTargetAsSummon(LivingEntity target, ServerLevel world) {
         return EntityUtil.isValidSummonCombatTarget(this, this.summonOwner, target);
     }
 
@@ -73,12 +78,12 @@ public class LittlePersonMilitiaEntity extends HostileEntity implements LittlePe
     protected boolean isValidSummonTarget(LivingEntity target) {
         return EntityUtil.isValidSummonCombatTarget(this, this.summonOwner, target);
     }
-    public static DefaultAttributeContainer.Builder createLittlePersonMilitiaAttributes() {
+    public static AttributeSupplier.Builder createLittlePersonMilitiaAttributes() {
         return LittlePersonEntity.createLittlePersonAttributes()
-                .add(EntityAttributes.MAX_HEALTH, 10.0)
-                .add(EntityAttributes.FOLLOW_RANGE, 40.0)
-                .add(EntityAttributes.MOVEMENT_SPEED, 0.5)
-                .add(EntityAttributes.ATTACK_DAMAGE, 10.0)
+                .add(Attributes.MAX_HEALTH, 10.0)
+                .add(Attributes.FOLLOW_RANGE, 40.0)
+                .add(Attributes.MOVEMENT_SPEED, 0.5)
+                .add(Attributes.ATTACK_DAMAGE, 10.0)
                 .add(ModEntityAttributes.DAMAGE_REDUCTION, 0);
     }
 
@@ -89,12 +94,12 @@ public class LittlePersonMilitiaEntity extends HostileEntity implements LittlePe
     @Override
     public void tick() {
         super.tick();
-        if (!this.getWorld().isClient) {
-            if (this.age % 20 == 0) this.heal();
+        if (!this.level().isClientSide) {
+            if (this.tickCount % 20 == 0) this.heal();
         }
     }
     @Override
-    public boolean tryAttack(ServerWorld world, Entity target) {
+    public boolean doHurtTarget(ServerLevel world, Entity target) {
         if (target instanceof LivingEntity living && !isValidSummonTarget(living)) {
             return false;
         }
@@ -105,7 +110,7 @@ public class LittlePersonMilitiaEntity extends HostileEntity implements LittlePe
             this.triggerAnim("skill_controller", attackVariants[randomIndex]);
 
         } else this.triggerAnim("attack_controller", "attack");
-        boolean bl = super.tryAttack(world, target);
+        boolean bl = super.doHurtTarget(world, target);
         if (bl && target instanceof LivingEntity livingEntity) {
             attackAdditional(livingEntity);
         }
@@ -126,20 +131,20 @@ public class LittlePersonMilitiaEntity extends HostileEntity implements LittlePe
     @Override
     public boolean blockAttack(@NotNull DamageSource source, float amount) {
         // 检查伤害是否来自实体直接攻击
-        if (source.getSource() instanceof Entity &&
-                !source.isIn(DamageTypeTags.IS_FALL) &&
-                !source.isIn(DamageTypeTags.IS_FIRE) &&
-                !source.isIn(DamageTypeTags.IS_EXPLOSION) &&
-                !source.isIn(DamageTypeTags.IS_DROWNING) &&
-                !source.isIn(DamageTypeTags.IS_FREEZING) &&
-                !source.isIn(DamageTypeTags.IS_LIGHTNING) &&
-                !source.isIn(DamageTypeTags.BURN_FROM_STEPPING) &&
-                !source.isIn(DamageTypeTags.WITCH_RESISTANT_TO) &&
+        if (source.getDirectEntity() instanceof Entity &&
+                !source.is(DamageTypeTags.IS_FALL) &&
+                !source.is(DamageTypeTags.IS_FIRE) &&
+                !source.is(DamageTypeTags.IS_EXPLOSION) &&
+                !source.is(DamageTypeTags.IS_DROWNING) &&
+                !source.is(DamageTypeTags.IS_FREEZING) &&
+                !source.is(DamageTypeTags.IS_LIGHTNING) &&
+                !source.is(DamageTypeTags.BURN_FROM_STEPPING) &&
+                !source.is(DamageTypeTags.WITCH_RESISTANT_TO) &&
                 amount <= maxBlockDamage()) {
 
             // 20%概率免疫伤害
             if (this.random.nextInt(100) < blockProbability()) {
-                this.playSound(SoundEvents.ITEM_SHIELD_BLOCK.value(), 1.0F, 1.0F);
+                this.playSound(SoundEvents.SHIELD_BLOCK.value(), 1.0F, 1.0F);
                 this.triggerAnim("attack_controller", "block");
                 return true;
             }
@@ -148,9 +153,9 @@ public class LittlePersonMilitiaEntity extends HostileEntity implements LittlePe
     }
 
     @Override
-    public boolean damage(ServerWorld world, DamageSource source, float amount) {
+    public boolean hurtServer(ServerLevel world, DamageSource source, float amount) {
         if (blockAttack(source, amount)) return false;
-        return super.damage(world, source, amount);
+        return super.hurtServer(world, source, amount);
     }
     private final AnimatableInstanceCache geoCache = GeckoLibUtil.createInstanceCache(this);
     protected static final RawAnimation IDLE_ANIM = RawAnimation.begin().thenLoop("idle");
@@ -178,12 +183,12 @@ public class LittlePersonMilitiaEntity extends HostileEntity implements LittlePe
     }
     @Override
     protected SoundEvent getHurtSound(DamageSource source) {
-        return SoundEvents.ENTITY_VILLAGER_HURT;
+        return SoundEvents.VILLAGER_HURT;
     }
 
     @Override
     protected SoundEvent getDeathSound() {
-        return SoundEvents.ENTITY_VILLAGER_DEATH;
+        return SoundEvents.VILLAGER_DEATH;
     }
     @Override
     public AnimatableInstanceCache getAnimatableInstanceCache() {

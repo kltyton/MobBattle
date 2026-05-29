@@ -1,22 +1,22 @@
 package com.kltyton.mob_battle.mixin.disarm;
 
 import com.kltyton.mob_battle.entity.ModSkillEntityType;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.ai.brain.task.FrogEatEntityTask;
-import net.minecraft.entity.passive.FrogEntity;
-import net.minecraft.server.world.ServerWorld;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.animal.frog.Frog;
+import net.minecraft.world.entity.animal.frog.ShootTongue;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
-@Mixin(FrogEatEntityTask.class)
+@Mixin(ShootTongue.class)
 public class AttackEntityTaskMixin {
-    @Redirect(method = "eat", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/passive/FrogEntity;tryAttack(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/entity/Entity;)Z"))
-    public boolean disarm(FrogEntity instance, ServerWorld world, Entity entity) {
+    @Redirect(method = "eatEntity", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/animal/frog/Frog;tryAttack(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/Entity;)Z"))
+    public boolean disarm(Frog instance, ServerLevel world, Entity entity) {
         if (instance instanceof LivingEntity living) {
             if (!ModSkillEntityType.canSkill(living)) return false;
         }
-        return instance.tryAttack(world, entity);
+        return instance.doHurtTarget(world, entity);
     }
 }

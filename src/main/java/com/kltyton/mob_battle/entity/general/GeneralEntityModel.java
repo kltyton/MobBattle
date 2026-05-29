@@ -1,9 +1,9 @@
 package com.kltyton.mob_battle.entity.general;
 
 import com.kltyton.mob_battle.Mob_battle;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import software.bernie.geckolib.animatable.GeoAnimatable;
 import software.bernie.geckolib.animatable.processing.AnimationState;
 import software.bernie.geckolib.cache.object.GeoBone;
@@ -26,18 +26,18 @@ public class GeneralEntityModel<T extends GeoAnimatable> extends GeoModel<T> {
         this.renderLayer = renderLayer;
     }
     @Override
-    public Identifier getModelResource(GeoRenderState renderState) {
-        return Identifier.of(Mob_battle.MOD_ID, name);
+    public ResourceLocation getModelResource(GeoRenderState renderState) {
+        return ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, name);
     }
 
     @Override
-    public Identifier getTextureResource(GeoRenderState renderState) {
-        return Identifier.of(Mob_battle.MOD_ID, "textures/entity/" + name + "/" + name + ".png");
+    public ResourceLocation getTextureResource(GeoRenderState renderState) {
+        return ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "textures/entity/" + name + "/" + name + ".png");
     }
 
     @Override
-    public Identifier getAnimationResource(T animatable) {
-        return Identifier.of(Mob_battle.MOD_ID, name);
+    public ResourceLocation getAnimationResource(T animatable) {
+        return ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, name);
     }
     @Override
     public void setCustomAnimations(AnimationState<T> animationState) {
@@ -49,22 +49,22 @@ public class GeneralEntityModel<T extends GeoAnimatable> extends GeoModel<T> {
                 float pitch = animationState.getDataOrDefault(DataTickets.ENTITY_PITCH, 0F);
                 float yaw = animationState.getDataOrDefault(DataTickets.ENTITY_YAW, 0F);
 
-                head.setRotX(-pitch * MathHelper.RADIANS_PER_DEGREE);
-                head.setRotY(-yaw * MathHelper.RADIANS_PER_DEGREE);
+                head.setRotX(-pitch * Mth.DEG_TO_RAD);
+                head.setRotY(-yaw * Mth.DEG_TO_RAD);
             }
         }
     }
-    public RenderLayer getRenderType(GeoRenderState renderState, Identifier texture) {
+    public RenderType getRenderType(GeoRenderState renderState, ResourceLocation texture) {
         if (renderLayer != null) {
             switch (renderLayer) {
                 case TRANSLUCENT -> {
-                    return RenderLayer.getEntityTranslucentEmissive(texture);
+                    return RenderType.entityTranslucentEmissive(texture);
                 }
                 case CUTOUT -> {
-                    return RenderLayer.getEntityCutoutNoCull(texture);
+                    return RenderType.entityCutoutNoCull(texture);
                 }
             }
         }
-        return RenderLayer.getEntityCutoutNoCull(texture);
+        return RenderType.entityCutoutNoCull(texture);
     }
 }

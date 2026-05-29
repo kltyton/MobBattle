@@ -2,29 +2,29 @@ package com.kltyton.mob_battle.entity.littleperson.skillentity;
 
 import com.kltyton.mob_battle.entity.ModEntityAttributes;
 import com.kltyton.mob_battle.entity.littleperson.skillentity.base.BaseSkillLittlePersonEntity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.attribute.DefaultAttributeContainer;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.World;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.Mth;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.level.Level;
 
 public class HumanShieldEntity extends BaseSkillLittlePersonEntity {
-    public HumanShieldEntity(EntityType<? extends BaseSkillLittlePersonEntity> entityType, World world) {
+    public HumanShieldEntity(EntityType<? extends BaseSkillLittlePersonEntity> entityType, Level world) {
         super(entityType, world, 3);
         COOL_DOWN_TIME_1 = 8 * 20;
         COOL_DOWN_TIME_2 = 5 * 20;
         COOL_DOWN_TIME_3 = 15 * 20;
         init();
     }
-    public static DefaultAttributeContainer.Builder createLittlePersonAttributes() {
+    public static AttributeSupplier.Builder createLittlePersonAttributes() {
         return BaseSkillLittlePersonEntity.createAttributes()
-                .add(EntityAttributes.MAX_HEALTH, 1900.0)
-                .add(EntityAttributes.ATTACK_DAMAGE, 25.0)
+                .add(Attributes.MAX_HEALTH, 1900.0)
+                .add(Attributes.ATTACK_DAMAGE, 25.0)
                 .add(ModEntityAttributes.DAMAGE_REDUCTION, 0.0);
     }
     @Override
@@ -36,33 +36,33 @@ public class HumanShieldEntity extends BaseSkillLittlePersonEntity {
         return 150f;
     }
     @Override
-    public boolean damage(ServerWorld world, DamageSource source, float amount) {
-        if (source.getAttacker() instanceof HumanHammerEntity && source.getAttacker().isTeammate(this)) {
-            this.addStatusEffect(new StatusEffectInstance(StatusEffects.RESISTANCE, 20 * 5, 2));
+    public boolean hurtServer(ServerLevel world, DamageSource source, float amount) {
+        if (source.getEntity() instanceof HumanHammerEntity && source.getEntity().isAlliedTo(this)) {
+            this.addEffect(new MobEffectInstance(MobEffects.RESISTANCE, 20 * 5, 2));
         }
-        return super.damage(world, source, amount);
+        return super.hurtServer(world, source, amount);
     }
     @Override
     public void runSkill_2(BaseSkillLittlePersonEntity entity) {
-        if (this.getTarget() != null && this.getTarget().isAlive() && this.getWorld() instanceof ServerWorld serverWorld) {
+        if (this.getTarget() != null && this.getTarget().isAlive() && this.level() instanceof ServerLevel serverWorld) {
             LivingEntity target = this.getTarget();
-            target.damage(serverWorld, this.getDamageSources().mobAttack(entity), 55);
-            target.takeKnockback(1, MathHelper.sin(this.getYaw() * (float) (Math.PI / 180.0)), -MathHelper.cos(this.getYaw() * (float) (Math.PI / 180.0)));
+            target.hurtServer(serverWorld, this.damageSources().mobAttack(entity), 55);
+            target.knockback(1, Mth.sin(this.getYRot() * (float) (Math.PI / 180.0)), -Mth.cos(this.getYRot() * (float) (Math.PI / 180.0)));
         }
     }
     @Override
     public void runSkill_3(BaseSkillLittlePersonEntity entity) {
-        if (this.getTarget() != null && this.getTarget().isAlive() && this.getWorld() instanceof ServerWorld serverWorld) {
+        if (this.getTarget() != null && this.getTarget().isAlive() && this.level() instanceof ServerLevel serverWorld) {
             LivingEntity target = this.getTarget();
-            target.damage(serverWorld, this.getDamageSources().mobAttack(entity), 45);
-            target.addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS, 20, 0));
+            target.hurtServer(serverWorld, this.damageSources().mobAttack(entity), 45);
+            target.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 20, 0));
         }
     }
     @Override
     public void runSkill_4(BaseSkillLittlePersonEntity entity) {
-        if (this.getTarget() != null && this.getTarget().isAlive() && this.getWorld() instanceof ServerWorld serverWorld) {
+        if (this.getTarget() != null && this.getTarget().isAlive() && this.level() instanceof ServerLevel serverWorld) {
             LivingEntity target = this.getTarget();
-            target.damage(serverWorld, this.getDamageSources().mobAttack(entity), 35);
+            target.hurtServer(serverWorld, this.damageSources().mobAttack(entity), 35);
         }
     }
 }

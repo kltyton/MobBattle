@@ -4,27 +4,26 @@ import com.kltyton.mob_battle.block.ModBlockEntities;
 import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.entity.villager.militia.MilitiaArcherVillager;
 import com.kltyton.mob_battle.utils.EntityUtil;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.SpawnReason;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.entity.passive.VillagerEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.storage.ReadView;
-import net.minecraft.storage.WriteView;
-import net.minecraft.util.Uuids;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-import net.minecraft.village.VillagerProfession;
-import net.minecraft.world.World;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.UUIDUtil;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.npc.Villager;
+import net.minecraft.world.entity.npc.VillagerProfession;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.phys.AABB;
 
 public class TargetBlockEntity extends BlockEntity {
     private List<UUID> trackedGolems = new ArrayList<>();
@@ -37,16 +36,16 @@ public class TargetBlockEntity extends BlockEntity {
     }
 
     // 每秒运行一次逻辑 (20 ticks)，节省性能
-    public static void tick(World world, BlockPos pos, BlockState state, TargetBlockEntity be) {
-        if (world.isClient || world.getTime() % 20 != 0) return;
-        ServerWorld serverWorld = (ServerWorld) world;
+    public static void tick(Level world, BlockPos pos, BlockState state, TargetBlockEntity be) {
+        if (world.isClientSide || world.getGameTime() % 20 != 0) return;
+        ServerLevel serverWorld = (ServerLevel) world;
         be.validateGolems(serverWorld, pos);
         if (be.trackedGolems.size() < MAX_GOLEMS) {
             be.tryTransformVillager(serverWorld, pos);
         }
     }
 
-    private void validateGolems(ServerWorld world, BlockPos pos) {
+    private void validateGolems(ServerLevel world, BlockPos pos) {
         Iterator<UUID> iterator = trackedGolems.iterator();
         while (iterator.hasNext()) {
             UUID uuid = iterator.next();
@@ -54,32 +53,32 @@ public class TargetBlockEntity extends BlockEntity {
             // 如果实体不存在、不是铁傀儡、已死亡、或距离超过64格，则移除
             if (!(entity instanceof MilitiaArcherVillager golem) || !golem.isAlive()) {
                 iterator.remove();
-                markDirty();
+                setChanged();
             }
         }
     }
 
-    private void tryTransformVillager(ServerWorld world, BlockPos pos) {
-        Box box = new Box(pos).expand(DETECT_VILLAGER_RANGE);
-        List<VillagerEntity> villagers = world.getEntitiesByClass(VillagerEntity.class, box,
-                v -> !v.isBaby() && v.getVillagerData().profession().matchesKey(VillagerProfession.NONE));
+    private void tryTransformVillager(ServerLevel world, BlockPos pos) {
+        AABB box = new AABB(pos).inflate(DETECT_VILLAGER_RANGE);
+        List<Villager> villagers = world.getEntitiesOfClass(Villager.class, box,
+                v -> !v.isBaby() && v.getVillagerData().profession().is(VillagerProfession.NONE));
 
         if (!villagers.isEmpty()) {
-            VillagerEntity villager = villagers.getFirst();
+            Villager villager = villagers.getFirst();
             // 转化
-            MilitiaArcherVillager golem = ModEntities.MILITIA_ARCHER_VILLAGER.create(world, SpawnReason.CONVERSION);
+            MilitiaArcherVillager golem = ModEntities.MILITIA_ARCHER_VILLAGER.create(world, EntitySpawnReason.CONVERSION);
             if (golem != null) {
                 golem.setHomePos(pos);
-                golem.refreshPositionAndAngles(villager.getX(), villager.getY(), villager.getZ(), villager.getYaw(), villager.getPitch());
-                world.spawnEntity(golem);
-                trackedGolems.add(golem.getUuid());
+                golem.snapTo(villager.getX(), villager.getY(), villager.getZ(), villager.getYRot(), villager.getXRot());
+                world.addFreshEntity(golem);
+                trackedGolems.add(golem.getUUID());
                 EntityUtil.joinSameTeam(golem, villager);
                 villager.discard();
-                markDirty();
+                setChanged();
             }
         }
     }
-    public void killTrackedGolems(ServerWorld world) {
+    public void killTrackedGolems(ServerLevel world) {
         if (trackedGolems.isEmpty()) {
             return;
         }
@@ -92,9 +91,9 @@ public class TargetBlockEntity extends BlockEntity {
         }
 
         trackedGolems.clear();
-        markDirty();
+        setChanged();
     }
-    public void applyGlowingToTracked(ServerWorld world, PlayerEntity player) {
+    public void applyGlowingToTracked(ServerLevel world, Player player) {
         if (trackedGolems.isEmpty()) {
             return;
         }
@@ -102,8 +101,8 @@ public class TargetBlockEntity extends BlockEntity {
         for (UUID uuid : trackedGolems) {
             Entity entity = world.getEntity(uuid);
             if (entity instanceof MilitiaArcherVillager warrior && entity.isAlive()) {
-                warrior.addStatusEffect(new StatusEffectInstance(
-                        StatusEffects.GLOWING,
+                warrior.addEffect(new MobEffectInstance(
+                        MobEffects.GLOWING,
                         5 * 20,
                         0,
                         false,
@@ -113,14 +112,14 @@ public class TargetBlockEntity extends BlockEntity {
         }
     }
     @Override
-    protected void writeData(WriteView view) {
-        super.writeData(view);
-        view.put("TrackedGolems", Uuids.CODEC.listOf(), this.trackedGolems);
+    protected void saveAdditional(ValueOutput view) {
+        super.saveAdditional(view);
+        view.store("TrackedGolems", UUIDUtil.AUTHLIB_CODEC.listOf(), this.trackedGolems);
     }
 
     @Override
-    protected void readData(ReadView view) {
-        super.readData(view);
-        this.trackedGolems = new ArrayList<>(view.read("TrackedGolems", Uuids.CODEC.listOf()).orElse(new ArrayList<>()));
+    protected void loadAdditional(ValueInput view) {
+        super.loadAdditional(view);
+        this.trackedGolems = new ArrayList<>(view.read("TrackedGolems", UUIDUtil.AUTHLIB_CODEC.listOf()).orElse(new ArrayList<>()));
     }
 }

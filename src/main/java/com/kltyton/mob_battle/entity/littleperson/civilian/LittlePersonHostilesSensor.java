@@ -1,11 +1,11 @@
 package com.kltyton.mob_battle.entity.littleperson.civilian;
 
 import com.google.common.collect.ImmutableMap;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.ai.brain.MemoryModuleType;
-import net.minecraft.entity.ai.brain.sensor.NearestVisibleLivingEntitySensor;
-import net.minecraft.server.world.ServerWorld;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.memory.MemoryModuleType;
+import net.minecraft.world.entity.ai.sensing.NearestVisibleLivingEntitySensor;
 
 public class LittlePersonHostilesSensor extends NearestVisibleLivingEntitySensor {
     private static final ImmutableMap<EntityType<?>, Float> SQUARED_DISTANCES_FOR_DANGER = ImmutableMap.<EntityType<?>, Float>builder()
@@ -24,17 +24,17 @@ public class LittlePersonHostilesSensor extends NearestVisibleLivingEntitySensor
             .build();
 
     @Override
-    protected boolean matches(ServerWorld world, LivingEntity entity, LivingEntity target) {
+    protected boolean isMatchingEntity(ServerLevel world, LivingEntity entity, LivingEntity target) {
         return this.isHostile(target) && this.isCloseEnoughForDanger(entity, target);
     }
 
     private boolean isCloseEnoughForDanger(LivingEntity villager, LivingEntity target) {
         float f = SQUARED_DISTANCES_FOR_DANGER.get(target.getType());
-        return target.squaredDistanceTo(villager) <= f * f;
+        return target.distanceToSqr(villager) <= f * f;
     }
 
     @Override
-    protected MemoryModuleType<LivingEntity> getOutputMemoryModule() {
+    protected MemoryModuleType<LivingEntity> getMemory() {
         return MemoryModuleType.NEAREST_HOSTILE;
     }
 

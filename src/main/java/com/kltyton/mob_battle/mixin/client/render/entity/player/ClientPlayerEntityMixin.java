@@ -3,18 +3,18 @@ package com.kltyton.mob_battle.mixin.client.render.entity.player;
 import com.kltyton.mob_battle.entity.player.IClientPlayerEntityAccessor;
 import com.kltyton.mob_battle.network.packet.PlayerSkillPayload;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.world.World;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Implements;
 import org.spongepowered.asm.mixin.Interface;
 import org.spongepowered.asm.mixin.Mixin;
 
-@Mixin(PlayerEntity.class)
+@Mixin(Player.class)
 @Implements(@Interface(iface = IClientPlayerEntityAccessor.class, prefix = "iClient$"))
 public abstract class ClientPlayerEntityMixin extends LivingEntity {
-    protected ClientPlayerEntityMixin(EntityType<? extends LivingEntity> entityType, World world) {
+    protected ClientPlayerEntityMixin(EntityType<? extends LivingEntity> entityType, Level world) {
         super(entityType, world);
     }
     public void iClient$clientSend(String message) {

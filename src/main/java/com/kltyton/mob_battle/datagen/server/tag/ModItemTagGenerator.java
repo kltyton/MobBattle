@@ -3,27 +3,26 @@ package com.kltyton.mob_battle.datagen.server.tag;
 import com.kltyton.mob_battle.items.ModItems;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagProvider;
-import net.minecraft.item.Item;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.registry.tag.ItemTags;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.util.Identifier;
-
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.Item;
 import java.util.concurrent.CompletableFuture;
 
 public class ModItemTagGenerator extends FabricTagProvider.ItemTagProvider {
-    private static final TagKey<Item> ENCHANTABLE_HEAD_ARMOR = TagKey.of(RegistryKeys.ITEM, Identifier.ofVanilla("enchantable/head_armor"));
-    private static final TagKey<Item> ENCHANTABLE_CHEST_ARMOR = TagKey.of(RegistryKeys.ITEM, Identifier.ofVanilla("enchantable/chest_armor"));
-    private static final TagKey<Item> ENCHANTABLE_LEG_ARMOR = TagKey.of(RegistryKeys.ITEM, Identifier.ofVanilla("enchantable/leg_armor"));
-    private static final TagKey<Item> ENCHANTABLE_FOOT_ARMOR = TagKey.of(RegistryKeys.ITEM, Identifier.ofVanilla("enchantable/foot_armor"));
+    private static final TagKey<Item> ENCHANTABLE_HEAD_ARMOR = TagKey.create(Registries.ITEM, ResourceLocation.withDefaultNamespace("enchantable/head_armor"));
+    private static final TagKey<Item> ENCHANTABLE_CHEST_ARMOR = TagKey.create(Registries.ITEM, ResourceLocation.withDefaultNamespace("enchantable/chest_armor"));
+    private static final TagKey<Item> ENCHANTABLE_LEG_ARMOR = TagKey.create(Registries.ITEM, ResourceLocation.withDefaultNamespace("enchantable/leg_armor"));
+    private static final TagKey<Item> ENCHANTABLE_FOOT_ARMOR = TagKey.create(Registries.ITEM, ResourceLocation.withDefaultNamespace("enchantable/foot_armor"));
 
-    public ModItemTagGenerator(FabricDataOutput output, CompletableFuture<RegistryWrapper.WrapperLookup> registriesFuture) {
+    public ModItemTagGenerator(FabricDataOutput output, CompletableFuture<HolderLookup.Provider> registriesFuture) {
         super(output, registriesFuture);
     }
 
     @Override
-    protected void configure(RegistryWrapper.WrapperLookup wrapperLookup) {
+    protected void addTags(HolderLookup.Provider wrapperLookup) {
         valueLookupBuilder(ItemTags.SWORDS).add(
                 ModItems.EMERALD_DIAMOND_SWORD,
                 ModItems.IRON_GOLD_SWORD,

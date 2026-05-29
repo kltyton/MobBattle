@@ -1,16 +1,15 @@
 package com.kltyton.mob_battle.items.misc;
 
 import com.kltyton.mob_battle.Mob_battle;
-import net.minecraft.item.Item;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.Rarity;
-
 import java.util.HashMap;
 import java.util.Map;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Rarity;
 
 public class BaseItems {
     // 存储所有注册的物品
@@ -46,10 +45,10 @@ public class BaseItems {
     }
 
     private static void registerItem(String id, Rarity rarity) {
-        Identifier itemId = Identifier.of(Mob_battle.MOD_ID, id);
-        Item.Settings settings = new Item.Settings().rarity(rarity)
-                .registryKey(RegistryKey.of(RegistryKeys.ITEM, itemId));
-        Item item = Registry.register(Registries.ITEM, itemId, new Item(settings));
+        ResourceLocation itemId = ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, id);
+        Item.Properties settings = new Item.Properties().rarity(rarity)
+                .setId(ResourceKey.create(Registries.ITEM, itemId));
+        Item item = Registry.register(BuiltInRegistries.ITEM, itemId, new Item(settings));
         ITEMS.put(id, item);
     }
 

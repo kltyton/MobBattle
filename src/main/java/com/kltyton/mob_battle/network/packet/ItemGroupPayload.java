@@ -1,17 +1,17 @@
 package com.kltyton.mob_battle.network.packet;
 
 import com.kltyton.mob_battle.Mob_battle;
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.codec.PacketCodecs;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.util.Identifier;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
 
-public record ItemGroupPayload(boolean isOpen) implements CustomPayload {
-    public static final Id<ItemGroupPayload> ID = new Id<>(Identifier.of(Mob_battle.MOD_ID, "item_group_payload"));
-    public static final PacketCodec<RegistryByteBuf, ItemGroupPayload> CODEC = PacketCodec.tuple(
-            PacketCodecs.BOOLEAN, ItemGroupPayload::isOpen,
+public record ItemGroupPayload(boolean isOpen) implements CustomPacketPayload {
+    public static final Type<ItemGroupPayload> ID = new Type<>(ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "item_group_payload"));
+    public static final StreamCodec<RegistryFriendlyByteBuf, ItemGroupPayload> CODEC = StreamCodec.composite(
+            ByteBufCodecs.BOOL, ItemGroupPayload::isOpen,
             ItemGroupPayload::new
     );
-    @Override public Id<? extends CustomPayload> getId() { return ID; }
+    @Override public Type<? extends CustomPacketPayload> type() { return ID; }
 }

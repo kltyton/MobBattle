@@ -2,20 +2,20 @@ package com.kltyton.mob_battle.utils;
 
 import com.kltyton.mob_battle.effect.ModEffects;
 import com.kltyton.mob_battle.enchantment.ModEnchantments;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.EquippableComponent;
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.equipment.ArmorMaterial;
-import net.minecraft.item.equipment.EquipmentAsset;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.world.World;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.equipment.ArmorMaterial;
+import net.minecraft.world.item.equipment.EquipmentAsset;
+import net.minecraft.world.item.equipment.Equippable;
+import net.minecraft.world.level.Level;
 
 public class ArmorUtil {
     public static boolean hasFullArmor(LivingEntity entity, ArmorMaterial material) {
-        RegistryKey<EquipmentAsset> assetId = material.assetId();
+        ResourceKey<EquipmentAsset> assetId = material.assetId();
 
         return hasArmorWithAsset(entity, EquipmentSlot.HEAD, assetId)
                 && hasArmorWithAsset(entity, EquipmentSlot.CHEST, assetId)
@@ -26,14 +26,14 @@ public class ArmorUtil {
     private static boolean hasArmorWithAsset(
             LivingEntity entity,
             EquipmentSlot slot,
-            RegistryKey<EquipmentAsset> assetId
+            ResourceKey<EquipmentAsset> assetId
     ) {
-        ItemStack stack = entity.getEquippedStack(slot);
+        ItemStack stack = entity.getItemBySlot(slot);
         if (stack.isEmpty()) {
             return false;
         }
 
-        EquippableComponent equippable = stack.get(DataComponentTypes.EQUIPPABLE);
+        Equippable equippable = stack.get(DataComponents.EQUIPPABLE);
         if (equippable == null) {
             return false;
         }
@@ -47,7 +47,7 @@ public class ArmorUtil {
     }
 
     public static int getMagicProtectionLevel(LivingEntity entity) {
-        World world = entity.getWorld();
+        Level world = entity.level();
         EquipmentSlot[] slots = {
                 EquipmentSlot.HEAD,
                 EquipmentSlot.CHEST,
@@ -58,7 +58,7 @@ public class ArmorUtil {
         int totalLevel = 0;
 
         for (EquipmentSlot slot : slots) {
-            ItemStack stack = entity.getEquippedStack(slot);
+            ItemStack stack = entity.getItemBySlot(slot);
             if (!stack.isEmpty()) {
                 totalLevel += EnchantmentUtil.getEnchantmentLevel(
                         world,
@@ -69,7 +69,7 @@ public class ArmorUtil {
         }
 
         if (totalLevel != 0) {
-            StatusEffectInstance effect = entity.getStatusEffect(ModEffects.VOID_ARMOR_PIERCING_ENTRY);
+            MobEffectInstance effect = entity.getEffect(ModEffects.VOID_ARMOR_PIERCING_ENTRY);
             if (effect != null) {
                 int level = effect.getAmplifier() + 1;
                 return Math.max(0, totalLevel - level);

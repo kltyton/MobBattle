@@ -2,42 +2,41 @@ package com.kltyton.mob_battle.entity.blueirongolem;
 
 import com.google.common.collect.ImmutableMap;
 import com.kltyton.mob_battle.Mob_battle;
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.entity.feature.FeatureRenderer;
-import net.minecraft.client.render.entity.feature.FeatureRendererContext;
-import net.minecraft.client.render.entity.model.IronGolemEntityModel;
-import net.minecraft.client.render.entity.state.IronGolemEntityRenderState;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.entity.passive.Cracks;
-import net.minecraft.util.Identifier;
-
+import net.minecraft.client.model.IronGolemModel;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.entity.RenderLayerParent;
+import net.minecraft.client.renderer.entity.layers.RenderLayer;
+import net.minecraft.client.renderer.entity.state.IronGolemRenderState;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.Crackiness;
 import java.util.Map;
 
 @Environment(EnvType.CLIENT)
-public class BlueIronGolemCrackFeatureRenderer extends FeatureRenderer<IronGolemEntityRenderState, IronGolemEntityModel> {
-    private static final Map<Cracks.CrackLevel, Identifier> CRACK_TEXTURES = ImmutableMap.of(
-            Cracks.CrackLevel.LOW,
-            Identifier.of(Mob_battle.MOD_ID,"textures/entity/blue_iron_golem/blue_iron_golem_crackiness_low.png"),
-            Cracks.CrackLevel.MEDIUM,
-            Identifier.of(Mob_battle.MOD_ID,"textures/entity/blue_iron_golem/blue_iron_golem_crackiness_medium.png"),
-            Cracks.CrackLevel.HIGH,
-            Identifier.of(Mob_battle.MOD_ID,"textures/entity/blue_iron_golem/blue_iron_golem_crackiness_high.png")
+public class BlueIronGolemCrackFeatureRenderer extends RenderLayer<IronGolemRenderState, IronGolemModel> {
+    private static final Map<Crackiness.Level, ResourceLocation> CRACK_TEXTURES = ImmutableMap.of(
+            Crackiness.Level.LOW,
+            ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID,"textures/entity/blue_iron_golem/blue_iron_golem_crackiness_low.png"),
+            Crackiness.Level.MEDIUM,
+            ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID,"textures/entity/blue_iron_golem/blue_iron_golem_crackiness_medium.png"),
+            Crackiness.Level.HIGH,
+            ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID,"textures/entity/blue_iron_golem/blue_iron_golem_crackiness_high.png")
     );
 
-    public BlueIronGolemCrackFeatureRenderer(FeatureRendererContext<IronGolemEntityRenderState, IronGolemEntityModel> featureRendererContext) {
+    public BlueIronGolemCrackFeatureRenderer(RenderLayerParent<IronGolemRenderState, IronGolemModel> featureRendererContext) {
         super(featureRendererContext);
     }
 
     public void render(
-            MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i, IronGolemEntityRenderState ironGolemEntityRenderState, float f, float g
+            PoseStack matrixStack, MultiBufferSource vertexConsumerProvider, int i, IronGolemRenderState ironGolemEntityRenderState, float f, float g
     ) {
-        if (!ironGolemEntityRenderState.invisible) {
-            Cracks.CrackLevel crackLevel = ironGolemEntityRenderState.crackLevel;
-            if (crackLevel != Cracks.CrackLevel.NONE) {
-                Identifier identifier = CRACK_TEXTURES.get(crackLevel);
-                renderModel(this.getContextModel(), identifier, matrixStack, vertexConsumerProvider, i, ironGolemEntityRenderState, -1);
+        if (!ironGolemEntityRenderState.isInvisible) {
+            Crackiness.Level crackLevel = ironGolemEntityRenderState.crackiness;
+            if (crackLevel != Crackiness.Level.NONE) {
+                ResourceLocation identifier = CRACK_TEXTURES.get(crackLevel);
+                renderColoredCutoutModel(this.getParentModel(), identifier, matrixStack, vertexConsumerProvider, i, ironGolemEntityRenderState, -1);
             }
         }
     }

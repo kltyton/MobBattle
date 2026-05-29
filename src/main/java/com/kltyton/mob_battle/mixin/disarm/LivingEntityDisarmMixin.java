@@ -2,15 +2,15 @@ package com.kltyton.mob_battle.mixin.disarm;
 
 import com.kltyton.mob_battle.effect.ModEffects;
 import com.kltyton.mob_battle.entity.ModSkillEntityType;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.util.Hand;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.core.Holder;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -21,51 +21,51 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(value = LivingEntity.class, priority = 900)
 public abstract class LivingEntityDisarmMixin extends Entity {
     @Shadow
-    public abstract boolean hasStatusEffect(RegistryEntry<StatusEffect> effect);
+    public abstract boolean hasEffect(Holder<MobEffect> effect);
 
     @Shadow
-    public abstract void travel(Vec3d movementInput);
+    public abstract void travel(Vec3 movementInput);
 
     @Shadow
-    public abstract @Nullable StatusEffectInstance getStatusEffect(RegistryEntry<StatusEffect> effect);
+    public abstract @Nullable MobEffectInstance getEffect(Holder<MobEffect> effect);
 
-    public LivingEntityDisarmMixin(EntityType<?> type, World world) {
+    public LivingEntityDisarmMixin(EntityType<?> type, Level world) {
         super(type, world);
     }
 
-    @Inject(method = "setCurrentHand", at = @At("HEAD"), cancellable = true)
-    private void preventItemUse(Hand hand, CallbackInfo ci) {
+    @Inject(method = "startUsingItem", at = @At("HEAD"), cancellable = true)
+    private void preventItemUse(InteractionHand hand, CallbackInfo ci) {
         LivingEntity entity = (LivingEntity) (Object) this;
         if (!ModSkillEntityType.canSkill(entity)) {
             ci.cancel();
         }
     }
     @Override
-    public void changeLookDirection(double cursorDeltaX, double cursorDeltaY) {
-        if (this.hasStatusEffect(ModEffects.ICE_ENTRY)) {
+    public void turn(double cursorDeltaX, double cursorDeltaY) {
+        if (this.hasEffect(ModEffects.ICE_ENTRY)) {
             int amplifier = -1;
-            StatusEffectInstance effect = this.getStatusEffect(ModEffects.ICE_ENTRY);
+            MobEffectInstance effect = this.getEffect(ModEffects.ICE_ENTRY);
             if (effect != null) {
                 amplifier = effect.getAmplifier();
             }
             if (amplifier >= 5) return;
         }
-        super.changeLookDirection(cursorDeltaX, cursorDeltaY);
+        super.turn(cursorDeltaX, cursorDeltaY);
     }
     @Inject(
             method = "travel",
             at = @At("HEAD"),
             cancellable = true
     )
-    private void onTravel(Vec3d movementInput, CallbackInfo ci) {
-        if (this.hasStatusEffect(ModEffects.ICE_ENTRY) && movementInput != Vec3d.ZERO) {
+    private void onTravel(Vec3 movementInput, CallbackInfo ci) {
+        if (this.hasEffect(ModEffects.ICE_ENTRY) && movementInput != Vec3.ZERO) {
             int amplifier = -1;
-            StatusEffectInstance effect = this.getStatusEffect(ModEffects.ICE_ENTRY);
+            MobEffectInstance effect = this.getEffect(ModEffects.ICE_ENTRY);
             if (effect != null) {
                 amplifier = effect.getAmplifier();
             }
             if (amplifier >= 5) {
-                this.travel(Vec3d.ZERO);
+                this.travel(Vec3.ZERO);
                 ci.cancel();
             }
         }

@@ -1,39 +1,47 @@
 package com.kltyton.mob_battle.entity.highbird.goals;
 
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.ai.TargetPredicate;
-import net.minecraft.entity.ai.goal.ActiveTargetGoal;
-import net.minecraft.entity.mob.MobEntity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
+import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import org.jetbrains.annotations.Nullable;
 
-public class HABActiveTargetGoal<T extends LivingEntity> extends ActiveTargetGoal {
+public class HABActiveTargetGoal<T extends LivingEntity> extends NearestAttackableTargetGoal {
+    private int mobBattle$unseenTicks;
 
-    public HABActiveTargetGoal(MobEntity mob, Class targetClass, int reciprocalChance, boolean checkVisibility, boolean checkCanNavigate, @Nullable TargetPredicate.EntityPredicate targetPredicate) {
+    public HABActiveTargetGoal(Mob mob, Class targetClass, int reciprocalChance, boolean checkVisibility, boolean checkCanNavigate, @Nullable TargetingConditions.Selector targetPredicate) {
         super(mob, targetClass, reciprocalChance, false, checkCanNavigate, targetPredicate);
     }
+
     @Override
-    public boolean shouldContinue() {
+    public void start() {
+        super.start();
+        this.mobBattle$unseenTicks = 0;
+    }
+
+    @Override
+    public boolean canContinueToUse() {
         LivingEntity livingEntity = this.mob.getTarget();
         if (livingEntity == null) {
-            livingEntity = this.target;
+            livingEntity = this.targetMob;
         }
 
         if (livingEntity == null) {
             return false;
-        } else if (!this.mob.canTarget(livingEntity)) {
+        } else if (!this.mob.canAttack(livingEntity)) {
             return false;
         } else {
-            if (this.mob.isTeammate(livingEntity)) {
+            if (this.mob.isAlliedTo(livingEntity)) {
                 return false;
             } else {
-                double d = this.getFollowRange();
-                if (this.mob.squaredDistanceTo(livingEntity) > d * d) {
+                double d = this.getFollowDistance();
+                if (this.mob.distanceToSqr(livingEntity) > d * d) {
                     return false;
                 } else {
-                    if (this.checkVisibility) {
-                        if (this.mob.getVisibilityCache().canSee(livingEntity)) {
-                            this.timeWithoutVisibility = 0;
-                        } else if (++this.timeWithoutVisibility > toGoalTicks(this.maxTimeWithoutVisibility)) {
+                    if (this.mustSee) {
+                        if (this.mob.getSensing().hasLineOfSight(livingEntity)) {
+                            this.mobBattle$unseenTicks = 0;
+                        } else if (++this.mobBattle$unseenTicks > reducedTickDelay(this.unseenMemoryTicks)) {
                             return false;
                         }
                     }

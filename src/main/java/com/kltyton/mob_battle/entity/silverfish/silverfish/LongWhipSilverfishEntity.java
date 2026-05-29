@@ -8,25 +8,25 @@ import com.kltyton.mob_battle.sounds.ModSounds;
 import com.kltyton.mob_battle.utils.EntityUtil;
 import com.kltyton.mob_battle.utils.TaskSchedulerUtil;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.attribute.DefaultAttributeContainer;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.data.DataTracker;
-import net.minecraft.entity.data.TrackedData;
-import net.minecraft.entity.data.TrackedDataHandlerRegistry;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.entity.mob.SilverfishEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundEvent;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.World;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.util.Mth;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.monster.Silverfish;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.level.Level;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.animatable.manager.AnimatableManager;
 import software.bernie.geckolib.animatable.processing.AnimationController;
@@ -38,76 +38,76 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 import java.util.Optional;
 import java.util.Set;
 
-public class LongWhipSilverfishEntity extends SilverfishEntity implements GeneralEntity<LongWhipSilverfishEntity> {
-    private static final TrackedData<Integer> GRABBED_ENTITY_ID = DataTracker.registerData(LongWhipSilverfishEntity.class, TrackedDataHandlerRegistry.INTEGER);
-    public LongWhipSilverfishEntity(EntityType<? extends LongWhipSilverfishEntity> entityType, World world) {
+public class LongWhipSilverfishEntity extends Silverfish implements GeneralEntity<LongWhipSilverfishEntity> {
+    private static final EntityDataAccessor<Integer> GRABBED_ENTITY_ID = SynchedEntityData.defineId(LongWhipSilverfishEntity.class, EntityDataSerializers.INT);
+    public LongWhipSilverfishEntity(EntityType<? extends LongWhipSilverfishEntity> entityType, Level world) {
         super(entityType, world);
         this.setHasSkill(false);
-        this.setAiDisabled(false);
+        this.setNoAi(false);
     }
 
     @Override
-    public void setBodyYaw(float bodyYaw) {
-        this.bodyYaw = bodyYaw;
+    public void setYBodyRot(float bodyYaw) {
+        this.yBodyRot = bodyYaw;
     }
     @Override
-    public void takeKnockback(double strength, double x, double z) {
-        if (!hasSkill() && !this.isAiDisabled()) super.takeKnockback(strength, x, z);
+    public void knockback(double strength, double x, double z) {
+        if (!hasSkill() && !this.isNoAi()) super.knockback(strength, x, z);
     }
     @Override
-    public MobEntity getEntity() {
+    public Mob getEntity() {
         return this;
     }
     @Override
     public int getSkillCount() {
         return 5;
     }
-    public static final TrackedData<Boolean> HAS_SKILL = DataTracker.registerData(LongWhipSilverfishEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
-    public static final TrackedData<Integer> SKILL_COOLDOWN_1 = DataTracker.registerData(LongWhipSilverfishEntity.class, TrackedDataHandlerRegistry.INTEGER);
-    public static final TrackedData<Integer> SKILL_COOLDOWN_2 = DataTracker.registerData(LongWhipSilverfishEntity.class, TrackedDataHandlerRegistry.INTEGER);
-    public static final TrackedData<Integer> SKILL_COOLDOWN_3 = DataTracker.registerData(LongWhipSilverfishEntity.class, TrackedDataHandlerRegistry.INTEGER);
-    public static final TrackedData<Integer> SKILL_COOLDOWN_4 = DataTracker.registerData(LongWhipSilverfishEntity.class, TrackedDataHandlerRegistry.INTEGER);
-    public static final TrackedData<Integer> SKILL_COOLDOWN_5 = DataTracker.registerData(LongWhipSilverfishEntity.class, TrackedDataHandlerRegistry.INTEGER);
+    public static final EntityDataAccessor<Boolean> HAS_SKILL = SynchedEntityData.defineId(LongWhipSilverfishEntity.class, EntityDataSerializers.BOOLEAN);
+    public static final EntityDataAccessor<Integer> SKILL_COOLDOWN_1 = SynchedEntityData.defineId(LongWhipSilverfishEntity.class, EntityDataSerializers.INT);
+    public static final EntityDataAccessor<Integer> SKILL_COOLDOWN_2 = SynchedEntityData.defineId(LongWhipSilverfishEntity.class, EntityDataSerializers.INT);
+    public static final EntityDataAccessor<Integer> SKILL_COOLDOWN_3 = SynchedEntityData.defineId(LongWhipSilverfishEntity.class, EntityDataSerializers.INT);
+    public static final EntityDataAccessor<Integer> SKILL_COOLDOWN_4 = SynchedEntityData.defineId(LongWhipSilverfishEntity.class, EntityDataSerializers.INT);
+    public static final EntityDataAccessor<Integer> SKILL_COOLDOWN_5 = SynchedEntityData.defineId(LongWhipSilverfishEntity.class, EntityDataSerializers.INT);
     @Override
-    public TrackedData<Boolean> getHasSkillKey() {
+    public EntityDataAccessor<Boolean> getHasSkillKey() {
         return HAS_SKILL;
     }
 
     @Override
-    public TrackedData<Integer> getCooldownKey1() {
+    public EntityDataAccessor<Integer> getCooldownKey1() {
         return SKILL_COOLDOWN_1;
     }
 
     @Override
-    public TrackedData<Integer> getCooldownKey2() {
+    public EntityDataAccessor<Integer> getCooldownKey2() {
         return SKILL_COOLDOWN_2;
     }
 
     @Override
-    public TrackedData<Integer> getCooldownKey3() {
+    public EntityDataAccessor<Integer> getCooldownKey3() {
         return SKILL_COOLDOWN_3;
     }
 
     @Override
-    public TrackedData<Integer> getCooldownKey4() {
+    public EntityDataAccessor<Integer> getCooldownKey4() {
         return SKILL_COOLDOWN_4;
     }
 
     @Override
-    public TrackedData<Integer> getCooldownKey5() {
+    public EntityDataAccessor<Integer> getCooldownKey5() {
         return SKILL_COOLDOWN_5;
     }
 
     @Override
-    protected void initDataTracker(DataTracker.Builder builder) {
-        super.initDataTracker(builder);
-        builder.add(GRABBED_ENTITY_ID, -1);
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(GRABBED_ENTITY_ID, -1);
         entityInitDataTracker(builder);
     }
     @Override
     public void performSkill(String skill) {
         this.setHasSkill(true);
-        this.setAiDisabled(true);
+        this.setNoAi(true);
         this.setSkillCooldown(skill);
         if (skill.equals("attack2")) {
             // 随机选择 attack2_1, attack2_2, attack2_3 中的一个
@@ -138,30 +138,30 @@ public class LongWhipSilverfishEntity extends SilverfishEntity implements Genera
     }
 
     @Override
-    public boolean tryAttack(ServerWorld world, Entity target) {
+    public boolean doHurtTarget(ServerLevel world, Entity target) {
         return doSkill();
     }
-    public boolean tryBaseAttack(ServerWorld world, Entity target) {
-        float f = (float)this.getAttributeValue(EntityAttributes.ATTACK_DAMAGE);
-        ItemStack itemStack = this.getWeaponStack();
-        DamageSource damageSource = Optional.ofNullable(itemStack.getItem().getDamageSource(this)).orElse(this.getDamageSources().mobAttack(this));
-        f = EnchantmentHelper.getDamage(world, itemStack, target, damageSource, f);
-        f += itemStack.getItem().getBonusAttackDamage(target, f, damageSource);
-        boolean bl = target.damage(world, damageSource, f);
+    public boolean tryBaseAttack(ServerLevel world, Entity target) {
+        float f = (float)this.getAttributeValue(Attributes.ATTACK_DAMAGE);
+        ItemStack itemStack = this.getWeaponItem();
+        DamageSource damageSource = Optional.ofNullable(itemStack.getItem().getDamageSource(this)).orElse(this.damageSources().mobAttack(this));
+        f = EnchantmentHelper.modifyDamage(world, itemStack, target, damageSource, f);
+        f += itemStack.getItem().getAttackDamageBonus(target, f, damageSource);
+        boolean bl = target.hurtServer(world, damageSource, f);
         if (bl) {
-            float g = this.getAttackKnockbackAgainst(target, damageSource);
+            float g = this.getKnockback(target, damageSource);
             if (g > 0.0F && target instanceof LivingEntity livingEntity) {
-                livingEntity.takeKnockback(g * 0.5F, MathHelper.sin(this.getYaw() * (float) (Math.PI / 180.0)), -MathHelper.cos(this.getYaw() * (float) (Math.PI / 180.0)));
-                this.setVelocity(this.getVelocity().multiply(0.6, 1.0, 0.6));
+                livingEntity.knockback(g * 0.5F, Mth.sin(this.getYRot() * (float) (Math.PI / 180.0)), -Mth.cos(this.getYRot() * (float) (Math.PI / 180.0)));
+                this.setDeltaMovement(this.getDeltaMovement().multiply(0.6, 1.0, 0.6));
             }
 
             if (target instanceof LivingEntity livingEntity) {
-                livingEntity.addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS, 60, 2), this);
-                itemStack.postHit(livingEntity, this);
+                livingEntity.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 60, 2), this);
+                itemStack.hurtEnemy(livingEntity, this);
             }
 
-            EnchantmentHelper.onTargetDamaged(world, target, damageSource);
-            this.onAttacking(target);
+            EnchantmentHelper.doPostAttackEffects(world, target, damageSource);
+            this.setLastHurtMob(target);
             this.playAttackSound();
         }
 
@@ -171,13 +171,13 @@ public class LongWhipSilverfishEntity extends SilverfishEntity implements Genera
     public void tick() {
         super.tick();
         entityTick();
-        if (!this.getWorld().isClient()) {
-            this.setAttacking(this.getTarget() != null);
+        if (!this.level().isClientSide()) {
+            this.setAggressive(this.getTarget() != null);
         }
         // 处理抓取逻辑
         int grabbedId = this.getGrabbedEntityId();
-        if (grabbedId != -1 && !this.getWorld().isClient) {
-            Entity grabbedEntity = this.getWorld().getEntityById(grabbedId);
+        if (grabbedId != -1 && !this.level().isClientSide) {
+            Entity grabbedEntity = this.level().getEntity(grabbedId);
 
             // 如果技能结束、目标死亡或目标离得太远，释放
             if (!this.hasSkill() || grabbedEntity == null || !grabbedEntity.isAlive()) {
@@ -185,16 +185,16 @@ public class LongWhipSilverfishEntity extends SilverfishEntity implements Genera
             } else {
                 // 计算银鱼面前的位置 (例如面前 1.5 格)
                 double distance = 1.5;
-                double radians = Math.toRadians(this.getYaw());
+                double radians = Math.toRadians(this.getYRot());
                 double targetX = this.getX() - Math.sin(radians) * distance;
                 double targetZ = this.getZ() + Math.cos(radians) * distance;
                 double targetY = this.getY();
 
                 // 强制传送目标并清除动能
                 if (grabbedEntity instanceof LivingEntity living) {
-                    living.teleport((ServerWorld) this.getWorld(), targetX, targetY, targetZ, Set.of(), grabbedEntity.getYaw(), grabbedEntity.getPitch(), true);
-                    living.setVelocity(0, 0, 0);
-                    living.velocityDirty = true;
+                    living.teleportTo((ServerLevel) this.level(), targetX, targetY, targetZ, Set.of(), grabbedEntity.getYRot(), grabbedEntity.getXRot(), true);
+                    living.setDeltaMovement(0, 0, 0);
+                    living.hasImpulse = true;
                 }
             }
         }
@@ -259,7 +259,7 @@ public class LongWhipSilverfishEntity extends SilverfishEntity implements Genera
             return PlayState.CONTINUE;
         }
         if (event.isMoving()) {
-            return this.isAttacking() ? event.setAndContinue(RUN_ANIM) : event.setAndContinue(WALK_ANIM);
+            return this.isAggressive() ? event.setAndContinue(RUN_ANIM) : event.setAndContinue(WALK_ANIM);
         } else return event.setAndContinue(IDLE_ANIM);
     }
 
@@ -273,26 +273,26 @@ public class LongWhipSilverfishEntity extends SilverfishEntity implements Genera
     }
     @Override
     public void runSkill_2(LongWhipSilverfishEntity entity) {
-        tryBaseAttack((ServerWorld) this.getWorld(), this.getTarget());
+        tryBaseAttack((ServerLevel) this.level(), this.getTarget());
     }
     @Override
     public void runSkill_3(LongWhipSilverfishEntity entity) {
-        this.playSound(ModSounds.B_C_BELLOW_DOG_JIAO_SOUND_EVENT);
+        this.makeSound(ModSounds.B_C_BELLOW_DOG_JIAO_SOUND_EVENT);
         EntityUtil.getNearbyEntity(entity, LivingEntity.class, Object.class, 7, false, EntityUtil.TeamFilter.EXCLUDE_TEAM).forEach(livingEntity -> {
-            livingEntity.addStatusEffect(new StatusEffectInstance(ModEffects.DISARM_ENTRY, 160, 0));
-            livingEntity.damage((ServerWorld) this.getWorld(), this.getDamageSources().indirectMagic(this, this), 10);
+            livingEntity.addEffect(new MobEffectInstance(ModEffects.DISARM_ENTRY, 160, 0));
+            livingEntity.hurtServer((ServerLevel) this.level(), this.damageSources().indirectMagic(this, this), 10);
         });
     }
     @Override
     public void runSkill_4(LongWhipSilverfishEntity entity) {
-        this.playSound(ModSounds.B_C_DEBUFF_DOG_JIAO_SOUND_EVENT);
+        this.makeSound(ModSounds.B_C_DEBUFF_DOG_JIAO_SOUND_EVENT);
         EntityUtil.getNearbyEntity(entity, LivingEntity.class, Object.class, 6, false, EntityUtil.TeamFilter.EXCLUDE_TEAM).forEach(livingEntity -> {
-            livingEntity.addStatusEffect(new StatusEffectInstance(ModEffects.INFESTATION_ENTRY, 100, 0));
+            livingEntity.addEffect(new MobEffectInstance(ModEffects.INFESTATION_ENTRY, 100, 0));
         });
     }
     @Override
     public void runSkill_5(LongWhipSilverfishEntity entity) {
-        if (this.getWorld().isClient) return;
+        if (this.level().isClientSide) return;
         LivingEntity target = EntityUtil.getClosestNearbyEntity(entity, LivingEntity.class, 5, EntityUtil.TeamFilter.EXCLUDE_TEAM);
         // 2. 如果找到了目标，设置 ID
         if (target != null) {
@@ -302,29 +302,29 @@ public class LongWhipSilverfishEntity extends SilverfishEntity implements Genera
     }
     @Override
     public void runSkill_6(LongWhipSilverfishEntity entity) {
-        if (this.getWorld().isClient) return;
-        Entity target = entity.getWorld().getEntityById(this.getGrabbedEntityId());
+        if (this.level().isClientSide) return;
+        Entity target = entity.level().getEntity(this.getGrabbedEntityId());
         if (target instanceof LivingEntity livingEntity) {
-            this.playSound(ModSounds.B_C_Z_DOG_JIAO_SOUND_EVENT);
-            livingEntity.damage((ServerWorld) entity.getWorld(), entity.getDamageSources().indirectMagic(entity, entity), 50);
+            this.makeSound(ModSounds.B_C_Z_DOG_JIAO_SOUND_EVENT);
+            livingEntity.hurtServer((ServerLevel) entity.level(), entity.damageSources().indirectMagic(entity, entity), 50);
             entity.heal(100);
-            entity.addStatusEffect(new StatusEffectInstance(StatusEffects.ABSORPTION, 15 * 20, 29));
+            entity.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, 15 * 20, 29));
             TaskSchedulerUtil.runLater(24, () -> {
                 entity.setGrabbedEntityId(-1);
             });
         }
     }
-    public static DefaultAttributeContainer.Builder createAttributes() {
-        return SilverfishEntity.createSilverfishAttributes()
-                .add(EntityAttributes.MAX_HEALTH, 3500.0)
-                .add(EntityAttributes.ATTACK_DAMAGE, 150.0)
+    public static AttributeSupplier.Builder createAttributes() {
+        return Silverfish.createAttributes()
+                .add(Attributes.MAX_HEALTH, 3500.0)
+                .add(Attributes.ATTACK_DAMAGE, 150.0)
                 .add(ModEntityAttributes.DAMAGE_REDUCTION, 0.72);
     }
     public void setGrabbedEntityId(int id) {
-        this.dataTracker.set(GRABBED_ENTITY_ID, id);
+        this.entityData.set(GRABBED_ENTITY_ID, id);
     }
 
     public int getGrabbedEntityId() {
-        return this.dataTracker.get(GRABBED_ENTITY_ID);
+        return this.entityData.get(GRABBED_ENTITY_ID);
     }
 }

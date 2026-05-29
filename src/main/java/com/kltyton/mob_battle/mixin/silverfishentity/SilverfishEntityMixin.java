@@ -1,42 +1,42 @@
 package com.kltyton.mob_battle.mixin.silverfishentity;
 
 import com.kltyton.mob_battle.entity.silverfish.silverfish.LongWhipSilverfishEntity;
-import net.minecraft.registry.Registries;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.ai.goal.ActiveTargetGoal;
-import net.minecraft.entity.ai.goal.Goal;
-import net.minecraft.entity.ai.goal.GoalSelector;
-import net.minecraft.entity.ai.goal.RevengeGoal;
-import net.minecraft.entity.mob.CreeperEntity;
-import net.minecraft.entity.mob.HostileEntity;
-import net.minecraft.entity.mob.SilverfishEntity;
-import net.minecraft.entity.mob.WitchEntity;
-import net.minecraft.world.World;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.goal.Goal;
+import net.minecraft.world.entity.ai.goal.GoalSelector;
+import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
+import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
+import net.minecraft.world.entity.monster.Creeper;
+import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.entity.monster.Silverfish;
+import net.minecraft.world.entity.monster.Witch;
+import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
-@Mixin(SilverfishEntity.class)
-public abstract class SilverfishEntityMixin extends HostileEntity {
-    protected SilverfishEntityMixin(EntityType<? extends HostileEntity> entityType, World world) {
+@Mixin(Silverfish.class)
+public abstract class SilverfishEntityMixin extends Monster {
+    protected SilverfishEntityMixin(EntityType<? extends Monster> entityType, Level world) {
         super(entityType, world);
     }
-    @Redirect(method = "initGoals", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/ai/goal/GoalSelector;add(ILnet/minecraft/entity/ai/goal/Goal;)V", ordinal = 4))
+    @Redirect(method = "registerGoals", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/ai/goal/GoalSelector;addGoal(ILnet/minecraft/world/entity/ai/goal/Goal;)V", ordinal = 4))
     public void doNotInfestStoneForModSilverfish(GoalSelector instance, int priority, Goal goal) {
-        if ("mob_battle".equals(Registries.ENTITY_TYPE.getId(this.getType()).getNamespace())) {
+        if ("mob_battle".equals(BuiltInRegistries.ENTITY_TYPE.getKey(this.getType()).getNamespace())) {
             return;
         }
-        instance.add(priority, goal);
+        instance.addGoal(priority, goal);
     }
-    @Redirect(method = "initGoals", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/ai/goal/GoalSelector;add(ILnet/minecraft/entity/ai/goal/Goal;)V", ordinal = 5))
+    @Redirect(method = "registerGoals", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/ai/goal/GoalSelector;addGoal(ILnet/minecraft/world/entity/ai/goal/Goal;)V", ordinal = 5))
     public void initGoals(GoalSelector instance, int priority, Goal goal) {
-        instance.add(priority,  new RevengeGoal(this, CreeperEntity.class, WitchEntity.class).setGroupRevenge(CreeperEntity.class, WitchEntity.class));
+        instance.addGoal(priority,  new HurtByTargetGoal(this, Creeper.class, Witch.class).setAlertOthers(Creeper.class, Witch.class));
     }
-    @Redirect(method = "initGoals", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/ai/goal/GoalSelector;add(ILnet/minecraft/entity/ai/goal/Goal;)V", ordinal = 6))
+    @Redirect(method = "registerGoals", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/ai/goal/GoalSelector;addGoal(ILnet/minecraft/world/entity/ai/goal/Goal;)V", ordinal = 6))
     public void initGoals2(GoalSelector instance, int priority, Goal goal) {
-        instance.add(priority, new ActiveTargetGoal<>(this, LivingEntity.class, 10, true, false, (entity, world) -> !(entity instanceof WitchEntity) && !(entity instanceof CreeperEntity) && !(entity instanceof SilverfishEntity)));
+        instance.addGoal(priority, new NearestAttackableTargetGoal<>(this, LivingEntity.class, 10, true, false, (entity, world) -> !(entity instanceof Witch) && !(entity instanceof Creeper) && !(entity instanceof Silverfish)));
     }
     /**
      * @author kltyton
@@ -44,7 +44,7 @@ public abstract class SilverfishEntityMixin extends HostileEntity {
      */
     @Overwrite
     public void tick() {
-        if (!((Object)this instanceof LongWhipSilverfishEntity)) this.bodyYaw = this.getYaw();
+        if (!((Object)this instanceof LongWhipSilverfishEntity)) this.yBodyRot = this.getYRot();
         super.tick();
     }
 }

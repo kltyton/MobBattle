@@ -3,41 +3,52 @@ package com.kltyton.mob_battle.entity.lobster;
 import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.entity.customfireball.CustomFireballEntity;
 import com.kltyton.mob_battle.entity.customfireball.MagmaLobsterBigFireballEntity;
-import net.minecraft.entity.EntityData;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.SpawnReason;
-import net.minecraft.entity.ai.NoPenaltyTargeting;
-import net.minecraft.entity.ai.goal.*;
-import net.minecraft.entity.ai.pathing.PathNodeType;
-import net.minecraft.entity.attribute.DefaultAttributeContainer;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.entity.mob.DrownedEntity;
-import net.minecraft.entity.mob.ZombieEntity;
-import net.minecraft.entity.mob.ZombifiedPiglinEntity;
-import net.minecraft.entity.passive.PassiveEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Items;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.registry.tag.DamageTypeTags;
-import net.minecraft.registry.tag.FluidTags;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.LocalDifficulty;
-import net.minecraft.world.ServerWorldAccess;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.world.entity.ai.goal.Goal;
+import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
+import net.minecraft.world.entity.ai.goal.TemptGoal;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.tags.FluidTags;
+import net.minecraft.world.DifficultyInstance;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.AgeableMob;
+import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.SpawnGroupData;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.goal.BreedGoal;
+import net.minecraft.world.entity.ai.goal.Goal;
+import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
+import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
+import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
+import net.minecraft.world.entity.ai.goal.TemptGoal;
+import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
+import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
+import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
+import net.minecraft.world.entity.ai.util.DefaultRandomPos;
+import net.minecraft.world.entity.monster.Drowned;
+import net.minecraft.world.entity.monster.Zombie;
+import net.minecraft.world.entity.monster.ZombifiedPiglin;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.pathfinder.PathType;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.EnumSet;
 
 public class MagmaLobsterEntity extends LobsterEntity {
-    public MagmaLobsterEntity(EntityType<? extends MagmaLobsterEntity> entityType, World world) {
+    public MagmaLobsterEntity(EntityType<? extends MagmaLobsterEntity> entityType, Level world) {
         super(entityType, world);
-        this.setPathfindingPenalty(PathNodeType.LAVA, 0.0F);
+        this.setPathfindingMalus(PathType.LAVA, 0.0F);
     }
 
     @Override
@@ -51,47 +62,47 @@ public class MagmaLobsterEntity extends LobsterEntity {
     }
 
     @Override
-    protected void initGoals() {
-        this.goalSelector.add(0, new RetreatToLavaGoal(this, 1.4D));
-        this.goalSelector.add(1, new MagmaWaterWanderGoal(this, 1.0D));
-        this.goalSelector.add(2, new AnimalMateGoal(this, 1.0D));
-        this.goalSelector.add(3, new TemptGoal(this, 1.0D, stack -> stack.isOf(Items.ROTTEN_FLESH), false));
-        this.goalSelector.add(4, new MeleeAttackGoal(this, 1.0D, true));
-        this.goalSelector.add(5, new WanderAroundFarGoal(this, 0.7D));
-        this.goalSelector.add(6, new LookAtEntityGoal(this, PlayerEntity.class, 8.0F));
-        this.goalSelector.add(7, new LookAroundGoal(this));
+    protected void registerGoals() {
+        this.goalSelector.addGoal(0, new RetreatToLavaGoal(this, 1.4D));
+        this.goalSelector.addGoal(1, new MagmaWaterWanderGoal(this, 1.0D));
+        this.goalSelector.addGoal(2, new BreedGoal(this, 1.0D));
+        this.goalSelector.addGoal(3, new TemptGoal(this, 1.0D, stack -> stack.is(Items.ROTTEN_FLESH), false));
+        this.goalSelector.addGoal(4, new MeleeAttackGoal(this, 1.0D, true));
+        this.goalSelector.addGoal(5, new WaterAvoidingRandomStrollGoal(this, 0.7D));
+        this.goalSelector.addGoal(6, new LookAtPlayerGoal(this, Player.class, 8.0F));
+        this.goalSelector.addGoal(7, new RandomLookAroundGoal(this));
 
-        this.targetSelector.add(1, new RevengeGoal(this));
-        this.targetSelector.add(2, new ActiveTargetGoal<>(this, ZombieEntity.class, true, false));
-        this.targetSelector.add(3, new ActiveTargetGoal<>(this, DrownedEntity.class, true, false));
-        this.targetSelector.add(4, new ActiveTargetGoal<>(this, ZombifiedPiglinEntity.class, true, false));
+        this.targetSelector.addGoal(1, new HurtByTargetGoal(this));
+        this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Zombie.class, true, false));
+        this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, Drowned.class, true, false));
+        this.targetSelector.addGoal(4, new NearestAttackableTargetGoal<>(this, ZombifiedPiglin.class, true, false));
     }
 
     @Override
-    public @Nullable EntityData initialize(ServerWorldAccess world, LocalDifficulty difficulty, SpawnReason spawnReason, @Nullable EntityData entityData) {
-        EntityData data = super.initialize(world, difficulty, spawnReason, entityData);
+    public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor world, DifficultyInstance difficulty, EntitySpawnReason spawnReason, @Nullable SpawnGroupData entityData) {
+        SpawnGroupData data = super.finalizeSpawn(world, difficulty, spawnReason, entityData);
         // 岩浆龙虾固定金色即可；你要做单独贴图的话客户端再按实体类型区分
         this.setVariant(LobsterVariant.GOLD);
         return data;
     }
 
     @Override
-    public boolean damage(ServerWorld world, DamageSource source, float amount) {
-        if (source.isIn(DamageTypeTags.IS_FIRE)) {
+    public boolean hurtServer(ServerLevel world, DamageSource source, float amount) {
+        if (source.is(DamageTypeTags.IS_FIRE)) {
             return false;
         }
-        return super.damage(world, source, amount);
+        return super.hurtServer(world, source, amount);
     }
 
     @Override
-    public boolean isFireImmune() {
+    public boolean fireImmune() {
         return true;
     }
 
     @Nullable
     @Override
-    public PassiveEntity createChild(ServerWorld world, PassiveEntity mate) {
-        LobsterEntity child = ModEntities.LOBSTER.create(world, SpawnReason.BREEDING);
+    public AgeableMob getBreedOffspring(ServerLevel world, AgeableMob mate) {
+        LobsterEntity child = ModEntities.LOBSTER.create(world, EntitySpawnReason.BREEDING);
         if (child == null) return null;
 
         child.setVariant(LobsterVariant.GOLD);
@@ -142,16 +153,16 @@ public class MagmaLobsterEntity extends LobsterEntity {
 
     @Override
     public void runSkill_5(LobsterEntity entity) {
-        if (!(this.getWorld() instanceof ServerWorld serverWorld)) return;
+        if (!(this.level() instanceof ServerLevel serverWorld)) return;
 
         LivingEntity target = this.getTarget();
-        Vec3d look = target != null
-                ? target.getEyePos().subtract(this.getEyePos()).normalize()
-                : this.getRotationVector().normalize();
+        Vec3 look = target != null
+                ? target.getEyePosition().subtract(this.getEyePosition()).normalize()
+                : this.getLookAngle().normalize();
 
-        Vec3d spawnPos = this.getEyePos().add(look.multiply(0.8D));
+        Vec3 spawnPos = this.getEyePosition().add(look.scale(0.8D));
 
-        serverWorld.spawnParticles(
+        serverWorld.sendParticles(
                 ParticleTypes.FLAME,
                 spawnPos.x, spawnPos.y, spawnPos.z,
                 35,
@@ -159,7 +170,7 @@ public class MagmaLobsterEntity extends LobsterEntity {
                 0.03D
         );
 
-        serverWorld.spawnParticles(
+        serverWorld.sendParticles(
                 ParticleTypes.SMOKE,
                 spawnPos.x, spawnPos.y, spawnPos.z,
                 15,
@@ -167,108 +178,108 @@ public class MagmaLobsterEntity extends LobsterEntity {
                 0.01D
         );
 
-        Vec3d side = look.crossProduct(new Vec3d(0, 1, 0));
-        if (side.lengthSquared() < 1.0E-6D) {
-            side = new Vec3d(1, 0, 0);
+        Vec3 side = look.cross(new Vec3(0, 1, 0));
+        if (side.lengthSqr() < 1.0E-6D) {
+            side = new Vec3(1, 0, 0);
         } else {
             side = side.normalize();
         }
 
         CustomFireballEntity left = new CustomFireballEntity(
                 EntityType.FIREBALL,
-                this.getWorld(),
+                this.level(),
                 this,
                 0.0F,
                 false,
                 50.0F
         );
-        left.refreshPositionAndAngles(
+        left.snapTo(
                 spawnPos.x + side.x * 0.35D,
                 spawnPos.y,
                 spawnPos.z + side.z * 0.35D,
-                this.getYaw(),
-                this.getPitch()
+                this.getYRot(),
+                this.getXRot()
         );
-        left.setVelocity(look.x, look.y, look.z, 1.15F, 2.0F);
+        left.shoot(look.x, look.y, look.z, 1.15F, 2.0F);
 
         CustomFireballEntity right = new CustomFireballEntity(
                 EntityType.FIREBALL,
-                this.getWorld(),
+                this.level(),
                 this,
                 0.0F,
                 false,
                 50.0F
         );
-        right.refreshPositionAndAngles(
+        right.snapTo(
                 spawnPos.x - side.x * 0.35D,
                 spawnPos.y,
                 spawnPos.z - side.z * 0.35D,
-                this.getYaw(),
-                this.getPitch()
+                this.getYRot(),
+                this.getXRot()
         );
-        right.setVelocity(look.x, look.y, look.z, 1.15F, 2.0F);
+        right.shoot(look.x, look.y, look.z, 1.15F, 2.0F);
 
         MagmaLobsterBigFireballEntity big = new MagmaLobsterBigFireballEntity(
                 ModEntities.MAGMA_LOBBER_BIG_FIREBALL,
-                this.getWorld(),
+                this.level(),
                 this
         );
-        big.refreshPositionAndAngles(
+        big.snapTo(
                 spawnPos.x,
                 spawnPos.y,
                 spawnPos.z,
-                this.getYaw(),
-                this.getPitch()
+                this.getYRot(),
+                this.getXRot()
         );
-        big.setVelocity(look.x, look.y, look.z, 0.9F, 1.0F);
+        big.shoot(look.x, look.y, look.z, 0.9F, 1.0F);
 
-        serverWorld.spawnEntity(left);
-        serverWorld.spawnEntity(right);
-        serverWorld.spawnEntity(big);
+        serverWorld.addFreshEntity(left);
+        serverWorld.addFreshEntity(right);
+        serverWorld.addFreshEntity(big);
     }
 
     private boolean damageCurrentTargetMagma(float damage, boolean applyWeakness) {
-        if (!(this.getWorld() instanceof ServerWorld serverWorld)) return false;
+        if (!(this.level() instanceof ServerLevel serverWorld)) return false;
         if (!(this.getTarget() instanceof LivingEntity target) || !target.isAlive()) return false;
 
-        double reach = (this.getWidth() * 2.0F) * (this.getWidth() * 2.0F) + target.getWidth();
-        if (this.squaredDistanceTo(target) > reach + 1.0D) return false;
+        double reach = (this.getBbWidth() * 2.0F) * (this.getBbWidth() * 2.0F) + target.getBbWidth();
+        if (this.distanceToSqr(target) > reach + 1.0D) return false;
 
-        boolean hit = target.damage(serverWorld, this.getDamageSources().mobAttack(this), damage);
+        boolean hit = target.hurtServer(serverWorld, this.damageSources().mobAttack(this), damage);
         if (hit) {
-            this.onAttacking(target);
-            target.setOnFireFor(4);
+            this.setLastHurtMob(target);
+            target.igniteForSeconds(4);
             if (applyWeakness) {
-                target.addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS, 10 * 20, 1), this);
+                target.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 10 * 20, 1), this);
             }
         }
         return hit;
     }
 
-    public static DefaultAttributeContainer.Builder createAttributes() {
+    public static AttributeSupplier.Builder createAttributes() {
         return LobsterEntity.createAttributes()
-                .add(EntityAttributes.MAX_HEALTH, 170.0D)
-                .add(EntityAttributes.ARMOR, 12.0D)
-                .add(EntityAttributes.ARMOR_TOUGHNESS, 8.0D);
+                .add(Attributes.MAX_HEALTH, 170.0D)
+                .add(Attributes.ARMOR, 12.0D)
+                .add(Attributes.ARMOR_TOUGHNESS, 8.0D);
     }
 
     protected @Nullable BlockPos findNearbyBroadLava(int horizontalRange, int verticalRange) {
-        BlockPos origin = this.getBlockPos();
+        BlockPos origin = this.blockPosition();
         BlockPos best = null;
         double bestDistance = Double.MAX_VALUE;
 
         for (int x = -horizontalRange; x <= horizontalRange; x++) {
             for (int y = -verticalRange; y <= verticalRange; y++) {
                 for (int z = -horizontalRange; z <= horizontalRange; z++) {
-                    BlockPos pos = origin.add(x, y, z);
+                    BlockPos pos = origin.offset(x, y, z);
 
-                    if (!this.getWorld().getFluidState(pos).isIn(FluidTags.LAVA)) continue;
+                    if (!this.level().getFluidState(pos).is(FluidTags.LAVA)) continue;
                     if (!isBroadLava(pos)) continue;
 
-                    double dist = origin.getSquaredDistance(pos);
+                    double dist = origin.distSqr(pos);
                     if (dist < bestDistance) {
                         bestDistance = dist;
-                        best = pos.toImmutable();
+                        best = pos.immutable();
                     }
                 }
             }
@@ -280,14 +291,14 @@ public class MagmaLobsterEntity extends LobsterEntity {
     private boolean isBroadLava(BlockPos center) {
         for (int x = -2; x <= 2; x++) {
             for (int z = -2; z <= 2; z++) {
-                BlockPos pos = center.add(x, 0, z);
+                BlockPos pos = center.offset(x, 0, z);
 
-                if (!this.getWorld().getFluidState(pos).isIn(FluidTags.LAVA)) {
+                if (!this.level().getFluidState(pos).is(FluidTags.LAVA)) {
                     return false;
                 }
 
-                BlockPos up = pos.up();
-                if (!(this.getWorld().isAir(up) || this.getWorld().getFluidState(up).isIn(FluidTags.LAVA))) {
+                BlockPos up = pos.above();
+                if (!(this.level().isEmptyBlock(up) || this.level().getFluidState(up).is(FluidTags.LAVA))) {
                     return false;
                 }
             }
@@ -307,22 +318,22 @@ public class MagmaLobsterEntity extends LobsterEntity {
         private RetreatToLavaGoal(MagmaLobsterEntity lobster, double speed) {
             this.lobster = lobster;
             this.speed = speed;
-            this.setControls(EnumSet.of(Control.MOVE, Control.LOOK));
+            this.setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK));
         }
 
         @Override
-        public boolean canStart() {
+        public boolean canUse() {
             if (this.lobster.hasSkill()) return false;
 
             boolean lowHealth = this.lobster.getHealth() < this.lobster.getPanicRetreatHealthThreshold();
             boolean idleOnLand = this.lobster.getTarget() == null
-                    && !this.lobster.isTouchingWater()
+                    && !this.lobster.isInWater()
                     && !this.lobster.isInLava();
 
             if (!lowHealth && !idleOnLand) return false;
 
             this.panicMode = lowHealth;
-            this.threat = this.lobster.getAttacker();
+            this.threat = this.lobster.getLastHurtByMob();
 
             if (this.threat == null || !this.threat.isAlive()) {
                 this.threat = this.lobster.getTarget();
@@ -333,7 +344,7 @@ public class MagmaLobsterEntity extends LobsterEntity {
         }
 
         @Override
-        public boolean shouldContinue() {
+        public boolean canContinueToUse() {
             if (this.panicMode) {
                 return this.lobster.isAlive()
                         && this.lobster.getHealth() < this.lobster.getPanicRetreatHealthThreshold()
@@ -343,7 +354,7 @@ public class MagmaLobsterEntity extends LobsterEntity {
 
             return this.targetLava != null
                     && !this.lobster.isInLava()
-                    && !this.lobster.getNavigation().isIdle();
+                    && !this.lobster.getNavigation().isDone();
         }
 
         @Override
@@ -351,11 +362,11 @@ public class MagmaLobsterEntity extends LobsterEntity {
             this.lobster.setRetreating(true);
             this.lobster.setPanicRetreating(this.panicMode);
             this.lobster.setTarget(null);
-            this.lobster.setAttacker(null);
+            this.lobster.setLastHurtByMob(null);
             this.repathCooldown = 0;
 
             if (this.targetLava != null) {
-                this.lobster.getNavigation().startMovingTo(
+                this.lobster.getNavigation().moveTo(
                         this.targetLava.getX() + 0.5D,
                         this.targetLava.getY() + 0.5D,
                         this.targetLava.getZ() + 0.5D,
@@ -368,23 +379,23 @@ public class MagmaLobsterEntity extends LobsterEntity {
         public void tick() {
             if (this.panicMode) {
                 if (this.threat != null && this.threat.isAlive()) {
-                    this.lobster.getLookControl().lookAt(this.threat, 30.0F, 30.0F);
+                    this.lobster.getLookControl().setLookAt(this.threat, 30.0F, 30.0F);
                 }
 
                 if (--this.repathCooldown <= 0) {
                     this.repathCooldown = 10;
 
-                    Vec3d fleePos = NoPenaltyTargeting.findFrom(
+                    Vec3 fleePos = DefaultRandomPos.getPosAway(
                             this.lobster,
                             12,
                             6,
-                            this.threat != null ? this.threat.getPos() : this.lobster.getPos()
+                            this.threat != null ? this.threat.position() : this.lobster.position()
                     );
 
                     if (fleePos != null) {
-                        this.lobster.getNavigation().startMovingTo(fleePos.x, fleePos.y, fleePos.z, this.speed + 0.2D);
+                        this.lobster.getNavigation().moveTo(fleePos.x, fleePos.y, fleePos.z, this.speed + 0.2D);
                     } else if (this.targetLava != null) {
-                        this.lobster.getNavigation().startMovingTo(
+                        this.lobster.getNavigation().moveTo(
                                 this.targetLava.getX() + 0.5D,
                                 this.targetLava.getY() + 0.5D,
                                 this.targetLava.getZ() + 0.5D,
@@ -397,7 +408,7 @@ public class MagmaLobsterEntity extends LobsterEntity {
 
             if (this.targetLava == null) return;
 
-            this.lobster.getNavigation().startMovingTo(
+            this.lobster.getNavigation().moveTo(
                     this.targetLava.getX() + 0.5D,
                     this.targetLava.getY() + 0.5D,
                     this.targetLava.getZ() + 0.5D,
@@ -423,38 +434,38 @@ public class MagmaLobsterEntity extends LobsterEntity {
         private MagmaWaterWanderGoal(MagmaLobsterEntity lobster, double speed) {
             this.lobster = lobster;
             this.speed = speed;
-            this.setControls(EnumSet.of(Control.MOVE));
+            this.setFlags(EnumSet.of(Flag.MOVE));
         }
 
         @Override
-        public boolean canStart() {
+        public boolean canUse() {
             return this.lobster.getTarget() == null
                     && !this.lobster.isRetreating()
-                    && this.lobster.isTouchingWater()
+                    && this.lobster.isInWater()
                     && this.lobster.getRandom().nextInt(40) == 0;
         }
 
         @Override
-        public boolean shouldContinue() {
-            return !this.lobster.getNavigation().isIdle()
-                    && this.lobster.isTouchingWater()
+        public boolean canContinueToUse() {
+            return !this.lobster.getNavigation().isDone()
+                    && this.lobster.isInWater()
                     && this.lobster.getTarget() == null
                     && !this.lobster.isRetreating();
         }
 
         @Override
         public void start() {
-            Vec3d vec3d = NoPenaltyTargeting.findTo(
+            Vec3 vec3d = DefaultRandomPos.getPosTowards(
                     this.lobster,
                     6,
                     4,
-                    Vec3d.ofCenter(this.lobster.getBlockPos().down(2)),
+                    Vec3.atCenterOf(this.lobster.blockPosition().below(2)),
                     (float) (Math.PI / 2)
             );
 
             if (vec3d != null) {
                 this.lobster.setTargetingUnderwater(true);
-                this.lobster.getNavigation().startMovingTo(vec3d.x, vec3d.y, vec3d.z, this.speed);
+                this.lobster.getNavigation().moveTo(vec3d.x, vec3d.y, vec3d.z, this.speed);
             }
         }
 

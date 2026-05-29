@@ -1,30 +1,30 @@
 package com.kltyton.mob_battle.items.misc;
 
 import com.kltyton.mob_battle.items.manager.AreaGravityFieldManager;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.world.World;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.Level;
 
 public class AreaGravityDeviceItem extends Item {
     public static final double RADIUS = 15.0D;
     public static final int DURATION_TICKS = 15 * 20;
 
-    public AreaGravityDeviceItem(Settings settings) {
+    public AreaGravityDeviceItem(Properties settings) {
         super(settings);
     }
 
     @Override
-    public ActionResult use(World world, PlayerEntity user, Hand hand) {
-        if (!(world instanceof ServerWorld serverWorld)) {
-            return ActionResult.SUCCESS;
+    public InteractionResult use(Level world, Player user, InteractionHand hand) {
+        if (!(world instanceof ServerLevel serverWorld)) {
+            return InteractionResult.SUCCESS;
         }
 
-        AreaGravityFieldManager.addField(serverWorld, user, user.getPos(), RADIUS, DURATION_TICKS);
-        user.getItemCooldownManager().set(this.getDefaultStack(), 20);
+        AreaGravityFieldManager.addField(serverWorld, user, user.position(), RADIUS, DURATION_TICKS);
+        user.getCooldowns().addCooldown(this.getDefaultInstance(), 20);
 
-        return ActionResult.SUCCESS_SERVER;
+        return InteractionResult.SUCCESS_SERVER;
     }
 }

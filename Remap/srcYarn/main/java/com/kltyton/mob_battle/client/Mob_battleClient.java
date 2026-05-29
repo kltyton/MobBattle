@@ -1,0 +1,26 @@
+package com.kltyton.mob_battle.client;
+
+import com.kltyton.mob_battle.block.ModBlocksClient;
+import com.kltyton.mob_battle.client.keybinding.ModKeyBinding;
+import com.kltyton.mob_battle.client.screen.ModScreen;
+import com.kltyton.mob_battle.event.ModClientEvents;
+import com.kltyton.mob_battle.network.ClientPlayNetwork;
+import com.kltyton.mob_battle.sounds.bgm.boss.dragon.DragonBgmHandler;
+import net.fabricmc.api.ClientModInitializer;
+
+public class Mob_battleClient implements ClientModInitializer {
+
+    @Override
+    public void onInitializeClient() {
+        ClientPlayNetwork.init();
+        ModClientEvents.clientInit();
+        ModModel.init();
+        ModEntityRenderer.init();
+        ModKeyBinding.init();
+        ModArmorRenderer.init();
+        ModBlocksClient.init();
+        ModScreen.init();
+        DragonBgmHandler.init();
+        ClientGeckoAnimationTicker.init();
+    }
+}

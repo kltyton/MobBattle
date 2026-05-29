@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "id": "mob_battle",
+  "version": "${version}",
+  "name": "Mob Battle",
+  "description": "A mod",
+  "authors": [],
+  "contact": {},
+  "license": "MIT",
+  "icon": "assets/mob_battle/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "fabric-datagen": [
+      "com.kltyton.mob_battle.datagen.Mob_battleDataGenerator"
+    ],
+    "client": [
+      "com.kltyton.mob_battle.client.Mob_battleClient"
+    ],
+    "main": [
+      "com.kltyton.mob_battle.Mob_battle"
+    ]
+  },
+  "mixins": [
+    "mob_battle.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric": "*",
+    "minecraft": "${minecraft_version}",
+    "geckolib": ">=5.1.0"
+  },
+  "accessWidener": "kltyton.accesswidener"
+}

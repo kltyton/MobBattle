@@ -1,29 +1,6 @@
 package com.kltyton.mob_battle.entity.misc.shield;
 
 import com.kltyton.mob_battle.Mob_battle;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.attribute.EntityAttributeModifier;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.data.DataTracker;
-import net.minecraft.entity.data.TrackedData;
-import net.minecraft.entity.data.TrackedDataHandlerRegistry;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.projectile.ProjectileEntity;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.storage.ReadView;
-import net.minecraft.storage.WriteView;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
 import software.bernie.geckolib.animatable.GeoEntity;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.animatable.manager.AnimatableManager;
@@ -35,17 +12,40 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 public class ShieldEntity extends Entity implements GeoEntity {
-    private static final EntityAttributeModifier REACH_MODIFIER = new EntityAttributeModifier(
-            Identifier.of(Mob_battle.MOD_ID, "shield_reach"), 3.0, EntityAttributeModifier.Operation.ADD_VALUE);
+    private static final AttributeModifier REACH_MODIFIER = new AttributeModifier(
+            ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "shield_reach"), 3.0, AttributeModifier.Operation.ADD_VALUE);
     // 使用 TrackedData 同步时间，确保客户端渲染缩放正确
-    private static final TrackedData<Integer> AGE = DataTracker.registerData(ShieldEntity.class, TrackedDataHandlerRegistry.INTEGER);
+    private static final EntityDataAccessor<Integer> AGE = SynchedEntityData.defineId(ShieldEntity.class, EntityDataSerializers.INT);
     private final Set<UUID> affectedPlayers = new HashSet<>();
     private UUID ownerUuid; // 记得在spawn时设置owner
 
-    public void setOwner(PlayerEntity owner) {
-        this.ownerUuid = owner.getUuid();
+    public void setOwner(Player owner) {
+        this.ownerUuid = owner.getUUID();
     }
     public UUID getOwner() {
         return ownerUuid;
@@ -53,33 +53,33 @@ public class ShieldEntity extends Entity implements GeoEntity {
 
     public boolean isShieldEntityTeammate(Entity other) {
         if (ownerUuid == null) return false;
-        Entity owner = getWorld().getEntity(ownerUuid);
-        if (owner instanceof PlayerEntity player) {
-            return player.isTeammate(other);
+        Entity owner = level().getEntity(ownerUuid);
+        if (owner instanceof Player player) {
+            return player.isAlliedTo(other);
         }
-        return other.getUuid().equals(ownerUuid);
+        return other.getUUID().equals(ownerUuid);
     }
-    public ShieldEntity(EntityType<?> type, World world) {
+    public ShieldEntity(EntityType<?> type, Level world) {
         super(type, world);
-        this.noClip = true; // 护盾本身不被物理引擎阻挡
+        this.noPhysics = true; // 护盾本身不被物理引擎阻挡
         this.triggerAnim("main_controller", "one");
     }
 
     @Override
-    protected void initDataTracker(DataTracker.Builder builder) {
-        builder.add(AGE, 0);
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        builder.define(AGE, 0);
     }
 
     @Override
     public void tick() {
         super.tick();
-        int age = this.dataTracker.get(AGE);
-        this.dataTracker.set(AGE, age + 1);
+        int age = this.entityData.get(AGE);
+        this.entityData.set(AGE, age + 1);
 
-        if (!getWorld().isClient) {
+        if (!level().isClientSide) {
             if (age > 220) {
                 for (UUID uuid : affectedPlayers) {
-                    PlayerEntity p = getWorld().getPlayerByUuid(uuid);
+                    Player p = level().getPlayerByUUID(uuid);
                     if (p != null) removeReachBuff(p);
                 }
                 this.discard(); // 210刻后消失
@@ -90,35 +90,35 @@ public class ShieldEntity extends Entity implements GeoEntity {
     }
 
     @Override
-    public boolean damage(ServerWorld world, DamageSource source, float amount) {
+    public boolean hurtServer(ServerLevel world, DamageSource source, float amount) {
         return false;
     }
 
     @Override
-    protected void readCustomData(ReadView view) {
-        this.dataTracker.set(AGE, view.getInt("age", 0));
+    protected void readAdditionalSaveData(ValueInput view) {
+        this.entityData.set(AGE, view.getIntOr("age", 0));
     }
 
 
     @Override
-    protected void writeCustomData(WriteView view) {
-        view.putInt("age", this.dataTracker.get(AGE));
+    protected void addAdditionalSaveData(ValueOutput view) {
+        view.putInt("age", this.entityData.get(AGE));
     }
 
     private void handleRepulsion(int age) {
         double radius = getScale(age) * 3; // 调整为 2.5 → 最大时正好 ≈5 块宽（-2.5 ~ +2.5）
-        Box box = this.getBoundingBox().expand(radius + 1.0); // 多扩展1格，提前捕捉高速投掷物
+        AABB box = this.getBoundingBox().inflate(radius + 1.0); // 多扩展1格，提前捕捉高速投掷物
 
         Set<UUID> currentPlayersInShield = new HashSet<>();
 
-        for (Entity entity : getWorld().getOtherEntities(this, box)) {
+        for (Entity entity : level().getEntities(this, box)) {
             if (isShieldEntityTeammate(entity)) {
                 // 同队：抗性 + 交互距离加成（你的原逻辑保留）
                 if (entity instanceof LivingEntity living) {
-                    living.addStatusEffect(new StatusEffectInstance(StatusEffects.RESISTANCE, 10, 3, false, false, true));
+                    living.addEffect(new MobEffectInstance(MobEffects.RESISTANCE, 10, 3, false, false, true));
                 }
-                if (entity instanceof PlayerEntity player) {
-                    currentPlayersInShield.add(player.getUuid());
+                if (entity instanceof Player player) {
+                    currentPlayersInShield.add(player.getUUID());
                     applyReachBuff(player);
                 }
             } else {
@@ -130,7 +130,7 @@ public class ShieldEntity extends Entity implements GeoEntity {
         // 清理离开的玩家加成（你的原逻辑）
         affectedPlayers.removeIf(uuid -> {
             if (!currentPlayersInShield.contains(uuid)) {
-                PlayerEntity p = getWorld().getPlayerByUuid(uuid);
+                Player p = level().getPlayerByUUID(uuid);
                 if (p != null) removeReachBuff(p);
                 return true;
             }
@@ -139,66 +139,66 @@ public class ShieldEntity extends Entity implements GeoEntity {
     }
 
     private void repulseEntity(Entity entity, double radius) {
-        if (entity instanceof LivingEntity living && !this.getWorld().isClient()) {
-            living.damage((ServerWorld) this.getWorld(),
-                    this.getDamageSources().indirectMagic(this, this.getOwner() == null ? this : getWorld().getEntity(ownerUuid)),
+        if (entity instanceof LivingEntity living && !this.level().isClientSide()) {
+            living.hurtServer((ServerLevel) this.level(),
+                    this.damageSources().indirectMagic(this, this.getOwner() == null ? this : level().getEntity(ownerUuid)),
                     10f
             );
         }
-        Vec3d center = this.getPos();
-        Vec3d toEntity = entity.getPos().subtract(center);
+        Vec3 center = this.position();
+        Vec3 toEntity = entity.position().subtract(center);
         double dist = toEntity.length();
 
         if (dist >= radius + 0.5) return; // 不在护盾内
 
-        Vec3d normal = toEntity.normalize();
-        if (normal.lengthSquared() == 0) normal = new Vec3d(1, 0, 0);
+        Vec3 normal = toEntity.normalize();
+        if (normal.lengthSqr() == 0) normal = new Vec3(1, 0, 0);
 
         // 强制传送至护盾表面（防止穿模）
-        Vec3d surfacePos = center.add(normal.multiply(radius + 0.05));
-        entity.setPosition(surfacePos);
+        Vec3 surfacePos = center.add(normal.scale(radius + 0.05));
+        entity.setPos(surfacePos);
 
-        if (entity instanceof ProjectileEntity projectile && !(isShieldEntityTeammate(projectile))) {
+        if (entity instanceof Projectile projectile && !(isShieldEntityTeammate(projectile))) {
             // === 投掷物专用的镜面反射 ===
-            Vec3d incident = projectile.getVelocity();
-            double dot = incident.dotProduct(normal);
-            Vec3d reflected = incident.subtract(normal.multiply(2 * dot));
+            Vec3 incident = projectile.getDeltaMovement();
+            double dot = incident.dot(normal);
+            Vec3 reflected = incident.subtract(normal.scale(2 * dot));
 
-            projectile.setVelocity(reflected.multiply(1.1)); // 稍微加速，像原版盾牌格挡
-            projectile.velocityModified = true;
+            projectile.setDeltaMovement(reflected.scale(1.1)); // 稍微加速，像原版盾牌格挡
+            projectile.hurtMarked = true;
 
             // 可选：格挡音效和粒子反馈
-            getWorld().playSound(null, entity.getX(), entity.getY(), entity.getZ(),
-                    SoundEvents.ITEM_SHIELD_BLOCK, SoundCategory.PLAYERS, 1.0F, 1.0F);
+            level().playSound(null, entity.getX(), entity.getY(), entity.getZ(),
+                    SoundEvents.SHIELD_BLOCK, SoundSource.PLAYERS, 1.0F, 1.0F);
             // 粒子（可根据需要调整）
-            ((ServerWorld) getWorld()).spawnParticles(ParticleTypes.CRIT,
+            ((ServerLevel) level()).sendParticles(ParticleTypes.CRIT,
                     entity.getX(), entity.getY(), entity.getZ(), 15, 0.2, 0.2, 0.2, 0.0);
         } else {
             // === 普通实体强力推开 ===
-            Vec3d push = normal.multiply(1.2); // 力度更大
-            entity.addVelocity(push.x, 0.3 + push.y * 0.5, push.z);
-            entity.velocityModified = true;
+            Vec3 push = normal.scale(1.2); // 力度更大
+            entity.push(push.x, 0.3 + push.y * 0.5, push.z);
+            entity.hurtMarked = true;
         }
     }
-    private void applyReachBuff(PlayerEntity player) {
-        var reachAttr = player.getAttributeInstance(EntityAttributes.ENTITY_INTERACTION_RANGE);
+    private void applyReachBuff(Player player) {
+        var reachAttr = player.getAttribute(Attributes.ENTITY_INTERACTION_RANGE);
 
         if (reachAttr != null && !reachAttr.hasModifier(REACH_MODIFIER.id())) {
-            reachAttr.addTemporaryModifier(REACH_MODIFIER);
-            affectedPlayers.add(player.getUuid());
+            reachAttr.addTransientModifier(REACH_MODIFIER);
+            affectedPlayers.add(player.getUUID());
         }
     }
-    private void removeReachBuff(PlayerEntity player) {
-        player.getAttributeInstance(EntityAttributes.ENTITY_INTERACTION_RANGE).removeModifier(REACH_MODIFIER.id());
+    private void removeReachBuff(Player player) {
+        player.getAttribute(Attributes.ENTITY_INTERACTION_RANGE).removeModifier(REACH_MODIFIER.id());
     }
     @Override
-    public void onRemove(Entity.RemovalReason reason) {
+    public void onRemoval(Entity.RemovalReason reason) {
         // 实体消失时清理所有加成
         for (UUID uuid : affectedPlayers) {
-            PlayerEntity p = getWorld().getPlayerByUuid(uuid);
+            Player p = level().getPlayerByUUID(uuid);
             if (p != null) removeReachBuff(p);
         }
-        super.onRemove(reason);
+        super.onRemoval(reason);
     }
     public float getScale(int age) {
         if (age <= 10) return age / 10f; // 变大阶段

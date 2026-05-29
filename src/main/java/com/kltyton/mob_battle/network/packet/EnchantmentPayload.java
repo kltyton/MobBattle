@@ -1,27 +1,27 @@
 package com.kltyton.mob_battle.network.packet;
 
 import com.kltyton.mob_battle.Mob_battle;
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.item.ItemStack;
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.codec.PacketCodecs;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.Enchantment;
 
-public record EnchantmentPayload(ItemStack itemStack, RegistryKey<Enchantment> enchantment, int level) implements CustomPayload {
-    public static final CustomPayload.Id<EnchantmentPayload> ID = new CustomPayload.Id<>(Identifier.of(Mob_battle.MOD_ID, "enchantment"));
-    public static final PacketCodec<RegistryByteBuf, EnchantmentPayload> CODEC = PacketCodec.tuple(
-            ItemStack.PACKET_CODEC, EnchantmentPayload::itemStack,
-            RegistryKey.createPacketCodec(RegistryKeys.ENCHANTMENT), EnchantmentPayload::enchantment,
-            PacketCodecs.VAR_INT, EnchantmentPayload::level,
+public record EnchantmentPayload(ItemStack itemStack, ResourceKey<Enchantment> enchantment, int level) implements CustomPacketPayload {
+    public static final CustomPacketPayload.Type<EnchantmentPayload> ID = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "enchantment"));
+    public static final StreamCodec<RegistryFriendlyByteBuf, EnchantmentPayload> CODEC = StreamCodec.composite(
+            ItemStack.STREAM_CODEC, EnchantmentPayload::itemStack,
+            ResourceKey.streamCodec(Registries.ENCHANTMENT), EnchantmentPayload::enchantment,
+            ByteBufCodecs.VAR_INT, EnchantmentPayload::level,
             EnchantmentPayload::new
     );
 
     @Override
-    public CustomPayload.Id<? extends CustomPayload> getId() {
+    public CustomPacketPayload.Type<? extends CustomPacketPayload> type() {
         return ID;
     }
 }

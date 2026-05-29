@@ -1,19 +1,18 @@
 package com.kltyton.mob_battle.bossbar;
 
-import net.minecraft.util.Identifier;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import net.minecraft.resources.ResourceLocation;
 
 public final class CustomBossBarClientState {
-    private static final Map<UUID, Identifier> BOSS_BAR_STYLES = new HashMap<>();
+    private static final Map<UUID, ResourceLocation> BOSS_BAR_STYLES = new HashMap<>();
 
     private CustomBossBarClientState() {
     }
 
-    public static void set(UUID bossBarUuid, Identifier styleId) {
+    public static void set(UUID bossBarUuid, ResourceLocation styleId) {
         BOSS_BAR_STYLES.put(bossBarUuid, styleId);
     }
 
@@ -22,7 +21,7 @@ public final class CustomBossBarClientState {
     }
 
     public static Optional<CustomBossBarStyle> get(UUID bossBarUuid) {
-        Identifier styleId = BOSS_BAR_STYLES.get(bossBarUuid);
+        ResourceLocation styleId = BOSS_BAR_STYLES.get(bossBarUuid);
         return styleId == null ? Optional.empty() : CustomBossBarStyles.get(styleId);
     }
 

@@ -3,82 +3,82 @@ package com.kltyton.mob_battle.entity.bullet;
 import com.kltyton.mob_battle.effect.ModEffects;
 import com.kltyton.mob_battle.items.ModItems;
 import com.kltyton.mob_battle.utils.CombatEffectUtil;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.data.DataTracker;
-import net.minecraft.entity.data.TrackedData;
-import net.minecraft.entity.data.TrackedDataHandlerRegistry;
-import net.minecraft.item.ItemStack;
-import net.minecraft.particle.DustParticleEffect;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.storage.ReadView;
-import net.minecraft.storage.WriteView;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.EntityHitResult;
-import net.minecraft.world.World;
+import net.minecraft.core.particles.DustParticleOptions;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 
 public class GoldenTrailProjectile extends TrueDamageProjectile {
-    private static final TrackedData<Boolean> STRENGTHEN =
-            DataTracker.registerData(GoldenTrailProjectile.class, TrackedDataHandlerRegistry.BOOLEAN);
-    private static final TrackedData<Boolean> BLOOD_STRENGTHEN =
-            DataTracker.registerData(GoldenTrailProjectile.class, TrackedDataHandlerRegistry.BOOLEAN);
+    private static final EntityDataAccessor<Boolean> STRENGTHEN =
+            SynchedEntityData.defineId(GoldenTrailProjectile.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Boolean> BLOOD_STRENGTHEN =
+            SynchedEntityData.defineId(GoldenTrailProjectile.class, EntityDataSerializers.BOOLEAN);
 
     private static final Vector3f GOLD_COLOR = new Vector3f(1.0F, 0.84F, 0.2F);
     private static final Vector3f BLOOD_COLOR = new Vector3f(1.0F, 0.1F, 0.1F);
 
-    public GoldenTrailProjectile(EntityType<? extends GoldenTrailProjectile> entityType, World world) {
+    public GoldenTrailProjectile(EntityType<? extends GoldenTrailProjectile> entityType, Level world) {
         super(entityType, world);
-        this.pickupType = PickupPermission.DISALLOWED;
+        this.pickup = Pickup.DISALLOWED;
     }
 
     public GoldenTrailProjectile(EntityType<? extends GoldenTrailProjectile> entityType,
                                  LivingEntity owner,
-                                 World world,
+                                 Level world,
                                  ItemStack stack,
                                  @Nullable ItemStack shotFrom) {
         super(entityType, owner, world, stack, shotFrom);
-        this.pickupType = PickupPermission.DISALLOWED;
+        this.pickup = Pickup.DISALLOWED;
     }
 
     public GoldenTrailProjectile(EntityType<? extends GoldenTrailProjectile> entityType,
                                  double x,
                                  double y,
                                  double z,
-                                 World world,
+                                 Level world,
                                  ItemStack stack,
                                  @Nullable ItemStack weapon) {
         super(entityType, x, y, z, world, stack, weapon);
-        this.pickupType = PickupPermission.DISALLOWED;
+        this.pickup = Pickup.DISALLOWED;
     }
 
     @Override
-    protected void initDataTracker(DataTracker.Builder builder) {
-        super.initDataTracker(builder);
-        builder.add(STRENGTHEN, false);
-        builder.add(BLOOD_STRENGTHEN, false);
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(STRENGTHEN, false);
+        builder.define(BLOOD_STRENGTHEN, false);
     }
 
     public void setStrengthen(boolean strengthen) {
-        this.dataTracker.set(STRENGTHEN, strengthen);
+        this.entityData.set(STRENGTHEN, strengthen);
     }
 
     public boolean isStrengthen() {
-        return this.dataTracker.get(STRENGTHEN);
+        return this.entityData.get(STRENGTHEN);
     }
 
     public void setBloodStrengthen(boolean bloodStrengthen) {
-        this.dataTracker.set(BLOOD_STRENGTHEN, bloodStrengthen);
+        this.entityData.set(BLOOD_STRENGTHEN, bloodStrengthen);
     }
 
     public boolean isBloodStrengthen() {
-        return this.dataTracker.get(BLOOD_STRENGTHEN);
+        return this.entityData.get(BLOOD_STRENGTHEN);
     }
     @Override
-    public boolean hasNoGravity() {
+    public boolean isNoGravity() {
         return true;
     }
 
@@ -86,7 +86,7 @@ public class GoldenTrailProjectile extends TrueDamageProjectile {
     public void tick() {
         super.tick();
 
-        if (this.age >= 200) {
+        if (this.tickCount >= 200) {
             this.discard();
             return;
         }
@@ -100,14 +100,14 @@ public class GoldenTrailProjectile extends TrueDamageProjectile {
     }
 
     private void spawnTrail(Vector3f colorVec, boolean blood) {
-        World world = this.getWorld();
-        if (!world.isClient()) {
+        Level world = this.level();
+        if (!world.isClientSide()) {
             return;
         }
 
-        double vx = this.getVelocity().x;
-        double vy = this.getVelocity().y;
-        double vz = this.getVelocity().z;
+        double vx = this.getDeltaMovement().x;
+        double vy = this.getDeltaMovement().y;
+        double vz = this.getDeltaMovement().z;
 
         double baseX = this.getX() - vx * 0.25;
         double baseY = this.getY() - vy * 0.25;
@@ -123,8 +123,8 @@ public class GoldenTrailProjectile extends TrueDamageProjectile {
             double oy = (this.random.nextDouble() - 0.5) * 0.12;
             double oz = (this.random.nextDouble() - 0.5) * 0.12;
 
-            world.addParticleClient(
-                    new DustParticleEffect(colorRGB, blood ? 1.35F : 1.2F),
+            world.addParticle(
+                    new DustParticleOptions(colorRGB, blood ? 1.35F : 1.2F),
                     baseX + ox,
                     baseY + oy,
                     baseZ + oz,
@@ -135,23 +135,23 @@ public class GoldenTrailProjectile extends TrueDamageProjectile {
         }
 
         if (blood) {
-            if (this.age % 2 == 0) {
-                world.addParticleClient(
+            if (this.tickCount % 2 == 0) {
+                world.addParticle(
                         ParticleTypes.CRIT,
                         baseX, baseY, baseZ,
                         0.0, 0.0, 0.0
                 );
             }
         } else {
-            if (this.age % 2 == 0) {
-                world.addParticleClient(
+            if (this.tickCount % 2 == 0) {
+                world.addParticle(
                         ParticleTypes.ELECTRIC_SPARK,
                         baseX, baseY, baseZ,
                         0.0, 0.0, 0.0
                 );
             }
-            if (this.age % 3 == 0) {
-                world.addParticleClient(
+            if (this.tickCount % 3 == 0) {
+                world.addParticle(
                         ParticleTypes.GLOW,
                         baseX, baseY, baseZ,
                         0.0, 0.0, 0.0
@@ -161,46 +161,46 @@ public class GoldenTrailProjectile extends TrueDamageProjectile {
     }
 
     @Override
-    protected void onEntityHit(EntityHitResult entityHitResult) {
-        super.onEntityHit(entityHitResult);
+    protected void onHitEntity(EntityHitResult entityHitResult) {
+        super.onHitEntity(entityHitResult);
         this.discard();
     }
 
     @Override
-    protected void onBlockHit(BlockHitResult blockHitResult) {
-        super.onBlockHit(blockHitResult);
+    protected void onHitBlock(BlockHitResult blockHitResult) {
+        super.onHitBlock(blockHitResult);
         this.discard();
     }
 
     @Override
-    public void writeCustomData(WriteView nbt) {
-        super.writeCustomData(nbt);
+    public void addAdditionalSaveData(ValueOutput nbt) {
+        super.addAdditionalSaveData(nbt);
         nbt.putBoolean("Strengthen", this.isStrengthen());
         nbt.putBoolean("BloodStrengthen", this.isBloodStrengthen());
     }
 
     @Override
-    public void readCustomData(ReadView nbt) {
-        super.readCustomData(nbt);
-        this.setStrengthen(nbt.getBoolean("Strengthen", false));
-        this.setBloodStrengthen(nbt.getBoolean("BloodStrengthen", false));
+    public void readAdditionalSaveData(ValueInput nbt) {
+        super.readAdditionalSaveData(nbt);
+        this.setStrengthen(nbt.getBooleanOr("Strengthen", false));
+        this.setBloodStrengthen(nbt.getBooleanOr("BloodStrengthen", false));
     }
 
     @Override
-    protected ItemStack getDefaultItemStack() {
+    protected ItemStack getDefaultPickupItem() {
         return new ItemStack(ModItems.TRAIN_BULLET);
     }
     @Override
     public void additionalDamage(Entity entity) {
-        if (!this.getWorld().isClient && entity instanceof LivingEntity livingEntity) {
-            applyStrengthenBulletEffect((ServerWorld) this.getWorld(), livingEntity);
+        if (!this.level().isClientSide && entity instanceof LivingEntity livingEntity) {
+            applyStrengthenBulletEffect((ServerLevel) this.level(), livingEntity);
         }
     }
-    public void applyStrengthenBulletEffect(ServerWorld world, LivingEntity target) {
+    public void applyStrengthenBulletEffect(ServerLevel world, LivingEntity target) {
         if (this.isStrengthen()) {
             Entity owner = this.getOwner();
             CombatEffectUtil.addPigSpiritMark(target, owner instanceof LivingEntity living ? living : target, 1);
-            target.damage(world, target.getDamageSources().magic(), 10.0F);
+            target.hurtServer(world, target.damageSources().magic(), 10.0F);
         }
     }
 }

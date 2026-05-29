@@ -9,21 +9,21 @@ import com.kltyton.mob_battle.network.packet.PlayerSkillUtilPayload;
 import com.kltyton.mob_battle.sounds.ModSounds;
 import com.kltyton.mob_battle.utils.EntityUtil;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.data.DataTracker;
-import net.minecraft.entity.data.TrackedData;
-import net.minecraft.entity.data.TrackedDataHandlerRegistry;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Implements;
 import org.spongepowered.asm.mixin.Interface;
 import org.spongepowered.asm.mixin.Mixin;
@@ -42,7 +42,7 @@ import software.bernie.geckolib.animation.RawAnimation;
 import software.bernie.geckolib.util.ClientUtil;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
-@Mixin(PlayerEntity.class)
+@Mixin(Player.class)
 @Implements(@Interface(iface = GeoEntity.class, prefix = "gecko$"))
 public abstract class PlayerEntityMixin extends LivingEntity implements GeoEntity, IPlayerSkillAccessor {
     @Unique
@@ -79,25 +79,25 @@ public abstract class PlayerEntityMixin extends LivingEntity implements GeoEntit
     private static final RawAnimation YES_SCRAPING_ANIM = RawAnimation.begin().thenPlay("yes_scraping");
 
     @Unique
-    private static final TrackedData<Integer> ATTACK_COOLDOWN = DataTracker.registerData(PlayerEntity.class, TrackedDataHandlerRegistry.INTEGER);
+    private static final EntityDataAccessor<Integer> ATTACK_COOLDOWN = SynchedEntityData.defineId(Player.class, EntityDataSerializers.INT);
     @Unique
-    private static final TrackedData<Integer> ATTACK_COOLDOWN2 = DataTracker.registerData(PlayerEntity.class, TrackedDataHandlerRegistry.INTEGER);
+    private static final EntityDataAccessor<Integer> ATTACK_COOLDOWN2 = SynchedEntityData.defineId(Player.class, EntityDataSerializers.INT);
     @Unique
-    private static final TrackedData<Integer> LEFT_WHIP_COOLDOWN = DataTracker.registerData(PlayerEntity.class, TrackedDataHandlerRegistry.INTEGER);
+    private static final EntityDataAccessor<Integer> LEFT_WHIP_COOLDOWN = SynchedEntityData.defineId(Player.class, EntityDataSerializers.INT);
     @Unique
-    private static final TrackedData<Integer> RETREAT_STEP_COOLDOWN = DataTracker.registerData(PlayerEntity.class, TrackedDataHandlerRegistry.INTEGER);
+    private static final EntityDataAccessor<Integer> RETREAT_STEP_COOLDOWN = SynchedEntityData.defineId(Player.class, EntityDataSerializers.INT);
     @Unique
-    private static final TrackedData<Integer> TOP_KNEE_COOLDOWN = DataTracker.registerData(PlayerEntity.class, TrackedDataHandlerRegistry.INTEGER);
+    private static final EntityDataAccessor<Integer> TOP_KNEE_COOLDOWN = SynchedEntityData.defineId(Player.class, EntityDataSerializers.INT);
     @Unique
-    private static final TrackedData<Integer> COLLISION_COOLDOWN = DataTracker.registerData(PlayerEntity.class, TrackedDataHandlerRegistry.INTEGER);
+    private static final EntityDataAccessor<Integer> COLLISION_COOLDOWN = SynchedEntityData.defineId(Player.class, EntityDataSerializers.INT);
     @Unique
-    private static final TrackedData<Integer> RUN_COLLISION_COOLDOWN = DataTracker.registerData(PlayerEntity.class, TrackedDataHandlerRegistry.INTEGER);
+    private static final EntityDataAccessor<Integer> RUN_COLLISION_COOLDOWN = SynchedEntityData.defineId(Player.class, EntityDataSerializers.INT);
     @Unique
-    private static final TrackedData<Integer> SMASHING_THE_GROUND_COOLDOWN = DataTracker.registerData(PlayerEntity.class, TrackedDataHandlerRegistry.INTEGER);
+    private static final EntityDataAccessor<Integer> SMASHING_THE_GROUND_COOLDOWN = SynchedEntityData.defineId(Player.class, EntityDataSerializers.INT);
     @Unique
-    private static final TrackedData<Integer> SCRAPING_COOLDOWN = DataTracker.registerData(PlayerEntity.class, TrackedDataHandlerRegistry.INTEGER);
+    private static final EntityDataAccessor<Integer> SCRAPING_COOLDOWN = SynchedEntityData.defineId(Player.class, EntityDataSerializers.INT);
     @Unique
-    private static final TrackedData<Boolean> ISCOLLIDING = DataTracker.registerData(PlayerEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
+    private static final EntityDataAccessor<Boolean> ISCOLLIDING = SynchedEntityData.defineId(Player.class, EntityDataSerializers.BOOLEAN);
     @Unique
     private static final int MAX_COLLISION_TICKS = 90;
     @Unique
@@ -108,19 +108,19 @@ public abstract class PlayerEntityMixin extends LivingEntity implements GeoEntit
     private int collisionTicks = 0;
     @Unique
     private boolean isColliding() {
-        return this.dataTracker.get(ISCOLLIDING);
+        return this.entityData.get(ISCOLLIDING);
     }
     @Unique
     private boolean mobBattle$isValidCollisionTarget(LivingEntity target) {
         return target != null
                 && target != this
-                && !target.getUuid().equals(this.getUuid())
+                && !target.getUUID().equals(this.getUUID())
                 && !EntityUtil.isCreativeOrSpectator(target);
     }
     @Unique
     @Override
     public void mobBattle$startCollision() {
-        this.dataTracker.set(ISCOLLIDING, true);
+        this.entityData.set(ISCOLLIDING, true);
         this.collisionTicks = 0;
     }
 
@@ -128,7 +128,7 @@ public abstract class PlayerEntityMixin extends LivingEntity implements GeoEntit
     @Override
     public void mobBattle$stopCollision() {
         this.mobBattle$releaseCollisionTarget();
-        this.dataTracker.set(ISCOLLIDING, false);
+        this.entityData.set(ISCOLLIDING, false);
         this.collidingEntity = null;
         this.collisionTicks = 0;
     }
@@ -137,9 +137,9 @@ public abstract class PlayerEntityMixin extends LivingEntity implements GeoEntit
         if (this.collidingEntity == null) {
             return;
         }
-        this.collidingEntity.setVelocity(0.0, Math.max(this.collidingEntity.getVelocity().y, 0.0), 0.0);
-        this.collidingEntity.velocityModified = true;
-        this.collidingEntity.velocityDirty = true;
+        this.collidingEntity.setDeltaMovement(0.0, Math.max(this.collidingEntity.getDeltaMovement().y, 0.0), 0.0);
+        this.collidingEntity.hurtMarked = true;
+        this.collidingEntity.hasImpulse = true;
     }
     @Unique
     @Override
@@ -152,65 +152,65 @@ public abstract class PlayerEntityMixin extends LivingEntity implements GeoEntit
         return this.grabbedEntity;
     }
 
-    @Inject(method = "initDataTracker", at = @At("RETURN"))
-    protected void initDataTracker(DataTracker.Builder builder, CallbackInfo ci) {
-        builder.add(DataTrackersEvent.HAS_SKILL, false);
-        builder.add(DataTrackersEvent.CAN_MOVE, true);
-        builder.add(ISCOLLIDING, false);
-        builder.add(ATTACK_COOLDOWN, getMaxAttackCooldown("attack"));
-        builder.add(ATTACK_COOLDOWN2, getMaxAttackCooldown("attack2"));
-        builder.add(RETREAT_STEP_COOLDOWN, getMaxAttackCooldown("retreat_step"));
-        builder.add(LEFT_WHIP_COOLDOWN, getMaxAttackCooldown("left_whip"));
-        builder.add(TOP_KNEE_COOLDOWN, getMaxAttackCooldown("top_knee"));
-        builder.add(COLLISION_COOLDOWN, getMaxAttackCooldown("collision"));
-        builder.add(RUN_COLLISION_COOLDOWN, getMaxAttackCooldown("run_collision"));
-        builder.add(SMASHING_THE_GROUND_COOLDOWN, getMaxAttackCooldown("smashing_the_ground"));
-        builder.add(SCRAPING_COOLDOWN, getMaxAttackCooldown("scraping"));
+    @Inject(method = "defineSynchedData", at = @At("RETURN"))
+    protected void initDataTracker(SynchedEntityData.Builder builder, CallbackInfo ci) {
+        builder.define(DataTrackersEvent.HAS_SKILL, false);
+        builder.define(DataTrackersEvent.CAN_MOVE, true);
+        builder.define(ISCOLLIDING, false);
+        builder.define(ATTACK_COOLDOWN, getMaxAttackCooldown("attack"));
+        builder.define(ATTACK_COOLDOWN2, getMaxAttackCooldown("attack2"));
+        builder.define(RETREAT_STEP_COOLDOWN, getMaxAttackCooldown("retreat_step"));
+        builder.define(LEFT_WHIP_COOLDOWN, getMaxAttackCooldown("left_whip"));
+        builder.define(TOP_KNEE_COOLDOWN, getMaxAttackCooldown("top_knee"));
+        builder.define(COLLISION_COOLDOWN, getMaxAttackCooldown("collision"));
+        builder.define(RUN_COLLISION_COOLDOWN, getMaxAttackCooldown("run_collision"));
+        builder.define(SMASHING_THE_GROUND_COOLDOWN, getMaxAttackCooldown("smashing_the_ground"));
+        builder.define(SCRAPING_COOLDOWN, getMaxAttackCooldown("scraping"));
     }
     // 在 PlayerEntityMixin.java 中添加
     @Override
-    public void changeLookDirection(double cursorDeltaX, double cursorDeltaY) {
+    public void turn(double cursorDeltaX, double cursorDeltaY) {
         if (this.isColliding()) {
             return;
         }
-        super.changeLookDirection(cursorDeltaX, cursorDeltaY);
+        super.turn(cursorDeltaX, cursorDeltaY);
     }
     @Inject(method = "tick", at = @At("RETURN"))
     public void mobBattle$tickCollision(CallbackInfo ci) {
-        if (!this.getWorld().isClient) {
+        if (!this.level().isClientSide) {
             // 1. 冲锋位移逻辑
-            Vec3d lookVec = this.getRotationVec(1.0F);
-            Vec3d velocity = new Vec3d(lookVec.x, 0, lookVec.z).normalize().multiply(1.5); // 冲锋速度 0.5
+            Vec3 lookVec = this.getViewVector(1.0F);
+            Vec3 velocity = new Vec3(lookVec.x, 0, lookVec.z).normalize().scale(1.5); // 冲锋速度 0.5
             if (this.grabbedEntity != null) {
                 if (!this.grabbedEntity.isAlive() || !this.mobBattle$isValidCollisionTarget(this.grabbedEntity)) {
                     this.grabbedEntity = null;
                 } else {
-                    Vec3d targetPos = this.getPos().add(velocity.multiply(1.5));
-                    this.grabbedEntity.requestTeleport(targetPos.x, targetPos.y, targetPos.z);
+                    Vec3 targetPos = this.position().add(velocity.scale(1.5));
+                    this.grabbedEntity.teleportTo(targetPos.x, targetPos.y, targetPos.z);
                 }
             }
         }
         if (this.isColliding()) {
-            if (this.getWorld().isClient) {
+            if (this.level().isClientSide) {
                 // 1. 冲锋位移逻辑
-                Vec3d lookVec = this.getRotationVec(1.0F);
-                Vec3d velocity = new Vec3d(lookVec.x, 0, lookVec.z).normalize().multiply(1.5); // 冲锋速度 0.5
-                this.setVelocity(velocity.x, this.getVelocity().y, velocity.z);
-                this.velocityDirty = true;
+                Vec3 lookVec = this.getViewVector(1.0F);
+                Vec3 velocity = new Vec3(lookVec.x, 0, lookVec.z).normalize().scale(1.5); // 冲锋速度 0.5
+                this.setDeltaMovement(velocity.x, this.getDeltaMovement().y, velocity.z);
+                this.hasImpulse = true;
             } else {
                 if (++this.collisionTicks > MAX_COLLISION_TICKS) {
                     this.mobBattle$stopCollision();
                     return;
                 }
                 // 1. 冲锋位移逻辑
-                Vec3d lookVec = this.getRotationVec(1.0F);
-                Vec3d velocity = new Vec3d(lookVec.x, 0, lookVec.z).normalize().multiply(1.5); // 冲锋速度 0.5
-                this.setVelocity(velocity.x, this.getVelocity().y, velocity.z);
-                this.velocityDirty = true;
+                Vec3 lookVec = this.getViewVector(1.0F);
+                Vec3 velocity = new Vec3(lookVec.x, 0, lookVec.z).normalize().scale(1.5); // 冲锋速度 0.5
+                this.setDeltaMovement(velocity.x, this.getDeltaMovement().y, velocity.z);
+                this.hasImpulse = true;
                 // 2. 抓取逻辑
                 if (this.collidingEntity == null) {
                     // 探测前方 1.5 格内的生物
-                    LivingEntity target = EntityUtil.getClosestNearbyEntity((PlayerEntity) (Object) this, LivingEntity.class, 5, EntityUtil.TeamFilter.EXCLUDE_TEAM);
+                    LivingEntity target = EntityUtil.getClosestNearbyEntity((Player) (Object) this, LivingEntity.class, 5, EntityUtil.TeamFilter.EXCLUDE_TEAM);
                     if (this.mobBattle$isValidCollisionTarget(target)) {
                         this.collidingEntity = target;
                     }
@@ -220,12 +220,12 @@ public abstract class PlayerEntityMixin extends LivingEntity implements GeoEntit
                         this.collidingEntity = null;
                     } else {
                         // 将生物固定在玩家前方 1.2 格处
-                        Vec3d targetPos = this.getPos().add(velocity.multiply(3.5));
-                        this.collidingEntity.requestTeleport(targetPos.x, targetPos.y + 4, targetPos.z);
+                        Vec3 targetPos = this.position().add(velocity.scale(3.5));
+                        this.collidingEntity.teleportTo(targetPos.x, targetPos.y + 4, targetPos.z);
                         // 每 20 刻给予 70 点伤害
-                        if (this.age % 20 == 0) {
-                            this.collidingEntity.damage((ServerWorld) this.getWorld(), this.getDamageSources().playerAttack((PlayerEntity) (Object) this), 150f);
-                            this.playSound(ModSounds.PLAYER_ATTACK_4_SOUND_EVENT);
+                        if (this.tickCount % 20 == 0) {
+                            this.collidingEntity.hurtServer((ServerLevel) this.level(), this.damageSources().playerAttack((Player) (Object) this), 150f);
+                            this.makeSound(ModSounds.PLAYER_ATTACK_4_SOUND_EVENT);
                         }
                     }
                 }
@@ -234,7 +234,7 @@ public abstract class PlayerEntityMixin extends LivingEntity implements GeoEntit
     }
     @Inject(method = "tick", at = @At("HEAD"))
     public void tick(CallbackInfo ci) {
-        if (!this.getWorld().isClient) {
+        if (!this.level().isClientSide) {
             if (!mobBattle$hasSkill()) {
                 this.mobBattle$setAttackCooldown("attack", Math.max(0, this.mobBattle$getAttackCooldown("attack") - 1));
                 this.mobBattle$setAttackCooldown("retreat_step", Math.max(0, this.mobBattle$getAttackCooldown("retreat_step") - 1));
@@ -251,15 +251,15 @@ public abstract class PlayerEntityMixin extends LivingEntity implements GeoEntit
     @Unique
     public int mobBattle$getAttackCooldown(String animationName) {
         return switch (animationName) {
-            case "attack" -> this.getDataTracker().get(ATTACK_COOLDOWN);
-            case "attack2" -> this.getDataTracker().get(ATTACK_COOLDOWN2);
-            case "retreat_step" -> this.getDataTracker().get(RETREAT_STEP_COOLDOWN);
-            case "left_whip" -> this.getDataTracker().get(LEFT_WHIP_COOLDOWN);
-            case "top_knee" -> this.getDataTracker().get(TOP_KNEE_COOLDOWN);
-            case "collision" -> this.getDataTracker().get(COLLISION_COOLDOWN);
-            case "run_collision" -> this.getDataTracker().get(RUN_COLLISION_COOLDOWN);
-            case "smashing_the_ground" -> this.getDataTracker().get(SMASHING_THE_GROUND_COOLDOWN);
-            case "scraping" -> this.getDataTracker().get(SCRAPING_COOLDOWN);
+            case "attack" -> this.getEntityData().get(ATTACK_COOLDOWN);
+            case "attack2" -> this.getEntityData().get(ATTACK_COOLDOWN2);
+            case "retreat_step" -> this.getEntityData().get(RETREAT_STEP_COOLDOWN);
+            case "left_whip" -> this.getEntityData().get(LEFT_WHIP_COOLDOWN);
+            case "top_knee" -> this.getEntityData().get(TOP_KNEE_COOLDOWN);
+            case "collision" -> this.getEntityData().get(COLLISION_COOLDOWN);
+            case "run_collision" -> this.getEntityData().get(RUN_COLLISION_COOLDOWN);
+            case "smashing_the_ground" -> this.getEntityData().get(SMASHING_THE_GROUND_COOLDOWN);
+            case "scraping" -> this.getEntityData().get(SCRAPING_COOLDOWN);
             default -> 1;
         };
     }
@@ -267,31 +267,31 @@ public abstract class PlayerEntityMixin extends LivingEntity implements GeoEntit
     public void mobBattle$setAttackCooldown(String controllerName, int cooldown) {
         switch (controllerName) {
             case "attack":
-                this.getDataTracker().set(ATTACK_COOLDOWN, cooldown);
+                this.getEntityData().set(ATTACK_COOLDOWN, cooldown);
                 break;
             case "attack2":
-                this.getDataTracker().set(ATTACK_COOLDOWN2, cooldown);
+                this.getEntityData().set(ATTACK_COOLDOWN2, cooldown);
                 break;
             case "retreat_step":
-                this.getDataTracker().set(RETREAT_STEP_COOLDOWN, cooldown);
+                this.getEntityData().set(RETREAT_STEP_COOLDOWN, cooldown);
                 break;
             case "left_whip":
-                this.getDataTracker().set(LEFT_WHIP_COOLDOWN, cooldown);
+                this.getEntityData().set(LEFT_WHIP_COOLDOWN, cooldown);
                 break;
             case "top_knee":
-                this.getDataTracker().set(TOP_KNEE_COOLDOWN, cooldown);
+                this.getEntityData().set(TOP_KNEE_COOLDOWN, cooldown);
                 break;
             case "collision":
-                this.getDataTracker().set(COLLISION_COOLDOWN, cooldown);
+                this.getEntityData().set(COLLISION_COOLDOWN, cooldown);
                 break;
             case "run_collision":
-                this.getDataTracker().set(RUN_COLLISION_COOLDOWN, cooldown);
+                this.getEntityData().set(RUN_COLLISION_COOLDOWN, cooldown);
                 break;
             case "smashing_the_ground":
-                this.getDataTracker().set(SMASHING_THE_GROUND_COOLDOWN, cooldown);
+                this.getEntityData().set(SMASHING_THE_GROUND_COOLDOWN, cooldown);
                 break;
             case "scraping":
-                this.getDataTracker().set(SCRAPING_COOLDOWN, cooldown);
+                this.getEntityData().set(SCRAPING_COOLDOWN, cooldown);
                 break;
         }
     }
@@ -353,25 +353,25 @@ public abstract class PlayerEntityMixin extends LivingEntity implements GeoEntit
                             break;
                         case "runRetreat_step":
                             ClientUtil.getClientPlayer().playSound(
-                                    SoundEvents.ENTITY_ENDERMAN_TELEPORT,
+                                    SoundEvents.ENDERMAN_TELEPORT,
                                     1.0f, 1.0f
                             );
                             break;
                         case "runLeftWhip":
                             ClientUtil.getClientPlayer().playSound(
-                                    SoundEvents.ITEM_FIRECHARGE_USE,
+                                    SoundEvents.FIRECHARGE_USE,
                                     1.0f, 1.0f
                             );
                             break;
                         case "runRunCollision":
                             ClientUtil.getClientPlayer().playSound(
-                                    SoundEvents.ITEM_MACE_SMASH_GROUND,
+                                    SoundEvents.MACE_SMASH_GROUND,
                                     1.0f, 1.0f
                             );
                             break;
                         case "runJump":
                             ClientUtil.getClientPlayer().playSound(
-                                    SoundEvents.ENTITY_PLAYER_HURT,
+                                    SoundEvents.PLAYER_HURT,
                                     1.0f, 1.0f
                             );
                             break;
@@ -409,8 +409,8 @@ public abstract class PlayerEntityMixin extends LivingEntity implements GeoEntit
                         ((IClientPlayerEntityAccessor)this).clientSend("smashing_the_ground");
                     }
                     if ("runJump;".equals(s.keyframeData().getInstructions())) {
-                        this.velocityDirty = true;
-                        this.addVelocity(0, 1.3, 0);
+                        this.hasImpulse = true;
+                        this.push(0, 1.3, 0);
                         ((IClientPlayerEntityAccessor)this).clientSend("run_jump");
                     }
                     if ("runScraping;".equals(s.keyframeData().getInstructions())) {
@@ -429,19 +429,19 @@ public abstract class PlayerEntityMixin extends LivingEntity implements GeoEntit
 
     @Unique
     public boolean mobBattle$hasSkill() {
-        return this.getDataTracker().get(DataTrackersEvent.HAS_SKILL);
+        return this.getEntityData().get(DataTrackersEvent.HAS_SKILL);
     }
     @Unique
     public void mobBattle$setHasSkill(boolean hasSkill) {
-        this.getDataTracker().set(DataTrackersEvent.HAS_SKILL, hasSkill);
+        this.getEntityData().set(DataTrackersEvent.HAS_SKILL, hasSkill);
     }
     @Unique
     public boolean mobBattle$canMove() {
-        return this.getDataTracker().get(DataTrackersEvent.CAN_MOVE);
+        return this.getEntityData().get(DataTrackersEvent.CAN_MOVE);
     }
     @Unique
     public void mobBattle$setCanMove(boolean canMove) {
-        this.getDataTracker().set(DataTrackersEvent.CAN_MOVE, canMove);
+        this.getEntityData().set(DataTrackersEvent.CAN_MOVE, canMove);
     }
     @Unique
     public boolean mobBattle$canAttack(String animationName) {
@@ -450,25 +450,25 @@ public abstract class PlayerEntityMixin extends LivingEntity implements GeoEntit
     }
     // 重写 getStackInHand(OFF_HAND) -> EMPTY
     @Override
-    public ItemStack getStackInHand(Hand hand) {
-        if (((IPlayerEntityAccessor)this).isUsingGeckoLib() && hand == Hand.OFF_HAND) {
+    public ItemStack getItemInHand(InteractionHand hand) {
+        if (((IPlayerEntityAccessor)this).isUsingGeckoLib() && hand == InteractionHand.OFF_HAND) {
             return ItemStack.EMPTY;
         }
-        return super.getStackInHand(hand);
+        return super.getItemInHand(hand);
     }
     @Override
-    public void setStackInHand(Hand hand, ItemStack stack) {
+    public void setItemInHand(InteractionHand hand, ItemStack stack) {
         if (((IPlayerEntityAccessor)this).isUsingGeckoLib()) {
             return;
         }
-        super.setStackInHand(hand, stack);
+        super.setItemInHand(hand, stack);
     }
     // 使用物品时忽略副手
-    @Inject(method = "interact", at = @At("HEAD"), cancellable = true)
-    public void interactEntity(Entity entity, Hand hand, CallbackInfoReturnable<ActionResult> cir) {
-        if (((IPlayerEntityAccessor)this).isUsingGeckoLib() && hand == Hand.OFF_HAND) {
+    @Inject(method = "interactOn", at = @At("HEAD"), cancellable = true)
+    public void interactEntity(Entity entity, InteractionHand hand, CallbackInfoReturnable<InteractionResult> cir) {
+        if (((IPlayerEntityAccessor)this).isUsingGeckoLib() && hand == InteractionHand.OFF_HAND) {
             cir.cancel();
-            cir.setReturnValue(ActionResult.FAIL);
+            cir.setReturnValue(InteractionResult.FAIL);
         }
     }
     @Unique
@@ -478,14 +478,14 @@ public abstract class PlayerEntityMixin extends LivingEntity implements GeoEntit
             at = @At("HEAD"),
             cancellable = true
     )
-    private void onTravel(Vec3d movementInput, CallbackInfo ci) {
-        if (!this.getWorld().isClient) return;
+    private void onTravel(Vec3 movementInput, CallbackInfo ci) {
+        if (!this.level().isClientSide) return;
         if (!mobBattle$canMove()) {
-            super.travel(Vec3d.ZERO);
+            super.travel(Vec3.ZERO);
             ci.cancel();
         }
     }
-    protected PlayerEntityMixin(EntityType<? extends LivingEntity> entityType, World world) {
+    protected PlayerEntityMixin(EntityType<? extends LivingEntity> entityType, Level world) {
         super(entityType, world);
     }
 
@@ -502,10 +502,10 @@ public abstract class PlayerEntityMixin extends LivingEntity implements GeoEntit
             this.triggerAnim("attack_controller", controllerName);
             this.mobBattle$setAttackCooldown(controllerName, getMaxAttackCooldown(controllerName));
             // 新增：切换到第三人称后视角（客户端专属）
-            if (this.getWorld().isClient) {
+            if (this.level().isClientSide) {
                 //((IClientPlayerEntityAccessor)this).setPerson(2);
             } else {
-                ServerPlayNetworking.send((ServerPlayerEntity)(Object)this, new PlayerSkillUtilPayload("setPerson_2"));
+                ServerPlayNetworking.send((ServerPlayer)(Object)this, new PlayerSkillUtilPayload("setPerson_2"));
             }
         }
     }
@@ -523,13 +523,13 @@ public abstract class PlayerEntityMixin extends LivingEntity implements GeoEntit
         return state.setAndContinue(IDEA_ANIM);
     }
     @Override
-    public void jump() {
-        super.jump();
+    public void jumpFromGround() {
+        super.jumpFromGround();
         this.triggerAnim("jump_controller", "jump");
     }
     @Override
-    public void swingHand(Hand hand) {
-        super.swingHand(hand);
+    public void swing(InteractionHand hand) {
+        super.swing(hand);
         this.triggerAnim("wave_controller", "wave");
     }
     public AnimatableInstanceCache gecko$getAnimatableInstanceCache() {

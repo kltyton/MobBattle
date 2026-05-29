@@ -8,19 +8,19 @@ import com.kltyton.mob_battle.entity.littleperson.king.skill.LittlePersonKingSki
 import com.kltyton.mob_battle.entity.littleperson.militia.LittlePersonMilitiaEntity;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.attribute.DefaultAttributeContainer;
-import net.minecraft.entity.attribute.EntityAttributeInstance;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.data.DataTracker;
-import net.minecraft.entity.data.TrackedData;
-import net.minecraft.entity.data.TrackedDataHandlerRegistry;
-import net.minecraft.entity.mob.HostileEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.world.World;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 import software.bernie.geckolib.animatable.manager.AnimatableManager;
 import software.bernie.geckolib.animatable.processing.AnimationController;
@@ -30,24 +30,24 @@ import software.bernie.geckolib.animation.RawAnimation;
 import java.util.List;
 
 public class LittlePersonKingEntity extends LittlePersonMilitiaEntity {
-    public static final TrackedData<Boolean> HAS_SKILL = DataTracker.registerData(LittlePersonKingEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
-    public static final TrackedData<Integer> SKILL_COOLDOWN_1 = DataTracker.registerData(LittlePersonKingEntity.class, TrackedDataHandlerRegistry.INTEGER);
-    public static final TrackedData<Integer> SKILL_COOLDOWN_2 = DataTracker.registerData(LittlePersonKingEntity.class, TrackedDataHandlerRegistry.INTEGER);
-    public static final TrackedData<Integer> STAGE = DataTracker.registerData(LittlePersonKingEntity.class, TrackedDataHandlerRegistry.INTEGER);
-    public static final TrackedData<Boolean> IS_VIOLENT = DataTracker.registerData(LittlePersonKingEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
-    public LittlePersonKingEntity(EntityType<? extends HostileEntity> entityType, World world) {
+    public static final EntityDataAccessor<Boolean> HAS_SKILL = SynchedEntityData.defineId(LittlePersonKingEntity.class, EntityDataSerializers.BOOLEAN);
+    public static final EntityDataAccessor<Integer> SKILL_COOLDOWN_1 = SynchedEntityData.defineId(LittlePersonKingEntity.class, EntityDataSerializers.INT);
+    public static final EntityDataAccessor<Integer> SKILL_COOLDOWN_2 = SynchedEntityData.defineId(LittlePersonKingEntity.class, EntityDataSerializers.INT);
+    public static final EntityDataAccessor<Integer> STAGE = SynchedEntityData.defineId(LittlePersonKingEntity.class, EntityDataSerializers.INT);
+    public static final EntityDataAccessor<Boolean> IS_VIOLENT = SynchedEntityData.defineId(LittlePersonKingEntity.class, EntityDataSerializers.BOOLEAN);
+    public LittlePersonKingEntity(EntityType<? extends Monster> entityType, Level world) {
         super(entityType, world);
-        this.setAiDisabled(false);
+        this.setNoAi(false);
         this.setHasSkill(false);
     }
     @Override
-    protected void initDataTracker(DataTracker.Builder builder) {
-        super.initDataTracker(builder);
-        builder.add(HAS_SKILL, false);
-        builder.add(STAGE, 0);
-        builder.add(SKILL_COOLDOWN_1, 160);
-        builder.add(SKILL_COOLDOWN_2, 100);
-        builder.add(IS_VIOLENT, false);
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(HAS_SKILL, false);
+        builder.define(STAGE, 0);
+        builder.define(SKILL_COOLDOWN_1, 160);
+        builder.define(SKILL_COOLDOWN_2, 100);
+        builder.define(IS_VIOLENT, false);
     }
     @Override
     public void setHealth(float health) {
@@ -83,12 +83,12 @@ public class LittlePersonKingEntity extends LittlePersonMilitiaEntity {
     }
     public boolean canSkill(String skill) {
         if (!canSkill()) return false;
-        return !this.getWorld().isClient() && !hasSkill() && getSkillCooldown(skill) == 0 && this.getTarget() != null;
+        return !this.level().isClientSide() && !hasSkill() && getSkillCooldown(skill) == 0 && this.getTarget() != null;
     }
 
     public void performSkill(String skill) {
         this.setHasSkill(true);
-        this.setAiDisabled(true);
+        this.setNoAi(true);
         this.setSkillCooldown(skill);
         this.triggerAnim("skill_controller", skill);
     }
@@ -100,16 +100,16 @@ public class LittlePersonKingEntity extends LittlePersonMilitiaEntity {
         };
     }
     public boolean hasSkill() {
-        return this.dataTracker.get(HAS_SKILL);
+        return this.entityData.get(HAS_SKILL);
     }
     public void setHasSkill(boolean hasSkill) {
-        this.dataTracker.set(HAS_SKILL, hasSkill);
+        this.entityData.set(HAS_SKILL, hasSkill);
     }
     public int getStage() {
-        return this.dataTracker.get(STAGE);
+        return this.entityData.get(STAGE);
     }
     public void setStage(int stage) {
-        this.dataTracker.set(STAGE, stage);
+        this.entityData.set(STAGE, stage);
     }
     public void setSkillCooldown(String skill) {
         switch (skill) {
@@ -118,22 +118,22 @@ public class LittlePersonKingEntity extends LittlePersonMilitiaEntity {
         }
     }
     public int getSkillCooldown1() {
-        return this.dataTracker.get(SKILL_COOLDOWN_1);
+        return this.entityData.get(SKILL_COOLDOWN_1);
     }
     public void setSkillCooldown1(int skillCooldown1) {
-        this.dataTracker.set(SKILL_COOLDOWN_1, skillCooldown1);
+        this.entityData.set(SKILL_COOLDOWN_1, skillCooldown1);
     }
     public int getSkillCooldown2() {
-        return this.dataTracker.get(SKILL_COOLDOWN_2);
+        return this.entityData.get(SKILL_COOLDOWN_2);
     }
     public void setSkillCooldown2(int skillCooldown2) {
-        this.dataTracker.set(SKILL_COOLDOWN_2, skillCooldown2);
+        this.entityData.set(SKILL_COOLDOWN_2, skillCooldown2);
     }
     public boolean isViolent() {
-        return this.dataTracker.get(IS_VIOLENT);
+        return this.entityData.get(IS_VIOLENT);
     }
     public void setIsViolent(boolean isViolent) {
-        this.dataTracker.set(IS_VIOLENT, isViolent);
+        this.entityData.set(IS_VIOLENT, isViolent);
     }
     public void heal() {
         this.heal(2.0F);
@@ -141,15 +141,15 @@ public class LittlePersonKingEntity extends LittlePersonMilitiaEntity {
     @Override
     public void tick() {
         super.tick();
-        if (!this.getWorld().isClient) {
+        if (!this.level().isClientSide) {
             List<LittlePersonGuardEntity> guardEntities = LittlePersonKingSkill.getNearbyLittlePersonGuardEntity(this, 50);
             // 计算减伤：每有一个守卫 +0.2，最高 0.96
             double damageReduction = Math.min(0.96, guardEntities.size() * 0.2);
-            EntityAttributeInstance attributeInstance = this.getAttributeInstance(ModEntityAttributes.DAMAGE_REDUCTION);
+            AttributeInstance attributeInstance = this.getAttribute(ModEntityAttributes.DAMAGE_REDUCTION);
             if (attributeInstance != null) attributeInstance.setBaseValue(damageReduction);
 
             if (!hasSkill()) {
-                this.setAiDisabled(false);
+                this.setNoAi(false);
                 // 冷却递减
                 decrementCooldownIfPositive(SKILL_COOLDOWN_1);
                 decrementCooldownIfPositive(SKILL_COOLDOWN_2);
@@ -157,7 +157,7 @@ public class LittlePersonKingEntity extends LittlePersonMilitiaEntity {
         }
     }
     @Override
-    public boolean tryAttack(ServerWorld world, Entity target) {
+    public boolean doHurtTarget(ServerLevel world, Entity target) {
         if (!ModSkillEntityType.canSkill(this)) return false;
         if (canSkill("attack2")) {
             performSkill("attack2");
@@ -167,18 +167,18 @@ public class LittlePersonKingEntity extends LittlePersonMilitiaEntity {
             performSkill("attack3");
             return true;
         }
-        return super.tryAttack(world, target);
+        return super.doHurtTarget(world, target);
     }
-    private void decrementCooldownIfPositive(TrackedData<Integer> cooldownField) {
-        int currentCooldown = this.dataTracker.get(cooldownField);
+    private void decrementCooldownIfPositive(EntityDataAccessor<Integer> cooldownField) {
+        int currentCooldown = this.entityData.get(cooldownField);
         if (currentCooldown > 0) {
-            this.dataTracker.set(cooldownField, currentCooldown - 1);
+            this.entityData.set(cooldownField, currentCooldown - 1);
         }
     }
     @Override
-    public void takeKnockback(double strength, double x, double z) {
-        if (!hasSkill() || !this.isAiDisabled()) {
-            super.takeKnockback(strength, x, z);
+    public void knockback(double strength, double x, double z) {
+        if (!hasSkill() || !this.isNoAi()) {
+            super.knockback(strength, x, z);
         }
     }
     protected static final RawAnimation ATTACK_ANIM_2 = RawAnimation.begin().thenPlay("attack2");
@@ -198,13 +198,13 @@ public class LittlePersonKingEntity extends LittlePersonMilitiaEntity {
                         .triggerableAnim("attack3", ATTACK_ANIM_3)
                         .setCustomInstructionKeyframeHandler(s -> {
                             if ("attack2".equals(s.keyframeData().getInstructions())) {
-                                this.playSound(SoundEvents.BLOCK_ANVIL_LAND, 1.0F, 1.0F);
+                                this.playSound(SoundEvents.ANVIL_LAND, 1.0F, 1.0F);
                                 ClientPlayNetworking.send(new SkillPayload(
                                         "attack2", this.getId()
                                 ));
                             }
                             if ("attack3".equals(s.keyframeData().getInstructions())) {
-                                this.playSound(SoundEvents.BLOCK_ANVIL_LAND, 1.0F, 1.0F);
+                                this.playSound(SoundEvents.ANVIL_LAND, 1.0F, 1.0F);
                                 ClientPlayNetworking.send(new SkillPayload(
                                         "attack3", this.getId()
                                 ));
@@ -215,12 +215,12 @@ public class LittlePersonKingEntity extends LittlePersonMilitiaEntity {
     public boolean blockAttack(@NotNull DamageSource source, float amount) {
         return false;
     }
-    public static DefaultAttributeContainer.Builder createLittlePersonKingAttributes() {
+    public static AttributeSupplier.Builder createLittlePersonKingAttributes() {
         return LittlePersonEntity.createLittlePersonAttributes()
-                .add(EntityAttributes.MAX_HEALTH, 2000.0)
-                .add(EntityAttributes.FOLLOW_RANGE, 40.0)
-                .add(EntityAttributes.MOVEMENT_SPEED, 0.3)
-                .add(EntityAttributes.ATTACK_DAMAGE, 55.0)
+                .add(Attributes.MAX_HEALTH, 2000.0)
+                .add(Attributes.FOLLOW_RANGE, 40.0)
+                .add(Attributes.MOVEMENT_SPEED, 0.3)
+                .add(Attributes.ATTACK_DAMAGE, 55.0)
                 .add(ModEntityAttributes.DAMAGE_REDUCTION, 0);
     }
 }

@@ -1,49 +1,53 @@
 package com.kltyton.mob_battle.entity.evoker;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.SpawnReason;
-import net.minecraft.entity.ai.TargetPredicate;
-import net.minecraft.entity.attribute.DefaultAttributeContainer;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.mob.*;
-import net.minecraft.entity.passive.SheepEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundEvent;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.util.DyeColor;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.world.GameRules;
-import net.minecraft.world.World;
-import net.minecraft.world.event.GameEvent;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.targeting.TargetingConditions;
+import net.minecraft.world.entity.animal.sheep.Sheep;
+import net.minecraft.world.entity.monster.Evoker;
+import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.entity.monster.SpellcasterIllager;
+import net.minecraft.world.entity.monster.Vex;
+import net.minecraft.world.entity.projectile.EvokerFangs;
+import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 import java.util.List;
 
-public class SuperEvokerEntity extends EvokerEntity implements ModEvokerOwner {
-    public SuperEvokerEntity(EntityType<? extends EvokerEntity> entityType, World world) {
+public class SuperEvokerEntity extends Evoker implements ModEvokerOwner {
+    public SuperEvokerEntity(EntityType<? extends Evoker> entityType, Level world) {
         super(entityType, world);
     }
 
     @Override
-    protected void initGoals() {
-        super.initGoals();
+    protected void registerGoals() {
+        super.registerGoals();
         // 移除原有的目标，添加我们自定义的加强版
         // 优先级越高，数字越小
-        this.goalSelector.add(4, new SuperSummonVexGoal());
-        this.goalSelector.add(5, new SuperConjureFangsGoal());
+        this.goalSelector.addGoal(4, new SuperSummonVexGoal());
+        this.goalSelector.addGoal(5, new SuperConjureFangsGoal());
     }
 
-    public static DefaultAttributeContainer.Builder createSuperEvokerAttributes() {
-        return HostileEntity.createHostileAttributes()
-                .add(EntityAttributes.MAX_HEALTH, 100.0) // 100点血量
-                .add(EntityAttributes.MOVEMENT_SPEED, 0.5)
-                .add(EntityAttributes.FOLLOW_RANGE, 32.0)
-                .add(EntityAttributes.MAX_ABSORPTION, 20.0);
+    public static AttributeSupplier.Builder createSuperEvokerAttributes() {
+        return Monster.createMonsterAttributes()
+                .add(Attributes.MAX_HEALTH, 100.0) // 100点血量
+                .add(Attributes.MOVEMENT_SPEED, 0.5)
+                .add(Attributes.FOLLOW_RANGE, 32.0)
+                .add(Attributes.MAX_ABSORPTION, 20.0);
     }
 
     @Override
@@ -52,90 +56,90 @@ public class SuperEvokerEntity extends EvokerEntity implements ModEvokerOwner {
     }
 
     // --- 加强版：召唤恼鬼 ---
-    class SuperSummonVexGoal extends SpellcastingIllagerEntity.CastSpellGoal {
-        private final TargetPredicate closeVexPredicate = TargetPredicate.createNonAttackable()
-                .setBaseMaxDistance(16.0)
-                .ignoreVisibility()
-                .ignoreDistanceScalingFactor();
+    class SuperSummonVexGoal extends SpellcasterIllager.SpellcasterUseSpellGoal {
+        private final TargetingConditions closeVexPredicate = TargetingConditions.forNonCombat()
+                .range(16.0)
+                .ignoreLineOfSight()
+                .ignoreInvisibilityTesting();
         @Override
-        public boolean canStart() {
-            if (!super.canStart()) {
+        public boolean canUse() {
+            if (!super.canUse()) {
                 return false;
             } else {
-                int i = castToServerWorld(SuperEvokerEntity.this.getWorld())
-                        .getTargets(VexEntity.class, this.closeVexPredicate, SuperEvokerEntity.this, SuperEvokerEntity.this.getBoundingBox().expand(16.0))
+                int i = getServerLevel(SuperEvokerEntity.this.level())
+                        .getNearbyEntities(Vex.class, this.closeVexPredicate, SuperEvokerEntity.this, SuperEvokerEntity.this.getBoundingBox().inflate(16.0))
                         .size();
                 return SuperEvokerEntity.this.random.nextInt(8) + 1 > i;
             }
         }
         @Override
-        protected int getSpellTicks() { return 40; }
+        protected int getCastingTime() { return 40; }
         @Override
-        protected int startTimeDelay() { return 60; }
+        protected int getCastingInterval() { return 60; }
 
         @Override
-        protected void castSpell() {
-            ServerWorld serverWorld = (ServerWorld) SuperEvokerEntity.this.getWorld();
+        protected void performSpellCasting() {
+            ServerLevel serverWorld = (ServerLevel) SuperEvokerEntity.this.level();
             for (int i = 0; i < 10; i++) {
-                BlockPos blockPos = SuperEvokerEntity.this.getBlockPos().add(-3 + random.nextInt(7), 1, -3 + random.nextInt(7));
-                VexEntity vex = EntityType.VEX.create(getWorld(), SpawnReason.MOB_SUMMONED);
+                BlockPos blockPos = SuperEvokerEntity.this.blockPosition().offset(-3 + random.nextInt(7), 1, -3 + random.nextInt(7));
+                Vex vex = EntityType.VEX.create(level(), EntitySpawnReason.MOB_SUMMONED);
                 if (vex != null) {
-                    vex.refreshPositionAndAngles(blockPos, 0.0F, 0.0F);
-                    vex.initialize(serverWorld, getWorld().getLocalDifficulty(blockPos), SpawnReason.MOB_SUMMONED, null);
+                    vex.snapTo(blockPos, 0.0F, 0.0F);
+                    vex.finalizeSpawn(serverWorld, level().getCurrentDifficultyAt(blockPos), EntitySpawnReason.MOB_SUMMONED, null);
                     vex.setOwner(SuperEvokerEntity.this);
-                    vex.getAttributeInstance(EntityAttributes.MAX_HEALTH).setBaseValue(50.0);
+                    vex.getAttribute(Attributes.MAX_HEALTH).setBaseValue(50.0);
                     vex.setHealth(50.0F);
-                    double baseDamage = vex.getAttributeValue(EntityAttributes.ATTACK_DAMAGE);
-                    vex.getAttributeInstance(EntityAttributes.ATTACK_DAMAGE).setBaseValue(baseDamage + 5.0);
-                    vex.getAttributeInstance(EntityAttributes.SCALE).setBaseValue(1.2);
-                    serverWorld.spawnEntityAndPassengers(vex);
+                    double baseDamage = vex.getAttributeValue(Attributes.ATTACK_DAMAGE);
+                    vex.getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(baseDamage + 5.0);
+                    vex.getAttribute(Attributes.SCALE).setBaseValue(1.2);
+                    serverWorld.addFreshEntityWithPassengers(vex);
                 }
             }
         }
         @Override
-        protected SoundEvent getSoundPrepare() {
-            return SoundEvents.ENTITY_EVOKER_PREPARE_SUMMON;
+        protected SoundEvent getSpellPrepareSound() {
+            return SoundEvents.EVOKER_PREPARE_SUMMON;
         }
 
         @Override
-        protected SpellcastingIllagerEntity.Spell getSpell() {
-            return SpellcastingIllagerEntity.Spell.SUMMON_VEX;
+        protected SpellcasterIllager.IllagerSpell getSpell() {
+            return SpellcasterIllager.IllagerSpell.SUMMON_VEX;
         }
     }
 
     // --- 加强版：尖牙法术 ---
-    class SuperConjureFangsGoal extends SpellcastingIllagerEntity.CastSpellGoal {
-        private final TargetPredicate convertibleSheepPredicate = TargetPredicate.createNonAttackable()
-                .setBaseMaxDistance(16.0)
-                .setPredicate((sheep, world) -> ((SheepEntity)sheep).getColor() == DyeColor.BLUE);
+    class SuperConjureFangsGoal extends SpellcasterIllager.SpellcasterUseSpellGoal {
+        private final TargetingConditions convertibleSheepPredicate = TargetingConditions.forNonCombat()
+                .range(16.0)
+                .selector((sheep, world) -> ((Sheep)sheep).getColor() == DyeColor.BLUE);
         @Override
-        public boolean canStart() {
+        public boolean canUse() {
             if (SuperEvokerEntity.this.getTarget() != null) {
                 return false;
-            } else if (SuperEvokerEntity.this.isSpellcasting()) {
+            } else if (SuperEvokerEntity.this.isCastingSpell()) {
                 return false;
-            } else if (SuperEvokerEntity.this.age < this.startTime) {
+            } else if (SuperEvokerEntity.this.tickCount < this.nextAttackTickCount) {
                 return false;
             } else {
-                ServerWorld serverWorld = castToServerWorld(SuperEvokerEntity.this.getWorld());
-                if (!serverWorld.getGameRules().getBoolean(GameRules.DO_MOB_GRIEFING)) {
+                ServerLevel serverWorld = getServerLevel(SuperEvokerEntity.this.level());
+                if (!serverWorld.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
                     return false;
                 } else {
-                    List<SheepEntity> list = serverWorld.getTargets(
-                            SheepEntity.class, this.convertibleSheepPredicate, SuperEvokerEntity.this, SuperEvokerEntity.this.getBoundingBox().expand(16.0, 4.0, 16.0)
+                    List<Sheep> list = serverWorld.getNearbyEntities(
+                            Sheep.class, this.convertibleSheepPredicate, SuperEvokerEntity.this, SuperEvokerEntity.this.getBoundingBox().inflate(16.0, 4.0, 16.0)
                     );
                     if (list.isEmpty()) {
                         return false;
                     } else {
-                        SuperEvokerEntity.this.setWololoTarget((SheepEntity)list.get(SuperEvokerEntity.this.random.nextInt(list.size())));
+                        SuperEvokerEntity.this.setWololoTarget((Sheep)list.get(SuperEvokerEntity.this.random.nextInt(list.size())));
                         return true;
                     }
                 }
             }
         }
         @Override
-        public boolean shouldContinue() {
-            return SuperEvokerEntity.this.getWololoTarget() != null && this.spellCooldown > 0;
+        public boolean canContinueToUse() {
+            return SuperEvokerEntity.this.getWololoTarget() != null && this.attackWarmupDelay > 0;
         }
         @Override
         public void stop() {
@@ -143,31 +147,31 @@ public class SuperEvokerEntity extends EvokerEntity implements ModEvokerOwner {
             SuperEvokerEntity.this.setWololoTarget(null);
         }
         @Override
-        protected int getInitialCooldown() {
+        protected int getCastWarmupTime() {
             return 40;
         }
         @Override
-        protected int getSpellTicks() { return 20; }
+        protected int getCastingTime() { return 20; }
         @Override
-        protected int startTimeDelay() { return 40; } // 极快施法
+        protected int getCastingInterval() { return 40; } // 极快施法
         @Override
-        protected SoundEvent getSoundPrepare() {
-            return SoundEvents.ENTITY_EVOKER_PREPARE_WOLOLO;
+        protected SoundEvent getSpellPrepareSound() {
+            return SoundEvents.EVOKER_PREPARE_WOLOLO;
         }
 
         @Override
-        protected SpellcastingIllagerEntity.Spell getSpell() {
-            return SpellcastingIllagerEntity.Spell.WOLOLO;
+        protected SpellcasterIllager.IllagerSpell getSpell() {
+            return SpellcasterIllager.IllagerSpell.WOLOLO;
         }
 
         @Override
-        protected void castSpell() {
+        protected void performSpellCasting() {
             LivingEntity target = SuperEvokerEntity.this.getTarget();
             if (target == null) return;
 
             double d = Math.min(target.getY(), SuperEvokerEntity.this.getY());
             double e = Math.max(target.getY(), SuperEvokerEntity.this.getY()) + 1.0;
-            float angle = (float) MathHelper.atan2(target.getZ() - SuperEvokerEntity.this.getZ(), target.getX() - SuperEvokerEntity.this.getX());
+            float angle = (float) Mth.atan2(target.getZ() - SuperEvokerEntity.this.getZ(), target.getX() - SuperEvokerEntity.this.getX());
 
             // 逻辑选择阵型
             int pattern = SuperEvokerEntity.this.random.nextInt(4);
@@ -182,7 +186,7 @@ public class SuperEvokerEntity extends EvokerEntity implements ModEvokerOwner {
                 for (int ring = 1; ring <= 3; ring++) {
                     for (int i = 0; i < 8 * ring; i++) {
                         float f = (float) (i * Math.PI * 2.0 / (8 * ring));
-                        createEnhancedFang(target.getX() + MathHelper.cos(f) * ring, target.getZ() + MathHelper.sin(f) * ring, d, e, f, ring * 3);
+                        createEnhancedFang(target.getX() + Mth.cos(f) * ring, target.getZ() + Mth.sin(f) * ring, d, e, f, ring * 3);
                     }
                 }
             } else {
@@ -190,8 +194,8 @@ public class SuperEvokerEntity extends EvokerEntity implements ModEvokerOwner {
                     double distance = 1.25 * (i + 1);
                     int warmup = i;
                     createEnhancedFang(
-                            SuperEvokerEntity.this.getX() + MathHelper.cos(angle) * distance,
-                            SuperEvokerEntity.this.getZ() + MathHelper.sin(angle) * distance,
+                            SuperEvokerEntity.this.getX() + Mth.cos(angle) * distance,
+                            SuperEvokerEntity.this.getZ() + Mth.sin(angle) * distance,
                             d, e, angle, warmup
                     );
                 }
@@ -200,35 +204,35 @@ public class SuperEvokerEntity extends EvokerEntity implements ModEvokerOwner {
 
         private void createEnhancedFang(double x, double z, double minY, double maxY, float yaw, int warmup) {
             // 从上方开始向下检测
-            BlockPos blockPos = BlockPos.ofFloored(x, maxY, z);
+            BlockPos blockPos = BlockPos.containing(x, maxY, z);
             boolean foundGround = false;
             double yOffset = 0.0;
 
             do {
-                BlockPos belowPos = blockPos.down();
-                BlockState belowState = SuperEvokerEntity.this.getWorld().getBlockState(belowPos);
+                BlockPos belowPos = blockPos.below();
+                BlockState belowState = SuperEvokerEntity.this.level().getBlockState(belowPos);
 
                 // 如果下方是实心方块的上表面
-                if (belowState.isSideSolidFullSquare(SuperEvokerEntity.this.getWorld(), belowPos, Direction.UP)) {
-                    if (!SuperEvokerEntity.this.getWorld().isAir(blockPos)) {
-                        BlockState currentState = SuperEvokerEntity.this.getWorld().getBlockState(blockPos);
-                        VoxelShape shape = currentState.getCollisionShape(SuperEvokerEntity.this.getWorld(), blockPos);
+                if (belowState.isFaceSturdy(SuperEvokerEntity.this.level(), belowPos, Direction.UP)) {
+                    if (!SuperEvokerEntity.this.level().isEmptyBlock(blockPos)) {
+                        BlockState currentState = SuperEvokerEntity.this.level().getBlockState(blockPos);
+                        VoxelShape shape = currentState.getCollisionShape(SuperEvokerEntity.this.level(), blockPos);
                         if (!shape.isEmpty()) {
-                            yOffset = shape.getMax(Direction.Axis.Y);
+                            yOffset = shape.max(Direction.Axis.Y);
                         }
                     }
                     foundGround = true;
                     break;
                 }
-                blockPos = blockPos.down();
+                blockPos = blockPos.below();
                 // 修正：循环应该持续直到到达 minY（最低检测高度）
-            } while (blockPos.getY() >= MathHelper.floor(minY) - 1);
+            } while (blockPos.getY() >= Mth.floor(minY) - 1);
 
             if (foundGround) {
                 // 注意：这里需要替换为你自定义的 EnhancedFangsEntity 以实现 +25 伤害
                 // 如果你还没写自定义类，暂时用原版，但伤害会是默认的
-                EvokerFangsEntity fangs = new EvokerFangsEntity(
-                        SuperEvokerEntity.this.getWorld(),
+                EvokerFangs fangs = new EvokerFangs(
+                        SuperEvokerEntity.this.level(),
                         x,
                         (double)blockPos.getY() + yOffset,
                         z,
@@ -237,11 +241,11 @@ public class SuperEvokerEntity extends EvokerEntity implements ModEvokerOwner {
                         SuperEvokerEntity.this
                 );
 
-                SuperEvokerEntity.this.getWorld().spawnEntity(fangs);
-                SuperEvokerEntity.this.getWorld().emitGameEvent(
+                SuperEvokerEntity.this.level().addFreshEntity(fangs);
+                SuperEvokerEntity.this.level().gameEvent(
                         GameEvent.ENTITY_PLACE,
-                        new Vec3d(x, (double)blockPos.getY() + yOffset, z),
-                        GameEvent.Emitter.of(SuperEvokerEntity.this)
+                        new Vec3(x, (double)blockPos.getY() + yOffset, z),
+                        GameEvent.Context.of(SuperEvokerEntity.this)
                 );
             }
         }

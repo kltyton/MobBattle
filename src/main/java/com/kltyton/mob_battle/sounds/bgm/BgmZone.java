@@ -1,12 +1,12 @@
 package com.kltyton.mob_battle.sounds.bgm;
 
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 
-public record BgmZone(String name, Box area, Identifier musicId, float volume) {
-    public boolean contains(Vec3d pos) {
+public record BgmZone(String name, AABB area, ResourceLocation musicId, float volume) {
+    public boolean contains(Vec3 pos) {
         return area.contains(pos);
     }
 

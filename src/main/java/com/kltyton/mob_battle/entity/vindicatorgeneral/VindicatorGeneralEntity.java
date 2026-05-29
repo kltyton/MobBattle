@@ -11,32 +11,31 @@ import com.kltyton.mob_battle.utils.CombatEffectUtil;
 import com.kltyton.mob_battle.utils.EnchantmentUtil;
 import com.kltyton.mob_battle.utils.EntityUtil;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.enchantment.Enchantments;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.attribute.DefaultAttributeContainer;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.boss.BossBar;
-import net.minecraft.entity.boss.ServerBossBar;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.data.DataTracker;
-import net.minecraft.entity.data.TrackedData;
-import net.minecraft.entity.data.TrackedDataHandlerRegistry;
-import net.minecraft.entity.mob.HostileEntity;
-import net.minecraft.entity.mob.VindicatorEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.storage.ReadView;
-import net.minecraft.storage.WriteView;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerBossEvent;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.Mth;
+import net.minecraft.world.BossEvent;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.entity.monster.Vindicator;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.phys.AABB;
 import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib.animatable.GeoEntity;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
@@ -49,40 +48,40 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 
 import java.util.Optional;
 
-public class VindicatorGeneralEntity extends VindicatorEntity implements GeoEntity, ModSkillEntityType {
-    private final ServerBossBar bossBar = new ServerBossBar(
-            Text.empty(),
-            BossBar.Color.PURPLE,
-            BossBar.Style.PROGRESS
+public class VindicatorGeneralEntity extends Vindicator implements GeoEntity, ModSkillEntityType {
+    private final ServerBossEvent bossBar = new ServerBossEvent(
+            Component.empty(),
+            BossEvent.BossBarColor.PURPLE,
+            BossEvent.BossBarOverlay.PROGRESS
     );
-    public static final TrackedData<Boolean> HAS_SKILL = DataTracker.registerData(VindicatorGeneralEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
-    public static final TrackedData<Integer> SKILL_COOLDOWN = DataTracker.registerData(VindicatorGeneralEntity.class, TrackedDataHandlerRegistry.INTEGER);
-    public static final TrackedData<Integer> SUPER_ATTACK_SKILL_COOLDOWN = DataTracker.registerData(VindicatorGeneralEntity.class, TrackedDataHandlerRegistry.INTEGER);
-    public static final TrackedData<Integer> MINI_ATTACK_SKILL_COOLDOWN = DataTracker.registerData(VindicatorGeneralEntity.class, TrackedDataHandlerRegistry.INTEGER);
-    public static final TrackedData<Integer> MAX_ATTACK_SKILL_COOLDOWN = DataTracker.registerData(VindicatorGeneralEntity.class, TrackedDataHandlerRegistry.INTEGER);
-    public static final TrackedData<Integer> COLLISION_KILL_COOLDOWN = DataTracker.registerData(VindicatorGeneralEntity.class, TrackedDataHandlerRegistry.INTEGER);
-    public static final TrackedData<Integer> SPIN_CHOP_COOLDOWN = DataTracker.registerData(VindicatorGeneralEntity.class, TrackedDataHandlerRegistry.INTEGER);
-    public static final TrackedData<Integer> THROW_AXE_COOLDOWN = DataTracker.registerData(VindicatorGeneralEntity.class, TrackedDataHandlerRegistry.INTEGER);
+    public static final EntityDataAccessor<Boolean> HAS_SKILL = SynchedEntityData.defineId(VindicatorGeneralEntity.class, EntityDataSerializers.BOOLEAN);
+    public static final EntityDataAccessor<Integer> SKILL_COOLDOWN = SynchedEntityData.defineId(VindicatorGeneralEntity.class, EntityDataSerializers.INT);
+    public static final EntityDataAccessor<Integer> SUPER_ATTACK_SKILL_COOLDOWN = SynchedEntityData.defineId(VindicatorGeneralEntity.class, EntityDataSerializers.INT);
+    public static final EntityDataAccessor<Integer> MINI_ATTACK_SKILL_COOLDOWN = SynchedEntityData.defineId(VindicatorGeneralEntity.class, EntityDataSerializers.INT);
+    public static final EntityDataAccessor<Integer> MAX_ATTACK_SKILL_COOLDOWN = SynchedEntityData.defineId(VindicatorGeneralEntity.class, EntityDataSerializers.INT);
+    public static final EntityDataAccessor<Integer> COLLISION_KILL_COOLDOWN = SynchedEntityData.defineId(VindicatorGeneralEntity.class, EntityDataSerializers.INT);
+    public static final EntityDataAccessor<Integer> SPIN_CHOP_COOLDOWN = SynchedEntityData.defineId(VindicatorGeneralEntity.class, EntityDataSerializers.INT);
+    public static final EntityDataAccessor<Integer> THROW_AXE_COOLDOWN = SynchedEntityData.defineId(VindicatorGeneralEntity.class, EntityDataSerializers.INT);
     private static final int AXE_RECOVERY_TIMEOUT_MAX = 120;
     private boolean waitingForAxeRecovery;
     private int axeRecoveryTimeout;
     private int deathAnimationTicks;
     @Override
-    protected void initDataTracker(DataTracker.Builder builder) {
-        super.initDataTracker(builder);
-        builder.add(HAS_SKILL, false);
-        builder.add(SKILL_COOLDOWN, 20);
-        builder.add(SUPER_ATTACK_SKILL_COOLDOWN, 15 * 20);
-        builder.add(MINI_ATTACK_SKILL_COOLDOWN, 10 * 20);
-        builder.add(MAX_ATTACK_SKILL_COOLDOWN, 30 * 20);
-        builder.add(COLLISION_KILL_COOLDOWN, 25 * 20);
-        builder.add(SPIN_CHOP_COOLDOWN, 20 * 20);
-        builder.add(THROW_AXE_COOLDOWN, 45 * 20);
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(HAS_SKILL, false);
+        builder.define(SKILL_COOLDOWN, 20);
+        builder.define(SUPER_ATTACK_SKILL_COOLDOWN, 15 * 20);
+        builder.define(MINI_ATTACK_SKILL_COOLDOWN, 10 * 20);
+        builder.define(MAX_ATTACK_SKILL_COOLDOWN, 30 * 20);
+        builder.define(COLLISION_KILL_COOLDOWN, 25 * 20);
+        builder.define(SPIN_CHOP_COOLDOWN, 20 * 20);
+        builder.define(THROW_AXE_COOLDOWN, 45 * 20);
     }
-    public VindicatorGeneralEntity(EntityType<? extends VindicatorEntity> entityType, World world) {
+    public VindicatorGeneralEntity(EntityType<? extends Vindicator> entityType, Level world) {
         super(entityType, world);
         this.setHasSkill(false);
-        this.setAiDisabled(false);
+        this.setNoAi(false);
         this.setSkillCooldown(20);
         this.lookControl = new BigBossLookControl(this);
         this.moveControl = new BigBossMoveControl(this);
@@ -91,7 +90,7 @@ public class VindicatorGeneralEntity extends VindicatorEntity implements GeoEnti
     @Override
     public void tick() {
         super.tick();
-        if (!this.getWorld().isClient()) {
+        if (!this.level().isClientSide()) {
             if (this.deathAnimationTicks > 0) {
                 tickDeathAnimation();
                 return;
@@ -118,46 +117,46 @@ public class VindicatorGeneralEntity extends VindicatorEntity implements GeoEnti
                 tryUseTargetedSkill();
             }
             if (!hasSkill()) {
-                this.setAiDisabled(false);
+                this.setNoAi(false);
             }
-            if (this.age % 20 == 0) this.heal(1);
+            if (this.tickCount % 20 == 0) this.heal(1);
         }
     }
     @Override
-    public void takeKnockback(double strength, double x, double z) {
+    public void knockback(double strength, double x, double z) {
     }
     @Override
-    public void setCustomName(@Nullable Text name) {
+    public void setCustomName(@Nullable Component name) {
         super.setCustomName(name);
         updateBossBar();
     }
     @Override
-    public void onStartedTrackingBy(ServerPlayerEntity player) {
-        super.onStartedTrackingBy(player);
-        CustomBossBarSync.add(player, this.bossBar.getUuid(), CustomBossBarStyles.VINDICATOR_GENERAL);
+    public void startSeenByPlayer(ServerPlayer player) {
+        super.startSeenByPlayer(player);
+        CustomBossBarSync.add(player, this.bossBar.getId(), CustomBossBarStyles.VINDICATOR_GENERAL);
         this.bossBar.addPlayer(player);
     }
     @Override
-    public void onStoppedTrackingBy(ServerPlayerEntity player) {
-        super.onStoppedTrackingBy(player);
+    public void stopSeenByPlayer(ServerPlayer player) {
+        super.stopSeenByPlayer(player);
         this.bossBar.removePlayer(player);
-        CustomBossBarSync.remove(player, this.bossBar.getUuid());
+        CustomBossBarSync.remove(player, this.bossBar.getId());
     }
     @Override
-    protected void mobTick(ServerWorld world) {
-        super.mobTick(world);
+    protected void customServerAiStep(ServerLevel world) {
+        super.customServerAiStep(world);
         updateBossBar();
     }
     @Override
-    public void readCustomData(ReadView nbt) {
-        super.readCustomData(nbt);
+    public void readAdditionalSaveData(ValueInput nbt) {
+        super.readAdditionalSaveData(nbt);
         if (this.hasCustomName()) {
             updateBossBar();
         }
     }
     @Override
-    public void writeCustomData(WriteView nbt) {
-        super.writeCustomData(nbt);
+    public void addAdditionalSaveData(ValueOutput nbt) {
+        super.addAdditionalSaveData(nbt);
     }
     @Override
     public void setHealth(float health) {
@@ -168,51 +167,51 @@ public class VindicatorGeneralEntity extends VindicatorEntity implements GeoEnti
     }
 
     private void updateBossBar() {
-        this.bossBar.setPercent(this.getHealth() / this.getMaxHealth());
+        this.bossBar.setProgress(this.getHealth() / this.getMaxHealth());
         this.bossBar.setName(this.getDisplayName().copy().append(" | " + (int) Math.ceil(this.getHealth()) + "/" + (int) this.getMaxHealth()));
     }
     @Override
-    public boolean isInAttackRange(LivingEntity entity) {
-        Box attackBox = this.getAttackBox().expand(1.25);
-        return attackBox.intersects(entity.getHitbox());
+    public boolean isWithinMeleeAttackRange(LivingEntity entity) {
+        AABB attackBox = this.getAttackBoundingBox().inflate(1.25);
+        return attackBox.intersects(entity.getBoundingBox());
     }
-    public boolean tryAttackBase(ServerWorld world, LivingEntity target) {
-        return tryAttackBaseDamage(world, target, (float)this.getAttributeValue(EntityAttributes.ATTACK_DAMAGE));
+    public boolean tryAttackBase(ServerLevel world, LivingEntity target) {
+        return tryAttackBaseDamage(world, target, (float)this.getAttributeValue(Attributes.ATTACK_DAMAGE));
     }
-    public boolean tryAttackBaseDamage(ServerWorld world, Entity target, float damage) {
+    public boolean tryAttackBaseDamage(ServerLevel world, Entity target, float damage) {
         if (!ModSkillEntityType.canSkill(this)) return false;
         float f = damage;
-        ItemStack itemStack = this.getWeaponStack();
+        ItemStack itemStack = this.getWeaponItem();
 
         EnchantmentUtil.addEnchantment(world, itemStack, Enchantments.BREACH, 1);
 
-        DamageSource damageSource = Optional.ofNullable(itemStack.getItem().getDamageSource(this)).orElse(this.getDamageSources().mobAttack(this));
-        f = EnchantmentHelper.getDamage(world, itemStack, target, damageSource, f);
-        f += itemStack.getItem().getBonusAttackDamage(target, f, damageSource);
-        boolean bl = target.damage(world, damageSource, f);
+        DamageSource damageSource = Optional.ofNullable(itemStack.getItem().getDamageSource(this)).orElse(this.damageSources().mobAttack(this));
+        f = EnchantmentHelper.modifyDamage(world, itemStack, target, damageSource, f);
+        f += itemStack.getItem().getAttackDamageBonus(target, f, damageSource);
+        boolean bl = target.hurtServer(world, damageSource, f);
         if (bl) {
             if (target instanceof LivingEntity livingEntity) {
                 CombatEffectUtil.addStackingArmorPiercing(livingEntity, this);
             }
-            float g = this.getAttackKnockbackAgainst(target, damageSource);
+            float g = this.getKnockback(target, damageSource);
             if (g > 0.0F && target instanceof LivingEntity livingEntity) {
-                livingEntity.takeKnockback(g * 0.5F, MathHelper.sin(this.getYaw() * (float) (Math.PI / 180.0)), -MathHelper.cos(this.getYaw() * (float) (Math.PI / 180.0)));
-                this.setVelocity(this.getVelocity().multiply(0.6, 1.0, 0.6));
+                livingEntity.knockback(g * 0.5F, Mth.sin(this.getYRot() * (float) (Math.PI / 180.0)), -Mth.cos(this.getYRot() * (float) (Math.PI / 180.0)));
+                this.setDeltaMovement(this.getDeltaMovement().multiply(0.6, 1.0, 0.6));
             }
 
             if (target instanceof LivingEntity livingEntity) {
-                itemStack.postHit(livingEntity, this);
+                itemStack.hurtEnemy(livingEntity, this);
             }
 
-            EnchantmentHelper.onTargetDamaged(world, target, damageSource);
-            this.onAttacking(target);
+            EnchantmentHelper.doPostAttackEffects(world, target, damageSource);
+            this.setLastHurtMob(target);
             this.playAttackSound();
         }
 
         return bl;
     }
     @Override
-    public boolean tryAttack(ServerWorld world, Entity target) {
+    public boolean doHurtTarget(ServerLevel world, Entity target) {
         if (this.canSpinChop()) {
             performSpinChop();
             return true;
@@ -240,48 +239,48 @@ public class VindicatorGeneralEntity extends VindicatorEntity implements GeoEnti
     }
     public void performAttack() {
         setHasSkill(true);
-        this.setAiDisabled(true);
+        this.setNoAi(true);
         setSkillCooldown(20);
         this.triggerAnim("skill_controller", "attack");
     }
     public void performSuperAttack() {
         setHasSkill(true);
-        this.setAiDisabled(true);
+        this.setNoAi(true);
         setSkillCooldown(20);
         setSuperAttackSkillCooldown(15 * 20);
         this.triggerAnim("skill_controller", "super_attack");
     }
     public void performMiniAttack() {
         setHasSkill(true);
-        this.setAiDisabled(true);
+        this.setNoAi(true);
         setSkillCooldown(20);
         setMiniAttackSkillCooldown(10 * 20);
         this.triggerAnim("skill_controller", "mini_attack");
     }
     public void performMaxAttack() {
         setHasSkill(true);
-        this.setAiDisabled(true);
+        this.setNoAi(true);
         setSkillCooldown(20);
         setMaxAttackSkillCooldown(30 * 20);
         this.triggerAnim("skill_controller", "max_attack");
     }
     public void performCollisionKill() {
         setHasSkill(true);
-        this.setAiDisabled(true);
+        this.setNoAi(true);
         setSkillCooldown(20);
         setCollisionKillCooldown(25 * 20);
         this.triggerAnim("skill_controller", "collision_kill");
     }
     public void performSpinChop() {
         setHasSkill(true);
-        this.setAiDisabled(true);
+        this.setNoAi(true);
         setSkillCooldown(20);
         setSpinChopCooldown(20 * 20);
         this.triggerAnim("skill_controller", "spin_chop");
     }
     public void performThrowAxe() {
         setHasSkill(true);
-        this.setAiDisabled(true);
+        this.setNoAi(true);
         setSkillCooldown(20);
         setThrowAxeCooldown(45 * 20);
         this.waitingForAxeRecovery = true;
@@ -327,69 +326,69 @@ public class VindicatorGeneralEntity extends VindicatorEntity implements GeoEnti
     }
     public boolean canSkill() {
         if (!ModSkillEntityType.canSkill(this)) return false;
-        return !this.getWorld().isClient() && !hasSkill() && getSkillCooldown() == 0 && this.getTarget() != null;
+        return !this.level().isClientSide() && !hasSkill() && getSkillCooldown() == 0 && this.getTarget() != null;
     }
     public boolean hasSkill() {
-        return getDataTracker().get(HAS_SKILL);
+        return getEntityData().get(HAS_SKILL);
     }
     public boolean isWaitingForAxeRecovery() {
         return this.waitingForAxeRecovery;
     }
     public int getSkillCooldown() {
-        return getDataTracker().get(SKILL_COOLDOWN);
+        return getEntityData().get(SKILL_COOLDOWN);
     }
     public int getSuperAttackSkillCooldown() {
-        return getDataTracker().get(SUPER_ATTACK_SKILL_COOLDOWN);
+        return getEntityData().get(SUPER_ATTACK_SKILL_COOLDOWN);
     }
     public int getMiniAttackSkillCooldown() {
-        return getDataTracker().get(MINI_ATTACK_SKILL_COOLDOWN);
+        return getEntityData().get(MINI_ATTACK_SKILL_COOLDOWN);
     }
     public int getMaxAttackSkillCooldown() {
-        return getDataTracker().get(MAX_ATTACK_SKILL_COOLDOWN);
+        return getEntityData().get(MAX_ATTACK_SKILL_COOLDOWN);
     }
     public int getCollisionKillCooldown() {
-        return getDataTracker().get(COLLISION_KILL_COOLDOWN);
+        return getEntityData().get(COLLISION_KILL_COOLDOWN);
     }
     public int getSpinChopCooldown() {
-        return getDataTracker().get(SPIN_CHOP_COOLDOWN);
+        return getEntityData().get(SPIN_CHOP_COOLDOWN);
     }
     public int getThrowAxeCooldown() {
-        return getDataTracker().get(THROW_AXE_COOLDOWN);
+        return getEntityData().get(THROW_AXE_COOLDOWN);
     }
     public void setHasSkill(boolean hasSkill) {
-        getDataTracker().set(HAS_SKILL, hasSkill);
+        getEntityData().set(HAS_SKILL, hasSkill);
     }
     public void setSkillCooldown(int cooldown) {
-        getDataTracker().set(SKILL_COOLDOWN, cooldown);
+        getEntityData().set(SKILL_COOLDOWN, cooldown);
     }
     public void setSuperAttackSkillCooldown(int cooldown) {
-        getDataTracker().set(SUPER_ATTACK_SKILL_COOLDOWN, cooldown);
+        getEntityData().set(SUPER_ATTACK_SKILL_COOLDOWN, cooldown);
     }
     public void setMiniAttackSkillCooldown(int cooldown) {
-        getDataTracker().set(MINI_ATTACK_SKILL_COOLDOWN, cooldown);
+        getEntityData().set(MINI_ATTACK_SKILL_COOLDOWN, cooldown);
     }
     public void setMaxAttackSkillCooldown(int cooldown) {
-        getDataTracker().set(MAX_ATTACK_SKILL_COOLDOWN, cooldown);
+        getEntityData().set(MAX_ATTACK_SKILL_COOLDOWN, cooldown);
     }
     public void setCollisionKillCooldown(int cooldown) {
-        getDataTracker().set(COLLISION_KILL_COOLDOWN, cooldown);
+        getEntityData().set(COLLISION_KILL_COOLDOWN, cooldown);
     }
     public void setSpinChopCooldown(int cooldown) {
-        getDataTracker().set(SPIN_CHOP_COOLDOWN, cooldown);
+        getEntityData().set(SPIN_CHOP_COOLDOWN, cooldown);
     }
     public void setThrowAxeCooldown(int cooldown) {
-        getDataTracker().set(THROW_AXE_COOLDOWN, cooldown);
+        getEntityData().set(THROW_AXE_COOLDOWN, cooldown);
     }
-    public static DefaultAttributeContainer.Builder addAttributes() {
-        return HostileEntity.createHostileAttributes()
-                .add(EntityAttributes.MAX_HEALTH, 30000.0D)
-                .add(EntityAttributes.MOVEMENT_SPEED, 0.3D)
-                .add(EntityAttributes.KNOCKBACK_RESISTANCE, 1.0D)
-                .add(EntityAttributes.ATTACK_DAMAGE, 80.0D)
-                .add(EntityAttributes.FOLLOW_RANGE, 24.0D)
-                .add(EntityAttributes.ARMOR, 30.0D)
-                .add(EntityAttributes.STEP_HEIGHT, 3.0D)
-                .add(EntityAttributes.ARMOR_TOUGHNESS, 20.0D);
+    public static AttributeSupplier.Builder addAttributes() {
+        return Monster.createMonsterAttributes()
+                .add(Attributes.MAX_HEALTH, 30000.0D)
+                .add(Attributes.MOVEMENT_SPEED, 0.3D)
+                .add(Attributes.KNOCKBACK_RESISTANCE, 1.0D)
+                .add(Attributes.ATTACK_DAMAGE, 80.0D)
+                .add(Attributes.FOLLOW_RANGE, 24.0D)
+                .add(Attributes.ARMOR, 30.0D)
+                .add(Attributes.STEP_HEIGHT, 3.0D)
+                .add(Attributes.ARMOR_TOUGHNESS, 20.0D);
     }
     protected static final RawAnimation IDEA_ANIM = RawAnimation.begin().thenPlay("walk2idle").thenLoop("idle");
     protected static final RawAnimation WALK_ANIM = RawAnimation.begin().thenPlay("idlk2walk").thenLoop("walk");
@@ -429,37 +428,37 @@ public class VindicatorGeneralEntity extends VindicatorEntity implements GeoEnti
                 .setCustomInstructionKeyframeHandler(s -> {
                     String instruction = s.keyframeData().getInstructions().replaceAll("\\s+", "");
                     if ("runAttack".equals(instruction)) {
-                        this.playSound(SoundEvents.ENTITY_PLAYER_ATTACK_SWEEP, 1.0F, 1.0F);
+                        this.playSound(SoundEvents.PLAYER_ATTACK_SWEEP, 1.0F, 1.0F);
                         ClientPlayNetworking.send(new SkillPayload(
                                 "attack", this.getId()
                         ));
                     }
                     if ("runSuperAttack".equals(instruction)) {
-                        this.playSound(SoundEvents.ENTITY_PLAYER_SMALL_FALL, 1.0F, 1.0F);
+                        this.playSound(SoundEvents.PLAYER_SMALL_FALL, 1.0F, 1.0F);
                         ClientPlayNetworking.send(new SkillPayload(
                                 "super_attack", this.getId()
                         ));
                     }
                     if ("runMiniAttack".equals(instruction)) {
-                        this.playSound(SoundEvents.ENTITY_PLAYER_SMALL_FALL, 1.0F, 1.0F);
+                        this.playSound(SoundEvents.PLAYER_SMALL_FALL, 1.0F, 1.0F);
                         ClientPlayNetworking.send(new SkillPayload(
                                 "mini_attack", this.getId()
                         ));
                     }
                     if ("runMaxAttack_1".equals(instruction)) {
-                        this.playSound(SoundEvents.ENTITY_PLAYER_SMALL_FALL, 1.0F, 1.0F);
+                        this.playSound(SoundEvents.PLAYER_SMALL_FALL, 1.0F, 1.0F);
                         ClientPlayNetworking.send(new SkillPayload(
                                 "max_attack_1", this.getId()
                         ));
                     }
                     if ("runMaxAttack_2".equals(instruction)) {
-                        this.playSound(SoundEvents.ENTITY_PLAYER_SMALL_FALL, 1.0F, 1.0F);
+                        this.playSound(SoundEvents.PLAYER_SMALL_FALL, 1.0F, 1.0F);
                         ClientPlayNetworking.send(new SkillPayload(
                                 "max_attack_2", this.getId()
                         ));
                     }
                     if ("runMaxAttack_3".equals(instruction)) {
-                        this.playSound(SoundEvents.ENTITY_PLAYER_SMALL_FALL, 1.0F, 1.0F);
+                        this.playSound(SoundEvents.PLAYER_SMALL_FALL, 1.0F, 1.0F);
                         ClientPlayNetworking.send(new SkillPayload(
                                 "max_attack_3", this.getId()
                         ));
@@ -492,7 +491,7 @@ public class VindicatorGeneralEntity extends VindicatorEntity implements GeoEnti
     }
 
     @Override
-    public boolean damage(ServerWorld world, DamageSource source, float amount) {
+    public boolean hurtServer(ServerLevel world, DamageSource source, float amount) {
         if (this.deathAnimationTicks > 0) {
             return false;
         }
@@ -500,12 +499,12 @@ public class VindicatorGeneralEntity extends VindicatorEntity implements GeoEnti
             startDeathAnimation();
             return true;
         }
-        return super.damage(world, source, amount);
+        return super.hurtServer(world, source, amount);
     }
 
     private void startDeathAnimation() {
         this.setHealth(1.0F);
-        this.setAiDisabled(true);
+        this.setNoAi(true);
         this.setHasSkill(true);
         this.waitingForAxeRecovery = false;
         this.axeRecoveryTimeout = 0;

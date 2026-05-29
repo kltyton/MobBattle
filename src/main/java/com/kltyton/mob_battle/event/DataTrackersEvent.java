@@ -1,18 +1,18 @@
 package com.kltyton.mob_battle.event;
 
-import net.minecraft.entity.data.DataTracker;
-import net.minecraft.entity.data.TrackedData;
-import net.minecraft.entity.data.TrackedDataHandlerRegistry;
-import net.minecraft.entity.mob.WardenEntity;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.world.entity.monster.warden.Warden;
+import net.minecraft.world.entity.player.Player;
 
 public class DataTrackersEvent {
-    public static final TrackedData<Boolean> FORCED_ATTACK_FLAG =
-            DataTracker.registerData(WardenEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
-    public static final TrackedData<Boolean> IS_GECKO_LIB_USING =
-            DataTracker.registerData(PlayerEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
-    public static final TrackedData<Boolean> CAN_MOVE =
-            DataTracker.registerData(PlayerEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
-    public static final TrackedData<Boolean> HAS_SKILL =
-            DataTracker.registerData(PlayerEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
+    public static final EntityDataAccessor<Boolean> FORCED_ATTACK_FLAG =
+            SynchedEntityData.defineId(Warden.class, EntityDataSerializers.BOOLEAN);
+    public static final EntityDataAccessor<Boolean> IS_GECKO_LIB_USING =
+            SynchedEntityData.defineId(Player.class, EntityDataSerializers.BOOLEAN);
+    public static final EntityDataAccessor<Boolean> CAN_MOVE =
+            SynchedEntityData.defineId(Player.class, EntityDataSerializers.BOOLEAN);
+    public static final EntityDataAccessor<Boolean> HAS_SKILL =
+            SynchedEntityData.defineId(Player.class, EntityDataSerializers.BOOLEAN);
 }

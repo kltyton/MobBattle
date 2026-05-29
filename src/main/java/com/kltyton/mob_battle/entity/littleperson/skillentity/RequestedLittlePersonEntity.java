@@ -7,20 +7,20 @@ import com.kltyton.mob_battle.entity.littleperson.skillentity.base.BaseSkillLitt
 import com.kltyton.mob_battle.network.packet.SkillPayload;
 import com.kltyton.mob_battle.utils.EntityUtil;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.attribute.DefaultAttributeContainer;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.mob.HostileEntity;
-import net.minecraft.registry.tag.DamageTypeTags;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import software.bernie.geckolib.animatable.processing.AnimationController;
 import software.bernie.geckolib.animatable.processing.AnimationTest;
@@ -73,7 +73,7 @@ public abstract class RequestedLittlePersonEntity extends BaseSkillLittlePersonE
             .triggerableAnim("die", DIE_ANIM)
             .setCustomInstructionKeyframeHandler(s -> dispatchKeyframe(s.keyframeData().getInstructions()));
 
-    protected RequestedLittlePersonEntity(EntityType<? extends HostileEntity> entityType, World world, int skillCount) {
+    protected RequestedLittlePersonEntity(EntityType<? extends Monster> entityType, Level world, int skillCount) {
         super(entityType, world, skillCount);
     }
 
@@ -118,7 +118,7 @@ public abstract class RequestedLittlePersonEntity extends BaseSkillLittlePersonE
             return PlayState.CONTINUE;
         }
         if (event.isMoving()) {
-            return this.isAttacking() ? event.setAndContinue(RUN_ANIM) : event.setAndContinue(WALK_ANIM);
+            return this.isAggressive() ? event.setAndContinue(RUN_ANIM) : event.setAndContinue(WALK_ANIM);
         }
         return event.setAndContinue(IDLE_ANIM);
     }
@@ -131,13 +131,13 @@ public abstract class RequestedLittlePersonEntity extends BaseSkillLittlePersonE
     }
 
     @Override
-    protected void mobTick(ServerWorld world) {
-        super.mobTick(world);
+    protected void customServerAiStep(ServerLevel world) {
+        super.customServerAiStep(world);
         LivingEntity target = this.getTarget();
-        if (target != null && isValidSummonTarget(target) && !this.hasSkill() && this.age % 10 == 0) {
+        if (target != null && isValidSummonTarget(target) && !this.hasSkill() && this.tickCount % 10 == 0) {
             double distance = this.distanceTo(target);
             if (distance <= this.autoSkillRange) {
-                this.tryAttack(world, target);
+                this.doHurtTarget(world, target);
             }
         }
     }
@@ -145,7 +145,7 @@ public abstract class RequestedLittlePersonEntity extends BaseSkillLittlePersonE
     @Override
     public void tick() {
         super.tick();
-        if (this.getWorld().isClient()) {
+        if (this.level().isClientSide()) {
             return;
         }
         if (this.lifeTicks > 0 && --this.lifeTicks <= 0) {
@@ -162,7 +162,7 @@ public abstract class RequestedLittlePersonEntity extends BaseSkillLittlePersonE
     }
 
     @Override
-    public boolean tryAttack(ServerWorld world, Entity target) {
+    public boolean doHurtTarget(ServerLevel world, Entity target) {
         if (!(target instanceof LivingEntity living) || !isValidSummonTarget(living) || !canSkill()) {
             return false;
         }
@@ -195,7 +195,7 @@ public abstract class RequestedLittlePersonEntity extends BaseSkillLittlePersonE
     protected void performNormalAttack() {
         this.setHasSkill(true);
         this.setNormalAttackKnockbackAllowed(true);
-        this.setAiDisabled(false);
+        this.setNoAi(false);
         this.triggerAnim("skill_controller", "attack");
     }
 
@@ -208,15 +208,15 @@ public abstract class RequestedLittlePersonEntity extends BaseSkillLittlePersonE
             }
             case "stop" -> {
                 this.setHasSkill(false);
-                this.setAiDisabled(false);
+                this.setNoAi(false);
                 return true;
             }
             case "stop_ai" -> {
-                this.setAiDisabled(true);
+                this.setNoAi(true);
                 return true;
             }
             case "start_ai" -> {
-                this.setAiDisabled(false);
+                this.setNoAi(false);
                 return true;
             }
             case "die" -> {
@@ -310,7 +310,7 @@ public abstract class RequestedLittlePersonEntity extends BaseSkillLittlePersonE
 
     protected void damageTarget(float physicalDamage, float magicDamage) {
         LivingEntity target = this.getTarget();
-        if (target == null || !isValidSummonTarget(target) || !(this.getWorld() instanceof ServerWorld)) {
+        if (target == null || !isValidSummonTarget(target) || !(this.level() instanceof ServerLevel)) {
             return;
         }
         damagePhysical(target, physicalDamage);
@@ -318,17 +318,17 @@ public abstract class RequestedLittlePersonEntity extends BaseSkillLittlePersonE
     }
 
     protected void damagePhysical(LivingEntity target, float amount) {
-        if (amount <= 0.0F || !isValidSummonTarget(target) || !(this.getWorld() instanceof ServerWorld world)) {
+        if (amount <= 0.0F || !isValidSummonTarget(target) || !(this.level() instanceof ServerLevel world)) {
             return;
         }
-        target.damage(world, this.getDamageSources().mobAttack(this), amount);
+        target.hurtServer(world, this.damageSources().mobAttack(this), amount);
     }
 
     protected void damageMagic(LivingEntity target, float amount) {
-        if (amount <= 0.0F || !isValidSummonTarget(target) || !(this.getWorld() instanceof ServerWorld world)) {
+        if (amount <= 0.0F || !isValidSummonTarget(target) || !(this.level() instanceof ServerLevel world)) {
             return;
         }
-        target.damage(world, this.getDamageSources().indirectMagic(this, this), amount);
+        target.hurtServer(world, this.damageSources().indirectMagic(this, this), amount);
     }
 
     protected void areaDamage(double radius, float physicalDamage, float magicDamage) {
@@ -359,23 +359,23 @@ public abstract class RequestedLittlePersonEntity extends BaseSkillLittlePersonE
     }
 
     protected List<LivingEntity> getForwardBoxTargets(double length, double width, double height) {
-        Vec3d forward = this.getRotationVec(1.0F);
-        Vec3d horizontal = new Vec3d(forward.x, 0.0D, forward.z);
-        if (horizontal.lengthSquared() < 1.0E-4D) {
-            horizontal = Vec3d.fromPolar(0.0F, this.getYaw());
+        Vec3 forward = this.getViewVector(1.0F);
+        Vec3 horizontal = new Vec3(forward.x, 0.0D, forward.z);
+        if (horizontal.lengthSqr() < 1.0E-4D) {
+            horizontal = Vec3.directionFromRotation(0.0F, this.getYRot());
         }
         horizontal = horizontal.normalize();
-        Vec3d center = this.getPos().add(horizontal.multiply(length * 0.5D + 0.5D)).add(0.0D, height * 0.5D, 0.0D);
-        Box box = new Box(center.x - width * 0.5D, center.y - height * 0.5D, center.z - width * 0.5D,
+        Vec3 center = this.position().add(horizontal.scale(length * 0.5D + 0.5D)).add(0.0D, height * 0.5D, 0.0D);
+        AABB box = new AABB(center.x - width * 0.5D, center.y - height * 0.5D, center.z - width * 0.5D,
                 center.x + width * 0.5D, center.y + height * 0.5D, center.z + width * 0.5D);
-        return new ArrayList<>(this.getWorld().getEntitiesByClass(LivingEntity.class, box,
+        return new ArrayList<>(this.level().getEntitiesOfClass(LivingEntity.class, box,
                 this::isValidSummonTarget));
     }
 
     protected void pullTargetToFront(LivingEntity target, double distance) {
-        Vec3d forward = this.getRotationVec(1.0F).normalize();
-        Vec3d pos = this.getPos().add(forward.multiply(distance));
-        target.requestTeleport(pos.x, this.getY(), pos.z);
+        Vec3 forward = this.getViewVector(1.0F).normalize();
+        Vec3 pos = this.position().add(forward.scale(distance));
+        target.teleportTo(pos.x, this.getY(), pos.z);
     }
 
     protected void pullNearbyTargets(double radius, double distance) {
@@ -383,11 +383,11 @@ public abstract class RequestedLittlePersonEntity extends BaseSkillLittlePersonE
             if (!isValidSummonTarget(target)) {
                 continue;
             }
-            Vec3d direction = this.getPos().subtract(target.getPos());
-            Vec3d horizontal = new Vec3d(direction.x, 0.0D, direction.z);
-            if (horizontal.lengthSquared() > 1.0E-4D) {
-                target.addVelocity(horizontal.normalize().multiply(distance * 0.35D).x, 0.12D, horizontal.normalize().multiply(distance * 0.35D).z);
-                target.velocityModified = true;
+            Vec3 direction = this.position().subtract(target.position());
+            Vec3 horizontal = new Vec3(direction.x, 0.0D, direction.z);
+            if (horizontal.lengthSqr() > 1.0E-4D) {
+                target.push(horizontal.normalize().scale(distance * 0.35D).x, 0.12D, horizontal.normalize().scale(distance * 0.35D).z);
+                target.hurtMarked = true;
             }
         }
     }
@@ -396,17 +396,17 @@ public abstract class RequestedLittlePersonEntity extends BaseSkillLittlePersonE
         return EntityUtil.getNearbyEntity(this, LivingEntity.class, radius, false, EntityUtil.TeamFilter.EXCLUDE_TEAM)
                 .stream()
                 .filter(this::isValidSummonTarget)
-                .sorted(Comparator.comparingDouble(this::squaredDistanceTo))
+                .sorted(Comparator.comparingDouble(this::distanceToSqr))
                 .limit(limit)
                 .toList();
     }
 
     protected void addPiercing(LivingEntity target, int seconds, int amplifier) {
-        target.addStatusEffect(new StatusEffectInstance(ModEffects.ARMOR_PIERCING_ENTRY, seconds * 20, amplifier), this);
+        target.addEffect(new MobEffectInstance(ModEffects.ARMOR_PIERCING_ENTRY, seconds * 20, amplifier), this);
     }
 
     protected void addMagicPiercing(LivingEntity target, int seconds, int amplifier) {
-        target.addStatusEffect(new StatusEffectInstance(ModEffects.VOID_ARMOR_PIERCING_ENTRY, seconds * 20, amplifier), this);
+        target.addEffect(new MobEffectInstance(ModEffects.VOID_ARMOR_PIERCING_ENTRY, seconds * 20, amplifier), this);
     }
 
     @Override
@@ -420,28 +420,28 @@ public abstract class RequestedLittlePersonEntity extends BaseSkillLittlePersonE
         if (this.random.nextInt(100) >= this.blockChance) {
             return false;
         }
-        this.playSound(SoundEvents.ITEM_SHIELD_BLOCK.value(), 1.0F, 1.0F);
+        this.playSound(SoundEvents.SHIELD_BLOCK.value(), 1.0F, 1.0F);
         this.triggerAnim("attack_controller", this.blockAnimation);
         return true;
     }
 
     @Override
-    public boolean damage(ServerWorld world, DamageSource source, float amount) {
+    public boolean hurtServer(ServerLevel world, DamageSource source, float amount) {
         if (this.skillDamageReductionTicks > 0) {
             amount *= 0.5F;
         }
-        return super.damage(world, source, amount);
+        return super.hurtServer(world, source, amount);
     }
 
     protected boolean isEnvironmentDamage(DamageSource source) {
-        return source.isIn(DamageTypeTags.IS_FALL)
-                || source.isIn(DamageTypeTags.IS_FIRE)
-                || source.isIn(DamageTypeTags.IS_EXPLOSION)
-                || source.isIn(DamageTypeTags.IS_DROWNING)
-                || source.isIn(DamageTypeTags.IS_FREEZING)
-                || source.isIn(DamageTypeTags.IS_LIGHTNING)
-                || source.isIn(DamageTypeTags.BURN_FROM_STEPPING)
-                || source.isIn(DamageTypeTags.WITCH_RESISTANT_TO);
+        return source.is(DamageTypeTags.IS_FALL)
+                || source.is(DamageTypeTags.IS_FIRE)
+                || source.is(DamageTypeTags.IS_EXPLOSION)
+                || source.is(DamageTypeTags.IS_DROWNING)
+                || source.is(DamageTypeTags.IS_FREEZING)
+                || source.is(DamageTypeTags.IS_LIGHTNING)
+                || source.is(DamageTypeTags.BURN_FROM_STEPPING)
+                || source.is(DamageTypeTags.WITCH_RESISTANT_TO);
     }
 
     protected void startMovingHitbox(int ticks, float damage) {
@@ -449,12 +449,12 @@ public abstract class RequestedLittlePersonEntity extends BaseSkillLittlePersonE
         this.movingDamage = damage;
     }
 
-    protected static DefaultAttributeContainer.Builder createRequestedAttributes(double health, double attackDamage, double speed, double followRange, double damageReduction) {
+    protected static AttributeSupplier.Builder createRequestedAttributes(double health, double attackDamage, double speed, double followRange, double damageReduction) {
         return BaseSkillLittlePersonEntity.createAttributes()
-                .add(EntityAttributes.MAX_HEALTH, health)
-                .add(EntityAttributes.ATTACK_DAMAGE, attackDamage)
-                .add(EntityAttributes.MOVEMENT_SPEED, speed)
-                .add(EntityAttributes.FOLLOW_RANGE, followRange)
+                .add(Attributes.MAX_HEALTH, health)
+                .add(Attributes.ATTACK_DAMAGE, attackDamage)
+                .add(Attributes.MOVEMENT_SPEED, speed)
+                .add(Attributes.FOLLOW_RANGE, followRange)
                 .add(ModEntityAttributes.DAMAGE_REDUCTION, damageReduction);
     }
 }

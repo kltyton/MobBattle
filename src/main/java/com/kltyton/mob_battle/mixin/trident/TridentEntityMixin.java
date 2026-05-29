@@ -1,21 +1,21 @@
 package com.kltyton.mob_battle.mixin.trident;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.projectile.ProjectileEntity;
-import net.minecraft.entity.projectile.TridentEntity;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.entity.projectile.ThrownTrident;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
-@Mixin(TridentEntity.class)
+@Mixin(ThrownTrident.class)
 public abstract class TridentEntityMixin {
-    @ModifyVariable(method = "onEntityHit", at = @At("STORE"), ordinal = 0)
+    @ModifyVariable(method = "onHitEntity", at = @At("STORE"), ordinal = 0)
     private float useOwnerMeleeTridentDamage(float damage) {
-        Entity owner = ((ProjectileEntity) (Object) this).getOwner();
+        Entity owner = ((Projectile) (Object) this).getOwner();
         if (owner instanceof LivingEntity living) {
-            return Math.max(damage, (float) living.getAttributeValue(EntityAttributes.ATTACK_DAMAGE));
+            return Math.max(damage, (float) living.getAttributeValue(Attributes.ATTACK_DAMAGE));
         }
         return damage + 1.0F;
     }

@@ -2,14 +2,6 @@ package com.kltyton.mob_battle.mixin;
 
 import com.kltyton.mob_battle.entity.highbird.HighbirdAndEggEntity;
 import com.kltyton.mob_battle.entity.highbird.egg.HighbirdSBEntity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.ai.goal.ActiveTargetGoal;
-import net.minecraft.entity.ai.goal.TrackTargetGoal;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.entity.passive.TameableEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.Box;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -17,32 +9,40 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.List;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.TamableAnimal;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
+import net.minecraft.world.entity.ai.goal.target.TargetGoal;
+import net.minecraft.world.phys.AABB;
 
-@Mixin(ActiveTargetGoal.class)
-public abstract class ActiveTargetGoalMixin extends TrackTargetGoal {
-    public ActiveTargetGoalMixin(MobEntity mob, boolean checkVisibility) {
+@Mixin(NearestAttackableTargetGoal.class)
+public abstract class ActiveTargetGoalMixin extends TargetGoal {
+    public ActiveTargetGoalMixin(Mob mob, boolean checkVisibility) {
         super(mob, checkVisibility);
     }
     @Shadow
-    protected LivingEntity targetEntity;
+    protected LivingEntity target;
 
     @Shadow
-    protected abstract Box getSearchBox(double distance);
+    protected abstract AABB getTargetSearchArea(double distance);
 
-    @Inject(method = "findClosestTarget", at = @At("TAIL"))
+    @Inject(method = "findTarget", at = @At("TAIL"))
     private void injectHighbirdBabyTarget(CallbackInfo ci) {
         // 如果已经找到目标，则跳过
-        if (targetEntity != null) return;
+        if (target != null) return;
 
-        ServerWorld world = (ServerWorld) mob.getWorld();
-        Box searchBox = getSearchBox(mob.getAttributeValue(EntityAttributes.FOLLOW_RANGE));
+        ServerLevel world = (ServerLevel) mob.level();
+        AABB searchBox = getTargetSearchArea(mob.getAttributeValue(Attributes.FOLLOW_RANGE));
         if (!(mob instanceof HighbirdAndEggEntity)) {
-            List<HighbirdAndEggEntity> babies = world.getEntitiesByClass(
+            List<HighbirdAndEggEntity> babies = world.getEntitiesOfClass(
                     HighbirdAndEggEntity.class,
                     searchBox,
                     baby -> {
-                        if (mob instanceof TameableEntity tameable) {
-                            return baby.isAlive() && baby instanceof HighbirdSBEntity && !tameable.isTamed();
+                        if (mob instanceof TamableAnimal tameable) {
+                            return baby.isAlive() && baby instanceof HighbirdSBEntity && !tameable.isTame();
                         } else {
                             return baby != mob && baby.isAlive() && baby instanceof HighbirdSBEntity;
                         }
@@ -51,11 +51,11 @@ public abstract class ActiveTargetGoalMixin extends TrackTargetGoal {
             if (!babies.isEmpty()) {
                 // 找到最近的 HighbirdBabyEntity
                 babies.sort((a, b) -> {
-                    double distA = mob.squaredDistanceTo(a);
-                    double distB = mob.squaredDistanceTo(b);
+                    double distA = mob.distanceToSqr(a);
+                    double distB = mob.distanceToSqr(b);
                     return Double.compare(distA, distB);
                 });
-                this.targetEntity = babies.getFirst();
+                this.target = babies.getFirst();
             }
         }
     }

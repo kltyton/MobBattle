@@ -1,67 +1,71 @@
 package com.kltyton.mob_battle.entity.witherskeletonking.skill;
 
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.model.*;
-import net.minecraft.client.render.OverlayTexture;
-import net.minecraft.client.render.VertexConsumer;
-import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.entity.EntityRenderer;
-import net.minecraft.client.render.entity.EntityRendererFactory;
-import net.minecraft.client.render.entity.model.EntityModelLayers;
-import net.minecraft.client.render.entity.model.EntityModelPartNames;
-import net.minecraft.client.render.entity.model.SkullEntityModel;
-import net.minecraft.client.render.entity.state.WitherSkullEntityRenderState;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.entity.projectile.WitherSkullEntity;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
+
+import net.minecraft.client.model.SkullModel;
+import net.minecraft.client.model.geom.ModelLayers;
+import net.minecraft.client.model.geom.PartNames;
+import net.minecraft.client.model.geom.PartPose;
+import net.minecraft.client.model.geom.builders.CubeListBuilder;
+import net.minecraft.client.model.geom.builders.LayerDefinition;
+import net.minecraft.client.model.geom.builders.MeshDefinition;
+import net.minecraft.client.model.geom.builders.PartDefinition;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.entity.EntityRenderer;
+import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.client.renderer.entity.state.WitherSkullRenderState;
+import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.projectile.WitherSkull;
 
 @Environment(EnvType.CLIENT)
-public class WitherSkullBulletEntityRenderer extends EntityRenderer<WitherSkullBulletEntity, WitherSkullEntityRenderState> {
-    private static final Identifier INVULNERABLE_TEXTURE = Identifier.ofVanilla("textures/entity/wither/wither_invulnerable.png");
-    private static final Identifier TEXTURE = Identifier.ofVanilla("textures/entity/wither/wither.png");
-    private final SkullEntityModel model;
+public class WitherSkullBulletEntityRenderer extends EntityRenderer<WitherSkullBulletEntity, WitherSkullRenderState> {
+    private static final ResourceLocation INVULNERABLE_TEXTURE = ResourceLocation.withDefaultNamespace("textures/entity/wither/wither_invulnerable.png");
+    private static final ResourceLocation TEXTURE = ResourceLocation.withDefaultNamespace("textures/entity/wither/wither.png");
+    private final SkullModel model;
 
-    public WitherSkullBulletEntityRenderer(EntityRendererFactory.Context context) {
+    public WitherSkullBulletEntityRenderer(EntityRendererProvider.Context context) {
         super(context);
-        this.model = new SkullEntityModel(context.getPart(EntityModelLayers.WITHER_SKULL));
+        this.model = new SkullModel(context.bakeLayer(ModelLayers.WITHER_SKULL));
     }
 
-    public static TexturedModelData getTexturedModelData() {
-        ModelData modelData = new ModelData();
-        ModelPartData modelPartData = modelData.getRoot();
-        modelPartData.addChild(EntityModelPartNames.HEAD, ModelPartBuilder.create().uv(0, 35).cuboid(-4.0F, -8.0F, -4.0F, 8.0F, 8.0F, 8.0F), ModelTransform.NONE);
-        return TexturedModelData.of(modelData, 64, 64);
+    public static LayerDefinition getTexturedModelData() {
+        MeshDefinition modelData = new MeshDefinition();
+        PartDefinition modelPartData = modelData.getRoot();
+        modelPartData.addOrReplaceChild(PartNames.HEAD, CubeListBuilder.create().texOffs(0, 35).addBox(-4.0F, -8.0F, -4.0F, 8.0F, 8.0F, 8.0F), PartPose.ZERO);
+        return LayerDefinition.create(modelData, 64, 64);
     }
 
-    protected int getBlockLight(WitherSkullEntity witherSkullEntity, BlockPos blockPos) {
+    protected int getBlockLight(WitherSkull witherSkullEntity, BlockPos blockPos) {
         return 15;
     }
 
-    public void render(WitherSkullEntityRenderState witherSkullEntityRenderState, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i) {
-        matrixStack.push();
+    public void render(WitherSkullRenderState witherSkullEntityRenderState, PoseStack matrixStack, MultiBufferSource vertexConsumerProvider, int i) {
+        matrixStack.pushPose();
         matrixStack.scale(-1.0F, -1.0F, 1.0F);
-        VertexConsumer vertexConsumer = vertexConsumerProvider.getBuffer(this.model.getLayer(this.getTexture(witherSkullEntityRenderState)));
-        this.model.setHeadRotation(0.0F, witherSkullEntityRenderState.yaw, witherSkullEntityRenderState.pitch);
-        this.model.render(matrixStack, vertexConsumer, i, OverlayTexture.DEFAULT_UV);
-        matrixStack.pop();
+        VertexConsumer vertexConsumer = vertexConsumerProvider.getBuffer(this.model.renderType(this.getTextureLocation(witherSkullEntityRenderState)));
+        this.model.setupAnim(0.0F, witherSkullEntityRenderState.yRot, witherSkullEntityRenderState.xRot);
+        this.model.renderToBuffer(matrixStack, vertexConsumer, i, OverlayTexture.NO_OVERLAY);
+        matrixStack.popPose();
         super.render(witherSkullEntityRenderState, matrixStack, vertexConsumerProvider, i);
     }
 
-    private Identifier getTexture(WitherSkullEntityRenderState state) {
-        return state.charged ? INVULNERABLE_TEXTURE : TEXTURE;
+    private ResourceLocation getTextureLocation(WitherSkullRenderState state) {
+        return state.isDangerous ? INVULNERABLE_TEXTURE : TEXTURE;
     }
 
-    public WitherSkullEntityRenderState createRenderState() {
-        return new WitherSkullEntityRenderState();
+    public WitherSkullRenderState createRenderState() {
+        return new WitherSkullRenderState();
     }
 
-    public void updateRenderState(WitherSkullBulletEntity witherSkullEntity, WitherSkullEntityRenderState witherSkullEntityRenderState, float f) {
-        super.updateRenderState(witherSkullEntity, witherSkullEntityRenderState, f);
-        witherSkullEntityRenderState.charged = false;
-        witherSkullEntityRenderState.yaw = witherSkullEntity.getLerpedYaw(f);
-        witherSkullEntityRenderState.pitch = witherSkullEntity.getLerpedPitch(f);
+    public void extractRenderState(WitherSkullBulletEntity witherSkullEntity, WitherSkullRenderState witherSkullEntityRenderState, float f) {
+        super.extractRenderState(witherSkullEntity, witherSkullEntityRenderState, f);
+        witherSkullEntityRenderState.isDangerous = false;
+        witherSkullEntityRenderState.yRot = witherSkullEntity.getYRot(f);
+        witherSkullEntityRenderState.xRot = witherSkullEntity.getXRot(f);
     }
 }
-

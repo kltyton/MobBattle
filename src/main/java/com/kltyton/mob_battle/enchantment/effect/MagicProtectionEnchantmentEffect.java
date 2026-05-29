@@ -2,26 +2,26 @@ package com.kltyton.mob_battle.enchantment.effect;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.enchantment.EnchantmentEffectContext;
-import net.minecraft.enchantment.EnchantmentLevelBasedValue;
-import net.minecraft.enchantment.effect.EnchantmentEntityEffect;
-import net.minecraft.entity.Entity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.item.enchantment.EnchantedItemInUse;
+import net.minecraft.world.item.enchantment.LevelBasedValue;
+import net.minecraft.world.item.enchantment.effects.EnchantmentEntityEffect;
+import net.minecraft.world.phys.Vec3;
 
-public record MagicProtectionEnchantmentEffect(EnchantmentLevelBasedValue amount) implements EnchantmentEntityEffect {
+public record MagicProtectionEnchantmentEffect(LevelBasedValue amount) implements EnchantmentEntityEffect {
     public static final MapCodec<MagicProtectionEnchantmentEffect> CODEC = RecordCodecBuilder.mapCodec(instance ->
             instance.group(
-                    EnchantmentLevelBasedValue.CODEC.fieldOf("amount").forGetter(MagicProtectionEnchantmentEffect::amount)
+                    LevelBasedValue.CODEC.fieldOf("amount").forGetter(MagicProtectionEnchantmentEffect::amount)
             ).apply(instance, MagicProtectionEnchantmentEffect::new)
     );
 
     @Override
-    public void apply(ServerWorld world, int level, EnchantmentEffectContext context, Entity target, Vec3d pos) {
+    public void apply(ServerLevel world, int level, EnchantedItemInUse context, Entity target, Vec3 pos) {
     }
 
     @Override
-    public MapCodec<? extends EnchantmentEntityEffect> getCodec() {
+    public MapCodec<? extends EnchantmentEntityEffect> codec() {
         return CODEC;
     }
 }

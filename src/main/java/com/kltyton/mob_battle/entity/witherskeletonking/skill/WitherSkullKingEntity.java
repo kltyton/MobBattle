@@ -2,32 +2,32 @@ package com.kltyton.mob_battle.entity.witherskeletonking.skill;
 
 import com.kltyton.mob_battle.effect.ModEffects;
 import com.kltyton.mob_battle.utils.EntityUtil;
-import net.minecraft.block.BlockState;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.ProjectileDeflection;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.projectile.ProjectileEntity;
-import net.minecraft.entity.projectile.WitherSkullEntity;
-import net.minecraft.fluid.FluidState;
-import net.minecraft.registry.tag.EntityTypeTags;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.EntityHitResult;
-import net.minecraft.util.hit.HitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.BlockView;
-import net.minecraft.world.World;
-import net.minecraft.world.event.GameEvent;
-import net.minecraft.world.explosion.Explosion;
-import net.minecraft.world.explosion.ExplosionBehavior;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.EntityTypeTags;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.entity.projectile.ProjectileDeflection;
+import net.minecraft.world.entity.projectile.WitherSkull;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Explosion;
+import net.minecraft.world.level.ExplosionDamageCalculator;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.HitResult;
 
-public class WitherSkullKingEntity extends WitherSkullEntity {
+public class WitherSkullKingEntity extends WitherSkull {
     public float power;
-    public WitherSkullKingEntity(EntityType<? extends WitherSkullEntity> entityType, World world, float power) {
+    public WitherSkullKingEntity(EntityType<? extends WitherSkull> entityType, Level world, float power) {
         super(entityType, world);
         this.power = power;
     }
@@ -37,42 +37,42 @@ public class WitherSkullKingEntity extends WitherSkullEntity {
         super.tick();                  // 先执行原版运动、碰撞检测
 
         // 如果已离开主人 25 格，直接消失
-        if (!this.getWorld().isClient) {
+        if (!this.level().isClientSide) {
             Entity owner = this.getOwner();
-            if (owner != null && this.squaredDistanceTo(owner) > 25.0 * 25.0) {
+            if (owner != null && this.distanceToSqr(owner) > 25.0 * 25.0) {
                 this.discard();
             }
         }
     }
     @Override
-    public float getEffectiveExplosionResistance(Explosion explosion, BlockView world, BlockPos pos, BlockState blockState, FluidState fluidState, float max) {
+    public float getBlockExplosionResistance(Explosion explosion, BlockGetter world, BlockPos pos, BlockState blockState, FluidState fluidState, float max) {
         return max;
     }
     @Override
-    protected void onEntityHit(EntityHitResult entityHitResult) {
-        if (this.getWorld() instanceof ServerWorld serverWorld) {
+    protected void onHitEntity(EntityHitResult entityHitResult) {
+        if (this.level() instanceof ServerLevel serverWorld) {
             Entity var8 = entityHitResult.getEntity();
             boolean bl;
             if (var8 instanceof LivingEntity living && !EntityUtil.isValidSummonCombatTarget(this, this.getOwner(), living)) {
                 return;
             }
             if (this.getOwner() instanceof LivingEntity livingEntity) {
-                DamageSource damageSource = this.getDamageSources().witherSkull(this, livingEntity);
-                bl = var8.damage(serverWorld, damageSource, power);
-                var8.damage(serverWorld, this.getDamageSources().explosion(this, livingEntity), 160F);
+                DamageSource damageSource = this.damageSources().witherSkull(this, livingEntity);
+                bl = var8.hurtServer(serverWorld, damageSource, power);
+                var8.hurtServer(serverWorld, this.damageSources().explosion(this, livingEntity), 160F);
                 if (bl) {
                     if (var8.isAlive()) {
-                        EnchantmentHelper.onTargetDamaged(serverWorld, var8, damageSource);
+                        EnchantmentHelper.doPostAttackEffects(serverWorld, var8, damageSource);
                     } else {
                         livingEntity.heal(5.0F);
                     }
                 }
             } else {
-                bl = var8.damage(serverWorld, this.getDamageSources().magic(), power);
+                bl = var8.hurtServer(serverWorld, this.damageSources().magic(), power);
             }
 
             if (bl && var8 instanceof LivingEntity livingEntityx) {
-                livingEntityx.addStatusEffect(new StatusEffectInstance(ModEffects.DECAY_ENTRY, 3 * 20, 0), this.getEffectCause());
+                livingEntityx.addEffect(new MobEffectInstance(ModEffects.DECAY_ENTRY, 3 * 20, 0), this.getEffectSource());
             }
         }
     }
@@ -84,34 +84,34 @@ public class WitherSkullKingEntity extends WitherSkullEntity {
             if (entity instanceof LivingEntity living && !EntityUtil.isValidSummonCombatTarget(this, this.getOwner(), living)) {
                 return;
             }
-            if (entity.getType().isIn(EntityTypeTags.REDIRECTABLE_PROJECTILE) && entity instanceof ProjectileEntity projectileEntity) {
-                projectileEntity.deflect(ProjectileDeflection.REDIRECTED, this.getOwner(), this.getOwner(), true);
+            if (entity.getType().is(EntityTypeTags.REDIRECTABLE_PROJECTILE) && entity instanceof Projectile projectileEntity) {
+                projectileEntity.deflect(ProjectileDeflection.AIM_DEFLECT, this.getOwner(), this.getOwner(), true);
             }
 
-            this.onEntityHit(entityHitResult);
-            this.getWorld().emitGameEvent(GameEvent.PROJECTILE_LAND, hitResult.getPos(), GameEvent.Emitter.of(this, null));
+            this.onHitEntity(entityHitResult);
+            this.level().gameEvent(GameEvent.PROJECTILE_LAND, hitResult.getLocation(), GameEvent.Context.of(this, null));
         } else if (type == HitResult.Type.BLOCK) {
             BlockHitResult blockHitResult = (BlockHitResult)hitResult;
-            this.onBlockHit(blockHitResult);
+            this.onHitBlock(blockHitResult);
             BlockPos blockPos = blockHitResult.getBlockPos();
-            this.getWorld().emitGameEvent(GameEvent.PROJECTILE_LAND, blockPos, GameEvent.Emitter.of(this, this.getWorld().getBlockState(blockPos)));
+            this.level().gameEvent(GameEvent.PROJECTILE_LAND, blockPos, GameEvent.Context.of(this, this.level().getBlockState(blockPos)));
         }
     }
     @Override
-    protected void onCollision(HitResult hitResult) {
+    protected void onHit(HitResult hitResult) {
         if (hitResult instanceof EntityHitResult entityHitResult
                 && entityHitResult.getEntity() instanceof LivingEntity living
                 && !EntityUtil.isValidSummonCombatTarget(this, this.getOwner(), living)) {
             return;
         }
         this.onCollisionBase(hitResult);
-        if (!this.getWorld().isClient) {
-            this.getWorld().createExplosion(
+        if (!this.level().isClientSide) {
+            this.level().explode(
                     this,
-                    Explosion.createDamageSource(this.getWorld(), this),
-                    new ExplosionBehavior() {
+                    Explosion.getDefaultDamageSource(this.level(), this),
+                    new ExplosionDamageCalculator() {
                         @Override
-                        public boolean canDestroyBlock(Explosion explosion, BlockView world, BlockPos pos, BlockState state, float power) {
+                        public boolean shouldBlockExplode(Explosion explosion, BlockGetter world, BlockPos pos, BlockState state, float power) {
                             return false;
                         }
                     },
@@ -120,7 +120,7 @@ public class WitherSkullKingEntity extends WitherSkullEntity {
                     this.getZ(),
                     1.0F,
                     false,
-                    World.ExplosionSourceType.MOB
+                    Level.ExplosionInteraction.MOB
             );
 
             this.discard();

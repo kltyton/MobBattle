@@ -4,24 +4,29 @@ import com.kltyton.mob_battle.entity.ModSkillEntityType;
 import com.kltyton.mob_battle.entity.littleperson.LittlePersonEntity;
 import com.kltyton.mob_battle.entity.littleperson.archer.littlearrow.LittleArrowEntity;
 import com.kltyton.mob_battle.entity.villager.warriorvillager.WarriorVillager;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.ai.RangedAttackMob;
-import net.minecraft.entity.ai.goal.*;
-import net.minecraft.entity.attribute.DefaultAttributeContainer;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.mob.HostileEntity;
-import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.entity.mob.Monster;
-import net.minecraft.entity.passive.GolemEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundEvent;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.world.World;
+
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
+import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
+import net.minecraft.world.entity.ai.goal.RangedAttackGoal;
+import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
+import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
+import net.minecraft.world.entity.animal.AbstractGolem;
+import net.minecraft.world.entity.monster.Enemy;
+import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.entity.monster.RangedAttackMob;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Level;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.animatable.manager.AnimatableManager;
 import software.bernie.geckolib.animatable.processing.AnimationController;
@@ -30,28 +35,28 @@ import software.bernie.geckolib.animation.PlayState;
 import software.bernie.geckolib.animation.RawAnimation;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
-public class LittlePersonArcherEntity extends HostileEntity implements LittlePersonEntity, RangedAttackMob {
+public class LittlePersonArcherEntity extends Monster implements LittlePersonEntity, RangedAttackMob {
 
-    public LittlePersonArcherEntity(EntityType<? extends HostileEntity> entityType, World world) {
+    public LittlePersonArcherEntity(EntityType<? extends Monster> entityType, Level world) {
         super(entityType, world);
     }
     @Override
-    protected void initGoals() {
-        this.goalSelector.add(2, new ProjectileAttackGoal(this, 1.0D, 20, 6.0F));
-        this.goalSelector.add(7, new WanderAroundFarGoal(this, 1.0)); // 添加远距离游荡目标
-        this.goalSelector.add(8, new LookAtEntityGoal(this, PlayerEntity.class, 8.0F)); // 添加看向玩家的目标
-        this.goalSelector.add(8, new LookAroundGoal(this)); // 添加环顾四周的目标
-        this.targetSelector.add(3, new ActiveTargetGoal<>(this, GolemEntity.class, true)); // 添加攻击傀儡目标
-        this.targetSelector.add(2, new ActiveTargetGoal<>(this, WarriorVillager.class, true));
-        this.targetSelector.add(2, new ActiveTargetGoal<>(this, PlayerEntity.class, true)); // 添加主动攻击玩家目标
-        this.targetSelector.add(3, new ActiveTargetGoal<>(this, MobEntity.class, 5, false, false, (entity, world) -> entity instanceof Monster && !(entity instanceof LittlePersonEntity)));
+    protected void registerGoals() {
+        this.goalSelector.addGoal(2, new RangedAttackGoal(this, 1.0D, 20, 6.0F));
+        this.goalSelector.addGoal(7, new WaterAvoidingRandomStrollGoal(this, 1.0)); // 添加远距离游荡目标
+        this.goalSelector.addGoal(8, new LookAtPlayerGoal(this, Player.class, 8.0F)); // 添加看向玩家的目标
+        this.goalSelector.addGoal(8, new RandomLookAroundGoal(this)); // 添加环顾四周的目标
+        this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, AbstractGolem.class, true)); // 添加攻击傀儡目标
+        this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, WarriorVillager.class, true));
+        this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, true)); // 添加主动攻击玩家目标
+        this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, Mob.class, 5, false, false, (entity, world) -> entity instanceof Enemy && !(entity instanceof LittlePersonEntity)));
     }
-    public static DefaultAttributeContainer.Builder createLittlePersonArcherAttributes() {
+    public static AttributeSupplier.Builder createLittlePersonArcherAttributes() {
         return LittlePersonEntity.createLittlePersonAttributes()
-                .add(EntityAttributes.MAX_HEALTH, 10.0)
-                .add(EntityAttributes.FOLLOW_RANGE, 40.0)
-                .add(EntityAttributes.MOVEMENT_SPEED, 0.4)
-                .add(EntityAttributes.ATTACK_DAMAGE, 15.0);
+                .add(Attributes.MAX_HEALTH, 10.0)
+                .add(Attributes.FOLLOW_RANGE, 40.0)
+                .add(Attributes.MOVEMENT_SPEED, 0.4)
+                .add(Attributes.ATTACK_DAMAGE, 15.0);
     }
     @Override
     public void heal() {
@@ -60,12 +65,12 @@ public class LittlePersonArcherEntity extends HostileEntity implements LittlePer
     @Override
     public void tick() {
         super.tick();
-        if (!this.getWorld().isClient) {
-            if (this.age % 20 == 0) this.heal();
+        if (!this.level().isClientSide) {
+            if (this.tickCount % 20 == 0) this.heal();
         }
     }
     @Override
-    public boolean damage(ServerWorld world, DamageSource source, float amount) {
+    public boolean hurtServer(ServerLevel world, DamageSource source, float amount) {
 /*        // 检查伤害是否来自实体直接攻击
         if (source.getSource() instanceof Entity &&
                 !source.isIn(DamageTypeTags.IS_FALL) &&
@@ -87,7 +92,7 @@ public class LittlePersonArcherEntity extends HostileEntity implements LittlePer
         }
 
         // 如果不满足条件或者未触发免疫，则正常处理伤害*/
-        return super.damage(world, source, amount);
+        return super.hurtServer(world, source, amount);
     }
     private final AnimatableInstanceCache geoCache = GeckoLibUtil.createInstanceCache(this);
     protected static final RawAnimation IDLE_ANIM = RawAnimation.begin().thenLoop("idle");
@@ -109,12 +114,12 @@ public class LittlePersonArcherEntity extends HostileEntity implements LittlePer
     }
     @Override
     protected SoundEvent getHurtSound(DamageSource source) {
-        return SoundEvents.ENTITY_VILLAGER_HURT;
+        return SoundEvents.VILLAGER_HURT;
     }
 
     @Override
     protected SoundEvent getDeathSound() {
-        return SoundEvents.ENTITY_VILLAGER_DEATH;
+        return SoundEvents.VILLAGER_DEATH;
     }
     @Override
     public AnimatableInstanceCache getAnimatableInstanceCache() {
@@ -126,7 +131,7 @@ public class LittlePersonArcherEntity extends HostileEntity implements LittlePer
     }
 
     @Override
-    public void shootAt(LivingEntity target, float pullProgress) {
+    public void performRangedAttack(LivingEntity target, float pullProgress) {
         if (!canSkill()) return;
         double targetX = target.getX() - this.getX();
         double targetY = target.getEyeY() - this.getEyeY(); // 更精确的高度计算
@@ -134,27 +139,27 @@ public class LittlePersonArcherEntity extends HostileEntity implements LittlePer
         double distance = Math.sqrt(targetX * targetX + targetZ * targetZ);
 
         // 预测目标移动（提高准确性）
-        targetY += target.getVelocity().getY() * distance * 0.25; // 重力补偿
+        targetY += target.getDeltaMovement().y() * distance * 0.25; // 重力补偿
 
-        World world = this.getWorld();
+        Level world = this.level();
 
-        if (world instanceof ServerWorld serverWorld) {
+        if (world instanceof ServerLevel serverWorld) {
             this.triggerAnim("attack_controller", "attack");
             // 创建箭实体
-            LittleArrowEntity arrowEntity = new LittleArrowEntity(world, this, new ItemStack(Items.ARROW), this.getMainHandStack().getItem() == Items.BOW ? this.getMainHandStack() : null);
+            LittleArrowEntity arrowEntity = new LittleArrowEntity(world, this, new ItemStack(Items.ARROW), this.getMainHandItem().getItem() == Items.BOW ? this.getMainHandItem() : null);
             // 设置箭的伤害
-            arrowEntity.setDamage(this.getAttributeValue(EntityAttributes.ATTACK_DAMAGE));
+            arrowEntity.setBaseDamage(this.getAttributeValue(Attributes.ATTACK_DAMAGE));
             arrowEntity.setOwner(this);
 
             // 减小散布参数以提高精度（从0.1F改为0.01F）
-            arrowEntity.setVelocity(targetX, targetY, targetZ, 1.6F, 0.01F);
+            arrowEntity.shoot(targetX, targetY, targetZ, 1.6F, 0.01F);
             arrowEntity.setTrueDamage(true, false);
             // 发射箭
-            serverWorld.spawnEntity(arrowEntity);
+            serverWorld.addFreshEntity(arrowEntity);
         }
 
         // 播放攻击音效
-        this.playSound(SoundEvents.ENTITY_SNOW_GOLEM_SHOOT, 1.0F, 0.4F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
+        this.playSound(SoundEvents.SNOW_GOLEM_SHOOT, 1.0F, 0.4F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
     }
 
 }

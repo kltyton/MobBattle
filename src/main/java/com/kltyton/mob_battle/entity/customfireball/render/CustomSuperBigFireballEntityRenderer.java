@@ -1,58 +1,58 @@
 package com.kltyton.mob_battle.entity.customfireball.render;
 
 import com.kltyton.mob_battle.entity.customfireball.CustomSuperBigFireballEntity;
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.item.ItemModelManager;
-import net.minecraft.client.render.OverlayTexture;
-import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.entity.EntityRenderer;
-import net.minecraft.client.render.entity.EntityRendererFactory;
-import net.minecraft.client.render.entity.state.FlyingItemEntityRenderState;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.item.ItemDisplayContext;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.entity.EntityRenderer;
+import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.client.renderer.entity.state.ThrownItemRenderState;
+import net.minecraft.client.renderer.item.ItemModelResolver;
+import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.item.ItemDisplayContext;
 
 @Environment(EnvType.CLIENT)
-public class CustomSuperBigFireballEntityRenderer<T extends CustomSuperBigFireballEntity> extends EntityRenderer<T, FlyingItemEntityRenderState> {
+public class CustomSuperBigFireballEntityRenderer<T extends CustomSuperBigFireballEntity> extends EntityRenderer<T, ThrownItemRenderState> {
     public static final int growTime = 40;
-    private final ItemModelManager itemModelManager;
+    private final ItemModelResolver itemModelManager;
     public final float scale;
     private final boolean lit;
 
-    public CustomSuperBigFireballEntityRenderer(EntityRendererFactory.Context ctx, float scale, boolean lit) {
+    public CustomSuperBigFireballEntityRenderer(EntityRendererProvider.Context ctx, float scale, boolean lit) {
         super(ctx);
-        this.itemModelManager = ctx.getItemModelManager();
+        this.itemModelManager = ctx.getItemModelResolver();
         this.scale = scale;
         this.lit = lit;
     }
 
-    public CustomSuperBigFireballEntityRenderer(EntityRendererFactory.Context context) {
+    public CustomSuperBigFireballEntityRenderer(EntityRendererProvider.Context context) {
         this(context, 3.0F, true);
     }
 
     @Override
-    protected int getBlockLight(T entity, BlockPos pos) {
-        return this.lit ? 15 : super.getBlockLight(entity, pos);
+    protected int getBlockLightLevel(T entity, BlockPos pos) {
+        return this.lit ? 15 : super.getBlockLightLevel(entity, pos);
     }
 
-    public void render(FlyingItemEntityRenderState flyingItemEntityRenderState, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i) {
-        matrixStack.push();
-        float progress = Math.min(flyingItemEntityRenderState.age / (float) growTime, 1.0f);
+    public void render(ThrownItemRenderState flyingItemEntityRenderState, PoseStack matrixStack, MultiBufferSource vertexConsumerProvider, int i) {
+        matrixStack.pushPose();
+        float progress = Math.min(flyingItemEntityRenderState.ageInTicks / (float) growTime, 1.0f);
         float scaleMagnification = 1.0f + 2.0f * progress; // 1.0 -> 3.0
         matrixStack.scale(this.scale * scaleMagnification, this.scale * scaleMagnification, this.scale * scaleMagnification);
-        matrixStack.multiply(this.dispatcher.getRotation());
-        flyingItemEntityRenderState.itemRenderState.render(matrixStack, vertexConsumerProvider, i, OverlayTexture.DEFAULT_UV);
-        matrixStack.pop();
+        matrixStack.mulPose(this.entityRenderDispatcher.cameraOrientation());
+        flyingItemEntityRenderState.item.render(matrixStack, vertexConsumerProvider, i, OverlayTexture.NO_OVERLAY);
+        matrixStack.popPose();
         super.render(flyingItemEntityRenderState, matrixStack, vertexConsumerProvider, i);
     }
 
-    public FlyingItemEntityRenderState createRenderState() {
-        return new FlyingItemEntityRenderState();
+    public ThrownItemRenderState createRenderState() {
+        return new ThrownItemRenderState();
     }
 
-    public void updateRenderState(T entity, FlyingItemEntityRenderState flyingItemEntityRenderState, float f) {
-        super.updateRenderState(entity, flyingItemEntityRenderState, f);
-        this.itemModelManager.updateForNonLivingEntity(flyingItemEntityRenderState.itemRenderState, entity.getStack(), ItemDisplayContext.GROUND, entity);
+    public void extractRenderState(T entity, ThrownItemRenderState flyingItemEntityRenderState, float f) {
+        super.extractRenderState(entity, flyingItemEntityRenderState, f);
+        this.itemModelManager.updateForNonLiving(flyingItemEntityRenderState.item, entity.getItem(), ItemDisplayContext.GROUND, entity);
     }
 }

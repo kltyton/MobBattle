@@ -1,10 +1,10 @@
 package com.kltyton.mob_battle.effect.beneficial;
 
-import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.entity.effect.StatusEffectCategory;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectCategory;
 
-public class ExcitementEffect extends StatusEffect {
+public class ExcitementEffect extends MobEffect {
     public ExcitementEffect() {
-        super(StatusEffectCategory.BENEFICIAL, 0xFFAA33);
+        super(MobEffectCategory.BENEFICIAL, 0xFFAA33);
     }
 }

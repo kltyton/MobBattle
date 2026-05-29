@@ -1,56 +1,56 @@
 package com.kltyton.mob_battle.items.scroll;
 
 import com.kltyton.mob_battle.effect.ModEffects;
-import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.stat.Stats;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.world.World;
+import net.minecraft.core.Holder;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.stats.Stats;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 
 public class PurificationScrollItem extends Item {
 
-    public PurificationScrollItem(Settings settings) {
+    public PurificationScrollItem(Properties settings) {
         super(settings);
     }
 
     @Override
-    public ActionResult use(World world, PlayerEntity user, Hand hand) {
-        ItemStack itemStack = user.getStackInHand(hand);
+    public InteractionResult use(Level world, Player user, InteractionHand hand) {
+        ItemStack itemStack = user.getItemInHand(hand);
 
         world.playSound(null, user.getX(), user.getY(), user.getZ(),
-                SoundEvents.BLOCK_AMETHYST_BLOCK_CHIME, SoundCategory.PLAYERS,
+                SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.PLAYERS,
                 0.8F, 1.2F);
 
-        if (!world.isClient) {
+        if (!world.isClientSide) {
             removeStatusEffects(user,
-                    StatusEffects.MINING_FATIGUE,
-                    StatusEffects.BLINDNESS,
-                    StatusEffects.DARKNESS,
-                    StatusEffects.NAUSEA,
-                    StatusEffects.SLOWNESS,
+                    MobEffects.MINING_FATIGUE,
+                    MobEffects.BLINDNESS,
+                    MobEffects.DARKNESS,
+                    MobEffects.NAUSEA,
+                    MobEffects.SLOWNESS,
                     ModEffects.STUN_ENTRY,
                     ModEffects.ICE_ENTRY
             );
         }
         //统计
-        user.incrementStat(Stats.USED.getOrCreateStat(this));
+        user.awardStat(Stats.ITEM_USED.get(this));
 
-        if (!user.getAbilities().creativeMode) itemStack.decrement(1);
+        if (!user.getAbilities().instabuild) itemStack.shrink(1);
 
-        return ActionResult.SUCCESS;
+        return InteractionResult.SUCCESS;
     }
 
     @SafeVarargs
-    public static void removeStatusEffects(PlayerEntity user, RegistryEntry<StatusEffect>... effects) {
-        for (RegistryEntry<StatusEffect> effect : effects) {
-            user.removeStatusEffect(effect);
+    public static void removeStatusEffects(Player user, Holder<MobEffect>... effects) {
+        for (Holder<MobEffect> effect : effects) {
+            user.removeEffect(effect);
         }
     }
 }

@@ -1,13 +1,13 @@
 package com.kltyton.mob_battle.mixin.client.render.entity.player;
 
 import com.kltyton.mob_battle.entity.player.IPlayerStateAccessor;
-import net.minecraft.client.render.entity.state.PlayerEntityRenderState;
+import net.minecraft.client.renderer.entity.state.PlayerRenderState;
 import org.spongepowered.asm.mixin.Implements;
 import org.spongepowered.asm.mixin.Interface;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
-@Mixin(PlayerEntityRenderState.class)
+@Mixin(PlayerRenderState.class)
 @Implements(@Interface(iface = IPlayerStateAccessor.class, prefix = "accessor$"))
 public abstract class PlayerEntityRenderStateMixin {
     @Unique

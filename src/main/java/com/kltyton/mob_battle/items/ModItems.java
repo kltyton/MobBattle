@@ -23,32 +23,31 @@ import com.kltyton.mob_battle.items.tool.snipe.VsSnipe;
 import com.kltyton.mob_battle.items.tool.sword.CompressedMarkedSword;
 import com.kltyton.mob_battle.items.tool.sword.FineKnifeItem;
 import com.kltyton.mob_battle.items.tool.sword.zijin.ZiJinSword;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.AttributeModifierSlot;
-import net.minecraft.component.type.AttributeModifiersComponent;
-import net.minecraft.component.type.BlocksAttacksComponent;
-import net.minecraft.component.type.ChargedProjectilesComponent;
-import net.minecraft.component.type.DeathProtectionComponent;
-import net.minecraft.component.type.FoodComponent;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.attribute.EntityAttributeModifier;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.SpawnEggItem;
-import net.minecraft.item.ToolMaterial;
-import net.minecraft.item.equipment.ArmorMaterial;
-import net.minecraft.item.equipment.EquipmentType;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.tag.DamageTypeTags;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.Rarity;
+import net.minecraft.core.Registry;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.Unit;
-
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlotGroup;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.food.FoodProperties;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Rarity;
+import net.minecraft.world.item.SpawnEggItem;
+import net.minecraft.world.item.ToolMaterial;
+import net.minecraft.world.item.component.BlocksAttacks;
+import net.minecraft.world.item.component.ChargedProjectiles;
+import net.minecraft.world.item.component.DeathProtection;
+import net.minecraft.world.item.component.ItemAttributeModifiers;
+import net.minecraft.world.item.equipment.ArmorMaterial;
+import net.minecraft.world.item.equipment.ArmorType;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -209,59 +208,59 @@ public class ModItems {
     public static void init() {
         BaseItems.init();
         //注册物品
-        MUTUAL_ATTACK_STICK = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "mutual_attack_stick"),
-                new MutualAttackStickItem(new Item.Settings().maxCount(1)
-                        .registryKey(RegistryKey.of(
-                                RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "mutual_attack_stick")))));
-        MASTER_SCEPTER = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "master_scepter"),
-                new MasterScepterItem(new Item.Settings().maxCount(1).component(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true)
-                        .registryKey(RegistryKey.of(
-                                RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "master_scepter")))));
-        UNIVERSAL_LEAD = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "universal_lead"),
-                new UniversalLeadItem(new Item.Settings()
-                        .registryKey(RegistryKey.of(
-                                RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "universal_lead")))));
-        INVISIBLE_UNIVERSAL_LEAD = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "invisible_universal_lead"),
-                new InvisibleUniversalLeadItem(new Item.Settings()
-                        .registryKey(RegistryKey.of(
-                                RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "invisible_universal_lead")))));
-        FIREBALL_SCROLL = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "fireball_scroll"),
-                new FireballScrollItem(new Item.Settings()
-                        .registryKey(RegistryKey.of(
-                                RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "fireball_scroll")))));
-        BIG_FIREBALL_SCROLL = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "big_fireball_scroll"),
-                new BigFireballScrollItem(new Item.Settings()
-                        .registryKey(RegistryKey.of(
-                                RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "big_fireball_scroll")))));
-        SUPER_BIG_FIREBALL_SCROLL = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "super_big_fireball_scroll"),
-                new SuperBigFireballScrollItem(new Item.Settings().useCooldown(7)
-                        .registryKey(RegistryKey.of(
-                                RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "super_big_fireball_scroll")))));
+        MUTUAL_ATTACK_STICK = Registry.register(BuiltInRegistries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "mutual_attack_stick"),
+                new MutualAttackStickItem(new Item.Properties().stacksTo(1)
+                        .setId(ResourceKey.create(
+                                Registries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "mutual_attack_stick")))));
+        MASTER_SCEPTER = Registry.register(BuiltInRegistries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "master_scepter"),
+                new MasterScepterItem(new Item.Properties().stacksTo(1).component(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true)
+                        .setId(ResourceKey.create(
+                                Registries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "master_scepter")))));
+        UNIVERSAL_LEAD = Registry.register(BuiltInRegistries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "universal_lead"),
+                new UniversalLeadItem(new Item.Properties()
+                        .setId(ResourceKey.create(
+                                Registries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "universal_lead")))));
+        INVISIBLE_UNIVERSAL_LEAD = Registry.register(BuiltInRegistries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "invisible_universal_lead"),
+                new InvisibleUniversalLeadItem(new Item.Properties()
+                        .setId(ResourceKey.create(
+                                Registries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "invisible_universal_lead")))));
+        FIREBALL_SCROLL = Registry.register(BuiltInRegistries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "fireball_scroll"),
+                new FireballScrollItem(new Item.Properties()
+                        .setId(ResourceKey.create(
+                                Registries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "fireball_scroll")))));
+        BIG_FIREBALL_SCROLL = Registry.register(BuiltInRegistries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "big_fireball_scroll"),
+                new BigFireballScrollItem(new Item.Properties()
+                        .setId(ResourceKey.create(
+                                Registries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "big_fireball_scroll")))));
+        SUPER_BIG_FIREBALL_SCROLL = Registry.register(BuiltInRegistries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "super_big_fireball_scroll"),
+                new SuperBigFireballScrollItem(new Item.Properties().useCooldown(7)
+                        .setId(ResourceKey.create(
+                                Registries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "super_big_fireball_scroll")))));
 
-        FIREMAN_SCROLL = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "fireman_scroll"),
-                new FiremanScrollItem(new Item.Settings()
-                        .registryKey(RegistryKey.of(
-                                RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "fireman_scroll")))));
-        SLOWNESS_SCROLL = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "slowness_scroll"),
-                new SlownessScrollItem(new Item.Settings().useCooldown(20)
-                        .registryKey(RegistryKey.of(
-                                RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "slowness_scroll")))));
-        FIRE_WALL_SCROLL = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "fire_wall_scroll"),
-                new FireWallScrollItem(new Item.Settings().useCooldown(35)
-                        .registryKey(RegistryKey.of(
-                                RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "fire_wall_scroll")))));
+        FIREMAN_SCROLL = Registry.register(BuiltInRegistries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "fireman_scroll"),
+                new FiremanScrollItem(new Item.Properties()
+                        .setId(ResourceKey.create(
+                                Registries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "fireman_scroll")))));
+        SLOWNESS_SCROLL = Registry.register(BuiltInRegistries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "slowness_scroll"),
+                new SlownessScrollItem(new Item.Properties().useCooldown(20)
+                        .setId(ResourceKey.create(
+                                Registries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "slowness_scroll")))));
+        FIRE_WALL_SCROLL = Registry.register(BuiltInRegistries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "fire_wall_scroll"),
+                new FireWallScrollItem(new Item.Properties().useCooldown(35)
+                        .setId(ResourceKey.create(
+                                Registries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "fire_wall_scroll")))));
         PURIFICATION_SCROLL = registerItem("purification_scroll",
                 new PurificationScrollItem(registryBaseItemSettings("purification_scroll")
                         .useCooldown(75))
         );
         //.useRemainder(THOUSAND_BLOSSOMED_IMMORTAL_FRUIT)
-        THOUSAND_BLOSSOMED_IMMORTAL_FRUIT = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "thousand_blossomed_immortal_fruit"),
-                new ThousandBlossomedImmortalFruit(new Item.Settings().food(new FoodComponent.Builder().nutrition(4).saturationModifier(0.3F).alwaysEdible().build()).useCooldown(60)
-                        .registryKey(RegistryKey.of(
-                                RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "thousand_blossomed_immortal_fruit")))));
+        THOUSAND_BLOSSOMED_IMMORTAL_FRUIT = Registry.register(BuiltInRegistries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "thousand_blossomed_immortal_fruit"),
+                new ThousandBlossomedImmortalFruit(new Item.Properties().food(new FoodProperties.Builder().nutrition(4).saturationModifier(0.3F).alwaysEdible().build()).useCooldown(60)
+                        .setId(ResourceKey.create(
+                                Registries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "thousand_blossomed_immortal_fruit")))));
         LOBSTER_MAIN_COURSE = registerItem("lobster_main_course",
                 registryBaseItemSettings("lobster_main_course").food(
-                        new FoodComponent.Builder().nutrition(10).saturationModifier(0.3F).build()
+                        new FoodProperties.Builder().nutrition(10).saturationModifier(0.3F).build()
                 )
         );
         COMPRESSED_COPPER_INGOT = registerItem("compressed_copper_ingot", registryBaseItemSettings("compressed_copper_ingot").rarity(Rarity.UNCOMMON));
@@ -275,7 +274,7 @@ public class ModItems {
         // 龙虾系列
         LOBSTER = registerItem("lobster",
                 registryBaseItemSettings("lobster").food(
-                        new FoodComponent.Builder()
+                        new FoodProperties.Builder()
                                 .nutrition(2)
                                 .saturationModifier(4.0F)
                                 .alwaysEdible()
@@ -289,7 +288,7 @@ public class ModItems {
         MAGMA_LOBSTER = registerItem("magma_lobster",
                 new MagmaLobsterItemMod(
                         registryBaseItemSettings("magma_lobster").food(
-                                new FoodComponent.Builder()
+                                new FoodProperties.Builder()
                                         .nutrition(3)
                                         .saturationModifier(4.0F)
                                         .alwaysEdible()
@@ -304,28 +303,28 @@ public class ModItems {
         OBSIDIAN_LOBSTER = registerItem("obsidian_lobster",
                 new ObsidianLobsterItem(
                         registryBaseItemSettings("obsidian_lobster")
-                                .maxCount(1)
-                                .maxDamage(1500)
-                                .component(DataComponentTypes.BLOCKS_ATTACKS,
-                                        new BlocksAttacksComponent(
+                                .stacksTo(1)
+                                .durability(1500)
+                                .component(DataComponents.BLOCKS_ATTACKS,
+                                        new BlocksAttacks(
                                                 0.25F,
                                                 1.0F,
-                                                List.of(new BlocksAttacksComponent.DamageReduction(90.0F, Optional.empty(), 0.0F, 1.0F)),
-                                                new BlocksAttacksComponent.ItemDamage(3.0F, 1.0F, 1.0F),
+                                                List.of(new BlocksAttacks.DamageReduction(90.0F, Optional.empty(), 0.0F, 1.0F)),
+                                                new BlocksAttacks.ItemDamageFunction(3.0F, 1.0F, 1.0F),
                                                 Optional.of(DamageTypeTags.BYPASSES_SHIELD),
-                                                Optional.of(SoundEvents.ITEM_SHIELD_BLOCK),
-                                                Optional.of(SoundEvents.ITEM_SHIELD_BREAK)
+                                                Optional.of(SoundEvents.SHIELD_BLOCK),
+                                                Optional.of(SoundEvents.SHIELD_BREAK)
                                         )
                                 )
                                 .component(ModComponents.LOBSTER_TRANSFORMED, false)
-                                .component(DataComponentTypes.BREAK_SOUND, SoundEvents.ITEM_SHIELD_BREAK)
+                                .component(DataComponents.BREAK_SOUND, SoundEvents.SHIELD_BREAK)
                 )
         );
 
         // 爆开的黑曜石龙虾
         BURST_OBSIDIAN_LOBSTER = registerItem("burst_obsidian_lobster",
                 registryBaseItemSettings("burst_obsidian_lobster").food(
-                        new FoodComponent.Builder()
+                        new FoodProperties.Builder()
                                 .nutrition(6)
                                 .saturationModifier(8.0F)
                                 .alwaysEdible()
@@ -339,288 +338,288 @@ public class ModItems {
                 new IceBowItem(
                         registryBaseItemSettings("ice_bow")
                                 .rarity(Rarity.EPIC)
-                                .maxDamage(25000)
-                                .maxCount(1)
+                                .durability(25000)
+                                .stacksTo(1)
                 ),
                  false
         );
 
         COOKED_HIGHBIRD_EGG = registerItem("cooked_highbird_egg",
                 registryBaseItemSettings("cooked_highbird_egg").food(
-                        new FoodComponent.Builder().nutrition(20).saturationModifier(20).alwaysEdible().build(),
+                        new FoodProperties.Builder().nutrition(20).saturationModifier(20).alwaysEdible().build(),
                         ModConsumableComponents.COOKED_HIGHBIRD_EGG
                 )
         );
         CHEESE = registerItem("cheese",
                 registryBaseItemSettings("cheese").food(
-                        new FoodComponent.Builder().nutrition(1).saturationModifier(2.0F).build()
+                        new FoodProperties.Builder().nutrition(1).saturationModifier(2.0F).build()
                 )
         );
         BEER = registerItem("beer",
                 registryBaseItemSettings("beer").food(
-                        new FoodComponent.Builder().nutrition(1).saturationModifier(1.0F).alwaysEdible().build(),
+                        new FoodProperties.Builder().nutrition(1).saturationModifier(1.0F).alwaysEdible().build(),
                         ModConsumableComponents.BEER
                 )
         );
 
-        HEART_STONE = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "heart_stone"),
-                new HeartStoneItem(new Item.Settings().maxCount(3)
-                        .registryKey(RegistryKey.of(
-                                RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "heart_stone")))));
+        HEART_STONE = Registry.register(BuiltInRegistries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "heart_stone"),
+                new HeartStoneItem(new Item.Properties().stacksTo(3)
+                        .setId(ResourceKey.create(
+                                Registries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "heart_stone")))));
 
-        HELL_HELMET_1 = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "hell_helmet_1"),
-                new Item(new Item.Settings().armor(ModMaterial.HELL_ARMOR_INSTANCE_1, EquipmentType.HELMET)
-                                .maxDamage(0).maxCount(1)
-                                .registryKey(RegistryKey.of(
-                                        RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "hell_helmet_1")
+        HELL_HELMET_1 = Registry.register(BuiltInRegistries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "hell_helmet_1"),
+                new Item(new Item.Properties().humanoidArmor(ModMaterial.HELL_ARMOR_INSTANCE_1, ArmorType.HELMET)
+                                .durability(0).stacksTo(1)
+                                .setId(ResourceKey.create(
+                                        Registries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "hell_helmet_1")
                                 ))
                 )
         );
-        HELL_CHESTPLATE_1 = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "hell_chestplate_1"),
-                new Item(new Item.Settings().armor(ModMaterial.HELL_ARMOR_INSTANCE_1, EquipmentType.CHESTPLATE)
-                                .maxDamage(0).maxCount(1)
-                                .registryKey(RegistryKey.of(
-                                        RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "hell_chestplate_1")
+        HELL_CHESTPLATE_1 = Registry.register(BuiltInRegistries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "hell_chestplate_1"),
+                new Item(new Item.Properties().humanoidArmor(ModMaterial.HELL_ARMOR_INSTANCE_1, ArmorType.CHESTPLATE)
+                                .durability(0).stacksTo(1)
+                                .setId(ResourceKey.create(
+                                        Registries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "hell_chestplate_1")
                                 ))
                 )
         );
-        HELL_LEGGINGS_1 = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "hell_leggings_1"),
-                new Item(new Item.Settings().armor(ModMaterial.HELL_ARMOR_INSTANCE_1, EquipmentType.LEGGINGS)
-                                .maxDamage(0).maxCount(1)
-                                .registryKey(RegistryKey.of(
-                                        RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "hell_leggings_1")
+        HELL_LEGGINGS_1 = Registry.register(BuiltInRegistries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "hell_leggings_1"),
+                new Item(new Item.Properties().humanoidArmor(ModMaterial.HELL_ARMOR_INSTANCE_1, ArmorType.LEGGINGS)
+                                .durability(0).stacksTo(1)
+                                .setId(ResourceKey.create(
+                                        Registries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "hell_leggings_1")
                                 ))
                 )
         );
-        HELL_BOOTS_1 = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "hell_boots_1"),
-                new Item(new Item.Settings().armor(ModMaterial.HELL_ARMOR_INSTANCE_1, EquipmentType.BOOTS)
-                                .maxDamage(0).maxCount(1)
-                                .registryKey(RegistryKey.of(
-                                        RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "hell_boots_1")
+        HELL_BOOTS_1 = Registry.register(BuiltInRegistries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "hell_boots_1"),
+                new Item(new Item.Properties().humanoidArmor(ModMaterial.HELL_ARMOR_INSTANCE_1, ArmorType.BOOTS)
+                                .durability(0).stacksTo(1)
+                                .setId(ResourceKey.create(
+                                        Registries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "hell_boots_1")
                                 ))
                 )
         );
-        HELL_HELMET_2 = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "hell_helmet_2"),
-                new Item(new Item.Settings().armor(ModMaterial.HELL_ARMOR_INSTANCE_2, EquipmentType.HELMET)
-                                .maxDamage(0).maxCount(1)
-                                .registryKey(RegistryKey.of(
-                                        RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "hell_helmet_2")
+        HELL_HELMET_2 = Registry.register(BuiltInRegistries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "hell_helmet_2"),
+                new Item(new Item.Properties().humanoidArmor(ModMaterial.HELL_ARMOR_INSTANCE_2, ArmorType.HELMET)
+                                .durability(0).stacksTo(1)
+                                .setId(ResourceKey.create(
+                                        Registries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "hell_helmet_2")
                                 ))
                 )
         );
-        HELL_CHESTPLATE_2 = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "hell_chestplate_2"),
-                new Item(new Item.Settings().armor(ModMaterial.HELL_ARMOR_INSTANCE_2, EquipmentType.CHESTPLATE)
-                                .maxDamage(0).maxCount(1)
-                                .registryKey(RegistryKey.of(
-                                        RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "hell_chestplate_2")
+        HELL_CHESTPLATE_2 = Registry.register(BuiltInRegistries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "hell_chestplate_2"),
+                new Item(new Item.Properties().humanoidArmor(ModMaterial.HELL_ARMOR_INSTANCE_2, ArmorType.CHESTPLATE)
+                                .durability(0).stacksTo(1)
+                                .setId(ResourceKey.create(
+                                        Registries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "hell_chestplate_2")
                                 ))
                 )
         );
-        HELL_LEGGINGS_2 = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "hell_leggings_2"),
-                new Item(new Item.Settings().armor(ModMaterial.HELL_ARMOR_INSTANCE_2, EquipmentType.LEGGINGS)
-                                .maxDamage(0).maxCount(1)
-                                .registryKey(RegistryKey.of(
-                                        RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "hell_leggings_2")
+        HELL_LEGGINGS_2 = Registry.register(BuiltInRegistries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "hell_leggings_2"),
+                new Item(new Item.Properties().humanoidArmor(ModMaterial.HELL_ARMOR_INSTANCE_2, ArmorType.LEGGINGS)
+                                .durability(0).stacksTo(1)
+                                .setId(ResourceKey.create(
+                                        Registries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "hell_leggings_2")
                                 ))
                 )
         );
-        HELL_BOOTS_2 = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "hell_boots_2"),
-                new Item(new Item.Settings().armor(ModMaterial.HELL_ARMOR_INSTANCE_2, EquipmentType.BOOTS)
-                                .maxDamage(0).maxCount(1)
-                                .registryKey(RegistryKey.of(
-                                        RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "hell_boots_2")
+        HELL_BOOTS_2 = Registry.register(BuiltInRegistries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "hell_boots_2"),
+                new Item(new Item.Properties().humanoidArmor(ModMaterial.HELL_ARMOR_INSTANCE_2, ArmorType.BOOTS)
+                                .durability(0).stacksTo(1)
+                                .setId(ResourceKey.create(
+                                        Registries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "hell_boots_2")
                                 ))
                 )
         );
 
-        ECREDCULTIST_HELMET = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "ecredcultist_helmet"),
-                new ModBaseArmorItem(new Item.Settings().armor(ModMaterial.ECREDCULTIST_INSTANCE, EquipmentType.HELMET)
-                        .maxDamage(1).maxCount(1).component(DataComponentTypes.UNBREAKABLE, Unit.INSTANCE)
-                        .registryKey(RegistryKey.of(
-                                RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "ecredcultist_helmet")
+        ECREDCULTIST_HELMET = Registry.register(BuiltInRegistries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "ecredcultist_helmet"),
+                new ModBaseArmorItem(new Item.Properties().humanoidArmor(ModMaterial.ECREDCULTIST_INSTANCE, ArmorType.HELMET)
+                        .durability(1).stacksTo(1).component(DataComponents.UNBREAKABLE, Unit.INSTANCE)
+                        .setId(ResourceKey.create(
+                                Registries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "ecredcultist_helmet")
                         )),
                         ModMaterial.ECREDCULTIST_INSTANCE
                 )
         );
-        ECREDCULTIST_CHESTPLATE = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "ecredcultist_chestplate"),
-                new ModBaseArmorItem(new Item.Settings().armor(ModMaterial.ECREDCULTIST_INSTANCE, EquipmentType.CHESTPLATE)
-                        .maxDamage(1).maxCount(1).component(DataComponentTypes.UNBREAKABLE, Unit.INSTANCE)
-                        .registryKey(RegistryKey.of(
-                                RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "ecredcultist_chestplate")
+        ECREDCULTIST_CHESTPLATE = Registry.register(BuiltInRegistries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "ecredcultist_chestplate"),
+                new ModBaseArmorItem(new Item.Properties().humanoidArmor(ModMaterial.ECREDCULTIST_INSTANCE, ArmorType.CHESTPLATE)
+                        .durability(1).stacksTo(1).component(DataComponents.UNBREAKABLE, Unit.INSTANCE)
+                        .setId(ResourceKey.create(
+                                Registries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "ecredcultist_chestplate")
                         )),
                         ModMaterial.ECREDCULTIST_INSTANCE
                 )
         );
-        ECREDCULTIST_LEGGINGS = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "ecredcultist_leggings"),
-                new ModBaseArmorItem(new Item.Settings().armor(ModMaterial.ECREDCULTIST_INSTANCE, EquipmentType.LEGGINGS)
-                        .maxDamage(1).maxCount(1).component(DataComponentTypes.UNBREAKABLE, Unit.INSTANCE)
-                        .registryKey(RegistryKey.of(
-                                RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "ecredcultist_leggings")
+        ECREDCULTIST_LEGGINGS = Registry.register(BuiltInRegistries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "ecredcultist_leggings"),
+                new ModBaseArmorItem(new Item.Properties().humanoidArmor(ModMaterial.ECREDCULTIST_INSTANCE, ArmorType.LEGGINGS)
+                        .durability(1).stacksTo(1).component(DataComponents.UNBREAKABLE, Unit.INSTANCE)
+                        .setId(ResourceKey.create(
+                                Registries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "ecredcultist_leggings")
                         )),
                         ModMaterial.ECREDCULTIST_INSTANCE
                 )
         );
-        ECREDCULTIST_BOOTS = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "ecredcultist_boots"),
+        ECREDCULTIST_BOOTS = Registry.register(BuiltInRegistries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "ecredcultist_boots"),
                 new ModBaseArmorItem(
-                        new Item.Settings().armor(ModMaterial.ECREDCULTIST_INSTANCE, EquipmentType.BOOTS)
-                        .maxDamage(1).maxCount(1).component(DataComponentTypes.UNBREAKABLE, Unit.INSTANCE)
-                        .registryKey(RegistryKey.of(
-                                RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "ecredcultist_boots")
+                        new Item.Properties().humanoidArmor(ModMaterial.ECREDCULTIST_INSTANCE, ArmorType.BOOTS)
+                        .durability(1).stacksTo(1).component(DataComponents.UNBREAKABLE, Unit.INSTANCE)
+                        .setId(ResourceKey.create(
+                                Registries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "ecredcultist_boots")
                         )),
                         ModMaterial.ECREDCULTIST_INSTANCE
                 )
         );
-        IRON_GOLD_HELMET = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "iron_gold_helmet"),
-                new Item(new Item.Settings().armor(ModMaterial.IRON_GOLD_INSTANCE, EquipmentType.HELMET)
-                                .maxDamage(512).maxCount(1).component(DataComponentTypes.UNBREAKABLE, Unit.INSTANCE)
-                                .registryKey(RegistryKey.of(
-                                        RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "iron_gold_helmet")
+        IRON_GOLD_HELMET = Registry.register(BuiltInRegistries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "iron_gold_helmet"),
+                new Item(new Item.Properties().humanoidArmor(ModMaterial.IRON_GOLD_INSTANCE, ArmorType.HELMET)
+                                .durability(512).stacksTo(1).component(DataComponents.UNBREAKABLE, Unit.INSTANCE)
+                                .setId(ResourceKey.create(
+                                        Registries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "iron_gold_helmet")
                                 ))
                 )
         );
-        IRON_GOLD_CHESTPLATE = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "iron_gold_chestplate"),
-                new Item(new Item.Settings().armor(ModMaterial.IRON_GOLD_INSTANCE, EquipmentType.CHESTPLATE)
-                                .maxDamage(512).maxCount(1).component(DataComponentTypes.UNBREAKABLE, Unit.INSTANCE)
-                                .registryKey(RegistryKey.of(
-                                        RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "iron_gold_chestplate")
+        IRON_GOLD_CHESTPLATE = Registry.register(BuiltInRegistries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "iron_gold_chestplate"),
+                new Item(new Item.Properties().humanoidArmor(ModMaterial.IRON_GOLD_INSTANCE, ArmorType.CHESTPLATE)
+                                .durability(512).stacksTo(1).component(DataComponents.UNBREAKABLE, Unit.INSTANCE)
+                                .setId(ResourceKey.create(
+                                        Registries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "iron_gold_chestplate")
                                 ))
                 )
         );
-        IRON_GOLD_LEGGINGS = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "iron_gold_leggings"),
-                new Item(new Item.Settings().armor(ModMaterial.IRON_GOLD_INSTANCE, EquipmentType.LEGGINGS)
-                                .maxDamage(512).maxCount(1).component(DataComponentTypes.UNBREAKABLE, Unit.INSTANCE)
-                                .registryKey(RegistryKey.of(
-                                        RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "iron_gold_leggings")
+        IRON_GOLD_LEGGINGS = Registry.register(BuiltInRegistries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "iron_gold_leggings"),
+                new Item(new Item.Properties().humanoidArmor(ModMaterial.IRON_GOLD_INSTANCE, ArmorType.LEGGINGS)
+                                .durability(512).stacksTo(1).component(DataComponents.UNBREAKABLE, Unit.INSTANCE)
+                                .setId(ResourceKey.create(
+                                        Registries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "iron_gold_leggings")
                                 ))
                 )
         );
-        IRON_GOLD_BOOTS = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "iron_gold_boots"),
-                new Item(new Item.Settings().armor(ModMaterial.IRON_GOLD_INSTANCE, EquipmentType.BOOTS)
-                                .maxDamage(512).maxCount(1).component(DataComponentTypes.UNBREAKABLE, Unit.INSTANCE)
-                                .registryKey(RegistryKey.of(
-                                        RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "iron_gold_boots")
+        IRON_GOLD_BOOTS = Registry.register(BuiltInRegistries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "iron_gold_boots"),
+                new Item(new Item.Properties().humanoidArmor(ModMaterial.IRON_GOLD_INSTANCE, ArmorType.BOOTS)
+                                .durability(512).stacksTo(1).component(DataComponents.UNBREAKABLE, Unit.INSTANCE)
+                                .setId(ResourceKey.create(
+                                        Registries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "iron_gold_boots")
                                 ))
                 )
         );
         // 翠钻合金套
-        EMERALD_DIAMOND_HELMET = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "emerald_diamond_helmet"),
-                new Item(new Item.Settings()
-                        .armor(ModMaterial.EMERALD_DIAMOND_ALLOY_INSTANCE, EquipmentType.HELMET)
-                        .component(DataComponentTypes.UNBREAKABLE, Unit.INSTANCE)
-                        .maxCount(1)
-                        .registryKey(RegistryKey.of(RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "emerald_diamond_helmet")))
+        EMERALD_DIAMOND_HELMET = Registry.register(BuiltInRegistries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "emerald_diamond_helmet"),
+                new Item(new Item.Properties()
+                        .humanoidArmor(ModMaterial.EMERALD_DIAMOND_ALLOY_INSTANCE, ArmorType.HELMET)
+                        .component(DataComponents.UNBREAKABLE, Unit.INSTANCE)
+                        .stacksTo(1)
+                        .setId(ResourceKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "emerald_diamond_helmet")))
                 )
         );
 
-        EMERALD_DIAMOND_CHESTPLATE = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "emerald_diamond_chestplate"),
-                new Item(new Item.Settings()
-                        .armor(ModMaterial.EMERALD_DIAMOND_ALLOY_INSTANCE, EquipmentType.CHESTPLATE)
-                        .component(DataComponentTypes.UNBREAKABLE, Unit.INSTANCE)
-                        .maxCount(1)
-                        .registryKey(RegistryKey.of(RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "emerald_diamond_chestplate")))
+        EMERALD_DIAMOND_CHESTPLATE = Registry.register(BuiltInRegistries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "emerald_diamond_chestplate"),
+                new Item(new Item.Properties()
+                        .humanoidArmor(ModMaterial.EMERALD_DIAMOND_ALLOY_INSTANCE, ArmorType.CHESTPLATE)
+                        .component(DataComponents.UNBREAKABLE, Unit.INSTANCE)
+                        .stacksTo(1)
+                        .setId(ResourceKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "emerald_diamond_chestplate")))
                 )
         );
 
-        EMERALD_DIAMOND_LEGGINGS = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "emerald_diamond_leggings"),
-                new Item(new Item.Settings()
-                        .armor(ModMaterial.EMERALD_DIAMOND_ALLOY_INSTANCE, EquipmentType.LEGGINGS)
-                        .component(DataComponentTypes.UNBREAKABLE, Unit.INSTANCE)
-                        .maxCount(1)
-                        .registryKey(RegistryKey.of(RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "emerald_diamond_leggings")))
+        EMERALD_DIAMOND_LEGGINGS = Registry.register(BuiltInRegistries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "emerald_diamond_leggings"),
+                new Item(new Item.Properties()
+                        .humanoidArmor(ModMaterial.EMERALD_DIAMOND_ALLOY_INSTANCE, ArmorType.LEGGINGS)
+                        .component(DataComponents.UNBREAKABLE, Unit.INSTANCE)
+                        .stacksTo(1)
+                        .setId(ResourceKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "emerald_diamond_leggings")))
                 )
         );
 
-        EMERALD_DIAMOND_BOOTS = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "emerald_diamond_boots"),
-                new Item(new Item.Settings()
-                        .armor(ModMaterial.EMERALD_DIAMOND_ALLOY_INSTANCE, EquipmentType.BOOTS)
-                        .component(DataComponentTypes.UNBREAKABLE, Unit.INSTANCE)
-                        .maxCount(1)
-                        .registryKey(RegistryKey.of(RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "emerald_diamond_boots")))
+        EMERALD_DIAMOND_BOOTS = Registry.register(BuiltInRegistries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "emerald_diamond_boots"),
+                new Item(new Item.Properties()
+                        .humanoidArmor(ModMaterial.EMERALD_DIAMOND_ALLOY_INSTANCE, ArmorType.BOOTS)
+                        .component(DataComponents.UNBREAKABLE, Unit.INSTANCE)
+                        .stacksTo(1)
+                        .setId(ResourceKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "emerald_diamond_boots")))
                 )
         );
 
         ZIJIN_HELMET = registerItem(
                 "zijin_helmet",
                 registryBaseItemSettings("zijin_helmet")
-                        .armor(ModMaterial.ZIJIN_ARMOR_INSTANCE, EquipmentType.HELMET)
-                        .component(DataComponentTypes.UNBREAKABLE, Unit.INSTANCE)
-                        .maxCount(1)
+                        .humanoidArmor(ModMaterial.ZIJIN_ARMOR_INSTANCE, ArmorType.HELMET)
+                        .component(DataComponents.UNBREAKABLE, Unit.INSTANCE)
+                        .stacksTo(1)
         );
 
         ZIJIN_CHESTPLATE = registerItem(
                 "zijin_chestplate",
                 registryBaseItemSettings("zijin_chestplate")
-                        .armor(ModMaterial.ZIJIN_ARMOR_INSTANCE, EquipmentType.CHESTPLATE)
-                        .component(DataComponentTypes.UNBREAKABLE, Unit.INSTANCE)
-                        .maxCount(1)
+                        .humanoidArmor(ModMaterial.ZIJIN_ARMOR_INSTANCE, ArmorType.CHESTPLATE)
+                        .component(DataComponents.UNBREAKABLE, Unit.INSTANCE)
+                        .stacksTo(1)
         );
 
         ZIJIN_LEGGINGS = registerItem(
                 "zijin_leggings",
                 registryBaseItemSettings("zijin_leggings")
-                        .armor(ModMaterial.ZIJIN_ARMOR_INSTANCE, EquipmentType.LEGGINGS)
-                        .component(DataComponentTypes.UNBREAKABLE, Unit.INSTANCE)
-                        .maxCount(1)
+                        .humanoidArmor(ModMaterial.ZIJIN_ARMOR_INSTANCE, ArmorType.LEGGINGS)
+                        .component(DataComponents.UNBREAKABLE, Unit.INSTANCE)
+                        .stacksTo(1)
         );
 
         ZIJIN_BOOTS = registerItem("zijin_boots",
                 registryBaseItemSettings("zijin_boots")
-                        .armor(ModMaterial.ZIJIN_ARMOR_INSTANCE, EquipmentType.BOOTS)
-                        .component(DataComponentTypes.UNBREAKABLE, Unit.INSTANCE)
-                        .maxCount(1)
+                        .humanoidArmor(ModMaterial.ZIJIN_ARMOR_INSTANCE, ArmorType.BOOTS)
+                        .component(DataComponents.UNBREAKABLE, Unit.INSTANCE)
+                        .stacksTo(1)
         );
 
         // 注册工具和武器
-        COMPRESSED_IRON_HELMET = registerCompressedArmor("compressed_iron_helmet", ModMaterial.COMPRESSED_IRON_ARMOR_INSTANCE, EquipmentType.HELMET, 5000, 6.0, 0.0);
-        COMPRESSED_IRON_CHESTPLATE = registerCompressedArmor("compressed_iron_chestplate", ModMaterial.COMPRESSED_IRON_ARMOR_INSTANCE, EquipmentType.CHESTPLATE, 5000, 6.0, 0.0);
-        COMPRESSED_IRON_LEGGINGS = registerCompressedArmor("compressed_iron_leggings", ModMaterial.COMPRESSED_IRON_ARMOR_INSTANCE, EquipmentType.LEGGINGS, 5000, 6.0, 0.0);
-        COMPRESSED_IRON_BOOTS = registerCompressedArmor("compressed_iron_boots", ModMaterial.COMPRESSED_IRON_ARMOR_INSTANCE, EquipmentType.BOOTS, 5000, 6.0, 0.0);
+        COMPRESSED_IRON_HELMET = registerCompressedArmor("compressed_iron_helmet", ModMaterial.COMPRESSED_IRON_ARMOR_INSTANCE, ArmorType.HELMET, 5000, 6.0, 0.0);
+        COMPRESSED_IRON_CHESTPLATE = registerCompressedArmor("compressed_iron_chestplate", ModMaterial.COMPRESSED_IRON_ARMOR_INSTANCE, ArmorType.CHESTPLATE, 5000, 6.0, 0.0);
+        COMPRESSED_IRON_LEGGINGS = registerCompressedArmor("compressed_iron_leggings", ModMaterial.COMPRESSED_IRON_ARMOR_INSTANCE, ArmorType.LEGGINGS, 5000, 6.0, 0.0);
+        COMPRESSED_IRON_BOOTS = registerCompressedArmor("compressed_iron_boots", ModMaterial.COMPRESSED_IRON_ARMOR_INSTANCE, ArmorType.BOOTS, 5000, 6.0, 0.0);
 
-        COMPRESSED_GOLD_HELMET = registerCompressedArmor("compressed_gold_helmet", ModMaterial.COMPRESSED_GOLD_ARMOR_INSTANCE, EquipmentType.HELMET, 4000, 5.0, 0.0);
-        COMPRESSED_GOLD_CHESTPLATE = registerCompressedArmor("compressed_gold_chestplate", ModMaterial.COMPRESSED_GOLD_ARMOR_INSTANCE, EquipmentType.CHESTPLATE, 4000, 5.0, 0.0);
-        COMPRESSED_GOLD_LEGGINGS = registerCompressedArmor("compressed_gold_leggings", ModMaterial.COMPRESSED_GOLD_ARMOR_INSTANCE, EquipmentType.LEGGINGS, 4000, 5.0, 0.0);
-        COMPRESSED_GOLD_BOOTS = registerCompressedArmor("compressed_gold_boots", ModMaterial.COMPRESSED_GOLD_ARMOR_INSTANCE, EquipmentType.BOOTS, 4000, 5.0, 0.0);
+        COMPRESSED_GOLD_HELMET = registerCompressedArmor("compressed_gold_helmet", ModMaterial.COMPRESSED_GOLD_ARMOR_INSTANCE, ArmorType.HELMET, 4000, 5.0, 0.0);
+        COMPRESSED_GOLD_CHESTPLATE = registerCompressedArmor("compressed_gold_chestplate", ModMaterial.COMPRESSED_GOLD_ARMOR_INSTANCE, ArmorType.CHESTPLATE, 4000, 5.0, 0.0);
+        COMPRESSED_GOLD_LEGGINGS = registerCompressedArmor("compressed_gold_leggings", ModMaterial.COMPRESSED_GOLD_ARMOR_INSTANCE, ArmorType.LEGGINGS, 4000, 5.0, 0.0);
+        COMPRESSED_GOLD_BOOTS = registerCompressedArmor("compressed_gold_boots", ModMaterial.COMPRESSED_GOLD_ARMOR_INSTANCE, ArmorType.BOOTS, 4000, 5.0, 0.0);
 
-        COMPRESSED_DIAMOND_HELMET = registerCompressedArmor("compressed_diamond_helmet", ModMaterial.COMPRESSED_DIAMOND_ARMOR_INSTANCE, EquipmentType.HELMET, 10000, 7.0, 0.0);
-        COMPRESSED_DIAMOND_CHESTPLATE = registerCompressedArmor("compressed_diamond_chestplate", ModMaterial.COMPRESSED_DIAMOND_ARMOR_INSTANCE, EquipmentType.CHESTPLATE, 10000, 7.0, 1.0);
-        COMPRESSED_DIAMOND_LEGGINGS = registerCompressedArmor("compressed_diamond_leggings", ModMaterial.COMPRESSED_DIAMOND_ARMOR_INSTANCE, EquipmentType.LEGGINGS, 10000, 7.0, 1.0);
-        COMPRESSED_DIAMOND_BOOTS = registerCompressedArmor("compressed_diamond_boots", ModMaterial.COMPRESSED_DIAMOND_ARMOR_INSTANCE, EquipmentType.BOOTS, 10000, 7.0, 0.0);
+        COMPRESSED_DIAMOND_HELMET = registerCompressedArmor("compressed_diamond_helmet", ModMaterial.COMPRESSED_DIAMOND_ARMOR_INSTANCE, ArmorType.HELMET, 10000, 7.0, 0.0);
+        COMPRESSED_DIAMOND_CHESTPLATE = registerCompressedArmor("compressed_diamond_chestplate", ModMaterial.COMPRESSED_DIAMOND_ARMOR_INSTANCE, ArmorType.CHESTPLATE, 10000, 7.0, 1.0);
+        COMPRESSED_DIAMOND_LEGGINGS = registerCompressedArmor("compressed_diamond_leggings", ModMaterial.COMPRESSED_DIAMOND_ARMOR_INSTANCE, ArmorType.LEGGINGS, 10000, 7.0, 1.0);
+        COMPRESSED_DIAMOND_BOOTS = registerCompressedArmor("compressed_diamond_boots", ModMaterial.COMPRESSED_DIAMOND_ARMOR_INSTANCE, ArmorType.BOOTS, 10000, 7.0, 0.0);
 
-        COMPRESSED_NETHERITE_HELMET = registerCompressedArmor("compressed_netherite_helmet", ModMaterial.COMPRESSED_NETHERITE_ARMOR_INSTANCE, EquipmentType.HELMET, 20000, 10.0, 0.0);
-        COMPRESSED_NETHERITE_CHESTPLATE = registerCompressedArmor("compressed_netherite_chestplate", ModMaterial.COMPRESSED_NETHERITE_ARMOR_INSTANCE, EquipmentType.CHESTPLATE, 20000, 10.0, 0.0);
-        COMPRESSED_NETHERITE_LEGGINGS = registerCompressedArmor("compressed_netherite_leggings", ModMaterial.COMPRESSED_NETHERITE_ARMOR_INSTANCE, EquipmentType.LEGGINGS, 20000, 10.0, 0.0);
-        COMPRESSED_NETHERITE_BOOTS = registerCompressedArmor("compressed_netherite_boots", ModMaterial.COMPRESSED_NETHERITE_ARMOR_INSTANCE, EquipmentType.BOOTS, 20000, 10.0, 0.0);
+        COMPRESSED_NETHERITE_HELMET = registerCompressedArmor("compressed_netherite_helmet", ModMaterial.COMPRESSED_NETHERITE_ARMOR_INSTANCE, ArmorType.HELMET, 20000, 10.0, 0.0);
+        COMPRESSED_NETHERITE_CHESTPLATE = registerCompressedArmor("compressed_netherite_chestplate", ModMaterial.COMPRESSED_NETHERITE_ARMOR_INSTANCE, ArmorType.CHESTPLATE, 20000, 10.0, 0.0);
+        COMPRESSED_NETHERITE_LEGGINGS = registerCompressedArmor("compressed_netherite_leggings", ModMaterial.COMPRESSED_NETHERITE_ARMOR_INSTANCE, ArmorType.LEGGINGS, 20000, 10.0, 0.0);
+        COMPRESSED_NETHERITE_BOOTS = registerCompressedArmor("compressed_netherite_boots", ModMaterial.COMPRESSED_NETHERITE_ARMOR_INSTANCE, ArmorType.BOOTS, 20000, 10.0, 0.0);
 
-        METEORICORE_AXE = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "meteoricore_axe"),
-                new BaseAxe(new Item.Settings()
-                        .registryKey(RegistryKey.of(
-                                RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "meteoricore_axe")
+        METEORICORE_AXE = Registry.register(BuiltInRegistries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "meteoricore_axe"),
+                new BaseAxe(new Item.Properties()
+                        .setId(ResourceKey.create(
+                                Registries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "meteoricore_axe")
                         ))
                 )
         );
 
-        METEORICORE_BOW = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "meteoricore_bow"),
-                new MeteoricoreBowItem(new Item.Settings()
-                        .registryKey(RegistryKey.of(
-                                RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "meteoricore_bow")
+        METEORICORE_BOW = Registry.register(BuiltInRegistries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "meteoricore_bow"),
+                new MeteoricoreBowItem(new Item.Properties()
+                        .setId(ResourceKey.create(
+                                Registries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "meteoricore_bow")
                         ))
                 )
         );
 
-        METEORICORE_SWORD = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "meteoricore_sword"),
-                new MeteoriteSword(new Item.Settings()
-                        .registryKey(RegistryKey.of(
-                                RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "meteoricore_sword")
+        METEORICORE_SWORD = Registry.register(BuiltInRegistries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "meteoricore_sword"),
+                new MeteoriteSword(new Item.Properties()
+                        .setId(ResourceKey.create(
+                                Registries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "meteoricore_sword")
                         ))
                 )
         );
-        IRON_GOLD_SWORD = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "iron_gold_sword"),
-                new IronGoldSword(new Item.Settings()
+        IRON_GOLD_SWORD = Registry.register(BuiltInRegistries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "iron_gold_sword"),
+                new IronGoldSword(new Item.Properties()
                         .sword(ModMaterial.IRON_GOLD_TOOL_MATERIAL, 84f, 1024)
-                        .maxCount(1)
-                        .component(DataComponentTypes.DEATH_PROTECTION, DeathProtectionComponent.TOTEM_OF_UNDYING)
-                        .registryKey(RegistryKey.of(
-                                RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "iron_gold_sword")
+                        .stacksTo(1)
+                        .component(DataComponents.DEATH_PROTECTION, DeathProtection.TOTEM_OF_UNDYING)
+                        .setId(ResourceKey.create(
+                                Registries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "iron_gold_sword")
                         ))
                 )
         );
@@ -628,8 +627,8 @@ public class ModItems {
         EMERALD_DIAMOND_SWORD = registerItem("emerald_diamond_sword",
                 registryBaseItemSettings("emerald_diamond_sword")
                         .sword(ModMaterial.EMERALD_DIAMOND_ALLOY_TOOL_MATERIAL, 119, -2f)
-                        .maxCount(1)
-                        .component(DataComponentTypes.UNBREAKABLE, Unit.INSTANCE),
+                        .stacksTo(1)
+                        .component(DataComponents.UNBREAKABLE, Unit.INSTANCE),
                 false
         );
 
@@ -637,8 +636,8 @@ public class ModItems {
                 new ZiJinSword(
                         registryBaseItemSettings("zijin_sword")
                         .sword(ModMaterial.ZIJIN_ARMOR_TOOL_MATERIAL, 84, 0f)
-                        .maxCount(1)
-                        .component(DataComponentTypes.UNBREAKABLE, Unit.INSTANCE)
+                        .stacksTo(1)
+                        .component(DataComponents.UNBREAKABLE, Unit.INSTANCE)
                 ),
                 false
         );
@@ -660,11 +659,11 @@ public class ModItems {
                 new CompressedMarkedSword(compressedSwordSettings("compressed_netherite_sword", ModMaterial.COMPRESSED_NETHERITE_TOOL_MATERIAL, 120.0F, -2.0F), ModEffects.NETHERITE_MARK_ENTRY)
         );
 
-        VS_SNIPE = Registry.register(Registries.ITEM, Identifier.of(Mob_battle.MOD_ID, "vs_snipe"),
-                new VsSnipe(new Item.Settings()
-                        .maxCount(1).maxDamage(465).component(DataComponentTypes.CHARGED_PROJECTILES, ChargedProjectilesComponent.DEFAULT).enchantable(1)
-                        .registryKey(RegistryKey.of(
-                                RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "vs_snipe")
+        VS_SNIPE = Registry.register(BuiltInRegistries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "vs_snipe"),
+                new VsSnipe(new Item.Properties()
+                        .stacksTo(1).durability(465).component(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.EMPTY).enchantable(1)
+                        .setId(ResourceKey.create(
+                                Registries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "vs_snipe")
                         ))
                 )
         );
@@ -703,13 +702,13 @@ public class ModItems {
         SILENCE_PHANTOM_SPAWN_EGG = registerSpawnEggItem(ModEntities.SILENCE_PHANTOM, "silence_phantom_spawn_egg");
         COAL_SILVERFISH_SPAWN_EGG = registerSpawnEggItem(ModEntities.COAL_SILVERFISH, "coal_silverfish_spawn_egg");
 
-        INCUBATION_EGG = Registry.register(Registries.ITEM,
-                Identifier.of(Mob_battle.MOD_ID, "incubation_egg"),
+        INCUBATION_EGG = Registry.register(BuiltInRegistries.ITEM,
+                ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "incubation_egg"),
                 new IncubationEggItem(
                         ModEntities.HIGHBIRD_EGG,
-                        new Item.Settings()
-                                .registryKey(RegistryKey.of(
-                                        RegistryKeys.ITEM, Identifier.of(Mob_battle.MOD_ID, "incubation_egg")
+                        new Item.Properties()
+                                .setId(ResourceKey.create(
+                                        Registries.ITEM, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "incubation_egg")
                                 ))
                 )
         );
@@ -717,8 +716,8 @@ public class ModItems {
         WARLOCK_BOOK = registerItem("warlock_book", new SummonVexBookItem(
                 registryBaseItemSettings("warlock_book")
                         .useCooldown(15)
-                        .maxDamage(150)
-                        .maxCount(1),
+                        .durability(150)
+                        .stacksTo(1),
                 3, 0, 0)
         );
 
@@ -726,96 +725,96 @@ public class ModItems {
                 registryBaseItemSettings("grand_summon_book")
                         .rarity(Rarity.RARE)
                         .useCooldown(20)
-                        .maxDamage(150)
-                        .maxCount(1),
+                        .durability(150)
+                        .stacksTo(1),
                 10, 5, 10)
         );
 
         GUARDIAN_SEAL = registerItem("guardian_seal", new GuardianSealItem(
                 registryBaseItemSettings("guardian_seal")
                         .useCooldown(2000)
-                        .maxCount(1),
+                        .stacksTo(1),
                 false)
         );
 
         FILLING_SEAL = registerItem("filling_seal", new GuardianSealItem(
                 registryBaseItemSettings("filling_seal")
-                        .maxCount(1),
+                        .stacksTo(1),
                 true)
         );
 
         FINE_KNIFE = registerItem("fine_knife", new FineKnifeItem(
                 registryBaseItemSettings("fine_knife")
-                        .maxDamage(200)
+                        .durability(200)
                         .sword(ToolMaterial.IRON, 0, 0)
-                        .maxCount(1)),
+                        .stacksTo(1)),
                 false
         );
 
         SMALL_BACKPACK = registerItem("small_backpack", new BackpackItem(
                 registryBaseItemSettings("small_backpack")
                         .rarity(Rarity.UNCOMMON)
-                        .maxCount(1),
+                        .stacksTo(1),
                 false)
         );
 
         LARGE_BACKPACK = registerItem("large_backpack", new BackpackItem(
                 registryBaseItemSettings("large_backpack")
                         .rarity(Rarity.RARE)
-                        .maxCount(1),
+                        .stacksTo(1),
                 true)
         );
 
         CARDIOTONIC_INJECTION = registerItem("cardiotonic_injection", new CardiotonicInjectionItem(
                 registryBaseItemSettings("cardiotonic_injection")
-                        .maxCount(1)),
+                        .stacksTo(1)),
                 false
         );
 
-        ICE_ARROW_ITEM = registerItem("ice_arrow_item", registryBaseItemSettings("ice_arrow_item").maxCount(64));
-        TRAIN_BULLET = registerItem("train_bullet", registryBaseItemSettings("train_bullet").maxCount(64));
+        ICE_ARROW_ITEM = registerItem("ice_arrow_item", registryBaseItemSettings("ice_arrow_item").stacksTo(64));
+        TRAIN_BULLET = registerItem("train_bullet", registryBaseItemSettings("train_bullet").stacksTo(64));
         AREA_GRAVITY_DEVICE_ITEM = registerItem("area_gravity_device_item", new AreaGravityDeviceItem(
                 registryBaseItemSettings("area_gravity_device_item")
                         .rarity(Rarity.RARE)
-                        .maxCount(1)
+                        .stacksTo(1)
                         .useCooldown(70)
-                        .component(DataComponentTypes.UNBREAKABLE, Unit.INSTANCE)
+                        .component(DataComponents.UNBREAKABLE, Unit.INSTANCE)
 
         ));
         PIGLIN_CANNON = registerItem("piglin_cannon",
                 new PiglinCannonItem(
                         registryBaseItemSettings("piglin_cannon")
                                 .rarity(Rarity.RARE)
-                                .maxCount(1)
-                                .component(DataComponentTypes.UNBREAKABLE, Unit.INSTANCE)
+                                .stacksTo(1)
+                                .component(DataComponents.UNBREAKABLE, Unit.INSTANCE)
                 )
         );
         WIRE = registerItem("wire");
         ELECTRONIC_COMPONENTS = registerItem("electronic_components");
         ModEntities.SPAWN_EGG_ENTITIES.forEach((id, entityType) -> {
             @SuppressWarnings("unchecked")
-            EntityType<? extends MobEntity> mobType = (EntityType<? extends MobEntity>) entityType;
+            EntityType<? extends Mob> mobType = (EntityType<? extends Mob>) entityType;
             registerSpawnEggItem(mobType, id);
         });
     }
 
-    public static Item.Settings registryBaseItemSettings(String id) {
-        Identifier itemId = Identifier.of(Mob_battle.MOD_ID, id);
-        return new Item.Settings()
-                .registryKey(RegistryKey.of(RegistryKeys.ITEM, itemId));
+    public static Item.Properties registryBaseItemSettings(String id) {
+        ResourceLocation itemId = ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, id);
+        return new Item.Properties()
+                .setId(ResourceKey.create(Registries.ITEM, itemId));
     }
-    private static Item registerCompressedArmor(String id, ArmorMaterial material, EquipmentType type, int durability, double maxHealth, double extraToughness) {
-        AttributeModifierSlot slot = AttributeModifierSlot.forEquipmentSlot(type.getEquipmentSlot());
-        AttributeModifiersComponent attributes = material.createAttributeModifiers(type)
-                .with(
-                        EntityAttributes.MAX_HEALTH,
-                        new EntityAttributeModifier(Identifier.of(Mob_battle.MOD_ID, "health_" + id), maxHealth, EntityAttributeModifier.Operation.ADD_VALUE),
+    private static Item registerCompressedArmor(String id, ArmorMaterial material, ArmorType type, int durability, double maxHealth, double extraToughness) {
+        EquipmentSlotGroup slot = EquipmentSlotGroup.bySlot(type.getSlot());
+        ItemAttributeModifiers attributes = material.createAttributes(type)
+                .withModifierAdded(
+                        Attributes.MAX_HEALTH,
+                        new AttributeModifier(ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "health_" + id), maxHealth, AttributeModifier.Operation.ADD_VALUE),
                         slot
                 );
         if (extraToughness > 0.0) {
-            attributes = attributes.with(
-                    EntityAttributes.ARMOR_TOUGHNESS,
-                    new EntityAttributeModifier(Identifier.of(Mob_battle.MOD_ID, "armor_toughness_" + id), extraToughness, EntityAttributeModifier.Operation.ADD_VALUE),
+            attributes = attributes.withModifierAdded(
+                    Attributes.ARMOR_TOUGHNESS,
+                    new AttributeModifier(ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "armor_toughness_" + id), extraToughness, AttributeModifier.Operation.ADD_VALUE),
                     slot
             );
         }
@@ -823,37 +822,37 @@ public class ModItems {
                 id,
                 new ModBaseArmorItem(
                         registryBaseItemSettings(id)
-                        .armor(material, type)
-                        .attributeModifiers(attributes)
-                        .maxDamage(durability)
-                        .maxCount(1),
+                        .humanoidArmor(material, type)
+                        .attributes(attributes)
+                        .durability(durability)
+                        .stacksTo(1),
                         material,
                         false
                 )
         );
     }
-    private static Item.Settings compressedSwordSettings(String id, ToolMaterial material, float attackDamage, float attackSpeed) {
-        AttributeModifiersComponent attributes = AttributeModifiersComponent.builder()
+    private static Item.Properties compressedSwordSettings(String id, ToolMaterial material, float attackDamage, float attackSpeed) {
+        ItemAttributeModifiers attributes = ItemAttributeModifiers.builder()
                 .add(
-                        EntityAttributes.ATTACK_DAMAGE,
-                        new EntityAttributeModifier(Item.BASE_ATTACK_DAMAGE_MODIFIER_ID, attackDamage + material.attackDamageBonus(), EntityAttributeModifier.Operation.ADD_VALUE),
-                        AttributeModifierSlot.MAINHAND
+                        Attributes.ATTACK_DAMAGE,
+                        new AttributeModifier(Item.BASE_ATTACK_DAMAGE_ID, attackDamage + material.attackDamageBonus(), AttributeModifier.Operation.ADD_VALUE),
+                        EquipmentSlotGroup.MAINHAND
                 )
                 .add(
-                        EntityAttributes.ATTACK_SPEED,
-                        new EntityAttributeModifier(Item.BASE_ATTACK_SPEED_MODIFIER_ID, attackSpeed, EntityAttributeModifier.Operation.ADD_VALUE),
-                        AttributeModifierSlot.MAINHAND
+                        Attributes.ATTACK_SPEED,
+                        new AttributeModifier(Item.BASE_ATTACK_SPEED_ID, attackSpeed, AttributeModifier.Operation.ADD_VALUE),
+                        EquipmentSlotGroup.MAINHAND
                 )
                 .add(
-                        EntityAttributes.SWEEPING_DAMAGE_RATIO,
-                        new EntityAttributeModifier(Identifier.of(Mob_battle.MOD_ID, "sweeping_" + id), 1.0, EntityAttributeModifier.Operation.ADD_VALUE),
-                        AttributeModifierSlot.MAINHAND
+                        Attributes.SWEEPING_DAMAGE_RATIO,
+                        new AttributeModifier(ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "sweeping_" + id), 1.0, AttributeModifier.Operation.ADD_VALUE),
+                        EquipmentSlotGroup.MAINHAND
                 )
                 .build();
         return registryBaseItemSettings(id)
                 .sword(material, attackDamage, attackSpeed)
-                .attributeModifiers(attributes)
-                .maxCount(1);
+                .attributes(attributes)
+                .stacksTo(1);
     }
     private static Item registerCompressedSword(String id, Item item) {
         return registerItem(id, item, true, false);
@@ -864,22 +863,22 @@ public class ModItems {
     public static <T extends Item> T registerItem(String id, T item) {
         return registerItem(id, item, true);
     }
-    public static Item registerItem(String id, Item.Settings settings) {
+    public static Item registerItem(String id, Item.Properties settings) {
         return registerItem(id, settings, true);
     }
-    public static Item registerItem(String id, Item.Settings settings, boolean isGenerated) {
+    public static Item registerItem(String id, Item.Properties settings, boolean isGenerated) {
         return registerItem(id, settings, true, isGenerated);
     }
-    public static Item registerItem(String id, Item.Settings settings, boolean registerGroup, boolean isGenerated) {
+    public static Item registerItem(String id, Item.Properties settings, boolean registerGroup, boolean isGenerated) {
         return registerItem(id, new Item(settings), registerGroup, isGenerated);
     }
     public static <T extends Item> T registerItem(String id, T item, boolean isGenerated) {
         return registerItem(id, item, true, isGenerated);
     }
     public static <T extends Item> T registerItem(String id, T item, boolean registerGroup, boolean isGenerated) {
-        Identifier itemId = Identifier.of(Mob_battle.MOD_ID, id);
+        ResourceLocation itemId = ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, id);
         T registered = Registry.register(
-                Registries.ITEM,
+                BuiltInRegistries.ITEM,
                 itemId,
                 item
         );
@@ -887,7 +886,7 @@ public class ModItems {
         if (isGenerated) GENERATED_ITEMS.put(id, registered);
         return registered;
     }
-    public static SpawnEggItem registerSpawnEggItem(EntityType<? extends MobEntity> entityType, String id) {
+    public static SpawnEggItem registerSpawnEggItem(EntityType<? extends Mob> entityType, String id) {
         SpawnEggItem item = registerItem(id, new SpawnEggItem(entityType, registryBaseItemSettings(id)), false, false);
         SPAWN_EGG_ITEMS.put(id, item);
         return item;

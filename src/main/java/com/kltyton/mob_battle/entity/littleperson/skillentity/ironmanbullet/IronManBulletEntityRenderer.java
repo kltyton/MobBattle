@@ -2,50 +2,50 @@ package com.kltyton.mob_battle.entity.littleperson.skillentity.ironmanbullet;
 
 import com.kltyton.mob_battle.Mob_battle;
 import com.kltyton.mob_battle.client.ModModel;
-import net.minecraft.client.render.OverlayTexture;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.VertexConsumer;
-import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.entity.EntityRenderer;
-import net.minecraft.client.render.entity.EntityRendererFactory;
-import net.minecraft.client.render.entity.state.ArrowEntityRenderState;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.RotationAxis;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.math.Axis;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.entity.EntityRenderer;
+import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.client.renderer.entity.state.TippableArrowRenderState;
+import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.resources.ResourceLocation;
 
-public class IronManBulletEntityRenderer extends EntityRenderer<IronManBulletEntity, ArrowEntityRenderState> {
-    public static final Identifier TEXTURE = Identifier.of(Mob_battle.MOD_ID, "textures/entity/projectiles/iron_man_bullet.png");
-    public static final Identifier TIPPED_TEXTURE = Identifier.ofVanilla("textures/entity/projectiles/iron_man_bullet.png");
+public class IronManBulletEntityRenderer extends EntityRenderer<IronManBulletEntity, TippableArrowRenderState> {
+    public static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "textures/entity/projectiles/iron_man_bullet.png");
+    public static final ResourceLocation TIPPED_TEXTURE = ResourceLocation.withDefaultNamespace("textures/entity/projectiles/iron_man_bullet.png");
     private final IronManBulletEntityModel model;
 
-    public IronManBulletEntityRenderer(EntityRendererFactory.Context context) {
+    public IronManBulletEntityRenderer(EntityRendererProvider.Context context) {
         super(context);
-        this.model = new IronManBulletEntityModel(context.getPart(ModModel.IRON_MAN_BULLET));
+        this.model = new IronManBulletEntityModel(context.bakeLayer(ModModel.IRON_MAN_BULLET));
     }
     @Override
-    public void render(ArrowEntityRenderState projectileEntityRenderState, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i) {
-        matrixStack.push();
-        matrixStack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(projectileEntityRenderState.yaw - 90.0F));
-        matrixStack.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(projectileEntityRenderState.pitch));
-        VertexConsumer vertexConsumer = vertexConsumerProvider.getBuffer(RenderLayer.getEntityCutout(this.getTexture(projectileEntityRenderState)));
-        this.model.setAngles(projectileEntityRenderState);
-        this.model.render(matrixStack, vertexConsumer, i, OverlayTexture.DEFAULT_UV);
-        matrixStack.pop();
+    public void render(TippableArrowRenderState projectileEntityRenderState, PoseStack matrixStack, MultiBufferSource vertexConsumerProvider, int i) {
+        matrixStack.pushPose();
+        matrixStack.mulPose(Axis.YP.rotationDegrees(projectileEntityRenderState.yRot - 90.0F));
+        matrixStack.mulPose(Axis.ZP.rotationDegrees(projectileEntityRenderState.xRot));
+        VertexConsumer vertexConsumer = vertexConsumerProvider.getBuffer(RenderType.entityCutout(this.getTextureLocation(projectileEntityRenderState)));
+        this.model.setupAnim(projectileEntityRenderState);
+        this.model.renderToBuffer(matrixStack, vertexConsumer, i, OverlayTexture.NO_OVERLAY);
+        matrixStack.popPose();
         super.render(projectileEntityRenderState, matrixStack, vertexConsumerProvider, i);
     }
 
-    public void updateRenderState(IronManBulletEntity persistentProjectileEntity, ArrowEntityRenderState projectileEntityRenderState, float f) {
-        super.updateRenderState(persistentProjectileEntity, projectileEntityRenderState, f);
-        projectileEntityRenderState.pitch = persistentProjectileEntity.getLerpedPitch(f);
-        projectileEntityRenderState.yaw = persistentProjectileEntity.getLerpedYaw(f);
+    public void extractRenderState(IronManBulletEntity persistentProjectileEntity, TippableArrowRenderState projectileEntityRenderState, float f) {
+        super.extractRenderState(persistentProjectileEntity, projectileEntityRenderState, f);
+        projectileEntityRenderState.xRot = persistentProjectileEntity.getXRot(f);
+        projectileEntityRenderState.yRot = persistentProjectileEntity.getYRot(f);
     }
 
-    protected Identifier getTexture(ArrowEntityRenderState arrowEntityRenderState) {
-        return arrowEntityRenderState.tipped ? TIPPED_TEXTURE : TEXTURE;
+    protected ResourceLocation getTextureLocation(TippableArrowRenderState arrowEntityRenderState) {
+        return arrowEntityRenderState.isTipped ? TIPPED_TEXTURE : TEXTURE;
     }
 
-    public ArrowEntityRenderState createRenderState() {
-        return new ArrowEntityRenderState();
+    public TippableArrowRenderState createRenderState() {
+        return new TippableArrowRenderState();
     }
 }
 

@@ -1,9 +1,9 @@
 package com.kltyton.mob_battle.items.misc;
 
-import net.minecraft.item.LeadItem;
+import net.minecraft.world.item.LeadItem;
 
 public class UniversalLeadItem extends LeadItem {
-    public UniversalLeadItem(Settings settings) {
+    public UniversalLeadItem(Properties settings) {
         super(settings);
     }
 }

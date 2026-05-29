@@ -1,19 +1,19 @@
 package com.kltyton.mob_battle.entity.voidcell;
 
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.ai.goal.LookAroundGoal;
-import net.minecraft.entity.ai.goal.LookAtEntityGoal;
-import net.minecraft.entity.ai.goal.SwimGoal;
-import net.minecraft.entity.ai.pathing.PathNodeType;
-import net.minecraft.entity.attribute.DefaultAttributeContainer;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.damage.DamageTypes;
-import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.entity.mob.PathAwareEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.world.World;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageTypes;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.PathfinderMob;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.goal.FloatGoal;
+import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
+import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.pathfinder.PathType;
 import software.bernie.geckolib.animatable.GeoEntity;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.animatable.manager.AnimatableManager;
@@ -21,7 +21,7 @@ import software.bernie.geckolib.animatable.processing.AnimationController;
 import software.bernie.geckolib.animation.RawAnimation;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
-public class VoidCellEntity extends PathAwareEntity implements GeoEntity {
+public class VoidCellEntity extends PathfinderMob implements GeoEntity {
     private final AnimatableInstanceCache geoCache = GeckoLibUtil.createInstanceCache(this);
     protected static final RawAnimation IDEA_ANIM = RawAnimation.begin().thenLoop("idle");
     @Override
@@ -33,17 +33,17 @@ public class VoidCellEntity extends PathAwareEntity implements GeoEntity {
         return this.geoCache;
     }
 
-    public VoidCellEntity(EntityType<? extends VoidCellEntity> entityType, World world) {
+    public VoidCellEntity(EntityType<? extends VoidCellEntity> entityType, Level world) {
         super(entityType, world);
         this.setNoGravity(true);
         // 使用类似恼鬼的移动控制器，实现 3D 飞行
         this.moveControl = new VoidCellMoveControl(this);
-        this.experiencePoints = 5;
-        this.setPathfindingPenalty(PathNodeType.DANGER_FIRE, -1.0F);
-        this.setPathfindingPenalty(PathNodeType.WATER, -1.0F);
-        this.setPathfindingPenalty(PathNodeType.WATER_BORDER, 16.0F);
-        this.setPathfindingPenalty(PathNodeType.DANGER_OTHER, -10.0F);
-        this.setPathfindingPenalty(PathNodeType.WALKABLE, -10.0F); // 讨厌可站立方块
+        this.xpReward = 5;
+        this.setPathfindingMalus(PathType.DANGER_FIRE, -1.0F);
+        this.setPathfindingMalus(PathType.WATER, -1.0F);
+        this.setPathfindingMalus(PathType.WATER_BORDER, 16.0F);
+        this.setPathfindingMalus(PathType.DANGER_OTHER, -10.0F);
+        this.setPathfindingMalus(PathType.WALKABLE, -10.0F); // 讨厌可站立方块
     }
 
     // --- 核心逻辑修改 ---
@@ -51,39 +51,39 @@ public class VoidCellEntity extends PathAwareEntity implements GeoEntity {
     @Override
     public void tick() {
         super.tick();
-        if (!this.getWorld().isClient) {
+        if (!this.level().isClientSide) {
             this.setNoGravity(true);
             if (this.getY() < -300) {
-                this.kill((ServerWorld) this.getWorld());
+                this.kill((ServerLevel) this.level());
                 return;
             }
 
             if (this.getY() <= -220) {
-                this.getMoveControl().moveTo(this.getX(), this.getY() + 10.0, this.getZ(), 0.5);
+                this.getMoveControl().setWantedPosition(this.getX(), this.getY() + 10.0, this.getZ(), 0.5);
             }
         }
 
     }
 
     @Override
-    public boolean damage(ServerWorld world, DamageSource source, float amount) {
-        if (source.isOf(DamageTypes.FALL) || source.isOf(DamageTypes.OUT_OF_WORLD)) return false;
-        return super.damage(world, source, amount);
+    public boolean hurtServer(ServerLevel world, DamageSource source, float amount) {
+        if (source.is(DamageTypes.FALL) || source.is(DamageTypes.FELL_OUT_OF_WORLD)) return false;
+        return super.hurtServer(world, source, amount);
     }
     @Override
-    protected void initGoals() {
+    protected void registerGoals() {
         // 移除攻击性 Goal，只保留被动和游荡行为
-        this.goalSelector.add(0, new SwimGoal(this));
+        this.goalSelector.addGoal(0, new FloatGoal(this));
         // 自定义的空中随机游荡目标
-        this.goalSelector.add(4, new RandomFlyGoal(this));
-        this.goalSelector.add(8, new LookAtEntityGoal(this, PlayerEntity.class, 8.0F));
-        this.goalSelector.add(9, new LookAroundGoal(this));
+        this.goalSelector.addGoal(4, new RandomFlyGoal(this));
+        this.goalSelector.addGoal(8, new LookAtPlayerGoal(this, Player.class, 8.0F));
+        this.goalSelector.addGoal(9, new RandomLookAroundGoal(this));
     }
 
-    public static DefaultAttributeContainer.Builder createVoidCellAttributes() {
-        return MobEntity.createMobAttributes()
-                .add(EntityAttributes.MAX_HEALTH, 5.0)
-                .add(EntityAttributes.FLYING_SPEED, 0.6)
-                .add(EntityAttributes.MOVEMENT_SPEED, 0.3);
+    public static AttributeSupplier.Builder createVoidCellAttributes() {
+        return Mob.createMobAttributes()
+                .add(Attributes.MAX_HEALTH, 5.0)
+                .add(Attributes.FLYING_SPEED, 0.6)
+                .add(Attributes.MOVEMENT_SPEED, 0.3);
     }
 }

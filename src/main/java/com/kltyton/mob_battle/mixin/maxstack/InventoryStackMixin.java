@@ -2,11 +2,11 @@ package com.kltyton.mob_battle.mixin.maxstack;
 
 import com.kltyton.mob_battle.Mob_battle;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
-import net.minecraft.inventory.Inventory;
+import net.minecraft.world.Container;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
-@Mixin(Inventory.class)
+@Mixin(Container.class)
 public interface InventoryStackMixin {
     /**
     * @ 作者Lonk
@@ -20,7 +20,7 @@ public interface InventoryStackMixin {
     // 1.2.2-Lonk-此重写允许多个mod注入此而不会引发错误。
     @ModifyReturnValue
             (
-                    method = "getMaxCountPerStack()I",
+                    method = "getMaxStackSize()I",
                     at = @At("RETURN")
             )
     default int getMaxCountPerStack(int constant) {

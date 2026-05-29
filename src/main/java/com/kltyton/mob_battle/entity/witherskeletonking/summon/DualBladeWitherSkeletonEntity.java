@@ -6,23 +6,23 @@ import com.kltyton.mob_battle.entity.OwnedSummon;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
 import com.kltyton.mob_battle.utils.EntityUtil;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.ai.goal.ActiveTargetGoal;
-import net.minecraft.entity.ai.goal.LookAtEntityGoal;
-import net.minecraft.entity.ai.goal.MeleeAttackGoal;
-import net.minecraft.entity.ai.goal.RevengeGoal;
-import net.minecraft.entity.ai.goal.WanderAroundFarGoal;
-import net.minecraft.entity.attribute.DefaultAttributeContainer;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.data.DataTracker;
-import net.minecraft.entity.data.TrackedData;
-import net.minecraft.entity.data.TrackedDataHandlerRegistry;
-import net.minecraft.entity.mob.HostileEntity;
-import net.minecraft.entity.mob.WitherSkeletonEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.world.World;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
+import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
+import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
+import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
+import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
+import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.entity.monster.WitherSkeleton;
+import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib.animatable.GeoEntity;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
@@ -33,8 +33,8 @@ import software.bernie.geckolib.animation.PlayState;
 import software.bernie.geckolib.animation.RawAnimation;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
-public class DualBladeWitherSkeletonEntity extends WitherSkeletonEntity implements GeoEntity, ModSkillEntityType, OwnedSummon {
-    public static final TrackedData<Boolean> HAS_SKILL = DataTracker.registerData(DualBladeWitherSkeletonEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
+public class DualBladeWitherSkeletonEntity extends WitherSkeleton implements GeoEntity, ModSkillEntityType, OwnedSummon {
+    public static final EntityDataAccessor<Boolean> HAS_SKILL = SynchedEntityData.defineId(DualBladeWitherSkeletonEntity.class, EntityDataSerializers.BOOLEAN);
 
     private static final RawAnimation IDLE_ANIM = RawAnimation.begin().thenLoop("idle");
     private static final RawAnimation WALK_ANIM = RawAnimation.begin().thenLoop("walk");
@@ -51,19 +51,19 @@ public class DualBladeWitherSkeletonEntity extends WitherSkeletonEntity implemen
     private LivingEntity summonOwner;
     private int birthTicks = 45;
 
-    public DualBladeWitherSkeletonEntity(EntityType<? extends WitherSkeletonEntity> entityType, World world) {
+    public DualBladeWitherSkeletonEntity(EntityType<? extends WitherSkeleton> entityType, Level world) {
         super(entityType, world);
         this.setHasSkill(false);
-        this.setAiDisabled(true);
+        this.setNoAi(true);
     }
 
     @Override
-    protected void initGoals() {
-        this.goalSelector.add(2, new MeleeAttackGoal(this, 1.0D, true));
-        this.goalSelector.add(7, new WanderAroundFarGoal(this, 0.8D));
-        this.goalSelector.add(8, new LookAtEntityGoal(this, LivingEntity.class, 10.0F));
-        this.targetSelector.add(1, new RevengeGoal(this));
-        this.targetSelector.add(2, new ActiveTargetGoal<>(this, LivingEntity.class, 10, true, false,
+    protected void registerGoals() {
+        this.goalSelector.addGoal(2, new MeleeAttackGoal(this, 1.0D, true));
+        this.goalSelector.addGoal(7, new WaterAvoidingRandomStrollGoal(this, 0.8D));
+        this.goalSelector.addGoal(8, new LookAtPlayerGoal(this, LivingEntity.class, 10.0F));
+        this.targetSelector.addGoal(1, new HurtByTargetGoal(this));
+        this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, LivingEntity.class, 10, true, false,
                 (target, world) -> isValidSummonTarget(target)));
     }
 
@@ -85,9 +85,9 @@ public class DualBladeWitherSkeletonEntity extends WitherSkeletonEntity implemen
     }
 
     @Override
-    protected void initDataTracker(DataTracker.Builder builder) {
-        super.initDataTracker(builder);
-        builder.add(HAS_SKILL, false);
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(HAS_SKILL, false);
     }
 
     @Override
@@ -96,18 +96,18 @@ public class DualBladeWitherSkeletonEntity extends WitherSkeletonEntity implemen
         if (this.birthTicks > 0) {
             this.birthTicks--;
         }
-        if (!this.getWorld().isClient()) {
-            this.setAttacking(this.getTarget() != null);
+        if (!this.level().isClientSide()) {
+            this.setAggressive(this.getTarget() != null);
             if (this.birthTicks > 0) {
-                this.setAiDisabled(true);
+                this.setNoAi(true);
             } else if (!hasSkill()) {
-                this.setAiDisabled(false);
+                this.setNoAi(false);
             }
         }
     }
 
     @Override
-    public boolean tryAttack(ServerWorld world, Entity target) {
+    public boolean doHurtTarget(ServerLevel world, Entity target) {
         if (!(target instanceof LivingEntity living)
                 || !EntityUtil.isValidCombatTarget(this, living)
                 || !isValidSummonTarget(living)
@@ -122,7 +122,7 @@ public class DualBladeWitherSkeletonEntity extends WitherSkeletonEntity implemen
 
     private void performAttack(int attack) {
         this.setHasSkill(true);
-        this.setAiDisabled(true);
+        this.setNoAi(true);
         this.triggerAnim("skill_controller", "attack" + attack);
     }
 
@@ -135,7 +135,7 @@ public class DualBladeWitherSkeletonEntity extends WitherSkeletonEntity implemen
             case "attack5" -> damageTarget(120.0F);
             case "stop" -> {
                 this.setHasSkill(false);
-                this.setAiDisabled(false);
+                this.setNoAi(false);
             }
             default -> {
                 return false;
@@ -146,21 +146,21 @@ public class DualBladeWitherSkeletonEntity extends WitherSkeletonEntity implemen
 
     private void damageTarget(float damage) {
         LivingEntity target = this.getTarget();
-        if (target == null || !(this.getWorld() instanceof ServerWorld world) || !isValidSummonTarget(target)) {
+        if (target == null || !(this.level() instanceof ServerLevel world) || !isValidSummonTarget(target)) {
             return;
         }
-        target.damage(world, this.getDamageSources().mobAttack(this), damage);
+        target.hurtServer(world, this.damageSources().mobAttack(this), damage);
     }
 
     private void areaDamage(double radius, float damage) {
-        if (!(this.getWorld() instanceof ServerWorld world)) {
+        if (!(this.level() instanceof ServerLevel world)) {
             return;
         }
         for (LivingEntity target : EntityUtil.getNearbyEntity(this, LivingEntity.class, radius, false, EntityUtil.TeamFilter.EXCLUDE_TEAM)) {
             if (!isValidSummonTarget(target)) {
                 continue;
             }
-            target.damage(world, this.getDamageSources().mobAttack(this), damage);
+            target.hurtServer(world, this.damageSources().mobAttack(this), damage);
         }
     }
 
@@ -200,17 +200,17 @@ public class DualBladeWitherSkeletonEntity extends WitherSkeletonEntity implemen
             return PlayState.CONTINUE;
         }
         if (state.isMoving()) {
-            return this.isAttacking() ? state.setAndContinue(RUN_ANIM) : state.setAndContinue(WALK_ANIM);
+            return this.isAggressive() ? state.setAndContinue(RUN_ANIM) : state.setAndContinue(WALK_ANIM);
         }
         return state.setAndContinue(IDLE_ANIM);
     }
 
     public boolean hasSkill() {
-        return this.dataTracker.get(HAS_SKILL);
+        return this.entityData.get(HAS_SKILL);
     }
 
     public void setHasSkill(boolean hasSkill) {
-        this.dataTracker.set(HAS_SKILL, hasSkill);
+        this.entityData.set(HAS_SKILL, hasSkill);
     }
 
     @Override
@@ -223,15 +223,15 @@ public class DualBladeWitherSkeletonEntity extends WitherSkeletonEntity implemen
         return this.geoCache;
     }
 
-    public static DefaultAttributeContainer.Builder createAttributes() {
-        return HostileEntity.createHostileAttributes()
-                .add(EntityAttributes.MAX_HEALTH, 2000.0D)
-                .add(EntityAttributes.MOVEMENT_SPEED, 0.45D)
-                .add(EntityAttributes.KNOCKBACK_RESISTANCE, 0.7D)
-                .add(EntityAttributes.FOLLOW_RANGE, 40.0D)
-                .add(EntityAttributes.ATTACK_DAMAGE, 100.0D)
-                .add(EntityAttributes.ARMOR, 25.0D)
-                .add(EntityAttributes.ARMOR_TOUGHNESS, 20.0D)
+    public static AttributeSupplier.Builder createAttributes() {
+        return Monster.createMonsterAttributes()
+                .add(Attributes.MAX_HEALTH, 2000.0D)
+                .add(Attributes.MOVEMENT_SPEED, 0.45D)
+                .add(Attributes.KNOCKBACK_RESISTANCE, 0.7D)
+                .add(Attributes.FOLLOW_RANGE, 40.0D)
+                .add(Attributes.ATTACK_DAMAGE, 100.0D)
+                .add(Attributes.ARMOR, 25.0D)
+                .add(Attributes.ARMOR_TOUGHNESS, 20.0D)
                 .add(ModEntityAttributes.DAMAGE_REDUCTION, 0.35D);
     }
 }

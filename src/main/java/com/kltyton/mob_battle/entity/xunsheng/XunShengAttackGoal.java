@@ -1,6 +1,6 @@
 package com.kltyton.mob_battle.entity.xunsheng;
 
-import net.minecraft.entity.ai.goal.MeleeAttackGoal;
+import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 
 public class XunShengAttackGoal extends MeleeAttackGoal {
     private final XunShengEntity xunsheng;
@@ -20,17 +20,17 @@ public class XunShengAttackGoal extends MeleeAttackGoal {
     @Override
     public void stop() {
         super.stop();
-        this.xunsheng.setAttacking(false);
+        this.xunsheng.setAggressive(false);
     }
 
     @Override
     public void tick() {
         super.tick();
         this.ticks++;
-        if (this.ticks >= 5 && this.getCooldown() < this.getMaxCooldown() / 2) {
-            this.xunsheng.setAttacking(true);
+        if (this.ticks >= 5 && this.getTicksUntilNextAttack() < this.getAttackInterval() / 2) {
+            this.xunsheng.setAggressive(true);
         } else {
-            this.xunsheng.setAttacking(false);
+            this.xunsheng.setAggressive(false);
         }
     }
 }

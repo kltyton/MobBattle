@@ -6,21 +6,21 @@ import com.kltyton.mob_battle.entity.general.GeneralEntity;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
 import com.kltyton.mob_battle.utils.EntityUtil;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.ai.goal.ActiveTargetGoal;
-import net.minecraft.entity.ai.goal.MeleeAttackGoal;
-import net.minecraft.entity.ai.goal.WanderAroundFarGoal;
-import net.minecraft.entity.attribute.DefaultAttributeContainer;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.data.DataTracker;
-import net.minecraft.entity.data.TrackedData;
-import net.minecraft.entity.data.TrackedDataHandlerRegistry;
-import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.entity.mob.WitherSkeletonEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.world.World;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
+import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
+import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
+import net.minecraft.world.entity.monster.WitherSkeleton;
+import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.animatable.manager.AnimatableManager;
@@ -30,13 +30,13 @@ import software.bernie.geckolib.animation.PlayState;
 import software.bernie.geckolib.animation.RawAnimation;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
-public class WitherSkeletonDogEntity extends WitherSkeletonEntity implements GeneralEntity<WitherSkeletonDogEntity>, OwnedSummon {
-    public static final TrackedData<Boolean> HAS_SKILL = DataTracker.registerData(WitherSkeletonDogEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
-    public static final TrackedData<Integer> SKILL_COOLDOWN_1 = DataTracker.registerData(WitherSkeletonDogEntity.class, TrackedDataHandlerRegistry.INTEGER);
-    public static final TrackedData<Integer> SKILL_COOLDOWN_2 = DataTracker.registerData(WitherSkeletonDogEntity.class, TrackedDataHandlerRegistry.INTEGER);
-    public static final TrackedData<Integer> SKILL_COOLDOWN_3 = DataTracker.registerData(WitherSkeletonDogEntity.class, TrackedDataHandlerRegistry.INTEGER);
-    public static final TrackedData<Integer> SKILL_COOLDOWN_4 = DataTracker.registerData(WitherSkeletonDogEntity.class, TrackedDataHandlerRegistry.INTEGER);
-    public static final TrackedData<Integer> SKILL_COOLDOWN_5 = DataTracker.registerData(WitherSkeletonDogEntity.class, TrackedDataHandlerRegistry.INTEGER);
+public class WitherSkeletonDogEntity extends WitherSkeleton implements GeneralEntity<WitherSkeletonDogEntity>, OwnedSummon {
+    public static final EntityDataAccessor<Boolean> HAS_SKILL = SynchedEntityData.defineId(WitherSkeletonDogEntity.class, EntityDataSerializers.BOOLEAN);
+    public static final EntityDataAccessor<Integer> SKILL_COOLDOWN_1 = SynchedEntityData.defineId(WitherSkeletonDogEntity.class, EntityDataSerializers.INT);
+    public static final EntityDataAccessor<Integer> SKILL_COOLDOWN_2 = SynchedEntityData.defineId(WitherSkeletonDogEntity.class, EntityDataSerializers.INT);
+    public static final EntityDataAccessor<Integer> SKILL_COOLDOWN_3 = SynchedEntityData.defineId(WitherSkeletonDogEntity.class, EntityDataSerializers.INT);
+    public static final EntityDataAccessor<Integer> SKILL_COOLDOWN_4 = SynchedEntityData.defineId(WitherSkeletonDogEntity.class, EntityDataSerializers.INT);
+    public static final EntityDataAccessor<Integer> SKILL_COOLDOWN_5 = SynchedEntityData.defineId(WitherSkeletonDogEntity.class, EntityDataSerializers.INT);
     private static final RawAnimation RUN_ANIM = RawAnimation.begin().thenLoop("run");
     private static final RawAnimation WALK_ANIM = RawAnimation.begin().thenLoop("walk");
     private static final RawAnimation IDLE_ANIM = RawAnimation.begin().thenLoop("idle");
@@ -48,7 +48,7 @@ public class WitherSkeletonDogEntity extends WitherSkeletonEntity implements Gen
     @Nullable
     private LivingEntity summonOwner;
 
-    public WitherSkeletonDogEntity(EntityType<? extends WitherSkeletonEntity> entityType, World world) {
+    public WitherSkeletonDogEntity(EntityType<? extends WitherSkeleton> entityType, Level world) {
         super(entityType, world);
         this.setHasSkill(false);
     }
@@ -71,17 +71,17 @@ public class WitherSkeletonDogEntity extends WitherSkeletonEntity implements Gen
     }
 
     @Override
-    protected void initGoals() {
-        super.initGoals();
-        this.goalSelector.add(2, new MeleeAttackGoal(this, 1.0D, true));
-        this.goalSelector.add(7, new WanderAroundFarGoal(this, 0.8D));
-        this.targetSelector.add(1, new ActiveTargetGoal<>(this, LivingEntity.class, 10, true, false,
+    protected void registerGoals() {
+        super.registerGoals();
+        this.goalSelector.addGoal(2, new MeleeAttackGoal(this, 1.0D, true));
+        this.goalSelector.addGoal(7, new WaterAvoidingRandomStrollGoal(this, 0.8D));
+        this.targetSelector.addGoal(1, new NearestAttackableTargetGoal<>(this, LivingEntity.class, 10, true, false,
                 (entity, world) -> isValidSummonTarget(entity)));
     }
 
     @Override
-    protected void initDataTracker(DataTracker.Builder builder) {
-        super.initDataTracker(builder);
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
         entityInitDataTracker(builder);
     }
 
@@ -89,20 +89,20 @@ public class WitherSkeletonDogEntity extends WitherSkeletonEntity implements Gen
     public void tick() {
         super.tick();
         entityTick();
-        if (!this.getWorld().isClient()) {
-            this.setAttacking(this.getTarget() != null);
+        if (!this.level().isClientSide()) {
+            this.setAggressive(this.getTarget() != null);
             double speed = this.getTarget() == null ? 0.3D : 0.6D;
-            this.getAttributeInstance(EntityAttributes.MOVEMENT_SPEED).setBaseValue(speed);
+            this.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(speed);
         }
     }
 
     @Override
-    public boolean tryAttack(ServerWorld world, Entity target) {
+    public boolean doHurtTarget(ServerLevel world, Entity target) {
         if (!(target instanceof LivingEntity living) || !isValidSummonTarget(living) || hasSkill() || !canSkill()) {
             return false;
         }
         this.setHasSkill(true);
-        this.setAiDisabled(true);
+        this.setNoAi(true);
         this.triggerAnim("skill_controller", "attack" + (1 + this.random.nextInt(3)));
         return true;
     }
@@ -110,11 +110,11 @@ public class WitherSkeletonDogEntity extends WitherSkeletonEntity implements Gen
     @Override
     public void runSkill_1(WitherSkeletonDogEntity entity) {
         LivingEntity target = this.getTarget();
-        if (target == null || !isValidSummonTarget(target) || !(this.getWorld() instanceof ServerWorld world)) {
+        if (target == null || !isValidSummonTarget(target) || !(this.level() instanceof ServerLevel world)) {
             return;
         }
-        target.damage(world, this.getDamageSources().mobAttack(this), 80.0F);
-        target.damage(world, this.getDamageSources().indirectMagic(this, this), 20.0F);
+        target.hurtServer(world, this.damageSources().mobAttack(this), 80.0F);
+        target.hurtServer(world, this.damageSources().indirectMagic(this, this), 20.0F);
     }
 
     @Override
@@ -142,13 +142,13 @@ public class WitherSkeletonDogEntity extends WitherSkeletonEntity implements Gen
             return PlayState.CONTINUE;
         }
         if (state.isMoving()) {
-            return this.isAttacking() ? state.setAndContinue(RUN_ANIM) : state.setAndContinue(WALK_ANIM);
+            return this.isAggressive() ? state.setAndContinue(RUN_ANIM) : state.setAndContinue(WALK_ANIM);
         }
         return state.setAndContinue(IDLE_ANIM);
     }
 
     @Override
-    public MobEntity getEntity() {
+    public Mob getEntity() {
         return this;
     }
 
@@ -158,32 +158,32 @@ public class WitherSkeletonDogEntity extends WitherSkeletonEntity implements Gen
     }
 
     @Override
-    public TrackedData<Boolean> getHasSkillKey() {
+    public EntityDataAccessor<Boolean> getHasSkillKey() {
         return HAS_SKILL;
     }
 
     @Override
-    public TrackedData<Integer> getCooldownKey1() {
+    public EntityDataAccessor<Integer> getCooldownKey1() {
         return SKILL_COOLDOWN_1;
     }
 
     @Override
-    public TrackedData<Integer> getCooldownKey2() {
+    public EntityDataAccessor<Integer> getCooldownKey2() {
         return SKILL_COOLDOWN_2;
     }
 
     @Override
-    public TrackedData<Integer> getCooldownKey3() {
+    public EntityDataAccessor<Integer> getCooldownKey3() {
         return SKILL_COOLDOWN_3;
     }
 
     @Override
-    public TrackedData<Integer> getCooldownKey4() {
+    public EntityDataAccessor<Integer> getCooldownKey4() {
         return SKILL_COOLDOWN_4;
     }
 
     @Override
-    public TrackedData<Integer> getCooldownKey5() {
+    public EntityDataAccessor<Integer> getCooldownKey5() {
         return SKILL_COOLDOWN_5;
     }
 
@@ -192,12 +192,12 @@ public class WitherSkeletonDogEntity extends WitherSkeletonEntity implements Gen
         return this.geoCache;
     }
 
-    public static DefaultAttributeContainer.Builder createAttributes() {
-        return WitherSkeletonEntity.createHostileAttributes()
-                .add(EntityAttributes.MAX_HEALTH, 1500.0D)
-                .add(EntityAttributes.FOLLOW_RANGE, 60.0D)
-                .add(EntityAttributes.MOVEMENT_SPEED, 0.3D)
-                .add(EntityAttributes.ATTACK_DAMAGE, 80.0D)
+    public static AttributeSupplier.Builder createAttributes() {
+        return WitherSkeleton.createMonsterAttributes()
+                .add(Attributes.MAX_HEALTH, 1500.0D)
+                .add(Attributes.FOLLOW_RANGE, 60.0D)
+                .add(Attributes.MOVEMENT_SPEED, 0.3D)
+                .add(Attributes.ATTACK_DAMAGE, 80.0D)
                 .add(ModEntityAttributes.DAMAGE_REDUCTION, 0.30D);
     }
 }

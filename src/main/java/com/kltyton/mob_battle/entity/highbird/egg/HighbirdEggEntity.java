@@ -5,26 +5,6 @@ import com.kltyton.mob_battle.entity.highbird.HighbirdAndEggEntity;
 import com.kltyton.mob_battle.entity.highbird.HighbirdBaseEntity;
 import com.kltyton.mob_battle.entity.highbird.baby.HighbirdBabyEntity;
 import com.kltyton.mob_battle.items.ModItems;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.SpawnReason;
-import net.minecraft.entity.attribute.DefaultAttributeContainer;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.data.DataTracker;
-import net.minecraft.entity.data.TrackedData;
-import net.minecraft.entity.data.TrackedDataHandlerRegistry;
-import net.minecraft.entity.passive.AnimalEntity;
-import net.minecraft.entity.passive.PassiveEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.storage.ReadView;
-import net.minecraft.storage.WriteView;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.animatable.manager.AnimatableManager;
@@ -36,6 +16,26 @@ import software.bernie.geckolib.constant.dataticket.DataTicket;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 import java.util.function.Predicate;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.AgeableMob;
+import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 public class HighbirdEggEntity extends HighbirdAndEggEntity implements HighbirdSBEntity {
     // 动画定义
@@ -43,7 +43,7 @@ public class HighbirdEggEntity extends HighbirdAndEggEntity implements HighbirdS
     protected static final RawAnimation IDLE_ANIM_COLD = RawAnimation.begin().thenLoop("idle_cold");
     private final AnimatableInstanceCache geoCache = GeckoLibUtil.createInstanceCache(this);
     // 在HighbirdEggEntity类中添加
-    private static final TrackedData<String> STATUS_DATA = DataTracker.registerData(HighbirdEggEntity.class, TrackedDataHandlerRegistry.STRING);
+    private static final EntityDataAccessor<String> STATUS_DATA = SynchedEntityData.defineId(HighbirdEggEntity.class, EntityDataSerializers.STRING);
     // 添加状态数据票证
     public static final DataTicket<String> STATUS_TICKET = DataTicket.create("highbird_egg_status", String.class);
     public boolean isIncubating = false; // 是否开始孵化
@@ -65,30 +65,30 @@ public class HighbirdEggEntity extends HighbirdAndEggEntity implements HighbirdS
 
     // 方块检测谓词
     private static final Predicate<BlockState> ICE_PREDICATE = state ->
-            state.isOf(Blocks.ICE) || state.isOf(Blocks.BLUE_ICE) ||
-                    state.isOf(Blocks.PACKED_ICE) || state.isOf(Blocks.FROSTED_ICE);
+            state.is(Blocks.ICE) || state.is(Blocks.BLUE_ICE) ||
+                    state.is(Blocks.PACKED_ICE) || state.is(Blocks.FROSTED_ICE);
 
     private static final Predicate<BlockState> HEAT_SOURCE_PREDICATE = state ->
-            state.isOf(Blocks.FIRE) || state.isOf(Blocks.SOUL_FIRE) ||
-                    state.isOf(Blocks.LAVA) || state.isOf(Blocks.CAMPFIRE) ||
-                    state.isOf(Blocks.SOUL_CAMPFIRE) || state.isOf(Blocks.MAGMA_BLOCK);
+            state.is(Blocks.FIRE) || state.is(Blocks.SOUL_FIRE) ||
+                    state.is(Blocks.LAVA) || state.is(Blocks.CAMPFIRE) ||
+                    state.is(Blocks.SOUL_CAMPFIRE) || state.is(Blocks.MAGMA_BLOCK);
 
-    public HighbirdEggEntity(EntityType<? extends HighbirdEggEntity> entityType, World world) {
+    public HighbirdEggEntity(EntityType<? extends HighbirdEggEntity> entityType, Level world) {
         super(entityType, world);
-        this.setAiDisabled(true);
+        this.setNoAi(true);
     }
-    public static DefaultAttributeContainer.Builder createHighbirdAttributes() {
-        return AnimalEntity.createAnimalAttributes()
-                .add(EntityAttributes.MAX_HEALTH, 10.0D);
+    public static AttributeSupplier.Builder createHighbirdAttributes() {
+        return Animal.createAnimalAttributes()
+                .add(Attributes.MAX_HEALTH, 10.0D);
     }
     @Override
-    public void takeKnockback(double strength, double x, double z) {
+    public void knockback(double strength, double x, double z) {
     }
     @Override
     public void tick() {
         super.tick();
 
-        if (!this.getWorld().isClient()) {
+        if (!this.level().isClientSide()) {
             // 只有在孵化状态下才进行状态检查
             if (isIncubating) {
                 if (checkCooldown <= 0) {
@@ -110,17 +110,17 @@ public class HighbirdEggEntity extends HighbirdAndEggEntity implements HighbirdS
     }
     @Override
     protected void levelUp() {
-        if (this.getWorld() instanceof ServerWorld serverWorld) {
-            HighbirdBabyEntity highbird = ModEntities.HIGHBIRD_BABY.create(serverWorld, SpawnReason.CONVERSION);
+        if (this.level() instanceof ServerLevel serverWorld) {
+            HighbirdBabyEntity highbird = ModEntities.HIGHBIRD_BABY.create(serverWorld, EntitySpawnReason.CONVERSION);
             if (highbird != null) {
-                if (this.isTamed()) {
-                    highbird.setOwner(this.getOwnerReference());
+                if (this.isTame()) {
+                    highbird.setOwnerReference(this.getOwnerReference());
                     highbird.setOwner(this.getOwner());
-                    if (this.getOwner() instanceof PlayerEntity player) highbird.setTamedBy(player);
-                    highbird.setTamed(true, true);
-                    highbird.setPosition(this.getPos());
+                    if (this.getOwner() instanceof Player player) highbird.tame(player);
+                    highbird.setTame(true, true);
+                    highbird.setPos(this.position());
                 }
-                serverWorld.spawnEntity(highbird);
+                serverWorld.addFreshEntity(highbird);
                 this.discard();
             }
         }
@@ -130,8 +130,8 @@ public class HighbirdEggEntity extends HighbirdAndEggEntity implements HighbirdS
      * 更新蛋的温度状态
      */
     private void updateTemperatureStatus() {
-        BlockPos center = this.getBlockPos();
-        World world = this.getWorld();
+        BlockPos center = this.blockPosition();
+        Level world = this.level();
 
         boolean hasIce = false;
         boolean hasHeatSource = false;
@@ -140,7 +140,7 @@ public class HighbirdEggEntity extends HighbirdAndEggEntity implements HighbirdS
         for (int x = -RADIUS; x <= RADIUS; x++) {
             for (int y = -RADIUS; y <= RADIUS; y++) {
                 for (int z = -RADIUS; z <= RADIUS; z++) {
-                    BlockPos pos = center.add(x, y, z);
+                    BlockPos pos = center.offset(x, y, z);
                     BlockState state = world.getBlockState(pos);
 
                     if (ICE_PREDICATE.test(state)) {
@@ -168,7 +168,7 @@ public class HighbirdEggEntity extends HighbirdAndEggEntity implements HighbirdS
         if (status.equals(HOT_STATUS) || status.equals(COLD_STATUS)) {
             statusDuration++;
             if (statusDuration >= MAX_STATUS_DURATION) {
-                this.kill((ServerWorld) this.getWorld()); // 超过30秒后死亡
+                this.kill((ServerLevel) this.level()); // 超过30秒后死亡
             }
         } else {
             statusDuration = 0; // 重置正常状态的持续时间
@@ -181,27 +181,27 @@ public class HighbirdEggEntity extends HighbirdAndEggEntity implements HighbirdS
     private static final String INCUBATING_KEY = "Incubating";
 
     @Override
-    protected void readCustomData(ReadView view) {
-        super.readCustomData(view);
-        setStatus(view.getString(STATUS_KEY, NORMAL_STATUS));
-        statusDuration = view.getInt(STATUS_DURATION_KEY, 0);
-        isIncubating = view.getBoolean(INCUBATING_KEY, false);
+    protected void readAdditionalSaveData(ValueInput view) {
+        super.readAdditionalSaveData(view);
+        setStatus(view.getStringOr(STATUS_KEY, NORMAL_STATUS));
+        statusDuration = view.getIntOr(STATUS_DURATION_KEY, 0);
+        isIncubating = view.getBooleanOr(INCUBATING_KEY, false);
     }
 
     @Override
-    protected void writeCustomData(WriteView view) {
-        super.writeCustomData(view);
+    protected void addAdditionalSaveData(ValueOutput view) {
+        super.addAdditionalSaveData(view);
         view.putString(STATUS_KEY, status);
         view.putInt(STATUS_DURATION_KEY, statusDuration);
         view.putBoolean(INCUBATING_KEY, isIncubating);
     }
     @Override
-    public boolean isBreedingItem(ItemStack stack) {
+    public boolean isFood(ItemStack stack) {
         return false;
     }
 
     @Override
-    public @Nullable PassiveEntity createChild(ServerWorld world, PassiveEntity entity) {
+    public @Nullable AgeableMob getBreedOffspring(ServerLevel world, AgeableMob entity) {
         return null;
     }
     @Override
@@ -236,38 +236,38 @@ public class HighbirdEggEntity extends HighbirdAndEggEntity implements HighbirdS
     }
     // 添加状态获取方法（用于渲染器）
     @Override
-    protected void initDataTracker(DataTracker.Builder builder) {
-        super.initDataTracker(builder);
-        builder.add(STATUS_DATA, NORMAL_STATUS);
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(STATUS_DATA, NORMAL_STATUS);
     }
 
     // 更新状态时同步到客户端
     private void setStatus(String status) {
         this.status = status;
-        if (!this.getWorld().isClient) {
-            this.dataTracker.set(STATUS_DATA, status);
+        if (!this.level().isClientSide) {
+            this.entityData.set(STATUS_DATA, status);
         }
     }
 
     // 客户端获取状态的方法
     @Override
-    public void onTrackedDataSet(TrackedData<?> data) {
-        super.onTrackedDataSet(data);
+    public void onSyncedDataUpdated(EntityDataAccessor<?> data) {
+        super.onSyncedDataUpdated(data);
         if (STATUS_DATA.equals(data)) {
-            this.status = dataTracker.get(STATUS_DATA);
+            this.status = entityData.get(STATUS_DATA);
         }
     }
     @Override
-    public ActionResult interactMob(PlayerEntity player, Hand hand) {
-        if (!isIncubating && !player.isSneaking()) {
+    public InteractionResult mobInteract(Player player, InteractionHand hand) {
+        if (!isIncubating && !player.isShiftKeyDown()) {
 /*            isIncubating = true;
             this.setOwner(player);
             this.setTamedBy(player);*/
-            this.dropItem(new ItemStack(ModItems.INCUBATION_EGG), false, false);
+            this.drop(new ItemStack(ModItems.INCUBATION_EGG), false, false);
             this.discard();
             // 可以添加音效或粒子效果
-            return ActionResult.SUCCESS;
+            return InteractionResult.SUCCESS;
         }
-        return super.interactMob(player, hand);
+        return super.mobInteract(player, hand);
     }
 }

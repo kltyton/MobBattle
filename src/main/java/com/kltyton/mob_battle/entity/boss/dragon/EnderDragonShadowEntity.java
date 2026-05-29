@@ -1,22 +1,22 @@
 package com.kltyton.mob_battle.entity.boss.dragon;
 
 import com.kltyton.mob_battle.entity.OwnedSummon;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.boss.dragon.EnderDragonEntity;
-import net.minecraft.entity.boss.dragon.EnderDragonFight;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.world.World;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.dimension.end.EndDragonFight;
 import org.jetbrains.annotations.Nullable;
 
-public class EnderDragonShadowEntity extends EnderDragonEntity implements OwnedSummon {
+public class EnderDragonShadowEntity extends EnderDragon implements OwnedSummon {
 
-    private EnderDragonEntity ownerDragon; // 主龙引用
+    private EnderDragon ownerDragon; // 主龙引用
 
-    public EnderDragonShadowEntity(EntityType<? extends EnderDragonEntity> type, World world) {
+    public EnderDragonShadowEntity(EntityType<? extends EnderDragon> type, Level world) {
         super(type, world);
     }
-    public void setOwner(EnderDragonEntity owner) {
+    public void setOwner(EnderDragon owner) {
         this.ownerDragon = owner;
     }
     @Nullable
@@ -26,17 +26,17 @@ public class EnderDragonShadowEntity extends EnderDragonEntity implements OwnedS
     }
     // 阻止虚影参与原版战斗系统（无Boss血条）
     @Override
-    public void setFight(EnderDragonFight fight) {
+    public void setDragonFight(EndDragonFight fight) {
         // do nothing
     }
 
     @Override
-    public void tickMovement() {
+    public void aiStep() {
         // 主龙死亡 → 虚影立即死亡
         if (ownerDragon != null && (!ownerDragon.isAlive() || ownerDragon.isRemoved())) {
-            this.kill((ServerWorld) this.getWorld());
+            this.kill((ServerLevel) this.level());
             return;
         }
-        super.tickMovement();
+        super.aiStep();
     }
 }

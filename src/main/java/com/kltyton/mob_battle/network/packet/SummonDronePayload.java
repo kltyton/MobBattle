@@ -1,21 +1,22 @@
 package com.kltyton.mob_battle.network.packet;
 
 import com.kltyton.mob_battle.Mob_battle;
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.codec.PacketCodecs;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.util.Identifier;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
+import org.jetbrains.annotations.NotNull;
 
-public record SummonDronePayload(int type) implements CustomPayload {
-    public static final Id<SummonDronePayload> ID = new Id<>(Identifier.of(Mob_battle.MOD_ID, "summon_drone"));
+public record SummonDronePayload(int mode) implements CustomPacketPayload {
+    public static final Type<SummonDronePayload> ID = new Type<>(ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "summon_drone"));
     //public static final PacketCodec<RegistryByteBuf, SummonDronePayload> CODEC = PacketCodec.unit(new SummonDronePayload());
-    public static final PacketCodec<RegistryByteBuf, SummonDronePayload> CODEC = PacketCodec.tuple(
-            PacketCodecs.VAR_INT, SummonDronePayload::type,
+    public static final StreamCodec<RegistryFriendlyByteBuf, SummonDronePayload> CODEC = StreamCodec.composite(
+            ByteBufCodecs.VAR_INT, SummonDronePayload::mode,
             SummonDronePayload::new
     );
     @Override
-    public Id<? extends CustomPayload> getId() {
+    public @NotNull Type<? extends CustomPacketPayload> type() {
         return ID;
     }
 }

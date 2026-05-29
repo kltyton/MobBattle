@@ -1,18 +1,18 @@
 package com.kltyton.mob_battle.network.packet;
 
 import com.kltyton.mob_battle.Mob_battle;
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.codec.PacketCodecs;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.util.Identifier;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
 
-public record SoundPayload(String soundNmae, float volume) implements CustomPayload {
-    public static final Id<SoundPayload> ID = new Id<>(Identifier.of(Mob_battle.MOD_ID, "sound"));
-    public static final PacketCodec<RegistryByteBuf, SoundPayload> CODEC = PacketCodec.tuple(
-            PacketCodecs.STRING, SoundPayload::soundNmae,
-            PacketCodecs.FLOAT, SoundPayload::volume,
+public record SoundPayload(String soundNmae, float volume) implements CustomPacketPayload {
+    public static final Type<SoundPayload> ID = new Type<>(ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "sound"));
+    public static final StreamCodec<RegistryFriendlyByteBuf, SoundPayload> CODEC = StreamCodec.composite(
+            ByteBufCodecs.STRING_UTF8, SoundPayload::soundNmae,
+            ByteBufCodecs.FLOAT, SoundPayload::volume,
             SoundPayload::new
     );
-    @Override public Id<? extends CustomPayload> getId() { return ID; }
+    @Override public Type<? extends CustomPacketPayload> type() { return ID; }
 }

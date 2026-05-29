@@ -7,36 +7,36 @@ import com.kltyton.mob_battle.items.ModItems;
 import com.kltyton.mob_battle.items.ModMaterial;
 import com.kltyton.mob_battle.items.misc.BaseItems;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
-import net.minecraft.component.type.AttributeModifierSlot;
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.enchantment.Enchantments;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemConvertible;
-import net.minecraft.item.ItemGroup;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.SpawnEggItem;
-import net.minecraft.item.equipment.EquipmentType;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.EquipmentSlotGroup;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.SpawnEggItem;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.item.equipment.ArmorType;
+import net.minecraft.world.level.ItemLike;
 
 public class ModItemGroups {
-    public static final RegistryKey<ItemGroup> MOB_BATTLE_GROUP_KEY =
-            RegistryKey.of(RegistryKeys.ITEM_GROUP, Identifier.of(Mob_battle.MOD_ID, "main"));
+    public static final ResourceKey<CreativeModeTab> MOB_BATTLE_GROUP_KEY =
+            ResourceKey.create(Registries.CREATIVE_MODE_TAB, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "main"));
 
-    public static final ItemGroup MOB_BATTLE_GROUP = FabricItemGroup.builder()
+    public static final CreativeModeTab MOB_BATTLE_GROUP = FabricItemGroup.builder()
             .icon(() -> new ItemStack(ModItems.BIG_FIREBALL_SCROLL))
-            .displayName(Text.translatable("itemGroup.mob_battle.main"))
-            .entries((context, entries) -> {
-                RegistryWrapper.Impl<Enchantment> lookup = context.lookup().getOrThrow(RegistryKeys.ENCHANTMENT);
+            .title(Component.translatable("itemGroup.mob_battle.main"))
+            .displayItems((context, entries) -> {
+                HolderLookup.RegistryLookup<Enchantment> lookup = context.holders().lookupOrThrow(Registries.ENCHANTMENT);
 
                 addToolsAndScrolls(entries);
                 addSpawnEggs(entries);
-                entries.add(ModItems.INCUBATION_EGG);
+                entries.accept(ModItems.INCUBATION_EGG);
                 addArmor(entries, lookup);
                 addWeapons(entries);
                 addFood(entries);
@@ -46,10 +46,10 @@ public class ModItemGroups {
             .build();
 
     public static void init() {
-        Registry.register(Registries.ITEM_GROUP, MOB_BATTLE_GROUP_KEY, MOB_BATTLE_GROUP);
+        Registry.register(BuiltInRegistries.CREATIVE_MODE_TAB, MOB_BATTLE_GROUP_KEY, MOB_BATTLE_GROUP);
     }
 
-    private static void addToolsAndScrolls(ItemGroup.Entries entries) {
+    private static void addToolsAndScrolls(CreativeModeTab.Output entries) {
         addEntries(entries,
                 ModItems.MUTUAL_ATTACK_STICK,
                 ModItems.MASTER_SCEPTER,
@@ -75,7 +75,7 @@ public class ModItemGroups {
         );
     }
 
-    private static void addSpawnEggs(ItemGroup.Entries entries) {
+    private static void addSpawnEggs(CreativeModeTab.Output entries) {
         addEntries(entries,
                 ModItems.HIGHBIRD_EGG_SPAWN_EGG,
                 ModItems.HIGHBIRD_BABY_SPAWN_EGG,
@@ -148,7 +148,7 @@ public class ModItemGroups {
         );
     }
 
-    private static void addArmor(ItemGroup.Entries entries, RegistryWrapper.Impl<Enchantment> lookup) {
+    private static void addArmor(CreativeModeTab.Output entries, HolderLookup.RegistryLookup<Enchantment> lookup) {
         addEntries(entries,
                 ModItems.HELL_HELMET_1,
                 ModItems.HELL_CHESTPLATE_1,
@@ -161,24 +161,24 @@ public class ModItemGroups {
         );
 
         addEntries(entries,
-                createIronGoldArmor(ModItems.IRON_GOLD_HELMET, "iron_gold_helmet", EquipmentType.HELMET, lookup),
-                createIronGoldArmor(ModItems.IRON_GOLD_CHESTPLATE, "iron_gold_chestplate", EquipmentType.CHESTPLATE, lookup),
-                createIronGoldArmor(ModItems.IRON_GOLD_LEGGINGS, "iron_gold_leggings", EquipmentType.LEGGINGS, lookup),
-                createIronGoldArmor(ModItems.IRON_GOLD_BOOTS, "iron_gold_boots", EquipmentType.BOOTS, lookup)
+                createIronGoldArmor(ModItems.IRON_GOLD_HELMET, "iron_gold_helmet", ArmorType.HELMET, lookup),
+                createIronGoldArmor(ModItems.IRON_GOLD_CHESTPLATE, "iron_gold_chestplate", ArmorType.CHESTPLATE, lookup),
+                createIronGoldArmor(ModItems.IRON_GOLD_LEGGINGS, "iron_gold_leggings", ArmorType.LEGGINGS, lookup),
+                createIronGoldArmor(ModItems.IRON_GOLD_BOOTS, "iron_gold_boots", ArmorType.BOOTS, lookup)
         );
 
         addEntries(entries,
-                createZiJinArmor(ModItems.ZIJIN_HELMET, "zijin_helmet", EquipmentType.HELMET, lookup),
-                createZiJinArmor(ModItems.ZIJIN_CHESTPLATE, "zijin_chestplate", EquipmentType.CHESTPLATE, lookup),
-                createZiJinArmor(ModItems.ZIJIN_LEGGINGS, "zijin_leggings", EquipmentType.LEGGINGS, lookup),
-                createZiJinArmor(ModItems.ZIJIN_BOOTS, "zijin_boots", EquipmentType.BOOTS, lookup)
+                createZiJinArmor(ModItems.ZIJIN_HELMET, "zijin_helmet", ArmorType.HELMET, lookup),
+                createZiJinArmor(ModItems.ZIJIN_CHESTPLATE, "zijin_chestplate", ArmorType.CHESTPLATE, lookup),
+                createZiJinArmor(ModItems.ZIJIN_LEGGINGS, "zijin_leggings", ArmorType.LEGGINGS, lookup),
+                createZiJinArmor(ModItems.ZIJIN_BOOTS, "zijin_boots", ArmorType.BOOTS, lookup)
         );
 
         addEntries(entries,
-                createEmeraldDiamondArmor(ModItems.EMERALD_DIAMOND_HELMET, "emerald_diamond_helmet", EquipmentType.HELMET, lookup, 5, 2),
-                createEmeraldDiamondArmor(ModItems.EMERALD_DIAMOND_CHESTPLATE, "emerald_diamond_chestplate", EquipmentType.CHESTPLATE, lookup, 6, 3),
-                createEmeraldDiamondArmor(ModItems.EMERALD_DIAMOND_LEGGINGS, "emerald_diamond_leggings", EquipmentType.LEGGINGS, lookup, 6, 2),
-                createEmeraldDiamondArmor(ModItems.EMERALD_DIAMOND_BOOTS, "emerald_diamond_boots", EquipmentType.BOOTS, lookup, 5, 2),
+                createEmeraldDiamondArmor(ModItems.EMERALD_DIAMOND_HELMET, "emerald_diamond_helmet", ArmorType.HELMET, lookup, 5, 2),
+                createEmeraldDiamondArmor(ModItems.EMERALD_DIAMOND_CHESTPLATE, "emerald_diamond_chestplate", ArmorType.CHESTPLATE, lookup, 6, 3),
+                createEmeraldDiamondArmor(ModItems.EMERALD_DIAMOND_LEGGINGS, "emerald_diamond_leggings", ArmorType.LEGGINGS, lookup, 6, 2),
+                createEmeraldDiamondArmor(ModItems.EMERALD_DIAMOND_BOOTS, "emerald_diamond_boots", ArmorType.BOOTS, lookup, 5, 2),
                 ModItems.ECREDCULTIST_HELMET,
                 ModItems.ECREDCULTIST_CHESTPLATE,
                 ModItems.ECREDCULTIST_LEGGINGS,
@@ -205,7 +205,7 @@ public class ModItemGroups {
         );
     }
 
-    private static void addWeapons(ItemGroup.Entries entries) {
+    private static void addWeapons(CreativeModeTab.Output entries) {
         addEntries(entries,
                 ModItems.METEORICORE_AXE,
                 ModItems.METEORICORE_BOW,
@@ -225,7 +225,7 @@ public class ModItemGroups {
         );
     }
 
-    private static void addFood(ItemGroup.Entries entries) {
+    private static void addFood(CreativeModeTab.Output entries) {
         addEntries(entries,
                 ModItems.THOUSAND_BLOSSOMED_IMMORTAL_FRUIT,
                 ModItems.LOBSTER,
@@ -239,7 +239,7 @@ public class ModItemGroups {
         );
     }
 
-    private static void addMaterials(ItemGroup.Entries entries) {
+    private static void addMaterials(CreativeModeTab.Output entries) {
         addEntries(entries,
                 baseItem("strong_obsidian"),
                 baseItem("fire_red"),
@@ -264,7 +264,7 @@ public class ModItemGroups {
         );
     }
 
-    private static void addBlocks(ItemGroup.Entries entries) {
+    private static void addBlocks(CreativeModeTab.Output entries) {
         addEntries(entries,
                 ModBlocks.SCARECROW_BLOCK,
                 ModBlocks.TARGET_BLOCK,
@@ -281,13 +281,13 @@ public class ModItemGroups {
     private static ItemStack createIronGoldArmor(
             Item item,
             String id,
-            EquipmentType type,
-            RegistryWrapper.Impl<Enchantment> lookup
+            ArmorType type,
+            HolderLookup.RegistryLookup<Enchantment> lookup
     ) {
         ItemStack stack = new ItemStack(item);
         enchant(stack, lookup, Enchantments.PROTECTION, 5);
         enchant(stack, lookup, ModEnchantments.MAGIC_PROTECTION, 2);
-        if (type == EquipmentType.CHESTPLATE) {
+        if (type == ArmorType.CHESTPLATE) {
             enchant(stack, lookup, Enchantments.FIRE_PROTECTION, 1);
         }
         ModMaterial.createArmor(stack, ModMaterial.IRON_GOLD_INSTANCE, id, type);
@@ -297,8 +297,8 @@ public class ModItemGroups {
     private static ItemStack createEmeraldDiamondArmor(
             Item item,
             String id,
-            EquipmentType type,
-            RegistryWrapper.Impl<Enchantment> lookup,
+            ArmorType type,
+            HolderLookup.RegistryLookup<Enchantment> lookup,
             int protection,
             int magicProtection
     ) {
@@ -312,8 +312,8 @@ public class ModItemGroups {
     private static ItemStack createZiJinArmor(
             Item item,
             String id,
-            EquipmentType type,
-            RegistryWrapper.Impl<Enchantment> lookup
+            ArmorType type,
+            HolderLookup.RegistryLookup<Enchantment> lookup
     ) {
         ItemStack stack = new ItemStack(item);
         enchant(stack, lookup, Enchantments.PROTECTION, 5);
@@ -324,16 +324,16 @@ public class ModItemGroups {
 
     private static void enchant(
             ItemStack stack,
-            RegistryWrapper.Impl<Enchantment> lookup,
-            RegistryKey<Enchantment> enchantment,
+            HolderLookup.RegistryLookup<Enchantment> lookup,
+            ResourceKey<Enchantment> enchantment,
             int level
     ) {
-        stack.addEnchantment(lookup.getOrThrow(enchantment), level);
+        stack.enchant(lookup.getOrThrow(enchantment), level);
     }
 
-    private static ItemStack createSword(Item item, net.minecraft.item.ToolMaterial material, String id) {
+    private static ItemStack createSword(Item item, net.minecraft.world.item.ToolMaterial material, String id) {
         ItemStack stack = new ItemStack(item);
-        ModMaterial.createSword(stack, material, id, AttributeModifierSlot.MAINHAND);
+        ModMaterial.createSword(stack, material, id, EquipmentSlotGroup.MAINHAND);
         return stack;
     }
 
@@ -345,14 +345,14 @@ public class ModItemGroups {
         return ModItems.SPAWN_EGG_ITEMS.get(id);
     }
 
-    private static void addEntries(ItemGroup.Entries entries, Object... entriesToAdd) {
+    private static void addEntries(CreativeModeTab.Output entries, Object... entriesToAdd) {
         for (Object entry : entriesToAdd) {
             if (entry instanceof ItemStack stack) {
                 if (!stack.isEmpty()) {
-                    entries.add(stack);
+                    entries.accept(stack);
                 }
-            } else if (entry instanceof ItemConvertible item) {
-                entries.add(item);
+            } else if (entry instanceof ItemLike item) {
+                entries.accept(item);
             }
         }
     }

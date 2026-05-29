@@ -3,12 +3,12 @@ package com.kltyton.mob_battle.mixin.net.minecraft.client.gui.screen.ingame;
 import com.kltyton.mob_battle.config.whitelist.ClientItemFilter;
 import com.kltyton.mob_battle.config.whitelist.ClientPermissionState;
 import net.fabricmc.fabric.api.client.itemgroup.v1.FabricCreativeInventoryScreen;
-import net.minecraft.client.gui.screen.ingame.CreativeInventoryScreen;
-import net.minecraft.client.gui.screen.ingame.HandledScreen;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.item.ItemGroup;
-import net.minecraft.item.ItemStack;
-import net.minecraft.text.Text;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -18,14 +18,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.Collection;
 
-@Mixin(CreativeInventoryScreen.class)
-public abstract class CreativeInventoryScreenMixin extends HandledScreen<CreativeInventoryScreen.CreativeScreenHandler> implements FabricCreativeInventoryScreen {
+@Mixin(CreativeModeInventoryScreen.class)
+public abstract class CreativeInventoryScreenMixin extends AbstractContainerScreen<CreativeModeInventoryScreen.ItemPickerMenu> implements FabricCreativeInventoryScreen {
 
 
     @Shadow
-    private float scrollPosition;
+    private float scrollOffs;
 
-    public CreativeInventoryScreenMixin(CreativeInventoryScreen.CreativeScreenHandler handler, PlayerInventory inventory, Text title) {
+    public CreativeInventoryScreenMixin(CreativeModeInventoryScreen.ItemPickerMenu handler, Inventory inventory, Component title) {
         super(handler, inventory, title);
     }
 
@@ -35,23 +35,23 @@ public abstract class CreativeInventoryScreenMixin extends HandledScreen<Creativ
             return;
         }
 
-        for (int i = this.handler.itemList.size() - 1; i >= 0; i--) {
-            ItemStack stack = this.handler.itemList.get(i);
+        for (int i = this.menu.items.size() - 1; i >= 0; i--) {
+            ItemStack stack = this.menu.items.get(i);
             if (ClientItemFilter.shouldHide(stack)) {
-                this.handler.itemList.remove(i);
+                this.menu.items.remove(i);
             }
         }
     }
 
     @Unique
     private void mob_battle$refreshAfterFilter() {
-        if (this.scrollPosition < 0.0F) {
-            this.scrollPosition = 0.0F;
+        if (this.scrollOffs < 0.0F) {
+            this.scrollOffs = 0.0F;
         }
-        if (this.scrollPosition > 1.0F) {
-            this.scrollPosition = 1.0F;
+        if (this.scrollOffs > 1.0F) {
+            this.scrollOffs = 1.0F;
         }
-        this.handler.scrollItems(this.scrollPosition);
+        this.menu.scrollTo(this.scrollOffs);
     }
 
     /**
@@ -60,7 +60,7 @@ public abstract class CreativeInventoryScreenMixin extends HandledScreen<Creativ
      * - 搜索框输入搜索
      * - 搜索框为空时的 search tab 默认显示内容
      */
-    @Inject(method = "search", at = @At("TAIL"))
+    @Inject(method = "refreshSearchResults", at = @At("TAIL"))
     private void mob_battle$filterSearchResults(CallbackInfo ci) {
         this.mob_battle$filterDisplayedStacks();
         this.mob_battle$refreshAfterFilter();
@@ -71,7 +71,7 @@ public abstract class CreativeInventoryScreenMixin extends HandledScreen<Creativ
      * updateDisplayParameters() 里会调用 refreshSelectedTab(...)
      * 所以这个注入可以覆盖“已选标签页重新刷新”的情况
      */
-    @Inject(method = "refreshSelectedTab", at = @At("TAIL"))
+    @Inject(method = "refreshCurrentTabContents", at = @At("TAIL"))
     private void mob_battle$filterRefreshSelectedTab(Collection<ItemStack> displayStacks, CallbackInfo ci) {
         this.mob_battle$filterDisplayedStacks();
         this.mob_battle$refreshAfterFilter();
@@ -81,8 +81,8 @@ public abstract class CreativeInventoryScreenMixin extends HandledScreen<Creativ
      * 3. 切换标签页时再兜底过滤一次
      * 覆盖 CATEGORY / HOTBAR / SEARCH / 其他切页逻辑
      */
-    @Inject(method = "setSelectedTab", at = @At("TAIL"))
-    private void mob_battle$filterSetSelectedTab(ItemGroup group, CallbackInfo ci) {
+    @Inject(method = "selectTab", at = @At("TAIL"))
+    private void mob_battle$filterSetSelectedTab(CreativeModeTab group, CallbackInfo ci) {
         this.mob_battle$filterDisplayedStacks();
         this.mob_battle$refreshAfterFilter();
     }

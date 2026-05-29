@@ -2,18 +2,17 @@ package com.kltyton.mob_battle.items.scroll;
 
 import com.kltyton.mob_battle.entity.customfireball.CustomSmallFireballEntity;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.stat.Stats;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
-
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.stats.Stats;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -24,18 +23,18 @@ public class FiremanScrollItem extends FireballScrollItem {
     // 记录当前处理的任务
     private static final Set<UUID> ACTIVE_TASKS = new HashSet<>();
 
-    public FiremanScrollItem(Settings settings) {
+    public FiremanScrollItem(Properties settings) {
         super(settings);
     }
 
     // 延时任务数据结构
     private static class DelayedTask {
         final UUID playerId;
-        final RegistryKey<World> worldKey;
+        final ResourceKey<Level> worldKey;
         int remainingFireballs;
         int delayTicks;
 
-        DelayedTask(UUID playerId, RegistryKey<World> worldKey, int fireballs) {
+        DelayedTask(UUID playerId, ResourceKey<Level> worldKey, int fireballs) {
             this.playerId = playerId;
             this.worldKey = worldKey;
             this.remainingFireballs = fireballs;
@@ -57,8 +56,8 @@ public class FiremanScrollItem extends FireballScrollItem {
                 }
 
                 // 获取玩家和世界
-                ServerWorld world = server.getWorld(task.worldKey);
-                PlayerEntity player = world != null ? world.getPlayerByUuid(task.playerId) : null;
+                ServerLevel world = server.getLevel(task.worldKey);
+                Player player = world != null ? world.getPlayerByUUID(task.playerId) : null;
 
                 // 检查有效性
                 if (world == null || player == null || !player.isAlive()) {
@@ -68,26 +67,26 @@ public class FiremanScrollItem extends FireballScrollItem {
                 }
 
                 // 发射火球
-                Vec3d eyePos = player.getEyePos();
+                Vec3 eyePos = player.getEyePosition();
                 CustomSmallFireballEntity fireball = new CustomSmallFireballEntity(
                         world, player, 15F
                 );
-                fireball.setPosition(eyePos);
+                fireball.setPos(eyePos);
 
-                Vec3d lookVec = player.getRotationVec(1.0F);
-                Vec3d spreadVec = lookVec.addRandom(player.getRandom(), 0.1F);
+                Vec3 lookVec = player.getViewVector(1.0F);
+                Vec3 spreadVec = lookVec.offsetRandom(player.getRandom(), 0.1F);
                 float speed = 1.2F;
-                fireball.setVelocity(
+                fireball.setDeltaMovement(
                         spreadVec.x * speed,
                         spreadVec.y * speed,
                         spreadVec.z * speed
                 );
 
-                world.spawnEntity(fireball);
+                world.addFreshEntity(fireball);
 
                 // 播放音效
                 world.playSound(null, eyePos.x, eyePos.y, eyePos.z,
-                        SoundEvents.ENTITY_BLAZE_SHOOT, SoundCategory.PLAYERS,
+                        SoundEvents.BLAZE_SHOOT, SoundSource.PLAYERS,
                         0.5F, 1.2F + player.getRandom().nextFloat() * 0.2F
                 );
 
@@ -109,33 +108,33 @@ public class FiremanScrollItem extends FireballScrollItem {
     }
 
     @Override
-    public ActionResult use(World world, PlayerEntity user, Hand hand) {
-        ItemStack itemStack = user.getStackInHand(hand);
+    public InteractionResult use(Level world, Player user, InteractionHand hand) {
+        ItemStack itemStack = user.getItemInHand(hand);
 
         world.playSound(null, user.getX(), user.getY(), user.getZ(),
-                SoundEvents.ENTITY_BLAZE_SHOOT, SoundCategory.PLAYERS,
+                SoundEvents.BLAZE_SHOOT, SoundSource.PLAYERS,
                 0.8F, 1.0F
         );
 
-        if (!world.isClient) {
-            UUID playerId = user.getUuid();
+        if (!world.isClientSide) {
+            UUID playerId = user.getUUID();
 
             // 防止重复添加任务
             if (!ACTIVE_TASKS.contains(playerId)) {
                 TASK_QUEUE.add(new DelayedTask(
                         playerId,
-                        world.getRegistryKey(),
+                        world.dimension(),
                         4 // 总共4颗火球
                 ));
                 ACTIVE_TASKS.add(playerId);
             }
         }
 
-        user.incrementStat(Stats.USED.getOrCreateStat(this));
-        if (!user.getAbilities().creativeMode) {
-            itemStack.decrement(1);
+        user.awardStat(Stats.ITEM_USED.get(this));
+        if (!user.getAbilities().instabuild) {
+            itemStack.shrink(1);
         }
 
-        return ActionResult.SUCCESS;
+        return InteractionResult.SUCCESS;
     }
 }

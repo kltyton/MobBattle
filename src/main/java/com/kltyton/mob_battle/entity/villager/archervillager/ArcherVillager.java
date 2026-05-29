@@ -2,38 +2,38 @@ package com.kltyton.mob_battle.entity.villager.archervillager;
 
 import com.kltyton.mob_battle.entity.ModSkillEntityType;
 import com.kltyton.mob_battle.entity.ai.goal.GeneralProtectionVillagerGoal;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.SpawnReason;
-import net.minecraft.entity.ai.goal.ActiveTargetGoal;
-import net.minecraft.entity.ai.goal.RevengeGoal;
-import net.minecraft.entity.ai.goal.SwimGoal;
-import net.minecraft.entity.ai.goal.UniversalAngerGoal;
-import net.minecraft.entity.ai.pathing.EntityNavigation;
-import net.minecraft.entity.ai.pathing.MobNavigation;
-import net.minecraft.entity.attribute.DefaultAttributeContainer;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.mob.Angerable;
-import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.entity.passive.GolemEntity;
-import net.minecraft.entity.passive.SnowGolemEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.projectile.ArrowEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundEvent;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.TimeHelper;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.intprovider.UniformIntProvider;
-import net.minecraft.util.math.random.Random;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.RandomSource;
+import net.minecraft.util.TimeUtil;
+import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.Difficulty;
-import net.minecraft.world.World;
-import net.minecraft.world.WorldAccess;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.NeutralMob;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.goal.FloatGoal;
+import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
+import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
+import net.minecraft.world.entity.ai.goal.target.ResetUniversalAngerTargetGoal;
+import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
+import net.minecraft.world.entity.ai.navigation.PathNavigation;
+import net.minecraft.world.entity.animal.AbstractGolem;
+import net.minecraft.world.entity.animal.SnowGolem;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.Arrow;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
 import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib.animatable.GeoEntity;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
@@ -48,36 +48,36 @@ import java.util.List;
 import java.util.UUID;
 
 // 远程村民
-public class ArcherVillager extends SnowGolemEntity implements Angerable, GeoEntity {
-    public static DefaultAttributeContainer.Builder createVillagerAttributes() {
-        return MobEntity.createMobAttributes()
-                .add(EntityAttributes.MOVEMENT_SPEED, 0.5)
-                .add(EntityAttributes.FOLLOW_RANGE, 64.0);
+public class ArcherVillager extends SnowGolem implements NeutralMob, GeoEntity {
+    public static AttributeSupplier.Builder createVillagerAttributes() {
+        return Mob.createMobAttributes()
+                .add(Attributes.MOVEMENT_SPEED, 0.5)
+                .add(Attributes.FOLLOW_RANGE, 64.0);
     }
     @Nullable
     private UUID angryAt;
     private int angerTime;
-    public static final UniformIntProvider ANGER_TIME_RANGE;
+    public static final UniformInt ANGER_TIME_RANGE;
     private static final double ALERT_RANGE = 64.0;
-    public ArcherVillager(EntityType<? extends SnowGolemEntity> entityType, World world) {
+    public ArcherVillager(EntityType<? extends SnowGolem> entityType, Level world) {
         super(entityType, world);
     }
     @Override
-    protected void initGoals() {
-        super.initGoals();
-        this.goalSelector.add(0, new SwimGoal(this)); // 添加游泳AI
-        this.targetSelector.add(2, new RevengeGoal(this));
-        this.targetSelector.add(1, new GeneralProtectionVillagerGoal(this));
-        this.targetSelector.add(2, new ActiveTargetGoal<>(this, net.minecraft.entity.mob.PhantomEntity.class, true));
-        this.targetSelector.add(2, new ActiveTargetGoal<>(this, PlayerEntity.class, 10, true, false, this::shouldAngerAt));
-        this.targetSelector.add(2, new UniversalAngerGoal<>(this, false));
+    protected void registerGoals() {
+        super.registerGoals();
+        this.goalSelector.addGoal(0, new FloatGoal(this)); // 添加游泳AI
+        this.targetSelector.addGoal(2, new HurtByTargetGoal(this));
+        this.targetSelector.addGoal(1, new GeneralProtectionVillagerGoal(this));
+        this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, net.minecraft.world.entity.monster.Phantom.class, true));
+        this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, 10, true, false, this::isAngryAt));
+        this.targetSelector.addGoal(2, new ResetUniversalAngerTargetGoal<>(this, false));
     }
     @Override
-    public boolean hurtByWater() {
+    public boolean isSensitiveToWater() {
         return false;
     }
     @Override
-    public boolean isShearable() {
+    public boolean readyForShearing() {
         return false;
     }
     @Override
@@ -85,39 +85,39 @@ public class ArcherVillager extends SnowGolemEntity implements Angerable, GeoEnt
         return false;
     }
     @Override
-    public void setHasPumpkin(boolean hasPumpkin) {
-        super.setHasPumpkin(false);
+    public void setPumpkin(boolean hasPumpkin) {
+        super.setPumpkin(false);
     }
     @Override
-    public ActionResult interactMob (PlayerEntity player, Hand hand) {
-        return ActionResult.PASS;
+    public InteractionResult mobInteract (Player player, InteractionHand hand) {
+        return InteractionResult.PASS;
     }
-    public static boolean checkSnuffleSpawnRules(EntityType<ArcherVillager> snuffle, WorldAccess world, SpawnReason spawnType, BlockPos pos, Random random) {
-        return world.getLocalDifficulty(pos).getGlobalDifficulty() != Difficulty.PEACEFUL;
+    public static boolean checkSnuffleSpawnRules(EntityType<ArcherVillager> snuffle, LevelAccessor world, EntitySpawnReason spawnType, BlockPos pos, RandomSource random) {
+        return world.getCurrentDifficultyAt(pos).getDifficulty() != Difficulty.PEACEFUL;
     }
     @Override
-    public void shootAt(LivingEntity target, float pullProgress) {
+    public void performRangedAttack(LivingEntity target, float pullProgress) {
         if (!ModSkillEntityType.canSkill(this)) return;
-        World world = this.getWorld();
-        if (!(world instanceof ServerWorld serverWorld)) return;
+        Level world = this.level();
+        if (!(world instanceof ServerLevel serverWorld)) return;
 
         this.triggerAnim("attack_controller", "attack");
 
         // 1. 创建箭实体
         ItemStack arrowStack = new ItemStack(Items.ARROW);
-        ArrowEntity arrowEntity = new ArrowEntity(world, this, arrowStack, null);
+        Arrow arrowEntity = new Arrow(world, this, arrowStack, null);
 
         // 【重要】设置箭的初始位置为实体的眼睛高度（或略低一点），防止从脚下发出
         // 对于巨型实体，建议根据模型手动指定偏移量
-        arrowEntity.setPosition(this.getX(), this.getEyeY() - 0.5D, this.getZ());
+        arrowEntity.setPos(this.getX(), this.getEyeY() - 0.5D, this.getZ());
 
         // 2. 设置伤害
-        arrowEntity.setDamage(this.getAttributeValue(EntityAttributes.ATTACK_DAMAGE));
+        arrowEntity.setBaseDamage(this.getAttributeValue(Attributes.ATTACK_DAMAGE));
 
         // 3. 计算向量
         double dX = target.getX() - this.getX();
         // 【优化】瞄准目标的躯干中心（getBodyY(0.5)），而不是眼睛，防止近距离过高
-        double dY = target.getBodyY(0.5D) - arrowEntity.getY();
+        double dY = target.getY(0.5D) - arrowEntity.getY();
         double dZ = target.getZ() - this.getZ();
         double distance = Math.sqrt(dX * dX + dZ * dZ);
 
@@ -131,15 +131,15 @@ public class ArcherVillager extends SnowGolemEntity implements Angerable, GeoEnt
         float gravityCorrection = (float)distance * 0.06F;
 
         // 5. 设置速度
-        arrowEntity.setVelocity(dX, dY + (double)gravityCorrection, dZ, velocity, 0.0F);
+        arrowEntity.shoot(dX, dY + (double)gravityCorrection, dZ, velocity, 0.0F);
 
         // 6. 发射与音效
-        serverWorld.spawnEntity(arrowEntity);
-        this.playSound(SoundEvents.ENTITY_SKELETON_SHOOT, 1.0F, 1.0F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
+        serverWorld.addFreshEntity(arrowEntity);
+        this.playSound(SoundEvents.SKELETON_SHOOT, 1.0F, 1.0F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
     }
     @Override
-    public boolean damage(ServerWorld world, DamageSource source, float amount) {
-        boolean bl = super.damage(world, source, amount);
+    public boolean hurtServer(ServerLevel world, DamageSource source, float amount) {
+        boolean bl = super.hurtServer(world, source, amount);
 /*        if (bl && !world.isClient) {
             Entity attacker = source.getAttacker();
             if (attacker instanceof LivingEntity) {
@@ -150,21 +150,21 @@ public class ArcherVillager extends SnowGolemEntity implements Angerable, GeoEnt
     }
     private void alertOthers(LivingEntity attacker) {
         // 获取64格范围内所有铁傀儡
-        List<SnowGolemEntity> golems = this.getWorld().getEntitiesByClass(
-                SnowGolemEntity.class,
-                this.getBoundingBox().expand(ALERT_RANGE),
+        List<SnowGolem> golems = this.level().getEntitiesOfClass(
+                SnowGolem.class,
+                this.getBoundingBox().inflate(ALERT_RANGE),
                 golem -> golem != this && golem.isAlive()
         );
 
-        for (SnowGolemEntity golem : golems) {
+        for (SnowGolem golem : golems) {
             // 跳过玩家创建的且攻击者是玩家的铁傀儡
-            if (attacker instanceof GolemEntity) {
+            if (attacker instanceof AbstractGolem) {
                 continue;
             }
 
             // 设置仇恨目标和愤怒时间
-            this.setAngryAt(attacker.getUuid());
-            this.setAngerTime(ANGER_TIME_RANGE.get(this.random));
+            this.setPersistentAngerTarget(attacker.getUUID());
+            this.setRemainingPersistentAngerTime(ANGER_TIME_RANGE.sample(this.random));
 
             // 立即更新目标选择
             if (golem.getTarget() != attacker) {
@@ -178,38 +178,38 @@ public class ArcherVillager extends SnowGolemEntity implements Angerable, GeoEnt
     }
     @Override
     protected SoundEvent getDeathSound() {
-        return SoundEvents.ENTITY_VILLAGER_DEATH;
+        return SoundEvents.VILLAGER_DEATH;
     }
     @Override
     protected SoundEvent getHurtSound(DamageSource source) {
-        return SoundEvents.ENTITY_VILLAGER_HURT;
+        return SoundEvents.VILLAGER_HURT;
     }
 
     @Override
-    public int getAngerTime() {
+    public int getRemainingPersistentAngerTime() {
         return this.angerTime;
     }
 
     @Override
-    public void setAngerTime(int angerTime) {
+    public void setRemainingPersistentAngerTime(int angerTime) {
         this.angerTime = angerTime;
     }
 
     @Override
-    public @Nullable UUID getAngryAt() {
+    public @Nullable UUID getPersistentAngerTarget() {
         return this.angryAt;
     }
     @Override
-    public void setAngryAt(@Nullable UUID angryAt) {
+    public void setPersistentAngerTarget(@Nullable UUID angryAt) {
         this.angryAt = angryAt;
     }
 
     @Override
-    public void chooseRandomAngerTime() {
-        this.setAngerTime(ANGER_TIME_RANGE.get(this.random));
+    public void startPersistentAngerTimer() {
+        this.setRemainingPersistentAngerTime(ANGER_TIME_RANGE.sample(this.random));
     }
     static {
-        ANGER_TIME_RANGE = TimeHelper.betweenSeconds(20, 39);
+        ANGER_TIME_RANGE = TimeUtil.rangeOfSeconds(20, 39);
     }
     private final AnimatableInstanceCache geoCache = GeckoLibUtil.createInstanceCache(this);
     protected static final RawAnimation IDEA_ANIM = RawAnimation.begin().thenLoop("idle");
@@ -231,8 +231,8 @@ public class ArcherVillager extends SnowGolemEntity implements Angerable, GeoEnt
         }
     }
     @Override
-    protected EntityNavigation createNavigation(World world) {
-        return new MobNavigation(this, world); // 允许基础游泳
+    protected PathNavigation createNavigation(Level world) {
+        return new GroundPathNavigation(this, world); // 允许基础游泳
     }
     @Override
     public AnimatableInstanceCache getAnimatableInstanceCache() {

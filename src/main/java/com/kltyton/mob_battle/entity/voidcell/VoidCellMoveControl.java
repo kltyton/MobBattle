@@ -1,8 +1,8 @@
 package com.kltyton.mob_battle.entity.voidcell;
 
-import net.minecraft.entity.ai.control.MoveControl;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.ai.control.MoveControl;
+import net.minecraft.world.phys.Vec3;
 
 public class VoidCellMoveControl extends MoveControl {
     public VoidCellMoveControl(VoidCellEntity owner) {
@@ -11,22 +11,22 @@ public class VoidCellMoveControl extends MoveControl {
 
     @Override
     public void tick() {
-        if (this.state == MoveControl.State.MOVE_TO) {
-            Vec3d targetVec = new Vec3d(this.targetX - entity.getX(), this.targetY - entity.getY(), this.targetZ - entity.getZ());
+        if (this.operation == MoveControl.Operation.MOVE_TO) {
+            Vec3 targetVec = new Vec3(this.wantedX - mob.getX(), this.wantedY - mob.getY(), this.wantedZ - mob.getZ());
             double distance = targetVec.length();
 
             // 如果距离非常近，停止移动
-            if (distance < entity.getBoundingBox().getAverageSideLength()) {
-                this.state = MoveControl.State.WAIT;
-                entity.setVelocity(entity.getVelocity().multiply(0.5));
+            if (distance < mob.getBoundingBox().getSize()) {
+                this.operation = MoveControl.Operation.WAIT;
+                mob.setDeltaMovement(mob.getDeltaMovement().scale(0.5));
             } else {
                 // 计算加速度
-                entity.setVelocity(entity.getVelocity().add(targetVec.multiply(this.speed * 0.05 / distance)));
+                mob.setDeltaMovement(mob.getDeltaMovement().add(targetVec.scale(this.speedModifier * 0.05 / distance)));
 
                 // 平滑转向目标方向
-                Vec3d velocity = entity.getVelocity();
-                entity.setYaw(-((float) MathHelper.atan2(velocity.x, velocity.z)) * (180.0F / (float) Math.PI));
-                entity.bodyYaw = entity.getYaw();
+                Vec3 velocity = mob.getDeltaMovement();
+                mob.setYRot(-((float) Mth.atan2(velocity.x, velocity.z)) * (180.0F / (float) Math.PI));
+                mob.yBodyRot = mob.getYRot();
             }
         }
     }

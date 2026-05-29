@@ -1,10 +1,10 @@
 package com.kltyton.mob_battle.effect.neutral;
 
-import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.entity.effect.StatusEffectCategory;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectCategory;
 
-public class DiamondMarkEffect extends StatusEffect {
+public class DiamondMarkEffect extends MobEffect {
     public DiamondMarkEffect() {
-        super(StatusEffectCategory.NEUTRAL, 0x55FFFF);
+        super(MobEffectCategory.NEUTRAL, 0x55FFFF);
     }
 }

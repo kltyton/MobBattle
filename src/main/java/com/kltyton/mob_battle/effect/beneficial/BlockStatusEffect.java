@@ -1,16 +1,16 @@
 package com.kltyton.mob_battle.effect.beneficial;
 
-import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.entity.effect.StatusEffectCategory;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectCategory;
 
-public class BlockStatusEffect extends StatusEffect {
+public class BlockStatusEffect extends MobEffect {
     public BlockStatusEffect() {
-        super(StatusEffectCategory.BENEFICIAL, 0x808080);
+        super(MobEffectCategory.BENEFICIAL, 0x808080);
     }
 
     // 该效果通过 Mixin 触发，这里不需要写 applyUpdateEffect
     @Override
-    public boolean canApplyUpdateEffect(int duration, int amplifier) {
+    public boolean shouldApplyEffectTickThisTick(int duration, int amplifier) {
         return false;
     }
 }

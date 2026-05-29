@@ -1,18 +1,18 @@
 package com.kltyton.mob_battle.entity.firewall;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.data.DataTracker;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.storage.ReadView;
-import net.minecraft.storage.WriteView;
-import net.minecraft.util.math.Box;
-import net.minecraft.world.World;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.phys.AABB;
 
 public class FireWallEntity extends Entity {
 
@@ -40,11 +40,11 @@ public class FireWallEntity extends Entity {
     public void setDensity(double dens) { this.density  = dens;}
     /* ---------------------------------------------------------- */
 
-    public FireWallEntity(EntityType<?> type, World world, LivingEntity owner) {
+    public FireWallEntity(EntityType<?> type, Level world, LivingEntity owner) {
         super(type, world);
         this.owner = owner;
-        this.noClip = true;
-        this.yaw = owner.getYaw();
+        this.noPhysics = true;
+        this.yaw = owner.getYRot();
 
         double rad = Math.toRadians(this.yaw);
         this.originX = owner.getX() - Math.sin(rad) * 2.0;
@@ -53,10 +53,10 @@ public class FireWallEntity extends Entity {
     }
 
     /* 兼容旧构造，owner 为空时直接丢弃 */
-    public FireWallEntity(EntityType<?> type, World world) {
+    public FireWallEntity(EntityType<?> type, Level world) {
         super(type, world);
         this.owner = null;
-        this.noClip = true;
+        this.noPhysics = true;
     }
 
     @Override
@@ -76,14 +76,14 @@ public class FireWallEntity extends Entity {
                 double pz = originZ + sin * i;
                 double py = originY + j + 0.1;
 
-                if (this.getWorld().isClient) {
-                    this.getWorld().addParticleClient(ParticleTypes.FLAME,
+                if (this.level().isClientSide) {
+                    this.level().addParticle(ParticleTypes.FLAME,
                             px, py, pz,
                             (random.nextDouble() - 0.5) * 0.02,
                             0.01,
                             (random.nextDouble() - 0.5) * 0.02);
                 } else {
-                    ((ServerWorld) this.getWorld()).spawnParticles(ParticleTypes.FLAME,
+                    ((ServerLevel) this.level()).sendParticles(ParticleTypes.FLAME,
                             px, py, pz,
                             1, 0.1, 0.1, 0.1, 0.01);
                 }
@@ -91,12 +91,12 @@ public class FireWallEntity extends Entity {
         }
 
         /* ---------- 2. 生命周期 & 伤害 ---------- */
-        if (this.getWorld().isClient) return;
+        if (this.level().isClientSide) return;
 
         if (--life <= 0) { discard(); return; }
 
         // 碰撞箱：沿 yaw 方向为 length，垂直方向为 width，高度为 height
-        Box box = new Box(
+        AABB box = new AABB(
                 originX - length / 2 * cos - width / 2,
                 originY,
                 originZ - length / 2 * sin - width / 2,
@@ -105,19 +105,19 @@ public class FireWallEntity extends Entity {
                 originZ + length / 2 * sin + width / 2
         );
 
-        for (Entity e : this.getWorld().getOtherEntities(owner, box)) {
+        for (Entity e : this.level().getEntities(owner, box)) {
             if (e instanceof LivingEntity living) {
-                living.damage((ServerWorld) this.getWorld(),
-                        owner.getDamageSources().magic(), damage);
-                living.addStatusEffect(
-                        new StatusEffectInstance(StatusEffects.SLOWNESS, 200, 1));
+                living.hurtServer((ServerLevel) this.level(),
+                        owner.damageSources().magic(), damage);
+                living.addEffect(
+                        new MobEffectInstance(MobEffects.SLOWNESS, 200, 1));
             }
         }
     }
 
     /* ====== 下面保持原有空实现即可 ====== */
-    @Override protected void initDataTracker(DataTracker.Builder builder) { }
-    @Override public boolean damage(ServerWorld world, DamageSource source, float amount) { return false; }
-    @Override protected void readCustomData(ReadView view) { }
-    @Override protected void writeCustomData(WriteView view) { }
+    @Override protected void defineSynchedData(SynchedEntityData.Builder builder) { }
+    @Override public boolean hurtServer(ServerLevel world, DamageSource source, float amount) { return false; }
+    @Override protected void readAdditionalSaveData(ValueInput view) { }
+    @Override protected void addAdditionalSaveData(ValueOutput view) { }
 }

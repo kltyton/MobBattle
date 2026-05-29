@@ -1,11 +1,11 @@
 package com.kltyton.mob_battle.bossbar;
 
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
 public record CustomBossBarStyle(
-        Identifier id,
-        Identifier backgroundTexture,
-        Identifier progressTexture,
+        ResourceLocation id,
+        ResourceLocation backgroundTexture,
+        ResourceLocation progressTexture,
         int textureWidth,
         int textureHeight,
         int renderWidth,

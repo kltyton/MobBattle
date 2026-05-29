@@ -3,13 +3,11 @@ package com.kltyton.mob_battle.event.team;
 import com.kltyton.mob_battle.Mob_battle;
 import com.kltyton.mob_battle.event.EntitySelectionEvent;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
-
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.entity.mob.WardenEntity;
-import net.minecraft.scoreboard.Team;
-import net.minecraft.server.world.ServerWorld;
-
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.monster.warden.Warden;
+import net.minecraft.world.scores.PlayerTeam;
 import java.util.List;
 
 public class TeamFightHandler {
@@ -21,8 +19,8 @@ public class TeamFightHandler {
             try {
                 if (++tickCounter >= TARGET_UPDATE_INTERVAL) {
                     tickCounter = 0;
-                    server.getWorlds().forEach(world -> {
-                        if (world instanceof ServerWorld serverWorld) {
+                    server.getAllLevels().forEach(world -> {
+                        if (world instanceof ServerLevel serverWorld) {
                             updateTeamTargets(serverWorld);
                         }
                     });
@@ -33,25 +31,25 @@ public class TeamFightHandler {
         });
     }
 
-    private static void updateTeamTargets(ServerWorld world) {
-        world.iterateEntities().forEach(entity -> {
+    private static void updateTeamTargets(ServerLevel world) {
+        world.getAllEntities().forEach(entity -> {
             try {
                 if (entity instanceof LivingEntity mob && !entity.isRemoved()) {
-                    Team team = mob.getScoreboardTeam();
+                    PlayerTeam team = mob.getTeam();
                     if (team != null && TeamFightManager.isInFight(team)) {
 
                         // 获取团队生存成员数量
-                        long aliveMembers = world.getEntitiesByClass(
+                        long aliveMembers = world.getEntitiesOfClass(
                                 LivingEntity.class,
-                                mob.getBoundingBox().expand(100),
-                                e -> e.isTeammate(mob) && e.isAlive()
+                                mob.getBoundingBox().inflate(100),
+                                e -> e.isAlliedTo(mob) && e.isAlive()
                         ).size();
 
                         if (aliveMembers == 0) {
                             TeamFightManager.stopTeamFight(team);
                         } else {
                             // 添加寻找目标的逻辑（如果需要）
-                            Team targetTeam = TeamFightManager.getOpponent(team);
+                            PlayerTeam targetTeam = TeamFightManager.getOpponent(team);
                             if (targetTeam != null) {
                                 findAndSetTarget(mob, targetTeam);
                             }
@@ -64,16 +62,16 @@ public class TeamFightHandler {
         });
     }
 
-    private static void findAndSetTarget(LivingEntity mob, Team targetTeam) {
+    private static void findAndSetTarget(LivingEntity mob, PlayerTeam targetTeam) {
         Mob_battle.LOGGER.debug("开始为 {} 寻找目标", mob.getName());
         try {
             if (!TeamFightManager.isInFight(targetTeam)) return;
 
-            List<LivingEntity> candidates = mob.getWorld().getEntitiesByClass(
+            List<LivingEntity> candidates = mob.level().getEntitiesOfClass(
                     LivingEntity.class,
-                    mob.getBoundingBox().expand(30),
-                    e -> !e.isTeammate(mob) &&
-                            !e.isInCreativeMode() &&
+                    mob.getBoundingBox().inflate(30),
+                    e -> !e.isAlliedTo(mob) &&
+                            !e.hasInfiniteMaterials() &&
                             !e.isSpectator() &&
                             e.isAlive() &&
                             !e.isRemoved() &&
@@ -85,17 +83,17 @@ public class TeamFightHandler {
             double closest = Double.MAX_VALUE;
 
             for (LivingEntity candidate : candidates) {
-                double distance = mob.squaredDistanceTo(candidate);
+                double distance = mob.distanceToSqr(candidate);
                 if (distance < closest) {
                     closest = distance;
                     nearest = candidate;
                 }
             }
-            if (mob instanceof MobEntity mob1) {
+            if (mob instanceof Mob mob1) {
                 if (nearest != null && mob1.getTarget() != nearest) {
                     // 特殊处理坚守者
-                    if (mob instanceof WardenEntity warden) {
-                        EntitySelectionEvent.forceWardenTarget(warden, nearest, warden.getWorld());
+                    if (mob instanceof Warden warden) {
+                        EntitySelectionEvent.forceWardenTarget(warden, nearest, warden.level());
                     } else {
                         mob1.setTarget(nearest);
                     }

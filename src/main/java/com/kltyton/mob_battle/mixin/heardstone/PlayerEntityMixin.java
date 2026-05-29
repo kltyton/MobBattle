@@ -6,18 +6,6 @@ import com.kltyton.mob_battle.entity.witherskeletonking.skill.WitherSkullKingEnt
 import com.kltyton.mob_battle.event.DataTrackersEvent;
 import com.kltyton.mob_battle.items.tool.snipe.VsSnipe;
 import com.kltyton.mob_battle.utils.HeadStoneUtil;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.damage.DamageTypes;
-import net.minecraft.entity.data.DataTracker;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.storage.ReadView;
-import net.minecraft.storage.WriteView;
-import net.minecraft.world.GameRules;
-import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Implements;
 import org.spongepowered.asm.mixin.Interface;
 import org.spongepowered.asm.mixin.Mixin;
@@ -30,82 +18,94 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Objects;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageTypes;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
-@Mixin(PlayerEntity.class)
+@Mixin(Player.class)
 @Implements(@Interface(iface = IPlayerEntityAccessor.class, prefix = "accessor$"))
 public abstract class PlayerEntityMixin extends LivingEntity {
     @Shadow
-    protected abstract void vanishCursedItems();
+    protected abstract void destroyVanishingCursedItems();
 
-    protected PlayerEntityMixin(EntityType<? extends LivingEntity> entityType, World world) {
+    protected PlayerEntityMixin(EntityType<? extends LivingEntity> entityType, Level world) {
         super(entityType, world);
     }
 
-    @Redirect(method = "dropInventory", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/GameRules;getBoolean(Lnet/minecraft/world/GameRules$Key;)Z"))
-    public boolean dropInventory(GameRules instance, GameRules.Key<GameRules.BooleanRule> rule) {
-        if (HeadStoneUtil.keepInventory((PlayerEntity) (Object) this)) {
-            HeadStoneUtil.consumeHeartStones((PlayerEntity) (Object) this, 2);
-            this.vanishCursedItems();
+    @Redirect(method = "dropEquipment", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/GameRules;getBoolean(Lnet/minecraft/world/level/GameRules$Key;)Z"))
+    public boolean dropInventory(GameRules instance, GameRules.Key<GameRules.BooleanValue> rule) {
+        if (HeadStoneUtil.keepInventory((Player) (Object) this)) {
+            HeadStoneUtil.consumeHeartStones((Player) (Object) this, 2);
+            this.destroyVanishingCursedItems();
             return true;
         }
         return instance.getBoolean(rule);
     }
-    @Redirect(method = "getExperienceToDrop", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/GameRules;getBoolean(Lnet/minecraft/world/GameRules$Key;)Z"))
-    public boolean getExperienceToDrop(GameRules instance, GameRules.Key<GameRules.BooleanRule> rule) {
-        if (HeadStoneUtil.keepInventory((PlayerEntity) (Object) this)) {
+    @Redirect(method = "getBaseExperienceReward", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/GameRules;getBoolean(Lnet/minecraft/world/level/GameRules$Key;)Z"))
+    public boolean getExperienceToDrop(GameRules instance, GameRules.Key<GameRules.BooleanValue> rule) {
+        if (HeadStoneUtil.keepInventory((Player) (Object) this)) {
             return true;
         }
         return instance.getBoolean(rule);
     }
-    @Inject(method = "isUsingSpyglass", at = @At("RETURN"), cancellable = true)
+    @Inject(method = "isScoping", at = @At("RETURN"), cancellable = true)
     public void isUsingSpyglass(CallbackInfoReturnable<Boolean> cir) {
-        if (this.getMainHandStack().getItem() instanceof VsSnipe vsSnipeItem && vsSnipeItem.isLeftClick) {
+        if (this.getMainHandItem().getItem() instanceof VsSnipe vsSnipeItem && vsSnipeItem.isLeftClick) {
             cir.setReturnValue(true);
         }
     }
     //无敌帧
-    @Redirect(method = "applyDamage", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerEntity;isInvulnerableTo(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/entity/damage/DamageSource;)Z"))
-    public boolean isInvulnerableTo(PlayerEntity instance, ServerWorld world, DamageSource source) {
-        Entity sourcer = source.getSource();
-        Entity attacker = source.getAttacker();
-        if ((sourcer instanceof WitherSkullKingEntity && attacker instanceof WitherSkullKingEntity) || source.isOf(DamageTypes.THORNS)) {
-            instance.timeUntilRegen = 0;
+    @Redirect(method = "actuallyHurt", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;isInvulnerableTo(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/damagesource/DamageSource;)Z"))
+    public boolean isInvulnerableTo(Player instance, ServerLevel world, DamageSource source) {
+        Entity sourcer = source.getDirectEntity();
+        Entity attacker = source.getEntity();
+        if ((sourcer instanceof WitherSkullKingEntity && attacker instanceof WitherSkullKingEntity) || source.is(DamageTypes.THORNS)) {
+            instance.invulnerableTime = 0;
             return false;
         }
         return instance.isInvulnerableTo(world, source);
     }
-    @ModifyVariable(method = "addExhaustion", at = @At("HEAD"), argsOnly = true)
+    @ModifyVariable(method = "causeFoodExhaustion", at = @At("HEAD"), argsOnly = true)
     private float modifyExhaustion(float exhaustion) {
-        PlayerEntity player = (PlayerEntity) (Object) this;
+        Player player = (Player) (Object) this;
 
         // 检查玩家是否有糖分效果
-        if (player.hasStatusEffect(ModEffects.SUGAR_ENTRY)) {
-            int amplifier = Objects.requireNonNull(player.getStatusEffect(ModEffects.SUGAR_ENTRY)).getAmplifier();
+        if (player.hasEffect(ModEffects.SUGAR_ENTRY)) {
+            int amplifier = Objects.requireNonNull(player.getEffect(ModEffects.SUGAR_ENTRY)).getAmplifier();
             float multiplier = 1.0f - (0.2f * (amplifier + 1));
             multiplier = Math.max(0.0f, multiplier);
             return exhaustion * multiplier;
         }
         return exhaustion;
     }
-    @Inject(method = "initDataTracker", at = @At("RETURN"))
-    protected void initDataTracker(DataTracker.Builder builder, CallbackInfo ci) {
-        builder.add(DataTrackersEvent.IS_GECKO_LIB_USING, false);
+    @Inject(method = "defineSynchedData", at = @At("RETURN"))
+    protected void initDataTracker(SynchedEntityData.Builder builder, CallbackInfo ci) {
+        builder.define(DataTrackersEvent.IS_GECKO_LIB_USING, false);
     }
 
     public void accessor$setUseGeckoLib(boolean use) {
-        this.dataTracker.set(DataTrackersEvent.IS_GECKO_LIB_USING, use);
+        this.entityData.set(DataTrackersEvent.IS_GECKO_LIB_USING, use);
     }
 
     public boolean accessor$isUsingGeckoLib() {
-        return this.dataTracker.get(DataTrackersEvent.IS_GECKO_LIB_USING);
+        return this.entityData.get(DataTrackersEvent.IS_GECKO_LIB_USING);
     }
 
-    @Inject(method = "writeCustomData", at = @At("RETURN"))
-    protected void writeCustomData(WriteView view, CallbackInfo ci) {
-        view.putBoolean("IsGeckoLibUsing", this.dataTracker.get(DataTrackersEvent.IS_GECKO_LIB_USING));
+    @Inject(method = "addAdditionalSaveData", at = @At("RETURN"))
+    protected void writeCustomData(ValueOutput view, CallbackInfo ci) {
+        view.putBoolean("IsGeckoLibUsing", this.entityData.get(DataTrackersEvent.IS_GECKO_LIB_USING));
     }
-    @Inject(method = "readCustomData", at = @At("RETURN"))
-    protected void readCustomData(ReadView view, CallbackInfo ci) {
-        this.dataTracker.set(DataTrackersEvent.IS_GECKO_LIB_USING, view.getBoolean("IsGeckoLibUsing", false));
+    @Inject(method = "readAdditionalSaveData", at = @At("RETURN"))
+    protected void readCustomData(ValueInput view, CallbackInfo ci) {
+        this.entityData.set(DataTrackersEvent.IS_GECKO_LIB_USING, view.getBooleanOr("IsGeckoLibUsing", false));
     }
 }

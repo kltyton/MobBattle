@@ -1,25 +1,24 @@
 package com.kltyton.mob_battle.network.packet;
 
 import com.kltyton.mob_battle.Mob_battle;
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.Uuids;
-import net.minecraft.util.math.Vec3d;
-
 import java.util.UUID;
+import net.minecraft.core.UUIDUtil;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.phys.Vec3;
 
-public record PiglinGeneralBonePayload(UUID uuid, Vec3d swordEnergyPos) implements CustomPayload {
-    public static final Id<PiglinGeneralBonePayload> ID = new Id<>(Identifier.of(Mob_battle.MOD_ID, "piglin_general_bone"));
-    public static final PacketCodec<RegistryByteBuf, PiglinGeneralBonePayload> CODEC = PacketCodec.tuple(
-            Uuids.PACKET_CODEC, PiglinGeneralBonePayload::uuid,
-            Vec3d.PACKET_CODEC, PiglinGeneralBonePayload::swordEnergyPos,
+public record PiglinGeneralBonePayload(UUID uuid, Vec3 swordEnergyPos) implements CustomPacketPayload {
+    public static final Type<PiglinGeneralBonePayload> ID = new Type<>(ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "piglin_general_bone"));
+    public static final StreamCodec<RegistryFriendlyByteBuf, PiglinGeneralBonePayload> CODEC = StreamCodec.composite(
+            UUIDUtil.STREAM_CODEC, PiglinGeneralBonePayload::uuid,
+            Vec3.STREAM_CODEC, PiglinGeneralBonePayload::swordEnergyPos,
             PiglinGeneralBonePayload::new
     );
 
     @Override
-    public Id<? extends CustomPayload> getId() {
+    public Type<? extends CustomPacketPayload> type() {
         return ID;
     }
 }

@@ -5,30 +5,35 @@ import com.kltyton.mob_battle.entity.littleperson.LittlePersonEntity;
 import com.kltyton.mob_battle.entity.littleperson.archer.littlearrow.LittleArrowEntity;
 import com.kltyton.mob_battle.entity.littleperson.skillentity.base.BaseSkillLittlePersonEntity;
 import com.kltyton.mob_battle.entity.villager.warriorvillager.WarriorVillager;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.SpawnReason;
-import net.minecraft.entity.ai.RangedAttackMob;
-import net.minecraft.entity.ai.goal.*;
-import net.minecraft.entity.attribute.DefaultAttributeContainer;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.mob.HostileEntity;
-import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.entity.mob.Monster;
-import net.minecraft.entity.passive.GolemEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
+import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
+import net.minecraft.world.entity.ai.goal.RangedAttackGoal;
+import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
+import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
+import net.minecraft.world.entity.animal.AbstractGolem;
+import net.minecraft.world.entity.monster.Enemy;
+import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.entity.monster.RangedAttackMob;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 
 public class WildManEntity extends BaseSkillLittlePersonEntity implements RangedAttackMob {
-    public WildManEntity(EntityType<? extends HostileEntity> entityType, World world) {
+    public WildManEntity(EntityType<? extends Monster> entityType, Level world) {
         super(entityType, world, 3);
         COOL_DOWN_TIME_1 = 20 * 20;
         COOL_DOWN_TIME_2 = 30 * 20;
@@ -36,20 +41,20 @@ public class WildManEntity extends BaseSkillLittlePersonEntity implements Ranged
         init();
     }
     @Override
-    protected void initGoals() {
-        this.goalSelector.add(2, new ProjectileAttackGoal(this, 1.0D, 20, 6.0F));
-        this.goalSelector.add(7, new WanderAroundFarGoal(this, 1.0)); // 添加远距离游荡目标
-        this.goalSelector.add(8, new LookAtEntityGoal(this, PlayerEntity.class, 8.0F)); // 添加看向玩家的目标
-        this.goalSelector.add(8, new LookAroundGoal(this)); // 添加环顾四周的目标
-        this.targetSelector.add(3, new ActiveTargetGoal<>(this, GolemEntity.class, true)); // 添加攻击傀儡目标
-        this.targetSelector.add(2, new ActiveTargetGoal<>(this, WarriorVillager.class, true));
-        this.targetSelector.add(2, new ActiveTargetGoal<>(this, PlayerEntity.class, true)); // 添加主动攻击玩家目标
-        this.targetSelector.add(3, new ActiveTargetGoal<>(this, MobEntity.class, 5, false, false, (entity, world) -> entity instanceof Monster && !(entity instanceof LittlePersonEntity)));
+    protected void registerGoals() {
+        this.goalSelector.addGoal(2, new RangedAttackGoal(this, 1.0D, 20, 6.0F));
+        this.goalSelector.addGoal(7, new WaterAvoidingRandomStrollGoal(this, 1.0)); // 添加远距离游荡目标
+        this.goalSelector.addGoal(8, new LookAtPlayerGoal(this, Player.class, 8.0F)); // 添加看向玩家的目标
+        this.goalSelector.addGoal(8, new RandomLookAroundGoal(this)); // 添加环顾四周的目标
+        this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, AbstractGolem.class, true)); // 添加攻击傀儡目标
+        this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, WarriorVillager.class, true));
+        this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, true)); // 添加主动攻击玩家目标
+        this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, Mob.class, 5, false, false, (entity, world) -> entity instanceof Enemy && !(entity instanceof LittlePersonEntity)));
     }
-    public static DefaultAttributeContainer.Builder createLittlePersonAttributes() {
+    public static AttributeSupplier.Builder createLittlePersonAttributes() {
         return BaseSkillLittlePersonEntity.createAttributes()
-                .add(EntityAttributes.MAX_HEALTH, 2000.0)
-                .add(EntityAttributes.ATTACK_DAMAGE, 45.00);
+                .add(Attributes.MAX_HEALTH, 2000.0)
+                .add(Attributes.ATTACK_DAMAGE, 45.00);
     }
     @Override
     public boolean blockAttack(@NotNull DamageSource source, float amount) {
@@ -58,7 +63,7 @@ public class WildManEntity extends BaseSkillLittlePersonEntity implements Ranged
     @Override
     public void tick() {
         super.tick();
-        if (!this.getWorld().isClient()) {
+        if (!this.level().isClientSide()) {
             if (this.canSkill("attack4")) performSkill("attack4");
             if (this.canSkill("attack3") && this.getTarget() != null && this.getTarget().distanceTo(this) <= 2) {
                 performSkill("attack3");
@@ -75,43 +80,43 @@ public class WildManEntity extends BaseSkillLittlePersonEntity implements Ranged
     @Override
     public void runSkill_3(BaseSkillLittlePersonEntity entity) {
         if (entity.getTarget() != null) {
-            entity.getTarget().damage((ServerWorld) entity.getWorld(), entity.getDamageSources().mobAttack(entity), 35);
+            entity.getTarget().hurtServer((ServerLevel) entity.level(), entity.damageSources().mobAttack(entity), 35);
         }
     }
     @Override
     public void runSkill_5(BaseSkillLittlePersonEntity entity) {
         if (entity.getTarget() != null) {
-            entity.getTarget().damage((ServerWorld) entity.getWorld(), entity.getDamageSources().mobAttack(entity), 35);
+            entity.getTarget().hurtServer((ServerLevel) entity.level(), entity.damageSources().mobAttack(entity), 35);
         }
     }
 
     @Override
     public void runSkill_4(BaseSkillLittlePersonEntity entity) {
-        if (this.getWorld() instanceof ServerWorld serverWorld) {
+        if (this.level() instanceof ServerLevel serverWorld) {
             for (int i = 0; i < 3; i++) {
-                WildBoarEntity wildBoar = ModEntities.WILD_BOAR.create(this.getWorld(), SpawnReason.MOB_SUMMONED);
+                WildBoarEntity wildBoar = ModEntities.WILD_BOAR.create(this.level(), EntitySpawnReason.MOB_SUMMONED);
                 if (wildBoar != null) {
-                    Vec3d pos = entity.getPos();
-                    wildBoar.refreshPositionAndAngles(
-                            pos.getX(),
-                            pos.getY(),
-                            pos.getZ(),
-                            entity.getYaw(),
-                            entity.getPitch()
+                    Vec3 pos = entity.position();
+                    wildBoar.snapTo(
+                            pos.x(),
+                            pos.y(),
+                            pos.z(),
+                            entity.getYRot(),
+                            entity.getXRot()
                     );
                     wildBoar.setSummonOwner(this);
-                    serverWorld.spawnEntity(wildBoar);
+                    serverWorld.addFreshEntity(wildBoar);
                 }
             }
         }
     }
     @Override
-    public void shootAt(LivingEntity target, float pullProgress) {
+    public void performRangedAttack(LivingEntity target, float pullProgress) {
         performSkill("attack2");
     }
 
     @Override
-    public boolean tryAttack(ServerWorld world, Entity target) {
+    public boolean doHurtTarget(ServerLevel world, Entity target) {
         return true;
     }
 
@@ -121,22 +126,22 @@ public class WildManEntity extends BaseSkillLittlePersonEntity implements Ranged
         double targetZ = target.getZ() - wildManEntity.getZ();
         double distance = Math.sqrt(targetX * targetX + targetZ * targetZ);
         // 预测目标移动（提高准确性）
-        targetY += target.getVelocity().getY() * distance * 0.25; // 重力补偿
-        World world = wildManEntity.getWorld();
-        if (world instanceof ServerWorld serverWorld) {
+        targetY += target.getDeltaMovement().y() * distance * 0.25; // 重力补偿
+        Level world = wildManEntity.level();
+        if (world instanceof ServerLevel serverWorld) {
             // 创建箭实体
-            LittleArrowEntity arrowEntity = new LittleArrowEntity(ModEntities.SPEAR_BULLET, world, wildManEntity, new ItemStack(Items.ARROW), wildManEntity.getMainHandStack().getItem() == Items.BOW ? wildManEntity.getMainHandStack() : null);
+            LittleArrowEntity arrowEntity = new LittleArrowEntity(ModEntities.SPEAR_BULLET, world, wildManEntity, new ItemStack(Items.ARROW), wildManEntity.getMainHandItem().getItem() == Items.BOW ? wildManEntity.getMainHandItem() : null);
             // 设置箭的伤害
-            arrowEntity.setDamage(damage);
+            arrowEntity.setBaseDamage(damage);
             arrowEntity.setOwner(wildManEntity);
             // 减小散布参数以提高精度（从0.1F改为0.01F）
-            arrowEntity.setVelocity(targetX, targetY, targetZ, 1.6F, 0.01F);
+            arrowEntity.shoot(targetX, targetY, targetZ, 1.6F, 0.01F);
             arrowEntity.setTrueDamage(true, false);
             // 发射箭
-            serverWorld.spawnEntity(arrowEntity);
+            serverWorld.addFreshEntity(arrowEntity);
         }
 
         // 播放攻击音效
-        wildManEntity.playSound(SoundEvents.ENTITY_SNOW_GOLEM_SHOOT, 1.0F, 0.4F / (wildManEntity.getRandom().nextFloat() * 0.4F + 0.8F));
+        wildManEntity.playSound(SoundEvents.SNOW_GOLEM_SHOOT, 1.0F, 0.4F / (wildManEntity.getRandom().nextFloat() * 0.4F + 0.8F));
     }
 }

@@ -1,29 +1,29 @@
 package com.kltyton.mob_battle.mixin.crossbow;
 
 import com.kltyton.mob_battle.items.ModItems;
-import net.minecraft.client.render.entity.PlayerEntityRenderer;
-import net.minecraft.client.render.entity.model.BipedEntityModel;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.consume.UseAction;
-import net.minecraft.util.Hand;
+import net.minecraft.client.model.HumanoidModel;
+import net.minecraft.client.renderer.entity.player.PlayerRenderer;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemUseAnimation;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(PlayerEntityRenderer.class)
+@Mixin(PlayerRenderer.class)
 public class PlayerEntityRendererMixin {
-    @Inject(method = "getArmPose(Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/item/ItemStack;Lnet/minecraft/util/Hand;)Lnet/minecraft/client/render/entity/model/BipedEntityModel$ArmPose;", at = @At("RETURN"), cancellable = true)
-    private static void getArmPose(PlayerEntity player, ItemStack stack, Hand hand, CallbackInfoReturnable<BipedEntityModel.ArmPose> cir) {
-        if (stack.isOf(ModItems.VS_SNIPE)) {
-            UseAction useAction = stack.getUseAction();
-            if (player.getActiveHand() == hand && player.getItemUseTimeLeft() > 0) {
-                if (useAction == UseAction.CROSSBOW) {
-                    cir.setReturnValue(BipedEntityModel.ArmPose.CROSSBOW_CHARGE);
+    @Inject(method = "getArmPose(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/InteractionHand;)Lnet/minecraft/client/model/HumanoidModel$ArmPose;", at = @At("RETURN"), cancellable = true)
+    private static void getArmPose(Player player, ItemStack stack, InteractionHand hand, CallbackInfoReturnable<HumanoidModel.ArmPose> cir) {
+        if (stack.is(ModItems.VS_SNIPE)) {
+            ItemUseAnimation useAction = stack.getUseAnimation();
+            if (player.getUsedItemHand() == hand && player.getUseItemRemainingTicks() > 0) {
+                if (useAction == ItemUseAnimation.CROSSBOW) {
+                    cir.setReturnValue(HumanoidModel.ArmPose.CROSSBOW_CHARGE);
                 }
             } else {
-                cir.setReturnValue(BipedEntityModel.ArmPose.CROSSBOW_HOLD);
+                cir.setReturnValue(HumanoidModel.ArmPose.CROSSBOW_HOLD);
             }
         }
     }

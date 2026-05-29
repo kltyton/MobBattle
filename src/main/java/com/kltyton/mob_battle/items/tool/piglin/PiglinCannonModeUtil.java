@@ -1,9 +1,9 @@
 package com.kltyton.mob_battle.items.tool.piglin;
 
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.NbtComponent;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.CustomData;
 
 public final class PiglinCannonModeUtil {
     private PiglinCannonModeUtil() {}
@@ -16,8 +16,8 @@ public final class PiglinCannonModeUtil {
     }
 
     public static Mode getMode(ItemStack stack) {
-        NbtCompound nbt = stack.getOrDefault(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT).copyNbt();
-        String name = nbt.getString(MODE_KEY, Mode.FAST_FIRE.name());
+        CompoundTag nbt = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
+        String name = nbt.getStringOr(MODE_KEY, Mode.FAST_FIRE.name());
         if ("HEAVY_BLAST".equals(name)) {
             return Mode.HEAVY_BLAST;
         }
@@ -25,9 +25,9 @@ public final class PiglinCannonModeUtil {
     }
 
     public static void setMode(ItemStack stack, Mode mode) {
-        NbtCompound nbt = stack.getOrDefault(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT).copyNbt();
+        CompoundTag nbt = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
         nbt.putString(MODE_KEY, mode.name());
-        stack.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(nbt));
+        stack.set(DataComponents.CUSTOM_DATA, CustomData.of(nbt));
     }
 
     public static Mode toggleMode(ItemStack stack) {

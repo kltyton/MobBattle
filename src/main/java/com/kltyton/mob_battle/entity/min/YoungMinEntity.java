@@ -1,17 +1,6 @@
 package com.kltyton.mob_battle.entity.min;
 
 import com.kltyton.mob_battle.entity.xunsheng.XunShengEntity;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.attribute.DefaultAttributeContainer;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.entity.mob.WardenEntity;
-import net.minecraft.predicate.entity.EntityPredicates;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
 import software.bernie.geckolib.animatable.GeoEntity;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.animatable.manager.AnimatableManager;
@@ -20,24 +9,35 @@ import software.bernie.geckolib.animation.RawAnimation;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 import java.util.List;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySelector;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.monster.warden.Warden;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
-public class YoungMinEntity extends MobEntity implements GeoEntity {
+public class YoungMinEntity extends Mob implements GeoEntity {
 
-    public YoungMinEntity(EntityType<? extends MobEntity> entityType, World world) {
+    public YoungMinEntity(EntityType<? extends Mob> entityType, Level world) {
         super(entityType, world);
-        this.setAiDisabled(true); // 禁用默认AI
+        this.setNoAi(true); // 禁用默认AI
     }
     @Override
-    public void takeKnockback(double strength, double x, double z) {
+    public void knockback(double strength, double x, double z) {
     }
     @Override
-    protected void knockback(LivingEntity target) {
+    protected void blockedByItem(LivingEntity target) {
     }
     // 设置初始属性
-    public static DefaultAttributeContainer.Builder createAttributes() {
-        return MobEntity.createMobAttributes()
-                .add(EntityAttributes.MAX_HEALTH, 1500.0)
-                .add(EntityAttributes.MOVEMENT_SPEED, 0.0); // 无法移动
+    public static AttributeSupplier.Builder createAttributes() {
+        return Mob.createMobAttributes()
+                .add(Attributes.MAX_HEALTH, 1500.0)
+                .add(Attributes.MOVEMENT_SPEED, 0.0); // 无法移动
     }
 
     @Override
@@ -45,7 +45,7 @@ public class YoungMinEntity extends MobEntity implements GeoEntity {
         super.tick();
 
         // 仅在服务器端运行逻辑
-        if (!this.getWorld().isClient && this.age % 20 == 0) { // 每秒执行一次，节省性能
+        if (!this.level().isClientSide && this.tickCount % 20 == 0) { // 每秒执行一次，节省性能
             redirectWardenAnger();
             this.heal(10.0F);
         }
@@ -53,20 +53,20 @@ public class YoungMinEntity extends MobEntity implements GeoEntity {
 
     private void redirectWardenAnger() {
         // 1. 寻找 50 格内最近的实体（排除掉 YoungMin 自己）
-        Box targetSearchBox = this.getBoundingBox().expand(50.0);
-        List<LivingEntity> nearbyEntities = this.getWorld().getEntitiesByClass(
+        AABB targetSearchBox = this.getBoundingBox().inflate(50.0);
+        List<LivingEntity> nearbyEntities = this.level().getEntitiesOfClass(
                 LivingEntity.class,
                 targetSearchBox,
-                entity -> entity != this && entity.isAlive() && !(entity instanceof WardenEntity || entity instanceof YoungMinEntity || entity instanceof XunShengEntity)
+                entity -> entity != this && entity.isAlive() && !(entity instanceof Warden || entity instanceof YoungMinEntity || entity instanceof XunShengEntity)
         );
 
         // 找到最近的实体
         LivingEntity target = null;
         double closestDistance = Double.MAX_VALUE;
-        Vec3d thisPos = this.getPos();
+        Vec3 thisPos = this.position();
 
         for (LivingEntity entity : nearbyEntities) {
-            double distance = thisPos.distanceTo(entity.getPos());
+            double distance = thisPos.distanceTo(entity.position());
             if (distance < closestDistance) {
                 closestDistance = distance;
                 target = entity;
@@ -76,20 +76,20 @@ public class YoungMinEntity extends MobEntity implements GeoEntity {
         if (target == null) return;
 
         // 2. 寻找 64 格内的监守者
-        Box wardenSearchBox = this.getBoundingBox().expand(64.0);
-        List<WardenEntity> wardens = this.getWorld().getEntitiesByClass(
-                WardenEntity.class,
+        AABB wardenSearchBox = this.getBoundingBox().inflate(64.0);
+        List<Warden> wardens = this.level().getEntitiesOfClass(
+                Warden.class,
                 wardenSearchBox,
-                EntityPredicates.EXCEPT_SPECTATOR
+                EntitySelector.NO_SPECTATORS
         );
-        List<XunShengEntity> xunShengEntities = this.getWorld().getEntitiesByClass(
+        List<XunShengEntity> xunShengEntities = this.level().getEntitiesOfClass(
                 XunShengEntity.class,
                 wardenSearchBox,
-                EntityPredicates.EXCEPT_SPECTATOR
+                EntitySelector.NO_SPECTATORS
         );
 
         // 3. 强制让监守者愤怒并攻击该目标
-        for (WardenEntity warden : wardens) {
+        for (Warden warden : wardens) {
             // 监守者使用特殊的愤怒系统，直接设置最高愤怒值
             warden.increaseAngerAt(target, 150, true);
             warden.setTarget(target);
@@ -107,11 +107,11 @@ public class YoungMinEntity extends MobEntity implements GeoEntity {
     }
 
     @Override
-    public void pushAwayFrom(Entity entity) {
+    public void push(Entity entity) {
     }
 
     @Override
-    public boolean collidesWith(Entity other) {
+    public boolean canCollideWith(Entity other) {
         return false; // 没有碰撞体积
     }
 

@@ -2,8 +2,8 @@ package com.kltyton.mob_battle.mixin.maxstack;
 
 import com.kltyton.mob_battle.Mob_battle;
 import com.kltyton.mob_battle.items.ModFabricItem;
-import net.minecraft.entity.ItemEntity;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -15,9 +15,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(ItemEntity.class)
 public abstract class ItemEntityMixin {
     @Shadow
-    public abstract ItemStack getStack();
+    public abstract ItemStack getItem();
 
-    @ModifyConstant(method = "merge(Lnet/minecraft/entity/ItemEntity;Lnet/minecraft/item/ItemStack;Lnet/minecraft/item/ItemStack;)V", constant = @Constant(intValue = 64))
+    @ModifyConstant(method = "merge(Lnet/minecraft/world/entity/item/ItemEntity;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;)V", constant = @Constant(intValue = 64))
     private static int merge(int val) {
         return Mob_battle.MAX_STACK_SIZE;
     }
@@ -25,8 +25,8 @@ public abstract class ItemEntityMixin {
 
     @Inject(method = "tick", at = @At("TAIL"))
     private void transformMagmaLobsterInWater(CallbackInfo ci) {
-        if (this.getStack().getItem() instanceof ModFabricItem modFabricItem) {
-            modFabricItem.itemEntityHook(this.getStack(), (ItemEntity) (Object) this);
+        if (this.getItem().getItem() instanceof ModFabricItem modFabricItem) {
+            modFabricItem.itemEntityHook(this.getItem(), (ItemEntity) (Object) this);
         }
     }
 }

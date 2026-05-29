@@ -2,21 +2,6 @@ package com.kltyton.mob_battle.entity.littleperson.skillentity;
 
 import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.utils.EntityUtil;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.MovementType;
-import net.minecraft.entity.data.DataTracker;
-import net.minecraft.entity.projectile.ProjectileEntity;
-import net.minecraft.particle.BlockStateParticleEffect;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.storage.ReadView;
-import net.minecraft.storage.WriteView;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
 import software.bernie.geckolib.animatable.GeoEntity;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.animatable.manager.AnimatableManager;
@@ -26,8 +11,23 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 
 import java.util.HashSet;
 import java.util.Set;
+import net.minecraft.core.particles.BlockParticleOption;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
-public class SkillProjectileEntity extends ProjectileEntity implements GeoEntity {
+public class SkillProjectileEntity extends Projectile implements GeoEntity {
     private static final RawAnimation ATTACK_ANIM = RawAnimation.begin().thenPlayAndHold("attack");
     private final AnimatableInstanceCache geoCache = GeckoLibUtil.createInstanceCache(this);
     private final Set<Integer> hitEntities = new HashSet<>();
@@ -40,16 +40,16 @@ public class SkillProjectileEntity extends ProjectileEntity implements GeoEntity
     private int maxAge = 40;
     private double explosionRadius = 3.0D;
 
-    public SkillProjectileEntity(EntityType<? extends SkillProjectileEntity> entityType, World world) {
+    public SkillProjectileEntity(EntityType<? extends SkillProjectileEntity> entityType, Level world) {
         super(entityType, world);
-        this.noClip = true;
+        this.noPhysics = true;
     }
 
-    public SkillProjectileEntity configure(LivingEntity owner, Vec3d position, Vec3d velocity, float physicalDamage, float magicDamage,
+    public SkillProjectileEntity configure(LivingEntity owner, Vec3 position, Vec3 velocity, float physicalDamage, float magicDamage,
                                            boolean pierceEntities, boolean pierceBlocks, boolean explodeOnHit, int maxAge) {
         this.setOwner(owner);
-        this.setPosition(position);
-        this.setVelocity(velocity);
+        this.setPos(position);
+        this.setDeltaMovement(velocity);
         this.physicalDamage = physicalDamage;
         this.magicDamage = magicDamage;
         this.pierceEntities = pierceEntities;
@@ -61,15 +61,15 @@ public class SkillProjectileEntity extends ProjectileEntity implements GeoEntity
         } else if (this.getType() == ModEntities.ICE_SWORD_ENERGY) {
             this.maxAge = Math.min(this.maxAge, 34);
         }
-        this.noClip = pierceBlocks;
+        this.noPhysics = pierceBlocks;
         return this;
     }
 
     public void dropDown() {
-        this.noClip = false;
+        this.noPhysics = false;
         this.setNoGravity(false);
-        this.setVelocity(0.0D, -0.85D, 0.0D);
-        this.velocityModified = true;
+        this.setDeltaMovement(0.0D, -0.85D, 0.0D);
+        this.hurtMarked = true;
     }
 
     public void setExplosionRadius(double explosionRadius) {
@@ -77,25 +77,25 @@ public class SkillProjectileEntity extends ProjectileEntity implements GeoEntity
     }
 
     @Override
-    protected void initDataTracker(DataTracker.Builder builder) {
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
     }
 
     @Override
-    protected void readCustomData(ReadView view) {
+    protected void readAdditionalSaveData(ValueInput view) {
     }
 
     @Override
-    protected void writeCustomData(WriteView view) {
+    protected void addAdditionalSaveData(ValueOutput view) {
     }
 
     @Override
     public void tick() {
         super.tick();
-        this.move(MovementType.SELF, this.getVelocity());
-        if (this.getWorld().isClient()) {
+        this.move(MoverType.SELF, this.getDeltaMovement());
+        if (this.level().isClientSide()) {
             return;
         }
-        if (this.age > this.maxAge) {
+        if (this.tickCount > this.maxAge) {
             this.discard();
             return;
         }
@@ -111,16 +111,16 @@ public class SkillProjectileEntity extends ProjectileEntity implements GeoEntity
     }
 
     private boolean touchesSolidBlock() {
-        return this.getWorld().getBlockState(this.getBlockPos()).isSolidBlock(this.getWorld(), this.getBlockPos());
+        return this.level().getBlockState(this.blockPosition()).isRedstoneConductor(this.level(), this.blockPosition());
     }
 
     private void hitNearbyTargets() {
-        if (!(this.getWorld() instanceof ServerWorld world)) {
+        if (!(this.level() instanceof ServerLevel world)) {
             return;
         }
         Entity owner = this.getOwner();
-        Box box = this.getBoundingBox().expand(0.45D);
-        for (LivingEntity target : world.getEntitiesByClass(LivingEntity.class, box,
+        AABB box = this.getBoundingBox().inflate(0.45D);
+        for (LivingEntity target : world.getEntitiesOfClass(LivingEntity.class, box,
                 living -> EntityUtil.isValidSummonCombatTarget(this, owner, living))) {
             if (!this.hitEntities.add(target.getId())) {
                 continue;
@@ -137,33 +137,33 @@ public class SkillProjectileEntity extends ProjectileEntity implements GeoEntity
         }
     }
 
-    private void damageTarget(ServerWorld world, LivingEntity target, Entity owner) {
+    private void damageTarget(ServerLevel world, LivingEntity target, Entity owner) {
         if (!EntityUtil.isValidSummonCombatTarget(this, owner, target)) {
             return;
         }
         if (this.physicalDamage > 0.0F) {
             if (owner instanceof LivingEntity livingOwner) {
-                target.damage(world, this.getDamageSources().mobProjectile(this, livingOwner), this.physicalDamage);
+                target.hurtServer(world, this.damageSources().mobProjectile(this, livingOwner), this.physicalDamage);
             } else {
-                target.damage(world, this.getDamageSources().magic(), this.physicalDamage);
+                target.hurtServer(world, this.damageSources().magic(), this.physicalDamage);
             }
         }
         if (this.magicDamage > 0.0F) {
-            target.damage(world, this.getDamageSources().indirectMagic(this, owner == null ? this : owner), this.magicDamage);
+            target.hurtServer(world, this.damageSources().indirectMagic(this, owner == null ? this : owner), this.magicDamage);
         }
     }
 
     private void explode() {
-        if (!(this.getWorld() instanceof ServerWorld world)) {
+        if (!(this.level() instanceof ServerLevel world)) {
             this.discard();
             return;
         }
         Entity owner = this.getOwner();
-        world.spawnParticles(new BlockStateParticleEffect(ParticleTypes.BLOCK, net.minecraft.block.Blocks.ICE.getDefaultState()),
+        world.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, net.minecraft.world.level.block.Blocks.ICE.defaultBlockState()),
                 this.getX(), this.getY(), this.getZ(), 35, 0.8D, 0.6D, 0.8D, 0.12D);
-        world.playSound(null, this.getBlockPos(), SoundEvents.BLOCK_GLASS_BREAK, this.getSoundCategory(), 1.1F, 0.8F);
-        Box box = this.getBoundingBox().expand(this.explosionRadius);
-        for (LivingEntity target : world.getEntitiesByClass(LivingEntity.class, box,
+        world.playSound(null, this.blockPosition(), SoundEvents.GLASS_BREAK, this.getSoundSource(), 1.1F, 0.8F);
+        AABB box = this.getBoundingBox().inflate(this.explosionRadius);
+        for (LivingEntity target : world.getEntitiesOfClass(LivingEntity.class, box,
                 living -> EntityUtil.isValidSummonCombatTarget(this, owner, living))) {
             damageTarget(world, target, owner);
         }

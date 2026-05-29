@@ -6,25 +6,25 @@ import com.kltyton.mob_battle.entity.general.GeneralEntity;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
 import com.kltyton.mob_battle.utils.EntityUtil;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.ai.goal.ActiveTargetGoal;
-import net.minecraft.entity.ai.goal.LookAtEntityGoal;
-import net.minecraft.entity.ai.goal.RevengeGoal;
-import net.minecraft.entity.ai.goal.WanderAroundFarGoal;
-import net.minecraft.entity.attribute.DefaultAttributeContainer;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.data.DataTracker;
-import net.minecraft.entity.data.TrackedData;
-import net.minecraft.entity.data.TrackedDataHandlerRegistry;
-import net.minecraft.entity.mob.HostileEntity;
-import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.entity.SpawnReason;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
+import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
+import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
+import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
+import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.animatable.manager.AnimatableManager;
 import software.bernie.geckolib.animatable.processing.AnimationController;
@@ -32,56 +32,56 @@ import software.bernie.geckolib.animatable.processing.AnimationTest;
 import software.bernie.geckolib.animation.PlayState;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
-public class Cbot002Entity extends HostileEntity implements GeneralEntity<Cbot002Entity> {
-    public static final TrackedData<Boolean> HAS_SKILL = DataTracker.registerData(Cbot002Entity.class, TrackedDataHandlerRegistry.BOOLEAN);
-    public static final TrackedData<Integer> SKILL_COOLDOWN_1 = DataTracker.registerData(Cbot002Entity.class, TrackedDataHandlerRegistry.INTEGER);
-    public static final TrackedData<Integer> SKILL_COOLDOWN_2 = DataTracker.registerData(Cbot002Entity.class, TrackedDataHandlerRegistry.INTEGER);
-    public static final TrackedData<Integer> SKILL_COOLDOWN_3 = DataTracker.registerData(Cbot002Entity.class, TrackedDataHandlerRegistry.INTEGER);
-    public static final TrackedData<Integer> SKILL_COOLDOWN_4 = DataTracker.registerData(Cbot002Entity.class, TrackedDataHandlerRegistry.INTEGER);
-    public static final TrackedData<Integer> SKILL_COOLDOWN_5 = DataTracker.registerData(Cbot002Entity.class, TrackedDataHandlerRegistry.INTEGER);
-    public static final TrackedData<Integer> SHOOT_MODE = DataTracker.registerData(Cbot002Entity.class, TrackedDataHandlerRegistry.INTEGER);
-    public static final TrackedData<Integer> SHOOT_TICKS = DataTracker.registerData(Cbot002Entity.class, TrackedDataHandlerRegistry.INTEGER);
+public class Cbot002Entity extends Monster implements GeneralEntity<Cbot002Entity> {
+    public static final EntityDataAccessor<Boolean> HAS_SKILL = SynchedEntityData.defineId(Cbot002Entity.class, EntityDataSerializers.BOOLEAN);
+    public static final EntityDataAccessor<Integer> SKILL_COOLDOWN_1 = SynchedEntityData.defineId(Cbot002Entity.class, EntityDataSerializers.INT);
+    public static final EntityDataAccessor<Integer> SKILL_COOLDOWN_2 = SynchedEntityData.defineId(Cbot002Entity.class, EntityDataSerializers.INT);
+    public static final EntityDataAccessor<Integer> SKILL_COOLDOWN_3 = SynchedEntityData.defineId(Cbot002Entity.class, EntityDataSerializers.INT);
+    public static final EntityDataAccessor<Integer> SKILL_COOLDOWN_4 = SynchedEntityData.defineId(Cbot002Entity.class, EntityDataSerializers.INT);
+    public static final EntityDataAccessor<Integer> SKILL_COOLDOWN_5 = SynchedEntityData.defineId(Cbot002Entity.class, EntityDataSerializers.INT);
+    public static final EntityDataAccessor<Integer> SHOOT_MODE = SynchedEntityData.defineId(Cbot002Entity.class, EntityDataSerializers.INT);
+    public static final EntityDataAccessor<Integer> SHOOT_TICKS = SynchedEntityData.defineId(Cbot002Entity.class, EntityDataSerializers.INT);
 
     private final AnimatableInstanceCache geoCache = GeckoLibUtil.createInstanceCache(this);
 
-    public Cbot002Entity(EntityType<? extends HostileEntity> entityType, World world) {
+    public Cbot002Entity(EntityType<? extends Monster> entityType, Level world) {
         super(entityType, world);
-        this.experiencePoints = 30;
+        this.xpReward = 30;
         this.setHasSkill(false);
-        this.setAiDisabled(false);
+        this.setNoAi(false);
     }
 
     @Override
-    protected void initGoals() {
-        this.goalSelector.add(7, new WanderAroundFarGoal(this, 0.8D));
-        this.goalSelector.add(8, new LookAtEntityGoal(this, LivingEntity.class, 8.0F));
-        this.targetSelector.add(1, new RevengeGoal(this));
-        this.targetSelector.add(2, new ActiveTargetGoal<>(this, LivingEntity.class, 10, true, false,
+    protected void registerGoals() {
+        this.goalSelector.addGoal(7, new WaterAvoidingRandomStrollGoal(this, 0.8D));
+        this.goalSelector.addGoal(8, new LookAtPlayerGoal(this, LivingEntity.class, 8.0F));
+        this.targetSelector.addGoal(1, new HurtByTargetGoal(this));
+        this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, LivingEntity.class, 10, true, false,
                 (entity, world) -> entity instanceof LivingEntity living && EntityUtil.isValidCombatTarget(this, living)));
     }
 
     @Override
-    protected void initDataTracker(DataTracker.Builder builder) {
-        super.initDataTracker(builder);
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
         entityInitDataTracker(builder);
-        builder.add(SHOOT_MODE, 0);
-        builder.add(SHOOT_TICKS, 0);
+        builder.define(SHOOT_MODE, 0);
+        builder.define(SHOOT_TICKS, 0);
     }
 
     @Override
     public void tick() {
         super.tick();
         entityTick();
-        if (!this.getWorld().isClient()) {
-            if (this.age % 20 == 0) {
+        if (!this.level().isClientSide()) {
+            if (this.tickCount % 20 == 0) {
                 this.heal(2.0F);
             }
-            tickCombat((ServerWorld) this.getWorld());
-            tickShooting((ServerWorld) this.getWorld());
+            tickCombat((ServerLevel) this.level());
+            tickShooting((ServerLevel) this.level());
         }
     }
 
-    private void tickCombat(ServerWorld world) {
+    private void tickCombat(ServerLevel world) {
         if (this.hasSkill() || getShootMode() != 0) {
             return;
         }
@@ -89,18 +89,18 @@ public class Cbot002Entity extends HostileEntity implements GeneralEntity<Cbot00
         if (target == null || !EntityUtil.isValidCombatTarget(this, target)) {
             return;
         }
-        this.getLookControl().lookAt(target, 30.0F, 30.0F);
+        this.getLookControl().setLookAt(target, 30.0F, 30.0F);
         double distance = this.distanceTo(target);
         if (distance > 19.5D) {
-            this.getNavigation().startMovingTo(target, 1.0D);
+            this.getNavigation().moveTo(target, 1.0D);
             return;
         }
         this.getNavigation().stop();
-        this.tryAttack(world, target);
+        this.doHurtTarget(world, target);
     }
 
     @Override
-    public boolean tryAttack(ServerWorld world, Entity target) {
+    public boolean doHurtTarget(ServerLevel world, Entity target) {
         if (!(target instanceof LivingEntity living) || !EntityUtil.isValidCombatTarget(this, living) || hasSkill()) {
             return false;
         }
@@ -133,7 +133,7 @@ public class Cbot002Entity extends HostileEntity implements GeneralEntity<Cbot00
     @Override
     public void runSkill_3(Cbot002Entity entity) {
         LivingEntity target = this.getTarget();
-        if (target == null || !(this.getWorld() instanceof ServerWorld world)) {
+        if (target == null || !(this.level() instanceof ServerLevel world)) {
             return;
         }
         throwIceBlock(world, target);
@@ -143,17 +143,17 @@ public class Cbot002Entity extends HostileEntity implements GeneralEntity<Cbot00
     public void runSkill_4(Cbot002Entity entity) {
         setShootMode(2);
         setShootTicks(0);
-        setAiDisabled(false);
+        setNoAi(false);
     }
 
     @Override
     public void stopSkill_4(Cbot002Entity entity) {
         setShootMode(0);
-        setAiDisabled(true);
+        setNoAi(true);
         this.getNavigation().stop();
     }
 
-    private void tickShooting(ServerWorld world) {
+    private void tickShooting(ServerLevel world) {
         int mode = getShootMode();
         if (mode == 0) {
             return;
@@ -178,52 +178,52 @@ public class Cbot002Entity extends HostileEntity implements GeneralEntity<Cbot00
 
     private void keepDistanceFrom(LivingEntity target) {
         double distance = this.distanceTo(target);
-        Vec3d direction = this.getPos().subtract(target.getPos()).normalize();
+        Vec3 direction = this.position().subtract(target.position()).normalize();
         if (distance < 9.0D) {
-            this.setVelocity(direction.multiply(0.28D).add(0.0D, this.getVelocity().y, 0.0D));
-            this.velocityModified = true;
+            this.setDeltaMovement(direction.scale(0.28D).add(0.0D, this.getDeltaMovement().y, 0.0D));
+            this.hurtMarked = true;
         } else if (distance > 14.0D) {
-            this.getNavigation().startMovingTo(target, 0.8D);
+            this.getNavigation().moveTo(target, 0.8D);
         } else {
             this.getNavigation().stop();
         }
-        this.getLookControl().lookAt(target, 30.0F, 30.0F);
+        this.getLookControl().setLookAt(target, 30.0F, 30.0F);
     }
 
-    private void shootSnowballSpread(ServerWorld world, LivingEntity target, int count, float damage, float magicDamage, float speed) {
+    private void shootSnowballSpread(ServerLevel world, LivingEntity target, int count, float damage, float magicDamage, float speed) {
         for (int i = 0; i < count; i++) {
-            CbotSnowballEntity snowball = ModEntities.CBOT_SNOWBALL.create(world, SpawnReason.MOB_SUMMONED);
+            CbotSnowballEntity snowball = ModEntities.CBOT_SNOWBALL.create(world, EntitySpawnReason.MOB_SUMMONED);
             if (snowball == null) {
                 continue;
             }
-            Vec3d toTarget = target.getEyePos().subtract(this.getEyePos()).add(
+            Vec3 toTarget = target.getEyePosition().subtract(this.getEyePosition()).add(
                     (this.random.nextDouble() - 0.5D) * 3.4D,
                     (this.random.nextDouble() - 0.5D) * 1.8D,
                     (this.random.nextDouble() - 0.5D) * 3.4D
-            ).normalize().multiply(speed);
-            snowball.configure(this, this.getEyePos().add(this.getRotationVec(1.0F).multiply(0.8D)), toTarget, damage, magicDamage);
-            world.spawnEntity(snowball);
+            ).normalize().scale(speed);
+            snowball.configure(this, this.getEyePosition().add(this.getViewVector(1.0F).scale(0.8D)), toTarget, damage, magicDamage);
+            world.addFreshEntity(snowball);
         }
-        this.playSound(SoundEvents.ENTITY_SNOW_GOLEM_SHOOT, 0.8F, 0.75F + this.random.nextFloat() * 0.25F);
+        this.playSound(SoundEvents.SNOW_GOLEM_SHOOT, 0.8F, 0.75F + this.random.nextFloat() * 0.25F);
     }
 
-    private void throwIceBlock(ServerWorld world, LivingEntity target) {
-        Vec3d start = this.getEyePos().add(this.getRotationVec(1.0F).multiply(1.2D));
-        SnowmanIceBlockEntity ice = ModEntities.SNOWMAN_ICE_BLOCK.create(world, SpawnReason.MOB_SUMMONED);
+    private void throwIceBlock(ServerLevel world, LivingEntity target) {
+        Vec3 start = this.getEyePosition().add(this.getViewVector(1.0F).scale(1.2D));
+        SnowmanIceBlockEntity ice = ModEntities.SNOWMAN_ICE_BLOCK.create(world, EntitySpawnReason.MOB_SUMMONED);
         if (ice == null) {
             return;
         }
         ice.setOwner(this);
-        ice.setPosition(start);
-        Vec3d velocity = target.getEyePos().subtract(start).normalize().multiply(0.75D);
-        ice.setVelocity(velocity);
-        ice.velocityModified = true;
-        world.spawnEntity(ice);
-        world.playSound(null, this.getBlockPos(), SoundEvents.ENTITY_SNOWBALL_THROW, this.getSoundCategory(), 1.0F, 0.7F);
+        ice.setPos(start);
+        Vec3 velocity = target.getEyePosition().subtract(start).normalize().scale(0.75D);
+        ice.setDeltaMovement(velocity);
+        ice.hurtMarked = true;
+        world.addFreshEntity(ice);
+        world.playSound(null, this.blockPosition(), SoundEvents.SNOWBALL_THROW, this.getSoundSource(), 1.0F, 0.7F);
     }
 
     @Override
-    public MobEntity getEntity() {
+    public Mob getEntity() {
         return this;
     }
 
@@ -233,32 +233,32 @@ public class Cbot002Entity extends HostileEntity implements GeneralEntity<Cbot00
     }
 
     @Override
-    public TrackedData<Boolean> getHasSkillKey() {
+    public EntityDataAccessor<Boolean> getHasSkillKey() {
         return HAS_SKILL;
     }
 
     @Override
-    public TrackedData<Integer> getCooldownKey1() {
+    public EntityDataAccessor<Integer> getCooldownKey1() {
         return SKILL_COOLDOWN_1;
     }
 
     @Override
-    public TrackedData<Integer> getCooldownKey2() {
+    public EntityDataAccessor<Integer> getCooldownKey2() {
         return SKILL_COOLDOWN_2;
     }
 
     @Override
-    public TrackedData<Integer> getCooldownKey3() {
+    public EntityDataAccessor<Integer> getCooldownKey3() {
         return SKILL_COOLDOWN_3;
     }
 
     @Override
-    public TrackedData<Integer> getCooldownKey4() {
+    public EntityDataAccessor<Integer> getCooldownKey4() {
         return SKILL_COOLDOWN_4;
     }
 
     @Override
-    public TrackedData<Integer> getCooldownKey5() {
+    public EntityDataAccessor<Integer> getCooldownKey5() {
         return SKILL_COOLDOWN_5;
     }
 
@@ -278,19 +278,19 @@ public class Cbot002Entity extends HostileEntity implements GeneralEntity<Cbot00
     }
 
     public int getShootMode() {
-        return this.dataTracker.get(SHOOT_MODE);
+        return this.entityData.get(SHOOT_MODE);
     }
 
     public void setShootMode(int mode) {
-        this.dataTracker.set(SHOOT_MODE, mode);
+        this.entityData.set(SHOOT_MODE, mode);
     }
 
     public int getShootTicks() {
-        return this.dataTracker.get(SHOOT_TICKS);
+        return this.entityData.get(SHOOT_TICKS);
     }
 
     public void setShootTicks(int ticks) {
-        this.dataTracker.set(SHOOT_TICKS, ticks);
+        this.entityData.set(SHOOT_TICKS, ticks);
     }
 
     @Override
@@ -334,12 +334,12 @@ public class Cbot002Entity extends HostileEntity implements GeneralEntity<Cbot00
         return this.geoCache;
     }
 
-    public static DefaultAttributeContainer.Builder createAttributes() {
-        return HostileEntity.createHostileAttributes()
-                .add(EntityAttributes.MAX_HEALTH, 1200.0D)
-                .add(EntityAttributes.MOVEMENT_SPEED, 0.28D)
-                .add(EntityAttributes.FOLLOW_RANGE, 40.0D)
-                .add(EntityAttributes.STEP_HEIGHT, 2.0D)
+    public static AttributeSupplier.Builder createAttributes() {
+        return Monster.createMonsterAttributes()
+                .add(Attributes.MAX_HEALTH, 1200.0D)
+                .add(Attributes.MOVEMENT_SPEED, 0.28D)
+                .add(Attributes.FOLLOW_RANGE, 40.0D)
+                .add(Attributes.STEP_HEIGHT, 2.0D)
                 .add(ModEntityAttributes.DAMAGE_REDUCTION, 0.60D);
     }
 }

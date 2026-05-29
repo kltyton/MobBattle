@@ -1,9 +1,8 @@
 package com.kltyton.mob_battle.config.whitelist;
 
-import net.minecraft.server.network.ServerPlayerEntity;
-
 import java.util.Set;
 import java.util.UUID;
+import net.minecraft.server.level.ServerPlayer;
 
 public final class ModPlayerWhitelist {
 
@@ -21,7 +20,7 @@ public final class ModPlayerWhitelist {
         return WHITELIST.contains(uuid);
     }
 
-    public static boolean isWhitelisted(ServerPlayerEntity player) {
-        return player != null && isWhitelisted(player.getUuid());
+    public static boolean isWhitelisted(ServerPlayer player) {
+        return player != null && isWhitelisted(player.getUUID());
     }
 }

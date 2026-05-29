@@ -4,42 +4,42 @@ import com.kltyton.mob_battle.Mob_battle;
 import com.kltyton.mob_battle.components.ModComponents;
 import com.kltyton.mob_battle.items.ModFabricItem;
 import com.kltyton.mob_battle.items.ModItems;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ShieldItem;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Hand;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ShieldItem;
 
 public class ObsidianLobsterItem extends ShieldItem implements ModFabricItem {
-    public ObsidianLobsterItem(Settings settings) {
+    public ObsidianLobsterItem(Properties settings) {
         super(settings);
     }
 
     @Override
-    public void onItemEntityDestroyed(net.minecraft.entity.ItemEntity entity) {
-        super.onItemEntityDestroyed(entity);
+    public void onDestroyed(net.minecraft.world.entity.item.ItemEntity entity) {
+        super.onDestroyed(entity);
     }
 
     @Override
-    public void postDamageEntity(ItemStack stack, LivingEntity target, LivingEntity attacker) {
-        super.postDamageEntity(stack, target, attacker);
+    public void postHurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker) {
+        super.postHurtEnemy(stack, target, attacker);
     }
 
     @Override
-    public void onDurabilityChange(ItemStack stack, int amount, ServerPlayerEntity player) {
-        int oldDamage = stack.getDamage();
+    public void onDurabilityChange(ItemStack stack, int amount, ServerPlayer player) {
+        int oldDamage = stack.getDamageValue();
         int maxDamage = stack.getMaxDamage();
         boolean transformed = stack.getOrDefault(ModComponents.LOBSTER_TRANSFORMED, false);
         if (oldDamage < maxDamage && oldDamage + amount >= maxDamage && !transformed) {
             ItemStack broken = new ItemStack(ModItems.BURST_OBSIDIAN_LOBSTER);
 
-            if (player.getOffHandStack() == stack) {
-                player.setStackInHand(Hand.OFF_HAND, broken);
-            } else if (player.getMainHandStack() == stack) {
+            if (player.getOffhandItem() == stack) {
+                player.setItemInHand(InteractionHand.OFF_HAND, broken);
+            } else if (player.getMainHandItem() == stack) {
                 Mob_battle.LOGGER.info("Transformed");
-                player.setStackInHand(Hand.MAIN_HAND, broken);
-            } else if (!player.getInventory().insertStack(broken)) {
-                player.dropItem(broken, false);
+                player.setItemInHand(InteractionHand.MAIN_HAND, broken);
+            } else if (!player.getInventory().add(broken)) {
+                player.drop(broken, false);
             }
             stack.set(ModComponents.LOBSTER_TRANSFORMED, true);
         }

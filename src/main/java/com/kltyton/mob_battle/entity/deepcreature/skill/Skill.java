@@ -3,13 +3,12 @@ package com.kltyton.mob_battle.entity.deepcreature.skill;
 import com.kltyton.mob_battle.entity.deepcreature.DeepCreatureEntity;
 import com.kltyton.mob_battle.utils.EntityUtil;
 import com.kltyton.mob_battle.utils.TaskSchedulerUtil;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.util.math.Vec3d;
-
 import java.util.List;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.phys.Vec3;
 
 public class Skill {
     public static void runRoarSkill(DeepCreatureEntity entity) {
@@ -17,7 +16,7 @@ public class Skill {
         List<LivingEntity> players = SkillUtils.getNearbyPlayers(entity, radius);
         if (players.isEmpty()) return;
 
-        ServerWorld sw = (ServerWorld) entity.getWorld();
+        ServerLevel sw = (ServerLevel) entity.level();
         for (LivingEntity player : players) {
             SkillUtils.knockbackPlayer(entity, player, 1.5, 0.95, 0.2);
         }
@@ -51,12 +50,12 @@ public class Skill {
     }
     public static void runDamage(DeepCreatureEntity entity) {
         if (entity.getTarget() == null) return;
-        entity.getTarget().damage((ServerWorld) entity.getWorld(), entity.getTarget().getDamageSources().mobAttack(entity), 5);
+        entity.getTarget().hurtServer((ServerLevel) entity.level(), entity.getTarget().damageSources().mobAttack(entity), 5);
         TaskSchedulerUtil.runLater(15, () -> {
-            entity.getTarget().damage((ServerWorld) entity.getWorld(), entity.getTarget().getDamageSources().mobAttack(entity), 5);
+            entity.getTarget().hurtServer((ServerLevel) entity.level(), entity.getTarget().damageSources().mobAttack(entity), 5);
         });
         TaskSchedulerUtil.runLater(25, () -> {
-            entity.getTarget().damage((ServerWorld) entity.getWorld(), entity.getTarget().getDamageSources().mobAttack(entity), 5);
+            entity.getTarget().hurtServer((ServerLevel) entity.level(), entity.getTarget().damageSources().mobAttack(entity), 5);
         });
     }
     public static void runCatchEnd(DeepCreatureEntity entity) {
@@ -66,7 +65,7 @@ public class Skill {
     public static void runSmashGround(DeepCreatureEntity entity, double radius, double horizPower, double vertPowerBase, double vertPowerRand, double spacing, double delayPerRing) {
         List<LivingEntity> players = SkillUtils.getNearbyPlayers(entity, radius);
         if (players.isEmpty()) return;
-        ServerWorld sw = (ServerWorld) entity.getWorld();
+        ServerLevel sw = (ServerLevel) entity.level();
         for (LivingEntity player : players) {
             SkillUtils.knockbackPlayer(entity, player, horizPower, vertPowerBase, vertPowerRand);
         }
@@ -76,8 +75,8 @@ public class Skill {
     public static void runSmash(DeepCreatureEntity entity) {
         double radius = 8.0D;
         if (entity.getTarget() == null || entity.distanceTo(entity.getTarget()) > radius) return;
-        ServerWorld sw = (ServerWorld) entity.getWorld();
-        entity.getTarget().damage(sw, entity.getTarget().getDamageSources().mobAttack(entity), 85F);
+        ServerLevel sw = (ServerLevel) entity.level();
+        entity.getTarget().hurtServer(sw, entity.getTarget().damageSources().mobAttack(entity), 85F);
 /*        sw.createExplosion(
                 entity,
                 entity.getDamageSources().mobAttack(entity),
@@ -96,14 +95,14 @@ public class Skill {
         List<LivingEntity> players = SkillUtils.getNearbyPlayers(entity, radius);
         if (players.isEmpty()) return;
 
-        ServerWorld sw = (ServerWorld) entity.getWorld();
+        ServerLevel sw = (ServerLevel) entity.level();
         for (LivingEntity player : players) {
             SkillUtils.knockbackPlayer(entity, player, 0.8, 0.2, 0.05);
-            player.damage(sw, player.getDamageSources().mobAttack(entity), 90F);
+            player.hurtServer(sw, player.damageSources().mobAttack(entity), 90F);
         }
     }
     public static void runSonicBoom(DeepCreatureEntity entity) {
-        if (!(entity.getWorld() instanceof ServerWorld world)) return;
+        if (!(entity.level() instanceof ServerLevel world)) return;
         if (entity.getTarget() == null) return;
 
         var target = entity.getTarget();
@@ -121,68 +120,68 @@ public class Skill {
         // === 让实体先面向目标 ===
         double dx = target.getX() - entity.getX();
         double dz = target.getZ() - entity.getZ();
-        double dy = (target.getY() + target.getStandingEyeHeight() * 0.5)
-                - (entity.getY() + entity.getStandingEyeHeight() * 0.9);
+        double dy = (target.getY() + target.getEyeHeight() * 0.5)
+                - (entity.getY() + entity.getEyeHeight() * 0.9);
         double yaw = (float)(Math.toDegrees(Math.atan2(-dx, dz)));
         double pitch = (float)(-Math.toDegrees(Math.atan2(dy, Math.sqrt(dx * dx + dz * dz))));
-        entity.setYaw((float) yaw);
-        entity.setPitch((float) pitch);
-        entity.headYaw = entity.getYaw();
+        entity.setYRot((float) yaw);
+        entity.setXRot((float) pitch);
+        entity.yHeadRot = entity.getYRot();
 
         // === 起点、终点 ===
-        Vec3d headPos = entity.getPos().add(0, entity.getStandingEyeHeight() * 0.9, 0);
+        Vec3 headPos = entity.position().add(0, entity.getEyeHeight() * 0.9, 0);
         // 计算“往前偏移一点”的方向向量
-        Vec3d lookDir = entity.getRotationVec(1.0F).normalize();
-        Vec3d start = headPos.add(lookDir.multiply(forwardOffset)).add(0, verticalOffset, 0);
+        Vec3 lookDir = entity.getViewVector(1.0F).normalize();
+        Vec3 start = headPos.add(lookDir.scale(forwardOffset)).add(0, verticalOffset, 0);
 
-        Vec3d end = target.getPos().add(0, target.getStandingEyeHeight() * 0.5, 0);
-        Vec3d delta = end.subtract(start);
+        Vec3 end = target.position().add(0, target.getEyeHeight() * 0.5, 0);
+        Vec3 delta = end.subtract(start);
         double distance = delta.length();
         if (distance < 1e-3) return;
 
-        Vec3d direction = delta.normalize();
+        Vec3 direction = delta.normalize();
 
         // === 声音 ===
-        entity.playSound(SoundEvents.ENTITY_WARDEN_SONIC_BOOM, 3.0F, 1.0F);
+        entity.playSound(SoundEvents.WARDEN_SONIC_BOOM, 3.0F, 1.0F);
 
         // === 粒子路径 ===
         int steps = (int) (distance / step);
         for (int i = 0; i <= steps; i++) {
-            Vec3d pos = start.add(direction.multiply(i * step));
-            world.spawnParticles(ParticleTypes.SONIC_BOOM, pos.x, pos.y, pos.z, particleDensity, 0, 0, 0, 0);
+            Vec3 pos = start.add(direction.scale(i * step));
+            world.sendParticles(ParticleTypes.SONIC_BOOM, pos.x, pos.y, pos.z, particleDensity, 0, 0, 0, 0);
         }
 
         // === 命中检测 ===
-        List<LivingEntity> players = world.getEntitiesByClass(LivingEntity.class,
-                entity.getBoundingBox().expand(distance + 16),
+        List<LivingEntity> players = world.getEntitiesOfClass(LivingEntity.class,
+                entity.getBoundingBox().inflate(distance + 16),
                 p -> EntityUtil.isValidCombatTarget(entity, p));
 
         for (LivingEntity player : players) {
-            Vec3d playerPos = player.getPos().add(0, player.getStandingEyeHeight() * 0.5, 0);
-            Vec3d toPlayer = playerPos.subtract(start);
+            Vec3 playerPos = player.position().add(0, player.getEyeHeight() * 0.5, 0);
+            Vec3 toPlayer = playerPos.subtract(start);
 
-            double proj = toPlayer.dotProduct(direction);
+            double proj = toPlayer.dot(direction);
             if (proj < 0 || proj > distance) continue;
 
-            Vec3d closestPoint = start.add(direction.multiply(proj));
+            Vec3 closestPoint = start.add(direction.scale(proj));
             double distFromLine = playerPos.distanceTo(closestPoint);
 
             if (distFromLine <= hitRadius) {
-                if (player.damage(world, world.getDamageSources().magic(), (float) damage)) {
-                    player.addVelocity(direction.x * knockbackH,
+                if (player.hurtServer(world, world.damageSources().magic(), (float) damage)) {
+                    player.push(direction.x * knockbackH,
                             direction.y * knockbackV,
                             direction.z * knockbackH);
-                    player.velocityModified = true;
+                    player.hurtMarked = true;
                 }
             }
         }
     }
     public static void runCharge(DeepCreatureEntity entity) {
         if (entity.getTarget() == null) return;
-        entity.setAiDisabled(false);
+        entity.setNoAi(false);
         // 1. 算方向 —— 只算一次
-        Vec3d dir = entity.getTarget().getPos()
-                .subtract(entity.getPos())
+        Vec3 dir = entity.getTarget().position()
+                .subtract(entity.position())
                 .normalize();
         entity.chargeDir = dir;
         entity.chargeTicksLeft = 40;

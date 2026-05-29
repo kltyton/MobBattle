@@ -1,10 +1,10 @@
 package com.kltyton.mob_battle.entity.witherskeletonking;
 
-import net.minecraft.client.render.VertexConsumer;
-import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.entity.EntityRendererFactory;
-import net.minecraft.client.render.entity.state.LivingEntityRenderState;
-import net.minecraft.client.util.math.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib.cache.object.BakedGeoModel;
 import software.bernie.geckolib.constant.dataticket.DataTicket;
@@ -14,12 +14,12 @@ import software.bernie.geckolib.renderer.layer.AutoGlowingGeoLayer;
 
 public class WitherSkeletonKingRenderer<R extends LivingEntityRenderState & GeoRenderState> extends GeoEntityRenderer<WitherSkeletonKingEntity, R> {
     public static final DataTicket<Boolean> CAN_HALO = DataTicket.create("can_halo", Boolean.class);
-    public WitherSkeletonKingRenderer(EntityRendererFactory.Context context) {
+    public WitherSkeletonKingRenderer(EntityRendererProvider.Context context) {
         super(context, new WitherSkeletonKingEntityModel());
         this.addRenderLayer(new AutoGlowingGeoLayer<>(this));
     }
     @Override
-    public void renderFinal(R renderState, MatrixStack poseStack, BakedGeoModel model, VertexConsumerProvider bufferSource, @Nullable VertexConsumer buffer,
+    public void renderFinal(R renderState, PoseStack poseStack, BakedGeoModel model, MultiBufferSource bufferSource, @Nullable VertexConsumer buffer,
                             int packedLight, int packedOverlay, int renderColor) {
         Boolean canHalo = renderState.getOrDefaultGeckolibData(CAN_HALO, false);
         this.model.getBone("quan").ifPresent(bone -> {

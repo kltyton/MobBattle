@@ -2,15 +2,14 @@ package com.kltyton.mob_battle.event.alliance;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.datafixer.DataFixTypes;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.PersistentState;
-import net.minecraft.world.PersistentStateType;
-import net.minecraft.world.World;
-
+import net.minecraft.util.datafix.DataFixTypes;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.saveddata.SavedData;
+import net.minecraft.world.level.saveddata.SavedDataType;
 import java.util.*;
 
-public class AllianceState extends PersistentState {
+public class AllianceState extends SavedData {
     // 存储：同盟名 -> 团队名列表
     private final Map<String, List<String>> alliances;
     // 运行时缓存：团队名 -> 同盟名
@@ -51,7 +50,7 @@ public class AllianceState extends PersistentState {
 
             alliances.get(allianceName).add(teamName);
             teamToAllianceCache.put(teamName, allianceName);
-            this.markDirty();
+            this.setDirty();
         }
     }
 
@@ -59,7 +58,7 @@ public class AllianceState extends PersistentState {
         if (alliances.containsKey(allianceName)) {
             alliances.get(allianceName).remove(teamName);
             teamToAllianceCache.remove(teamName);
-            this.markDirty();
+            this.setDirty();
         }
     }
 
@@ -67,7 +66,7 @@ public class AllianceState extends PersistentState {
         List<String> teams = alliances.remove(name);
         if (teams != null) {
             teams.forEach(teamToAllianceCache::remove);
-            this.markDirty();
+            this.setDirty();
         }
     }
 
@@ -76,10 +75,10 @@ public class AllianceState extends PersistentState {
     }
 
     public static AllianceState get(MinecraftServer server) {
-        return server.getWorld(World.OVERWORLD).getPersistentStateManager().getOrCreate(createStateType());
+        return server.getLevel(Level.OVERWORLD).getDataStorage().computeIfAbsent(createStateType());
     }
 
-    public static PersistentStateType<AllianceState> createStateType() {
-        return new PersistentStateType<>("team_alliances", AllianceState::new, CODEC, DataFixTypes.LEVEL);
+    public static SavedDataType<AllianceState> createStateType() {
+        return new SavedDataType<>("team_alliances", AllianceState::new, CODEC, DataFixTypes.LEVEL);
     }
 }

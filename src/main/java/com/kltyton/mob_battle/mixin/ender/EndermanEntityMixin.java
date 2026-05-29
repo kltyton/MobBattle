@@ -1,13 +1,13 @@
 package com.kltyton.mob_battle.mixin.ender;
 
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.ai.goal.ActiveTargetGoal;
-import net.minecraft.entity.boss.dragon.EnderDragonEntity;
-import net.minecraft.entity.mob.EndermanEntity;
-import net.minecraft.entity.mob.HostileEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.world.World;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
+import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
+import net.minecraft.world.entity.monster.EnderMan;
+import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -15,21 +15,21 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(EndermanEntity.class)
-public abstract class EndermanEntityMixin extends HostileEntity {
-    protected EndermanEntityMixin(EntityType<? extends HostileEntity> entityType, World world) {
+@Mixin(EnderMan.class)
+public abstract class EndermanEntityMixin extends Monster {
+    protected EndermanEntityMixin(EntityType<? extends Monster> entityType, Level world) {
         super(entityType, world);
     }
 
-    @Inject(method = "initGoals", at = @At("TAIL"))
+    @Inject(method = "registerGoals", at = @At("TAIL"))
     private void addEndPlayerTargetGoal(CallbackInfo ci) {
-        this.targetSelector.add(2, new ActiveTargetGoal<>(this, PlayerEntity.class, 10, true, false,
-                (player, world) -> this.getWorld().getRegistryKey() == World.END));
+        this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, 10, true, false,
+                (player, world) -> this.level().dimension() == Level.END));
     }
 
     @Inject(method = "setTarget", at = @At("HEAD"), cancellable = true)
     private void doNotTargetEnderDragon(@Nullable LivingEntity target, CallbackInfo ci) {
-        if (target instanceof EnderDragonEntity) {
+        if (target instanceof EnderDragon) {
             super.setTarget(null);
             ci.cancel();
         }

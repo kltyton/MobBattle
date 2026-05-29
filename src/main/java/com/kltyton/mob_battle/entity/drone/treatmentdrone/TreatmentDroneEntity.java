@@ -2,46 +2,46 @@ package com.kltyton.mob_battle.entity.drone.treatmentdrone;
 
 import com.kltyton.mob_battle.entity.drone.DroneEntity;
 import com.kltyton.mob_battle.entity.drone.goal.HealTeamGoal;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.data.DataTracker;
-import net.minecraft.entity.data.TrackedData;
-import net.minecraft.entity.data.TrackedDataHandlerRegistry;
-import net.minecraft.entity.passive.TameableEntity;
-import net.minecraft.world.World;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.TamableAnimal;
+import net.minecraft.world.level.Level;
 
 public class TreatmentDroneEntity extends DroneEntity {
     public int healTickTimer = 0;
     public static final int HEAL_INTERVAL = 40;
     public static final float HEAL_AMOUNT = 13.0F;
     public static final float PLAYER_HEAL_AMOUNT = 1.5F;
-    public static final TrackedData<Boolean> ONLY_PLAYER = DataTracker.registerData(TreatmentDroneEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
+    public static final EntityDataAccessor<Boolean> ONLY_PLAYER = SynchedEntityData.defineId(TreatmentDroneEntity.class, EntityDataSerializers.BOOLEAN);
 
-    public TreatmentDroneEntity(EntityType<? extends TameableEntity> entityType, World world) {
+    public TreatmentDroneEntity(EntityType<? extends TamableAnimal> entityType, Level world) {
         super(entityType, world);
     }
 
     public void setOnlyPlayer(boolean onlyPlayer) {
-        this.getDataTracker().set(ONLY_PLAYER, onlyPlayer);
+        this.getEntityData().set(ONLY_PLAYER, onlyPlayer);
     }
 
     public boolean isOnlyPlayer() {
-        return this.getDataTracker().get(ONLY_PLAYER);
+        return this.getEntityData().get(ONLY_PLAYER);
     }
 
     @Override
-    protected void initDataTracker(DataTracker.Builder builder) {
-        super.initDataTracker(builder);
-        builder.add(ONLY_PLAYER, false);
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(ONLY_PLAYER, false);
     }
 
     @Override
-    protected void initGoals() {
-        super.initGoals();
-        this.goalSelector.add(3, new HealTeamGoal(this, 1.2D));
+    protected void registerGoals() {
+        super.registerGoals();
+        this.goalSelector.addGoal(3, new HealTeamGoal(this, 1.2D));
     }
 
     @Override
-    public void shootAt(LivingEntity target, float pullProgress) {
+    public void performRangedAttack(LivingEntity target, float pullProgress) {
     }
 }

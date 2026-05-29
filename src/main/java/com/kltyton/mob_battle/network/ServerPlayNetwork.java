@@ -48,21 +48,20 @@ import com.kltyton.mob_battle.items.tool.piglin.PiglinCannonModeUtil;
 import com.kltyton.mob_battle.network.packet.*;
 import com.kltyton.mob_battle.utils.*;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.registry.RegistryKey;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.enchantment.Enchantment;
 import java.util.List;
 
 public class ServerPlayNetwork {
@@ -74,8 +73,8 @@ public class ServerPlayNetwork {
                 (payload, context) -> {
                     MinecraftServer server = context.server();
                     server.execute(() -> {
-                        Entity attacker = context.player().getWorld().getEntityById(payload.attackerId());
-                        if (attacker instanceof HighbirdBaseEntity highbird && highbird.getWorld() instanceof ServerWorld serverWorld)
+                        Entity attacker = context.player().level().getEntity(payload.attackerId());
+                        if (attacker instanceof HighbirdBaseEntity highbird && highbird.level() instanceof ServerLevel serverWorld)
                             highbird.performAttack(serverWorld, highbird.getTarget());
                     });
                 }
@@ -84,7 +83,7 @@ public class ServerPlayNetwork {
                 (payload, context) -> {
                     MinecraftServer server = context.server();
                     server.execute(() -> {
-                        HulkbusterEntity hulkbuster = (HulkbusterEntity) context.player().getWorld().getEntity(payload.uuid());
+                        HulkbusterEntity hulkbuster = (HulkbusterEntity) context.player().level().getEntity(payload.uuid());
                         if (hulkbuster != null) {
                             switch (payload.name()) {
                                 case "right_muzzle" -> hulkbuster.rightMuzzle = payload.pos();
@@ -96,7 +95,7 @@ public class ServerPlayNetwork {
         );
         ServerPlayNetworking.registerGlobalReceiver(PiglinGeneralBonePayload.ID,
                 (payload, context) -> context.server().execute(() -> {
-                    Entity entity = context.player().getWorld().getEntity(payload.uuid());
+                    Entity entity = context.player().level().getEntity(payload.uuid());
                     if (entity instanceof PiglinGeneralEntity piglinGeneral) {
                         piglinGeneral.setSwordEnergyPos(payload.swordEnergyPos());
                     }
@@ -106,7 +105,7 @@ public class ServerPlayNetwork {
                 (payload, context) -> {
                     MinecraftServer server = context.server();
                     server.execute(() -> {
-                        Entity entity = context.player().getWorld().getEntityById(payload.entityId());
+                        Entity entity = context.player().level().getEntity(payload.entityId());
                         switch (entity) {
                             case DeepCreatureEntity deepCreature -> {
                                 switch (payload.skillName()) {
@@ -116,14 +115,14 @@ public class ServerPlayNetwork {
                                     case "side" -> Skill.runSideSkill(deepCreature);
                                     case "sonic_boom" -> Skill.runSonicBoom(deepCreature);
                                     case "charge" -> Skill.runCharge(deepCreature);
-                                    case "stop_ai" -> deepCreature.setAiDisabled(true);
-                                    case "start_ai" -> deepCreature.setAiDisabled(false);
+                                    case "stop_ai" -> deepCreature.setNoAi(true);
+                                    case "start_ai" -> deepCreature.setNoAi(false);
                                     case "smash_ground_s" -> {
-                                        deepCreature.setAiDisabled(true);
+                                        deepCreature.setNoAi(true);
                                         Skill.runSmashGround(deepCreature, 10, 0.5, 1.0, 0.25, 3.0, 0.15);
                                     }
                                     case "smash_ground_xl" -> {
-                                        deepCreature.setAiDisabled(true);
+                                        deepCreature.setNoAi(true);
                                         Skill.runSmashGround(deepCreature, 18, 0.5, 1.5, 0.2, 3.5, 0.1);
                                     }
                                     case "kill" -> deepCreature.remove(Entity.RemovalReason.KILLED);
@@ -134,7 +133,7 @@ public class ServerPlayNetwork {
                                     case "damage" -> Skill.runDamage(deepCreature);
                                     case "stop" -> {
                                         deepCreature.setHasSkill(false);
-                                        deepCreature.setAiDisabled(false);
+                                        deepCreature.setNoAi(false);
                                     }
                                 }
                             }
@@ -147,8 +146,8 @@ public class ServerPlayNetwork {
                                     case "super_shot_wither_skull" -> WitherSkeletonKingEntitySkill.runSuperWitherSkullSkill(kingSkeletonKing);
                                     case "thorn" -> WitherSkeletonKingEntitySkill.runThornSkill(kingSkeletonKing);
                                     case "enhance_wither_call" -> WitherSkeletonKingEntitySkill.runEnhanceWitherCallSkill(kingSkeletonKing);
-                                    case "stop_ai" -> kingSkeletonKing.setAiDisabled(true);
-                                    case "start_ai" -> kingSkeletonKing.setAiDisabled(false);
+                                    case "stop_ai" -> kingSkeletonKing.setNoAi(true);
+                                    case "start_ai" -> kingSkeletonKing.setNoAi(false);
                                     case "stop" -> kingSkeletonKing.finishSkill();
                                 }
                             }
@@ -156,11 +155,11 @@ public class ServerPlayNetwork {
                                 switch (payload.skillName()) {
                                     case "damage_1_5" -> IronGolemSkill.runSkill_1_5(villagerIronGolemEntity);
                                     case "damage_2" -> IronGolemSkill.runSkill_2(villagerIronGolemEntity);
-                                    case "stop_ai" -> villagerIronGolemEntity.setAiDisabled(true);
-                                    case "start_ai" -> villagerIronGolemEntity.setAiDisabled(false);
+                                    case "stop_ai" -> villagerIronGolemEntity.setNoAi(true);
+                                    case "start_ai" -> villagerIronGolemEntity.setNoAi(false);
                                     case "stop" -> {
                                         villagerIronGolemEntity.setHasSkill(false);
-                                        villagerIronGolemEntity.setAiDisabled(false);
+                                        villagerIronGolemEntity.setNoAi(false);
                                     }
                                 }
                             }
@@ -169,22 +168,22 @@ public class ServerPlayNetwork {
                                     case "attack2" -> LittlePersonGiantSkill.runSkill_2(littlePersonGiant);
                                     case "attack3" -> LittlePersonGiantSkill.runSkill_3(littlePersonGiant);
                                     case "attack4" -> LittlePersonGiantSkill.runSkill_4(littlePersonGiant);
-                                    case "stop_ai" -> littlePersonGiant.setAiDisabled(true);
-                                    case "start_ai" -> littlePersonGiant.setAiDisabled(false);
+                                    case "stop_ai" -> littlePersonGiant.setNoAi(true);
+                                    case "start_ai" -> littlePersonGiant.setNoAi(false);
                                     case "stop" -> {
                                         littlePersonGiant.setHasSkill(false);
-                                        littlePersonGiant.setAiDisabled(false);
+                                        littlePersonGiant.setNoAi(false);
                                     }
                                 }
                             }
                             case LittlePersonGuardEntity littlePersonGuardEntity -> {
                                 switch (payload.skillName()) {
                                     case "attack2" -> LittlePersonGuardSkill.runSkill_2(littlePersonGuardEntity);
-                                    case "stop_ai" -> littlePersonGuardEntity.setAiDisabled(true);
-                                    case "start_ai" -> littlePersonGuardEntity.setAiDisabled(false);
+                                    case "stop_ai" -> littlePersonGuardEntity.setNoAi(true);
+                                    case "start_ai" -> littlePersonGuardEntity.setNoAi(false);
                                     case "stop" -> {
                                         littlePersonGuardEntity.setHasSkill(false);
-                                        littlePersonGuardEntity.setAiDisabled(false);
+                                        littlePersonGuardEntity.setNoAi(false);
                                     }
                                 }
                             }
@@ -192,11 +191,11 @@ public class ServerPlayNetwork {
                                 switch (payload.skillName()) {
                                     case "attack2" -> LittlePersonKingSkill.runSkill_2(littlePersonKing);
                                     case "attack3" -> LittlePersonKingSkill.runSkill_3(littlePersonKing);
-                                    case "stop_ai" -> littlePersonKing.setAiDisabled(true);
-                                    case "start_ai" -> littlePersonKing.setAiDisabled(false);
+                                    case "stop_ai" -> littlePersonKing.setNoAi(true);
+                                    case "start_ai" -> littlePersonKing.setNoAi(false);
                                     case "stop" -> {
                                         littlePersonKing.setHasSkill(false);
-                                        littlePersonKing.setAiDisabled(false);
+                                        littlePersonKing.setNoAi(false);
                                     }
                                 }
                             }
@@ -217,11 +216,11 @@ public class ServerPlayNetwork {
                                     case "attack10" -> baseSkillLittlePersonEntity.runSkill_10(baseSkillLittlePersonEntity);
                                     case "attack11" -> baseSkillLittlePersonEntity.runSkill_11(baseSkillLittlePersonEntity);
                                     case "die" -> baseSkillLittlePersonEntity.deathTime = 400;
-                                    case "stop_ai" -> baseSkillLittlePersonEntity.setAiDisabled(true);
-                                    case "start_ai" -> baseSkillLittlePersonEntity.setAiDisabled(false);
+                                    case "stop_ai" -> baseSkillLittlePersonEntity.setNoAi(true);
+                                    case "start_ai" -> baseSkillLittlePersonEntity.setNoAi(false);
                                     case "stop" -> {
                                         baseSkillLittlePersonEntity.setHasSkill(false);
-                                        baseSkillLittlePersonEntity.setAiDisabled(false);
+                                        baseSkillLittlePersonEntity.setNoAi(false);
                                     }
                                 }
                             }
@@ -230,33 +229,33 @@ public class ServerPlayNetwork {
                                     case "attack" -> SkullKingEntitySkill.runAttackSkill(skullKingEntity);
                                     case "super_attack" -> SkullKingEntitySkill.runSuperAttackSkill(skullKingEntity);
                                     case "summon_skull" -> SkullKingEntitySkill.runSummonSkullSkill(skullKingEntity);
-                                    case "stop_ai" -> skullKingEntity.setAiDisabled(true);
-                                    case "start_ai" -> skullKingEntity.setAiDisabled(false);
+                                    case "stop_ai" -> skullKingEntity.setNoAi(true);
+                                    case "start_ai" -> skullKingEntity.setNoAi(false);
                                     case "stop" -> {
                                         skullKingEntity.setHasSkill(false);
-                                        skullKingEntity.setAiDisabled(false);
+                                        skullKingEntity.setNoAi(false);
                                     }
                                 }
                             }
                             case SkullArcherEntity skullArcherEntity -> {
                                 switch (payload.skillName()) {
                                     case "attack" -> SkullArcherEntitySkill.runAttackSkill(skullArcherEntity);
-                                    case "stop_ai" -> skullArcherEntity.setAiDisabled(true);
-                                    case "start_ai" -> skullArcherEntity.setAiDisabled(false);
+                                    case "stop_ai" -> skullArcherEntity.setNoAi(true);
+                                    case "start_ai" -> skullArcherEntity.setNoAi(false);
                                     case "stop" -> {
                                         skullArcherEntity.setHasSkill(false);
-                                        skullArcherEntity.setAiDisabled(false);
+                                        skullArcherEntity.setNoAi(false);
                                     }
                                 }
                             }
                             case SkullWarriorEntity skullWarriorEntity -> {
                                 switch (payload.skillName()) {
                                     case "attack" -> SkullWarriorEntitySkill.runAttackSkill(skullWarriorEntity);
-                                    case "stop_ai" -> skullWarriorEntity.setAiDisabled(true);
-                                    case "start_ai" -> skullWarriorEntity.setAiDisabled(false);
+                                    case "stop_ai" -> skullWarriorEntity.setNoAi(true);
+                                    case "start_ai" -> skullWarriorEntity.setNoAi(false);
                                     case "stop" -> {
                                         skullWarriorEntity.setHasSkill(false);
-                                        skullWarriorEntity.setAiDisabled(false);
+                                        skullWarriorEntity.setNoAi(false);
                                     }
                                 }
                             }
@@ -264,11 +263,11 @@ public class ServerPlayNetwork {
                                 switch (payload.skillName()) {
                                     case "attack" -> SkullMageEntitySkill.runAttackSkill(skullMageEntity);
                                     case "summon_skull" -> SkullMageEntitySkill.runSummonSkullSkill(skullMageEntity);
-                                    case "stop_ai" -> skullMageEntity.setAiDisabled(true);
-                                    case "start_ai" -> skullMageEntity.setAiDisabled(false);
+                                    case "stop_ai" -> skullMageEntity.setNoAi(true);
+                                    case "start_ai" -> skullMageEntity.setNoAi(false);
                                     case "stop" -> {
                                         skullMageEntity.setHasSkill(false);
-                                        skullMageEntity.setAiDisabled(false);
+                                        skullMageEntity.setNoAi(false);
                                     }
                                 }
                             }
@@ -284,11 +283,11 @@ public class ServerPlayNetwork {
                                     case "collision_kill_1" -> VindicatorGeneralEntitySkill.runCollisionKillDamageSkill(vindicatorGeneralEntity);
                                     case "spin_chop" -> VindicatorGeneralEntitySkill.runSpinChopSkill(vindicatorGeneralEntity);
                                     case "throw_axe" -> VindicatorGeneralEntitySkill.runThrowAxeSkill(vindicatorGeneralEntity);
-                                    case "stop_ai" -> vindicatorGeneralEntity.setAiDisabled(true);
-                                    case "start_ai" -> vindicatorGeneralEntity.setAiDisabled(false);
+                                    case "stop_ai" -> vindicatorGeneralEntity.setNoAi(true);
+                                    case "start_ai" -> vindicatorGeneralEntity.setNoAi(false);
                                     case "stop" -> {
                                         vindicatorGeneralEntity.setHasSkill(false);
-                                        vindicatorGeneralEntity.setAiDisabled(false);
+                                        vindicatorGeneralEntity.setNoAi(false);
                                     }
                                 }
                             }
@@ -301,11 +300,11 @@ public class ServerPlayNetwork {
                                     case "clap_hands" -> HulkbusterEntitySkill.runClapHandsSkill(hulkbusterEntity);
                                     case "punch" -> HulkbusterEntitySkill.runPunchStartSkill(hulkbusterEntity);
                                     case "punch_1" -> hulkbusterEntity.stopPunch();
-                                    case "stop_ai" -> hulkbusterEntity.setAiDisabled(true);
-                                    case "start_ai" -> hulkbusterEntity.setAiDisabled(false);
+                                    case "stop_ai" -> hulkbusterEntity.setNoAi(true);
+                                    case "start_ai" -> hulkbusterEntity.setNoAi(false);
                                     case "stop" -> {
                                         hulkbusterEntity.setHasSkill(false);
-                                        hulkbusterEntity.setAiDisabled(false);
+                                        hulkbusterEntity.setNoAi(false);
                                     }
                                 }
                             }
@@ -332,7 +331,7 @@ public class ServerPlayNetwork {
         ServerPlayNetworking.registerGlobalReceiver(PlayerSkillPayload.ID,
                 (payload, context) -> {
                     MinecraftServer server = context.server();
-                    ServerPlayerEntity player = context.player();
+                    ServerPlayer player = context.player();
                     server.execute(() -> {
                         switch (payload.skillName()) {
                             case "attack" -> PlayerEntitySkill.runAttackSkill(player);
@@ -373,24 +372,24 @@ public class ServerPlayNetwork {
         );
         ServerPlayNetworking.registerGlobalReceiver(LeftClickPacket.ID,
                 (payload, context) -> {
-                    ServerPlayerEntity player = context.player();
+                    ServerPlayer player = context.player();
                     LeftClickUtil.leftClick(player, payload.pressing(), true);
                 }
         );
         ServerPlayNetworking.registerGlobalReceiver(EnchantmentPayload.ID,
                 (payload, context) -> {
                     ItemStack stack = payload.itemStack();
-                    RegistryKey<Enchantment> enchantment = payload.enchantment();
+                    ResourceKey<Enchantment> enchantment = payload.enchantment();
                     int level = payload.level();
 
-                    ServerPlayerEntity player = context.player();
+                    ServerPlayer player = context.player();
                     EnchantmentUtil.addEnchantment(player, stack, enchantment, level);
                 }
         );
         ServerPlayNetworking.registerGlobalReceiver(SummonDronePayload.ID, (payload, context) -> {
-            ServerPlayerEntity player = context.player();
+            ServerPlayer player = context.player();
             context.server().execute(() -> {
-                int type = payload.type();
+                int type = payload.mode();
                 if (!ArmorUtil.hasFullArmor(player, ModMaterial.IRON_GOLD_INSTANCE)) {
                     return;
                 }
@@ -400,12 +399,12 @@ public class ServerPlayNetwork {
             });
         });
         ServerPlayNetworking.registerGlobalReceiver(ItemGroupPayload.ID, (payload, context) -> {
-            ServerPlayerEntity player = context.player();
+            ServerPlayer player = context.player();
             context.server().execute(() -> ServerPlayNetworking.send(player, new ItemGroupPayload(MobBattlePermissions.canUseProtectedContent(player))));
         });
         ServerPlayNetworking.registerGlobalReceiver(MasterScepterPayload.ID, (payload, context) -> {
             context.server().execute(() -> { // 切换到主线程
-                ServerPlayerEntity player = context.player();
+                ServerPlayer player = context.player();
                 String command = payload.id();
                 MasterScepterManager.runCommand(player, command);
             });
@@ -413,47 +412,47 @@ public class ServerPlayNetwork {
 
         ServerPlayNetworking.registerGlobalReceiver(ShieldSpawnPayload.ID, (payload, context) -> {
             //翠绿套装护盾效果
-            ServerPlayerEntity player = context.player();
-            ServerWorld world = player.getWorld();
+            ServerPlayer player = context.player();
+            ServerLevel world = player.level();
             context.server().execute(() -> {
                 if (ArmorUtil.hasFullArmor(player, ModMaterial.EMERALD_DIAMOND_ALLOY_INSTANCE)) {
-                    ItemStack cooldownItem = Items.AIR.getDefaultStack();
-                    if (player.getItemCooldownManager().isCoolingDown(cooldownItem)) {
+                    ItemStack cooldownItem = Items.AIR.getDefaultInstance();
+                    if (player.getCooldowns().isOnCooldown(cooldownItem)) {
                         // 获取剩余冷却进度 (0.0 到 1.0 之间的浮点数)
-                        float progress = player.getItemCooldownManager().getCooldownProgress(cooldownItem, 0);
+                        float progress = player.getCooldowns().getCooldownPercent(cooldownItem, 0);
                         float remainingSeconds = (progress * 1300) / 20.0F;
-                        player.sendMessage(
-                                Text.literal("护盾冷却中！还需等待 " + String.format("%.1f", remainingSeconds) + " 秒")
-                                        .formatted(Formatting.RED),
+                        player.displayClientMessage(
+                                Component.literal("护盾冷却中！还需等待 " + String.format("%.1f", remainingSeconds) + " 秒")
+                                        .withStyle(ChatFormatting.RED),
                                 true
                         );
                         return;
                     }
                     ShieldEntity shield = new ShieldEntity(ModEntities.SHIELD, world);
-                    shield.setPosition(player.getX(), player.getY(), player.getZ());
+                    shield.setPos(player.getX(), player.getY(), player.getZ());
                     shield.setOwner(player);
-                    world.spawnEntity(shield);
-                    player.getItemCooldownManager().set(cooldownItem, 1300);
+                    world.addFreshEntity(shield);
+                    player.getCooldowns().addCooldown(cooldownItem, 1300);
                     world.playSound(null, player.getX(), player.getY(), player.getZ(),
-                            SoundEvents.ITEM_ARMOR_EQUIP_DIAMOND, SoundCategory.PLAYERS, 1.0F, 1.2F);
+                            SoundEvents.ARMOR_EQUIP_DIAMOND, SoundSource.PLAYERS, 1.0F, 1.2F);
                 }
             });
         });
         ServerPlayNetworking.registerGlobalReceiver(ZiJinPayload.ID, (payload, context) -> {
             //紫金套装效果
-            ServerPlayerEntity player = context.player();
-            ServerWorld world = player.getWorld();
+            ServerPlayer player = context.player();
+            ServerLevel world = player.level();
             context.server().execute(() -> {
                 if (ArmorUtil.hasFullArmor(player, ModMaterial.ZIJIN_ARMOR_INSTANCE)) {
                     if (payload.skill_id() == 0) {
-                        ItemStack cooldownItem = Items.AIR.getDefaultStack();
-                        if (player.getItemCooldownManager().isCoolingDown(cooldownItem)) {
+                        ItemStack cooldownItem = Items.AIR.getDefaultInstance();
+                        if (player.getCooldowns().isOnCooldown(cooldownItem)) {
                             // 获取剩余冷却进度 (0.0 到 1.0 之间的浮点数)
-                            float progress = player.getItemCooldownManager().getCooldownProgress(cooldownItem, 0);
+                            float progress = player.getCooldowns().getCooldownPercent(cooldownItem, 0);
                             float remainingSeconds = (progress * ZIJIN_SKILL_0_COOLDOWN_TICKS) / 20.0F;
-                            player.sendMessage(
-                                    Text.literal("套装技能冷却中！还需等待 " + String.format("%.1f", remainingSeconds) + " 秒")
-                                            .formatted(Formatting.RED),
+                            player.displayClientMessage(
+                                    Component.literal("套装技能冷却中！还需等待 " + String.format("%.1f", remainingSeconds) + " 秒")
+                                            .withStyle(ChatFormatting.RED),
                                     true
                             );
                             return;
@@ -468,29 +467,29 @@ public class ServerPlayNetwork {
 
                         List<LivingEntity> secondRangeTargets = EntityUtil.getNearbyEntity(player, LivingEntity.class, 20.0, false, EntityUtil.TeamFilter.EXCLUDE_TEAM);
                         for (LivingEntity target : secondRangeTargets) {
-                            if (target.hasStatusEffect(ModEffects.PIG_SPIRIT_MARK_ENTRY)) {
-                                StatusEffectInstance effect = target.getStatusEffect(ModEffects.PIG_SPIRIT_MARK_ENTRY);
+                            if (target.hasEffect(ModEffects.PIG_SPIRIT_MARK_ENTRY)) {
+                                MobEffectInstance effect = target.getEffect(ModEffects.PIG_SPIRIT_MARK_ENTRY);
                                 int level = effect.getAmplifier() + 1;
-                                target.timeUntilRegen = 0;
+                                target.invulnerableTime = 0;
                                 // 造成魔法伤害 (等同于等级)
-                                target.damage(world, player.getDamageSources().indirectMagic(player, player), (float) level);
+                                target.hurtServer(world, player.damageSources().indirectMagic(player, player), (float) level);
                                 // 造成攻击伤害 (等级的 5 倍)
                                 // 使用 playerAttack 确保伤害来源被计入玩家
-                                target.timeUntilRegen = 0;
-                                target.damage(world, player.getDamageSources().playerAttack(player), (float) (level * 5));
-                                target.removeStatusEffect(ModEffects.PIG_SPIRIT_MARK_ENTRY);
+                                target.invulnerableTime = 0;
+                                target.hurtServer(world, player.damageSources().playerAttack(player), (float) (level * 5));
+                                target.removeEffect(ModEffects.PIG_SPIRIT_MARK_ENTRY);
                             }
                         }
                         ParticleUtils.spawnZiJinSkill0DetonateParticles(world, player, secondRangeTargets);
-                        player.getItemCooldownManager().set(cooldownItem, ZIJIN_SKILL_0_COOLDOWN_TICKS);
+                        player.getCooldowns().addCooldown(cooldownItem, ZIJIN_SKILL_0_COOLDOWN_TICKS);
                     } else if (payload.skill_id() == 1) {
-                        ItemStack cooldownItem = Items.COMMAND_BLOCK_MINECART.getDefaultStack();
-                        if (player.getItemCooldownManager().isCoolingDown(cooldownItem)) {
-                            float progress = player.getItemCooldownManager().getCooldownProgress(cooldownItem, 0);
+                        ItemStack cooldownItem = Items.COMMAND_BLOCK_MINECART.getDefaultInstance();
+                        if (player.getCooldowns().isOnCooldown(cooldownItem)) {
+                            float progress = player.getCooldowns().getCooldownPercent(cooldownItem, 0);
                             float remainingSeconds = (progress * 300) / 20.0F;
-                            player.sendMessage(
-                                    Text.literal("套装技能冷却中！还需等待 " + String.format("%.1f", remainingSeconds) + " 秒")
-                                            .formatted(Formatting.RED),
+                            player.displayClientMessage(
+                                    Component.literal("套装技能冷却中！还需等待 " + String.format("%.1f", remainingSeconds) + " 秒")
+                                            .withStyle(ChatFormatting.RED),
                                     true
                             );
                             return;
@@ -503,26 +502,26 @@ public class ServerPlayNetwork {
                         // 技能1：强化上印记粒子
                         ParticleUtils.spawnZiJinSkill1MarkParticles(world, player, targets);
 
-                        player.getItemCooldownManager().set(cooldownItem, 300);
+                        player.getCooldowns().addCooldown(cooldownItem, 300);
                     }
                 }
             });
         });
         ServerPlayNetworking.registerGlobalReceiver(PiglinCannonModePayload.ID, (payload, context) -> {
             //紫金套装效果
-            ServerPlayerEntity player = context.player();
-            ServerWorld world = player.getWorld();
+            ServerPlayer player = context.player();
+            ServerLevel world = player.level();
             context.server().execute(() -> {
-                if (player.getMainHandStack().isOf(ModItems.PIGLIN_CANNON)) {
-                    PiglinCannonModeUtil.Mode mode = PiglinCannonModeUtil.toggleMode(player.getMainHandStack());
-                    if (!world.isClient) {
-                        player.sendMessage(Text.literal(mode == PiglinCannonModeUtil.Mode.FAST_FIRE ? "切换为速射形态" : "切换为重击模式"), true);
+                if (player.getMainHandItem().is(ModItems.PIGLIN_CANNON)) {
+                    PiglinCannonModeUtil.Mode mode = PiglinCannonModeUtil.toggleMode(player.getMainHandItem());
+                    if (!world.isClientSide) {
+                        player.displayClientMessage(Component.literal(mode == PiglinCannonModeUtil.Mode.FAST_FIRE ? "切换为速射形态" : "切换为重击模式"), true);
                     }
                 }
             });
         });
         ServerPlayNetworking.registerGlobalReceiver(CompressArmorSkillPayload.ID, (payload, context) -> {
-            ServerPlayerEntity player = context.player();
+            ServerPlayer player = context.player();
             context.server().execute(() -> {
                 CompressArmorSkillManager.handleSkill(player, payload.skill_id());
             });

@@ -3,74 +3,74 @@ package com.kltyton.mob_battle.entity.littleperson.archer.littlearrow;
 import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.entity.bullet.TrueDamageProjectile;
 import com.kltyton.mob_battle.entity.littleperson.giant.LittlePersonGiantEntity;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.PotionContentsComponent;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.data.DataTracker;
-import net.minecraft.entity.data.TrackedData;
-import net.minecraft.entity.data.TrackedDataHandlerRegistry;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.particle.TintedParticleEffect;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.world.World;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.particles.ColorParticleOption;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.alchemy.PotionContents;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
 
 public class LittleArrowEntity extends TrueDamageProjectile {
-    private static final TrackedData<Integer> COLOR = DataTracker.registerData(LittleArrowEntity.class, TrackedDataHandlerRegistry.INTEGER);
+    private static final EntityDataAccessor<Integer> COLOR = SynchedEntityData.defineId(LittleArrowEntity.class, EntityDataSerializers.INT);
 
-    public LittleArrowEntity(EntityType<? extends LittleArrowEntity> entityType, World world) {
+    public LittleArrowEntity(EntityType<? extends LittleArrowEntity> entityType, Level world) {
         super(entityType, world);
     }
 
-    public LittleArrowEntity(World world, double x, double y, double z, ItemStack stack, @Nullable ItemStack shotFrom) {
+    public LittleArrowEntity(Level world, double x, double y, double z, ItemStack stack, @Nullable ItemStack shotFrom) {
         super(ModEntities.LITTLE_ARROW, x, y, z, world, stack, shotFrom);
         this.initColor();
     }
 
-    public LittleArrowEntity(World world, LivingEntity owner, ItemStack stack, @Nullable ItemStack shotFrom) {
+    public LittleArrowEntity(Level world, LivingEntity owner, ItemStack stack, @Nullable ItemStack shotFrom) {
         super(ModEntities.LITTLE_ARROW, owner, world, stack, shotFrom);
         this.initColor();
     }
-    public LittleArrowEntity(EntityType<LittleArrowEntity> entityType, World world, LivingEntity owner, ItemStack stack, @Nullable ItemStack shotFrom) {
+    public LittleArrowEntity(EntityType<LittleArrowEntity> entityType, Level world, LivingEntity owner, ItemStack stack, @Nullable ItemStack shotFrom) {
         super(entityType, owner, world, stack, shotFrom);
         this.initColor();
     }
-    private PotionContentsComponent getPotionContents() {
-        return this.getItemStack().getOrDefault(DataComponentTypes.POTION_CONTENTS, PotionContentsComponent.DEFAULT);
+    private PotionContents getPotionContents() {
+        return this.getPickupItemStackOrigin().getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY);
     }
     private float getPotionDurationScale() {
-        return this.getItemStack().getOrDefault(DataComponentTypes.POTION_DURATION_SCALE, 1.0F);
+        return this.getPickupItemStackOrigin().getOrDefault(DataComponents.POTION_DURATION_SCALE, 1.0F);
     }
-    private void setPotionContents(PotionContentsComponent potionContentsComponent) {
-        this.getItemStack().set(DataComponentTypes.POTION_CONTENTS, potionContentsComponent);
+    private void setPotionContents(PotionContents potionContentsComponent) {
+        this.getPickupItemStackOrigin().set(DataComponents.POTION_CONTENTS, potionContentsComponent);
         this.initColor();
     }
     @Override
-    protected void setStack(ItemStack stack) {
-        super.setStack(stack);
+    protected void setPickupItemStack(ItemStack stack) {
+        super.setPickupItemStack(stack);
         this.initColor();
     }
     private void initColor() {
-        PotionContentsComponent potionContentsComponent = this.getPotionContents();
-        this.dataTracker.set(COLOR, potionContentsComponent.equals(PotionContentsComponent.DEFAULT) ? -1 : potionContentsComponent.getColor());
+        PotionContents potionContentsComponent = this.getPotionContents();
+        this.entityData.set(COLOR, potionContentsComponent.equals(PotionContents.EMPTY) ? -1 : potionContentsComponent.getColor());
     }
-    public void addEffect(StatusEffectInstance effect) {
-        this.setPotionContents(this.getPotionContents().with(effect));
+    public void addEffect(MobEffectInstance effect) {
+        this.setPotionContents(this.getPotionContents().withEffectAdded(effect));
     }
     @Override
-    protected void initDataTracker(DataTracker.Builder builder) {
-        super.initDataTracker(builder);
-        builder.add(COLOR, -1);
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(COLOR, -1);
     }
     @Override
     public void tick() {
         super.tick();
-        if (this.getWorld().isClient) {
+        if (this.level().isClientSide) {
             if (this.isInGround()) {
                 if (this.inGroundTime % 5 == 0) {
                     this.spawnParticles(1);
@@ -78,44 +78,44 @@ public class LittleArrowEntity extends TrueDamageProjectile {
             } else {
                 this.spawnParticles(2);
             }
-        } else if (this.isInGround() && this.inGroundTime != 0 && !this.getPotionContents().equals(PotionContentsComponent.DEFAULT) && this.inGroundTime >= 600) {
-            this.getWorld().sendEntityStatus(this, (byte)0);
-            this.setStack(new ItemStack(Items.ARROW));
+        } else if (this.isInGround() && this.inGroundTime != 0 && !this.getPotionContents().equals(PotionContents.EMPTY) && this.inGroundTime >= 600) {
+            this.level().broadcastEntityEvent(this, (byte)0);
+            this.setPickupItemStack(new ItemStack(Items.ARROW));
         }
     }
     private void spawnParticles(int amount) {
         int i = this.getColor();
         if (i != -1 && amount > 0) {
             for (int j = 0; j < amount; j++) {
-                this.getWorld()
-                        .addParticleClient(
-                                TintedParticleEffect.create(ParticleTypes.ENTITY_EFFECT, i), this.getParticleX(0.5), this.getRandomBodyY(), this.getParticleZ(0.5), 0.0, 0.0, 0.0
+                this.level()
+                        .addParticle(
+                                ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, i), this.getRandomX(0.5), this.getRandomY(), this.getRandomZ(0.5), 0.0, 0.0, 0.0
                         );
             }
         }
     }
     public int getColor() {
-        return this.dataTracker.get(COLOR);
+        return this.entityData.get(COLOR);
     }
     @Override
-    protected void onHit(LivingEntity target) {
-        super.onHit(target);
-        Entity entity = this.getEffectCause();
-        PotionContentsComponent potionContentsComponent = this.getPotionContents();
+    protected void doPostHurtEffects(LivingEntity target) {
+        super.doPostHurtEffects(target);
+        Entity entity = this.getEffectSource();
+        PotionContents potionContentsComponent = this.getPotionContents();
         float f = this.getPotionDurationScale();
-        potionContentsComponent.forEachEffect(effect -> target.addStatusEffect(effect, entity), f);
+        potionContentsComponent.forEachEffect(effect -> target.addEffect(effect, entity), f);
     }
     @Override
-    protected void onBlockHit(BlockHitResult blockHitResult) {
-        super.onBlockHit(blockHitResult);
+    protected void onHitBlock(BlockHitResult blockHitResult) {
+        super.onHitBlock(blockHitResult);
         if (this.getOwner() instanceof LittlePersonGiantEntity) this.discard();
     }
     @Override
-    protected ItemStack getDefaultItemStack() {
+    protected ItemStack getDefaultPickupItem() {
         return new ItemStack(Items.ARROW);
     }
     @Override
-    public void handleStatus(byte status) {
+    public void handleEntityEvent(byte status) {
         if (status == 0) {
             int i = this.getColor();
             if (i != -1) {
@@ -124,14 +124,14 @@ public class LittleArrowEntity extends TrueDamageProjectile {
                 float h = (i & 0xFF) / 255.0F;
 
                 for (int j = 0; j < 20; j++) {
-                    this.getWorld()
-                            .addParticleClient(
-                                    TintedParticleEffect.create(ParticleTypes.ENTITY_EFFECT, f, g, h), this.getParticleX(0.5), this.getRandomBodyY(), this.getParticleZ(0.5), 0.0, 0.0, 0.0
+                    this.level()
+                            .addParticle(
+                                    ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, f, g, h), this.getRandomX(0.5), this.getRandomY(), this.getRandomZ(0.5), 0.0, 0.0, 0.0
                             );
                 }
             }
         } else {
-            super.handleStatus(status);
+            super.handleEntityEvent(status);
         }
     }
 }

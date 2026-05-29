@@ -1,32 +1,32 @@
 package com.kltyton.mob_battle.effect.harmful;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.entity.effect.StatusEffectCategory;
-import net.minecraft.entity.mob.EndermiteEntity;
-import net.minecraft.entity.mob.SilverfishEntity;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectCategory;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.monster.Endermite;
+import net.minecraft.world.entity.monster.Silverfish;
 
-public class InfestationEffect extends StatusEffect {
+public class InfestationEffect extends MobEffect {
     public InfestationEffect() {
         super(
-                StatusEffectCategory.HARMFUL,
+                MobEffectCategory.HARMFUL,
                 0x8B0000 // 暗红色
         );
     }
     @Override
-    public void onEntityDamage(ServerWorld world, LivingEntity entity, int amplifier, DamageSource source, float amount) {
-        Entity attacker = source.getAttacker();
+    public void onMobHurt(ServerLevel world, LivingEntity entity, int amplifier, DamageSource source, float amount) {
+        Entity attacker = source.getEntity();
 
-        if (attacker instanceof SilverfishEntity || attacker instanceof EndermiteEntity) {
+        if (attacker instanceof Silverfish || attacker instanceof Endermite) {
             float yawOffset = entity.getRandom().nextBoolean() ? 15.0f : -15.0f;
-            entity.setYaw(entity.getYaw() + yawOffset);
-            if (entity instanceof ServerPlayerEntity player) {
-                player.networkHandler.requestTeleport(player.getX(), player.getY(), player.getZ(),
-                        player.getYaw(), player.getPitch());
+            entity.setYRot(entity.getYRot() + yawOffset);
+            if (entity instanceof ServerPlayer player) {
+                player.connection.teleport(player.getX(), player.getY(), player.getZ(),
+                        player.getYRot(), player.getXRot());
             }
         }
     }

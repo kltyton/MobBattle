@@ -3,13 +3,6 @@ package com.kltyton.mob_battle.mixin.maxstack;
 import com.kltyton.mob_battle.Mob_battle;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.mojang.serialization.Codec;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.tooltip.TooltipType;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.dynamic.Codecs;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -18,6 +11,13 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.List;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.util.ExtraCodecs;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 /*
 @ ItemStackFixin
 作者: Lonk
@@ -30,21 +30,21 @@ public abstract class ToolTipMixin {
     * 在项目工具提示中添加完整计数。
     * @ stacc的作者Devin-Kerman，更新为1.21
     */
-    @Inject(method = "getTooltip", at = @At("RETURN"))
-    private void addOverflowTooltip(Item.TooltipContext context, @Nullable PlayerEntity player, TooltipType type, CallbackInfoReturnable<List<Text>> cir) {
+    @Inject(method = "getTooltipLines", at = @At("RETURN"))
+    private void addOverflowTooltip(Item.TooltipContext context, @Nullable Player player, TooltipFlag type, CallbackInfoReturnable<List<Component>> cir) {
         if (this.getCount() > 999) {
-            List<Text> texts = cir.getReturnValue();
-            texts.add(1, Text.literal("物品数量：" + this.getCount()).formatted(Formatting.GRAY));
+            List<Component> texts = cir.getReturnValue();
+            texts.add(1, Component.literal("物品数量：" + this.getCount()).withStyle(ChatFormatting.GRAY));
         }
     }
     //1.2.2-这是一个更清洁，更不容易崩溃。这样做是为了解决kubeJS的问题，可能值得为他们做一个公关，因为这应该达到相同的效果，并防止其他mods崩溃。
     @ModifyExpressionValue
             (
                     method = "method_57371", //这种方法是一个Lambda，他们不是funda。
-                    at = @At(value = "INVOKE", target = "Lnet/minecraft/util/dynamic/Codecs;rangedInt(II)Lcom/mojang/serialization/Codec;")
+                    at = @At(value = "INVOKE", target = "Lnet/minecraft/util/ExtraCodecs;intRange(II)Lcom/mojang/serialization/Codec;")
             )
     private static Codec<Integer> replaceCodec(Codec<Integer> original) {
-        return Codecs.rangedInt(0, Mob_battle.MAX_STACK_SIZE);
+        return ExtraCodecs.intRange(0, Mob_battle.MAX_STACK_SIZE);
     }
 
     @Shadow

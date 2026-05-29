@@ -6,9 +6,9 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -29,13 +29,13 @@ public class ServerBgmManager {
         });
 
         ServerTickEvents.END_SERVER_TICK.register(server -> {
-            for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
+            for (ServerPlayer player : server.getPlayerList().getPlayers()) {
                 BgmZone zone = getZoneFor(player);
                 String currentZone = zone == null ? null : zone.name();
-                String lastZone = LAST_ZONE.get(player.getUuid());
+                String lastZone = LAST_ZONE.get(player.getUUID());
 
                 if (!Objects.equals(currentZone, lastZone)) {
-                    LAST_ZONE.put(player.getUuid(), currentZone);
+                    LAST_ZONE.put(player.getUUID(), currentZone);
 
                     if (zone == null) {
                         // 离开区域 -> 发送淡出指令而不是立即停止
@@ -67,8 +67,8 @@ public class ServerBgmManager {
     }
 
     @Nullable
-    public static BgmZone getZoneFor(ServerPlayerEntity player) {
-        Vec3d pos = player.getPos();
+    public static BgmZone getZoneFor(ServerPlayer player) {
+        Vec3 pos = player.position();
         for (BgmZone zone : ZONES.values()) {
             if (zone.contains(pos)) {
                 return zone;
@@ -91,8 +91,8 @@ public class ServerBgmManager {
         BgmZone b = ZONES.get(name2);
         if (a == null || b == null) return false;
 
-        Box boxA = a.area();
-        Box boxB = b.area();
+        AABB boxA = a.area();
+        AABB boxB = b.area();
         // 扩展为包含两者的最小包围盒
         double minX = Math.min(boxA.minX, boxB.minX);
         double minY = Math.min(boxA.minY, boxB.minY);
@@ -103,7 +103,7 @@ public class ServerBgmManager {
 
         BgmZone merged = new BgmZone(
                 a.name(),
-                new Box(minX, minY, minZ, maxX, maxY, maxZ),
+                new AABB(minX, minY, minZ, maxX, maxY, maxZ),
                 a.musicId(),
                 a.volume()
         );

@@ -1,7 +1,7 @@
 package com.kltyton.mob_battle.recipe;
 
-import net.minecraft.recipe.CraftingRecipe;
-import net.minecraft.recipe.RecipeType;
+import net.minecraft.world.item.crafting.CraftingRecipe;
+import net.minecraft.world.item.crafting.RecipeType;
 
 public interface MechanicalCraftingRecipe extends CraftingRecipe {
     @Override

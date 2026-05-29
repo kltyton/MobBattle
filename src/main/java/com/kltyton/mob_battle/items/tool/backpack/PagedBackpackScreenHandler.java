@@ -1,33 +1,33 @@
 package com.kltyton.mob_battle.items.tool.backpack;
 
 import com.kltyton.mob_battle.client.screen.ModScreenHandlers;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.SimpleInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.screen.Property;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.screen.slot.Slot;
-import net.minecraft.screen.slot.SlotActionType;
-import net.minecraft.util.collection.DefaultedList;
+import net.minecraft.core.NonNullList;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.DataSlot;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
 
-public class PagedBackpackScreenHandler extends ScreenHandler {
+public class PagedBackpackScreenHandler extends AbstractContainerMenu {
     private final BackpackInventory inventory;
     private final PageInventory pageInventory;
-    private final PlayerEntity player;
-    private final Property page = Property.create();
+    private final Player player;
+    private final DataSlot page = DataSlot.standalone();
     private boolean loadingPage;
     private int lastBackpackSlotClickAge = -100;
     private int lastPageChangeAge = -100;
 
-    public PagedBackpackScreenHandler(int syncId, PlayerInventory playerInventory, BackpackInventory inventory) {
+    public PagedBackpackScreenHandler(int syncId, Inventory playerInventory, BackpackInventory inventory) {
         super(ModScreenHandlers.PAGED_BACKPACK, syncId);
         this.inventory = inventory;
         this.pageInventory = new PageInventory();
         this.player = playerInventory.player;
-        this.addProperty(this.page);
-        inventory.onOpen(playerInventory.player);
-        checkSize(inventory, BackpackInventory.PAGED_TOTAL_SLOTS);
+        this.addDataSlot(this.page);
+        inventory.startOpen(playerInventory.player);
+        checkContainerSize(inventory, BackpackInventory.PAGED_TOTAL_SLOTS);
         this.page.set(0);
         this.loadVisiblePage();
 
@@ -51,8 +51,8 @@ public class PagedBackpackScreenHandler extends ScreenHandler {
     }
 
     @Override
-    public boolean onButtonClick(PlayerEntity player, int id) {
-        if (player.age - this.lastBackpackSlotClickAge <= 2) {
+    public boolean clickMenuButton(Player player, int id) {
+        if (player.tickCount - this.lastBackpackSlotClickAge <= 2) {
             return true;
         }
 
@@ -67,64 +67,64 @@ public class PagedBackpackScreenHandler extends ScreenHandler {
             return id == 0 || id == 1;
         }
 
-        this.endQuickCraft();
+        this.resetQuickCraft();
         this.saveVisiblePage();
         this.page.set(nextPage);
         this.loadVisiblePage();
-        this.lastPageChangeAge = player.age;
-        this.sendContentUpdates();
+        this.lastPageChangeAge = player.tickCount;
+        this.broadcastChanges();
         return true;
     }
 
     @Override
-    public void onSlotClick(int slotIndex, int button, SlotActionType actionType, PlayerEntity player) {
+    public void clicked(int slotIndex, int button, ClickType actionType, Player player) {
         if (slotIndex >= 0 && slotIndex < BackpackInventory.PAGE_SIZE) {
-            if (player.age - this.lastPageChangeAge <= 2) {
+            if (player.tickCount - this.lastPageChangeAge <= 2) {
                 return;
             }
-            this.lastBackpackSlotClickAge = player.age;
+            this.lastBackpackSlotClickAge = player.tickCount;
         }
-        super.onSlotClick(slotIndex, button, actionType, player);
+        super.clicked(slotIndex, button, actionType, player);
     }
 
     @Override
-    public ItemStack quickMove(PlayerEntity player, int index) {
+    public ItemStack quickMoveStack(Player player, int index) {
         if (index < 0 || index >= this.slots.size()) {
             return ItemStack.EMPTY;
         }
 
         ItemStack itemStack = ItemStack.EMPTY;
         Slot slot = this.slots.get(index);
-        if (slot.hasStack()) {
-            ItemStack slotStack = slot.getStack();
+        if (slot.hasItem()) {
+            ItemStack slotStack = slot.getItem();
             itemStack = slotStack.copy();
             if (index < BackpackInventory.PAGE_SIZE) {
-                if (!this.insertItem(slotStack, BackpackInventory.PAGE_SIZE, this.slots.size(), true)) {
+                if (!this.moveItemStackTo(slotStack, BackpackInventory.PAGE_SIZE, this.slots.size(), true)) {
                     return ItemStack.EMPTY;
                 }
-            } else if (!this.insertItem(slotStack, 0, BackpackInventory.PAGE_SIZE, false)) {
+            } else if (!this.moveItemStackTo(slotStack, 0, BackpackInventory.PAGE_SIZE, false)) {
                 return ItemStack.EMPTY;
             }
 
             if (slotStack.isEmpty()) {
-                slot.setStack(ItemStack.EMPTY);
+                slot.setByPlayer(ItemStack.EMPTY);
             } else {
-                slot.markDirty();
+                slot.setChanged();
             }
         }
         return itemStack;
     }
 
     @Override
-    public void onClosed(PlayerEntity player) {
-        super.onClosed(player);
+    public void removed(Player player) {
+        super.removed(player);
         this.saveVisiblePage();
-        this.inventory.onClose(player);
+        this.inventory.stopOpen(player);
     }
 
     @Override
-    public boolean canUse(PlayerEntity player) {
-        return this.inventory.canPlayerUse(player);
+    public boolean stillValid(Player player) {
+        return this.inventory.stillValid(player);
     }
 
     public int getPage() {
@@ -140,7 +140,7 @@ public class PagedBackpackScreenHandler extends ScreenHandler {
         try {
             int pageStart = this.getPageStart();
             for (int slot = 0; slot < BackpackInventory.PAGE_SIZE; slot++) {
-                this.pageInventory.setStack(slot, this.inventory.getStack(pageStart + slot).copy());
+                this.pageInventory.setItem(slot, this.inventory.getItem(pageStart + slot).copy());
             }
         } finally {
             this.loadingPage = false;
@@ -148,33 +148,33 @@ public class PagedBackpackScreenHandler extends ScreenHandler {
     }
 
     private void saveVisiblePage() {
-        if (this.player.getWorld().isClient()) {
+        if (this.player.level().isClientSide()) {
             return;
         }
 
         int pageStart = this.getPageStart();
-        DefaultedList<ItemStack> storedStacks = this.inventory.getHeldStacks();
+        NonNullList<ItemStack> storedStacks = this.inventory.getItems();
         for (int slot = 0; slot < BackpackInventory.PAGE_SIZE; slot++) {
-            storedStacks.set(pageStart + slot, this.pageInventory.getStack(slot).copy());
+            storedStacks.set(pageStart + slot, this.pageInventory.getItem(slot).copy());
         }
-        this.inventory.markDirty();
+        this.inventory.setChanged();
     }
 
-    private class PageInventory extends SimpleInventory {
+    private class PageInventory extends SimpleContainer {
         private PageInventory() {
             super(BackpackInventory.PAGE_SIZE);
         }
 
         @Override
-        public void markDirty() {
-            super.markDirty();
+        public void setChanged() {
+            super.setChanged();
             if (!loadingPage) {
                 saveVisiblePage();
             }
         }
 
         @Override
-        public boolean isValid(int slot, ItemStack stack) {
+        public boolean canPlaceItem(int slot, ItemStack stack) {
             return !(stack.getItem() instanceof BackpackItem);
         }
     }
@@ -185,8 +185,8 @@ public class PagedBackpackScreenHandler extends ScreenHandler {
         }
 
         @Override
-        public boolean canInsert(ItemStack stack) {
-            return !(stack.getItem() instanceof BackpackItem) && super.canInsert(stack);
+        public boolean mayPlace(ItemStack stack) {
+            return !(stack.getItem() instanceof BackpackItem) && super.mayPlace(stack);
         }
     }
 }

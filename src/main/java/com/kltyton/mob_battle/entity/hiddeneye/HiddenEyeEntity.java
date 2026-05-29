@@ -1,19 +1,5 @@
 package com.kltyton.mob_battle.entity.hiddeneye;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.ai.goal.LookAroundGoal;
-import net.minecraft.entity.ai.goal.LookAtEntityGoal;
-import net.minecraft.entity.attribute.DefaultAttributeContainer;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.entity.mob.WardenEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.predicate.entity.EntityPredicates;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
 import software.bernie.geckolib.animatable.GeoEntity;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.animatable.manager.AnimatableManager;
@@ -22,50 +8,64 @@ import software.bernie.geckolib.animation.RawAnimation;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 import java.util.List;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySelector;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
+import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
+import net.minecraft.world.entity.monster.warden.Warden;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
-public class HiddenEyeEntity extends MobEntity implements GeoEntity {
+public class HiddenEyeEntity extends Mob implements GeoEntity {
 
-    public HiddenEyeEntity(EntityType<? extends MobEntity> entityType, World world) {
+    public HiddenEyeEntity(EntityType<? extends Mob> entityType, Level world) {
         super(entityType, world);
     }
 
     // 设置初始属性
-    public static DefaultAttributeContainer.Builder createAttributes() {
-        return MobEntity.createMobAttributes()
-                .add(EntityAttributes.MAX_HEALTH, 200.0)
-                .add(EntityAttributes.MOVEMENT_SPEED, 0.0); // 无法移动
+    public static AttributeSupplier.Builder createAttributes() {
+        return Mob.createMobAttributes()
+                .add(Attributes.MAX_HEALTH, 200.0)
+                .add(Attributes.MOVEMENT_SPEED, 0.0); // 无法移动
     }
-    protected void initGoals() {
-        this.goalSelector.add(0, new LookAtEntityGoal(this, PlayerEntity.class, 8.0F));
-        this.goalSelector.add(1, new LookAroundGoal(this));
-    }
-    @Override
-    public void takeKnockback(double strength, double x, double z) {
+    protected void registerGoals() {
+        this.goalSelector.addGoal(0, new LookAtPlayerGoal(this, Player.class, 8.0F));
+        this.goalSelector.addGoal(1, new RandomLookAroundGoal(this));
     }
     @Override
-    protected void knockback(LivingEntity target) {
+    public void knockback(double strength, double x, double z) {
+    }
+    @Override
+    protected void blockedByItem(LivingEntity target) {
     }
 
     @Override
     public void tick() {
         super.tick();
         // 仅在服务器端运行逻辑
-        if (!this.getWorld().isClient && this.age % 20 == 0) { // 每秒执行一次，节省性能
+        if (!this.level().isClientSide && this.tickCount % 20 == 0) { // 每秒执行一次，节省性能
             redirectWardenAnger();
         }
     }
 
     private void redirectWardenAnger() {
         // 寻找 300 格内的所有监守者和 XunShengEntity
-        Box searchBox = this.getBoundingBox().expand(300.0);
+        AABB searchBox = this.getBoundingBox().inflate(300.0);
 
-        List<WardenEntity> wardens = this.getWorld().getEntitiesByClass(
-                WardenEntity.class,
+        List<Warden> wardens = this.level().getEntitiesOfClass(
+                Warden.class,
                 searchBox,
-                EntityPredicates.EXCEPT_SPECTATOR.and(Entity::isAlive)
+                EntitySelector.NO_SPECTATORS.and(Entity::isAlive)
         );
         // 分别处理每只 Warden
-        for (WardenEntity warden : wardens) {
+        for (Warden warden : wardens) {
             LivingEntity nearestTarget = findNearestValidTargetFor(warden);
             if (nearestTarget != null) {
                 // Warden 使用特殊的愤怒系统，150 是最高愤怒值，true 表示立即触发吼叫等行为
@@ -77,25 +77,25 @@ public class HiddenEyeEntity extends MobEntity implements GeoEntity {
 
     private LivingEntity findNearestValidTargetFor(LivingEntity mob) {
         // Warden 的默认感知/跟踪范围大约是 24~32 格，这里用 40 格作为安全值
-        double searchRange = mob.getAttributeValue(EntityAttributes.FOLLOW_RANGE);
-        Box targetSearchBox = mob.getBoundingBox().expand(searchRange);
+        double searchRange = mob.getAttributeValue(Attributes.FOLLOW_RANGE);
+        AABB targetSearchBox = mob.getBoundingBox().inflate(searchRange);
 
-        List<LivingEntity> nearbyEntities = this.getWorld().getEntitiesByClass(
+        List<LivingEntity> nearbyEntities = this.level().getEntitiesOfClass(
                 LivingEntity.class,
                 targetSearchBox,
                 entity -> // 排除 HiddenEye 自己
                         entity.isAlive()
                                 && entity != mob
-                                && !(entity instanceof WardenEntity)
+                                && !(entity instanceof Warden)
                                 && !(entity instanceof HiddenEyeEntity)
         );
 
         LivingEntity closest = null;
         double closestDistance = Double.MAX_VALUE;
-        Vec3d mobPos = mob.getPos();
+        Vec3 mobPos = mob.position();
 
         for (LivingEntity candidate : nearbyEntities) {
-            double dist = mobPos.squaredDistanceTo(candidate.getPos());
+            double dist = mobPos.distanceToSqr(candidate.position());
             if (dist < closestDistance) {
                 closestDistance = dist;
                 closest = candidate;
@@ -113,11 +113,11 @@ public class HiddenEyeEntity extends MobEntity implements GeoEntity {
     }
 
     @Override
-    public void pushAwayFrom(Entity entity) {
+    public void push(Entity entity) {
     }
 
     @Override
-    public boolean collidesWith(Entity other) {
+    public boolean canCollideWith(Entity other) {
         return false; // 没有碰撞体积
     }
     protected static final RawAnimation IDEA_ANIM = RawAnimation.begin().thenLoop("idle");

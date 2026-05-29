@@ -1,0 +1,77 @@
+{
+  "dog_jiao": {
+    "sounds": [
+      "mob_battle:dog_jiao"
+    ]
+  },
+  "engineers_sanctum": {
+    "sounds": [
+      "mob_battle:engineers_sanctum"
+    ]
+  },
+  "shoreline": {
+    "sounds": [
+      "mob_battle:shoreline"
+    ]
+  },
+  "gun_shot": {
+    "sounds": [
+      "mob_battle:gun_shot"
+    ]
+  },
+  "gun_reload": {
+    "sounds": [
+      "mob_battle:gun_reload"
+    ]
+  },
+  "meteorite": {
+    "sounds": [
+      "mob_battle:meteorite"
+    ]
+  },
+  "b_c_dog_jiao": {
+    "sounds": [
+      "mob_battle:b_c_dog_jiao"
+    ]
+  },
+  "b_c_z_dog_jiao": {
+    "sounds": [
+      "mob_battle:b_c_z_dog_jiao"
+    ]
+  },
+  "b_c_bellow_dog_jiao": {
+    "sounds": [
+      "mob_battle:b_c_bellow_dog_jiao"
+    ]
+  },
+  "b_c_debuff_dog_jiao": {
+    "sounds": [
+      "mob_battle:b_c_debuff_dog_jiao"
+    ]
+  },
+  "ender_dragon_skill4": {
+    "sounds": [
+      "mob_battle:ender_dragon_skill4"
+    ]
+  },
+  "dragon_bgm_normal": {
+    "sounds": [
+      "mob_battle:dragon_bgm_normal"
+    ]
+  },
+  "dragon_bgm_half": {
+    "sounds": [
+      "mob_battle:dragon_bgm_half"
+    ]
+  },
+  "player_attack": {
+    "sounds": [
+      "mob_battle:player_attack"
+    ]
+  },
+  "player_attack_4": {
+    "sounds": [
+      "mob_battle:player_attack_4"
+    ]
+  }
+}

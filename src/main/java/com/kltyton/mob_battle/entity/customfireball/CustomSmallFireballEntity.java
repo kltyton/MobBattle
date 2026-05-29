@@ -1,39 +1,39 @@
 package com.kltyton.mob_battle.entity.customfireball;
 
 import com.kltyton.mob_battle.utils.EntityUtil;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.projectile.SmallFireballEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.hit.EntityHitResult;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.projectile.SmallFireball;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.Vec3;
 
-public class CustomSmallFireballEntity extends SmallFireballEntity {
+public class CustomSmallFireballEntity extends SmallFireball {
     private final float damage;
 
-    public CustomSmallFireballEntity(World world, LivingEntity owner, float damage) {
-        super(world, owner, Vec3d.ZERO);
+    public CustomSmallFireballEntity(Level world, LivingEntity owner, float damage) {
+        super(world, owner, Vec3.ZERO);
         this.damage = damage;
         this.setNoGravity(true);
     }
     @Override
-    protected void onEntityHit(EntityHitResult entityHitResult) {
-        if (this.getWorld() instanceof ServerWorld serverWorld) {
+    protected void onHitEntity(EntityHitResult entityHitResult) {
+        if (this.level() instanceof ServerLevel serverWorld) {
             Entity entity = entityHitResult.getEntity();
             Entity entity2 = this.getOwner();
             if (entity instanceof LivingEntity living && !EntityUtil.isValidSummonCombatTarget(this, entity2, living)) {
                 return;
             }
-            int i = entity.getFireTicks();
-            entity.setOnFireFor(5.0F);
-            DamageSource damageSource = this.getDamageSources().fireball(this, entity2);
-            if (!entity.damage(serverWorld, damageSource, damage)) {
-                entity.setFireTicks(i);
+            int i = entity.getRemainingFireTicks();
+            entity.igniteForSeconds(5.0F);
+            DamageSource damageSource = this.damageSources().fireball(this, entity2);
+            if (!entity.hurtServer(serverWorld, damageSource, damage)) {
+                entity.setRemainingFireTicks(i);
             } else {
-                EnchantmentHelper.onTargetDamaged(serverWorld, entity, damageSource);
+                EnchantmentHelper.doPostAttackEffects(serverWorld, entity, damageSource);
             }
         }
     }

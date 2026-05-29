@@ -5,36 +5,42 @@ import com.kltyton.mob_battle.entity.deepcreature.goal.DeepCreatureEntityNavigat
 import com.kltyton.mob_battle.network.packet.SkillPayload;
 import com.kltyton.mob_battle.utils.EntityUtil;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.MovementType;
-import net.minecraft.entity.ai.goal.*;
-import net.minecraft.entity.ai.pathing.EntityNavigation;
-import net.minecraft.entity.attribute.DefaultAttributeContainer;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.boss.BossBar;
-import net.minecraft.entity.boss.ServerBossBar;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.data.DataTracker;
-import net.minecraft.entity.data.TrackedData;
-import net.minecraft.entity.data.TrackedDataHandlerRegistry;
-import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.entity.mob.HostileEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundEvent;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.storage.ReadView;
-import net.minecraft.storage.WriteView;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.core.Holder;
+import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerBossEvent;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.BossEvent;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
+import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
+import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
+import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
+import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
+import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
+import net.minecraft.world.entity.ai.navigation.PathNavigation;
+import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib.animatable.GeoEntity;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
@@ -49,52 +55,52 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 import java.util.List;
 import java.util.Objects;
 
-public class DeepCreatureEntity extends HostileEntity implements GeoEntity, ModSkillEntityType {
+public class DeepCreatureEntity extends Monster implements GeoEntity, ModSkillEntityType {
 
-    private final ServerBossBar bossBar = new ServerBossBar(
+    private final ServerBossEvent bossBar = new ServerBossEvent(
             this.getDisplayName(),
-            BossBar.Color.PURPLE,
-            BossBar.Style.PROGRESS
+            BossEvent.BossBarColor.PURPLE,
+            BossEvent.BossBarOverlay.PROGRESS
     );
-    public static final TrackedData<Boolean> SPAWN_ANIM_BOOLEAN = DataTracker.registerData(DeepCreatureEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
-    public static final TrackedData<Boolean> HAS_SKILL = DataTracker.registerData(DeepCreatureEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
-    public static final TrackedData<Integer> SKILL_COOLDOWN = DataTracker.registerData(DeepCreatureEntity.class, TrackedDataHandlerRegistry.INTEGER);
-    public static final TrackedData<Integer> GRAB_TARGET_ID = DataTracker.registerData(DeepCreatureEntity.class, TrackedDataHandlerRegistry.INTEGER);
+    public static final EntityDataAccessor<Boolean> SPAWN_ANIM_BOOLEAN = SynchedEntityData.defineId(DeepCreatureEntity.class, EntityDataSerializers.BOOLEAN);
+    public static final EntityDataAccessor<Boolean> HAS_SKILL = SynchedEntityData.defineId(DeepCreatureEntity.class, EntityDataSerializers.BOOLEAN);
+    public static final EntityDataAccessor<Integer> SKILL_COOLDOWN = SynchedEntityData.defineId(DeepCreatureEntity.class, EntityDataSerializers.INT);
+    public static final EntityDataAccessor<Integer> GRAB_TARGET_ID = SynchedEntityData.defineId(DeepCreatureEntity.class, EntityDataSerializers.INT);
     @Override
-    public boolean canHaveStatusEffect(StatusEffectInstance effect) {
-        RegistryEntry<StatusEffect> effectType = effect.getEffectType();
-        if (effectType.equals(StatusEffects.SLOWNESS)) {
+    public boolean canBeAffected(MobEffectInstance effect) {
+        Holder<MobEffect> effectType = effect.getEffect();
+        if (effectType.equals(MobEffects.SLOWNESS)) {
             return false;
         }
-        return super.canHaveStatusEffect(effect);
+        return super.canBeAffected(effect);
     }
-    public DeepCreatureEntity(EntityType<? extends HostileEntity> entityType, World world) {
+    public DeepCreatureEntity(EntityType<? extends Monster> entityType, Level world) {
         super(entityType, world);
         this.setHasSkill(false);
         this.setSkillCooldown(0);
     }
 
     @Override
-    public void setCustomName(@Nullable Text name) {
+    public void setCustomName(@Nullable Component name) {
         super.setCustomName(name);
         this.bossBar.setName(Objects.requireNonNull(this.getDisplayName()).copy().append(" | " + (int)this.getHealth() + "/" + (int)this.getMaxHealth()));
     }
     @Override
-    protected void initDataTracker(DataTracker.Builder builder) {
-        super.initDataTracker(builder);
-        builder.add(SPAWN_ANIM_BOOLEAN, false);
-        builder.add(HAS_SKILL, false);
-        builder.add(SKILL_COOLDOWN, 0);
-        builder.add(GRAB_TARGET_ID, -1);
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(SPAWN_ANIM_BOOLEAN, false);
+        builder.define(HAS_SKILL, false);
+        builder.define(SKILL_COOLDOWN, 0);
+        builder.define(GRAB_TARGET_ID, -1);
     }
     @Override
     protected SoundEvent getAmbientSound() {
         return null;
     }
     @Override
-    public boolean isInAttackRange(LivingEntity entity) {
-        Box attackBox = this.getAttackBox().expand(5.0); // 扩大3格攻击距离
-        return attackBox.intersects(entity.getHitbox());
+    public boolean isWithinMeleeAttackRange(LivingEntity entity) {
+        AABB attackBox = this.getAttackBoundingBox().inflate(5.0); // 扩大3格攻击距离
+        return attackBox.intersects(entity.getBoundingBox());
     }
     @Override
     protected SoundEvent getHurtSound(DamageSource source) {
@@ -106,13 +112,13 @@ public class DeepCreatureEntity extends HostileEntity implements GeoEntity, ModS
         return null;
     }
     @Override
-    protected void initGoals() {
-        this.targetSelector.add(1, new RevengeGoal(this));// 添加复仇目标
-        this.targetSelector.add(2, new ActiveTargetGoal<>(this, PlayerEntity.class, true)); // 添加主动攻击玩家目标
-        this.goalSelector.add(2, new MeleeAttackGoal(this, 1.0, true)); // 添加僵尸攻击目标
-        this.goalSelector.add(7, new WanderAroundFarGoal(this, 1.0)); // 添加远距离游荡目标
-        this.goalSelector.add(8, new LookAtEntityGoal(this, PlayerEntity.class, 64.0F));
-        this.goalSelector.add(8, new LookAroundGoal(this));
+    protected void registerGoals() {
+        this.targetSelector.addGoal(1, new HurtByTargetGoal(this));// 添加复仇目标
+        this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, true)); // 添加主动攻击玩家目标
+        this.goalSelector.addGoal(2, new MeleeAttackGoal(this, 1.0, true)); // 添加僵尸攻击目标
+        this.goalSelector.addGoal(7, new WaterAvoidingRandomStrollGoal(this, 1.0)); // 添加远距离游荡目标
+        this.goalSelector.addGoal(8, new LookAtPlayerGoal(this, Player.class, 64.0F));
+        this.goalSelector.addGoal(8, new RandomLookAroundGoal(this));
     }
     protected static final RawAnimation IDEA_ANIM = RawAnimation.begin().thenLoop("idle");
     protected static final RawAnimation WALK_ANIM = RawAnimation.begin().thenLoop("walk");
@@ -129,29 +135,29 @@ public class DeepCreatureEntity extends HostileEntity implements GeoEntity, ModS
     protected static final RawAnimation JUMP = RawAnimation.begin().thenPlay("jump_smash").thenPlay("jump_smash_cont");
     protected static final RawAnimation CATCH = RawAnimation.begin().thenPlay("catch").thenPlay("catch_shout");
     @Override
-    protected void mobTick(ServerWorld world) {
-        this.bossBar.setPercent(this.getHealth() / this.getMaxHealth());
+    protected void customServerAiStep(ServerLevel world) {
+        this.bossBar.setProgress(this.getHealth() / this.getMaxHealth());
         this.bossBar.setName(Objects.requireNonNull(this.getDisplayName()).copy().append(" | " + (int)this.getHealth() + "/" + (int)this.getMaxHealth()));
     }
     @Override
-    public void onStartedTrackingBy(ServerPlayerEntity player) {
-        super.onStartedTrackingBy(player);
+    public void startSeenByPlayer(ServerPlayer player) {
+        super.startSeenByPlayer(player);
         this.bossBar.addPlayer(player);
     }
     @Override
-    public void onStoppedTrackingBy(ServerPlayerEntity player) {
-        super.onStoppedTrackingBy(player);
+    public void stopSeenByPlayer(ServerPlayer player) {
+        super.stopSeenByPlayer(player);
         this.bossBar.removePlayer(player);
     }
     public void registerControllers(final AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>("main_controller", 5 ,this::animationController)
                 .setSoundKeyframeHandler(s -> {
-            PlayerEntity player = ClientUtil.getClientPlayer();
+            Player player = ClientUtil.getClientPlayer();
             if ("minecraft:entity.polar_bear.warning".equals(s.keyframeData().getSound())) {
-                player.playSound(SoundEvents.ENTITY_POLAR_BEAR_WARNING, 5.0F, 0.85F);
+                player.playSound(SoundEvents.POLAR_BEAR_WARNING, 5.0F, 0.85F);
             }
             if ("minecraft:entity.ender_dragon.growl".equals(s.keyframeData().getSound())) {
-                player.playSound(SoundEvents.ENTITY_ENDER_DRAGON_GROWL, 5.0F, 0.85F);
+                player.playSound(SoundEvents.ENDER_DRAGON_GROWL, 5.0F, 0.85F);
             }
         }).triggerableAnim("death", DEAD_ANIM));
         controllers.add(new AnimationController<>("skill_controller",animTest -> {
@@ -162,16 +168,16 @@ public class DeepCreatureEntity extends HostileEntity implements GeoEntity, ModS
             }
             return PlayState.STOP;
         }).setSoundKeyframeHandler(s -> {
-            PlayerEntity player = ClientUtil.getClientPlayer();
+            Player player = ClientUtil.getClientPlayer();
             if ("minecraft:entity.polar_bear.warning".equals(s.keyframeData().getSound())) {
-                player.playSound(SoundEvents.ENTITY_POLAR_BEAR_WARNING, 5.0F, 0.85F);
+                player.playSound(SoundEvents.POLAR_BEAR_WARNING, 5.0F, 0.85F);
             }
             if ("minecraft:entity.ender_dragon.growl".equals(s.keyframeData().getSound())) {
-                player.playSound(SoundEvents.ENTITY_ENDER_DRAGON_GROWL, 5.0F, 0.85F);
+                player.playSound(SoundEvents.ENDER_DRAGON_GROWL, 5.0F, 0.85F);
             }
             if ("runSideSound".equals(s.keyframeData().getSound())) {
-                player.playSound(SoundEvents.ENTITY_POLAR_BEAR_WARNING, 1.0F, 0.5F);
-                player.playSound(SoundEvents.ENTITY_ENDER_DRAGON_GROWL, 1.0F, 0.2F);
+                player.playSound(SoundEvents.POLAR_BEAR_WARNING, 1.0F, 0.5F);
+                player.playSound(SoundEvents.ENDER_DRAGON_GROWL, 1.0F, 0.2F);
                 if (this.getGrabTargetId() != -1) {
                     ClientPlayNetworking.send(new SkillPayload(
                             "damage", this.getId()
@@ -179,7 +185,7 @@ public class DeepCreatureEntity extends HostileEntity implements GeoEntity, ModS
                 }
             }
             if ("runLaunch".equals(s.keyframeData().getSound())) {
-                player.playSound(SoundEvents.ENTITY_FIREWORK_ROCKET_LAUNCH, 1.0F, 0.5F);
+                player.playSound(SoundEvents.FIREWORK_ROCKET_LAUNCH, 1.0F, 0.5F);
             }
         })
                 .triggerableAnim("roar",ROAR_ANIM)
@@ -194,9 +200,9 @@ public class DeepCreatureEntity extends HostileEntity implements GeoEntity, ModS
                 .triggerableAnim("catch", CATCH)
                 .setCustomInstructionKeyframeHandler(s -> {
             if ("runRoar".equals(s.keyframeData().getInstructions())) {
-                PlayerEntity player = ClientUtil.getClientPlayer();
-                player.playSound(SoundEvents.ENTITY_POLAR_BEAR_WARNING, 1.0F, 0.7F);
-                player.playSound(SoundEvents.ENTITY_ENDER_DRAGON_GROWL, 1.0F, 0.7F);
+                Player player = ClientUtil.getClientPlayer();
+                player.playSound(SoundEvents.POLAR_BEAR_WARNING, 1.0F, 0.7F);
+                player.playSound(SoundEvents.ENDER_DRAGON_GROWL, 1.0F, 0.7F);
                 ClientPlayNetworking.send(new SkillPayload(
                         "roar", this.getId()
                 ));
@@ -210,15 +216,15 @@ public class DeepCreatureEntity extends HostileEntity implements GeoEntity, ModS
                 ClientPlayNetworking.send(new SkillPayload(
                         "smash", this.getId()
                 ));
-                PlayerEntity player = ClientUtil.getClientPlayer();
-                player.playSound(SoundEvents.ENTITY_GENERIC_EXPLODE.value(), 1.0F, 0.7F);
+                Player player = ClientUtil.getClientPlayer();
+                player.playSound(SoundEvents.GENERIC_EXPLODE.value(), 1.0F, 0.7F);
             }
             if ("runSide".equals(s.keyframeData().getInstructions())) {
                 ClientPlayNetworking.send(new SkillPayload(
                         "side", this.getId()
                 ));
-                PlayerEntity player = ClientUtil.getClientPlayer();
-                player.playSound(SoundEvents.ITEM_ARMOR_EQUIP_LEATHER.value(), 1.0F, 0.7F);
+                Player player = ClientUtil.getClientPlayer();
+                player.playSound(SoundEvents.ARMOR_EQUIP_LEATHER.value(), 1.0F, 0.7F);
             }
             if ("runSonicBoom".equals(s.keyframeData().getInstructions())) {
                 ClientPlayNetworking.send(new SkillPayload(
@@ -239,22 +245,22 @@ public class DeepCreatureEntity extends HostileEntity implements GeoEntity, ModS
                 ClientPlayNetworking.send(new SkillPayload(
                         "earthquake", this.getId()
                 ));
-                PlayerEntity player = ClientUtil.getClientPlayer();
-                player.playSound(SoundEvents.ENTITY_GENERIC_EXPLODE.value(), 1.0F, 0.7F);
+                Player player = ClientUtil.getClientPlayer();
+                player.playSound(SoundEvents.GENERIC_EXPLODE.value(), 1.0F, 0.7F);
             }
             if ("runSmashGround_S".equals(s.keyframeData().getInstructions())) {
                 ClientPlayNetworking.send(new SkillPayload(
                         "smash_ground_s", this.getId()
                 ));
-                PlayerEntity player = ClientUtil.getClientPlayer();
-                player.playSound(SoundEvents.ENTITY_GENERIC_EXPLODE.value(), 1.0F, 0.7F);
+                Player player = ClientUtil.getClientPlayer();
+                player.playSound(SoundEvents.GENERIC_EXPLODE.value(), 1.0F, 0.7F);
             }
             if ("runSmashGround_XL".equals(s.keyframeData().getInstructions())) {
                 ClientPlayNetworking.send(new SkillPayload(
                         "smash_ground_xl", this.getId()
                 ));
-                PlayerEntity player = ClientUtil.getClientPlayer();
-                player.playSound(SoundEvents.ENTITY_GENERIC_EXPLODE.value(), 1.0F, 0.7F);
+                Player player = ClientUtil.getClientPlayer();
+                player.playSound(SoundEvents.GENERIC_EXPLODE.value(), 1.0F, 0.7F);
             }
             if ("runSmashGround_End".equals(s.keyframeData().getInstructions())) {
                 ClientPlayNetworking.send(new SkillPayload(
@@ -286,35 +292,35 @@ public class DeepCreatureEntity extends HostileEntity implements GeoEntity, ModS
         }));
     }
     @Override
-    public void readCustomData(ReadView nbt) {
-        super.readCustomData(nbt);
-        this.setSpawnAnim(nbt.getBoolean("SpawnAnimBoolean", false));
+    public void readAdditionalSaveData(ValueInput nbt) {
+        super.readAdditionalSaveData(nbt);
+        this.setSpawnAnim(nbt.getBooleanOr("SpawnAnimBoolean", false));
         if (this.hasCustomName()) {
             this.bossBar.setName(Objects.requireNonNull(this.getDisplayName()).copy().append(" | " + (int)this.getHealth() + "/" + (int)this.getMaxHealth()));
         }
     }
     @Override
-    public void writeCustomData(WriteView nbt) {
-        super.writeCustomData(nbt);
+    public void addAdditionalSaveData(ValueOutput nbt) {
+        super.addAdditionalSaveData(nbt);
         nbt.putBoolean("SpawnAnimBoolean", this.isSpawnAnimEnd());
     }
 
     @Override
     public void setHealth(float health) {
         if (this.bossBar != null) {
-            this.bossBar.setPercent(health / this.getMaxHealth());
+            this.bossBar.setProgress(health / this.getMaxHealth());
             this.bossBar.setName(Objects.requireNonNull(this.getDisplayName()).copy().append(" | " + (int)this.getHealth() + "/" + (int)this.getMaxHealth()));
         }
         if (health <= 0.0F) {
             super.setHealth(0.1F);
-            this.setAiDisabled(true);
+            this.setNoAi(true);
             this.triggerAnim("main_controller", "death");
         } else {
             super.setHealth(health);
         }
     }
     @Override
-    protected EntityNavigation createNavigation(World world) {
+    protected PathNavigation createNavigation(Level world) {
         return new DeepCreatureEntityNavigation(this, world);
     }
 
@@ -331,11 +337,11 @@ public class DeepCreatureEntity extends HostileEntity implements GeoEntity, ModS
             }
         }
         // 当实体刚生成时播放spawn动画
-        if (this.age < 220 && !this.isSpawnAnimEnd()) {
+        if (this.tickCount < 220 && !this.isSpawnAnimEnd()) {
             return state.setAndContinue(SPAWN_ANIM);
         }
         // 否则，如果在移动，播放walk动画，否则idle动画
-        if (this.getVelocity().lengthSquared() > 0.015) {
+        if (this.getDeltaMovement().lengthSqr() > 0.015) {
             return state.setAndContinue(WALK_ANIM);
         }
         return state.setAndContinue(IDEA_ANIM);
@@ -348,7 +354,7 @@ public class DeepCreatureEntity extends HostileEntity implements GeoEntity, ModS
     public int spawnAnimTick = 0;
     public int remoteCooldown = 0;
     // 冲刺方向，null 表示没有冲刺
-    public Vec3d chargeDir = null;
+    public Vec3 chargeDir = null;
     // 剩余冲刺 tick
     public int chargeTicksLeft = 0;
     public int stuckCooldown = 200;
@@ -356,19 +362,19 @@ public class DeepCreatureEntity extends HostileEntity implements GeoEntity, ModS
     @Override
     public void tick() {
         super.tick();
-        if (!this.getWorld().isClient()) {
-            if (getGrabTargetId() != -1 && this.age % 20 == 0) {
+        if (!this.level().isClientSide()) {
+            if (getGrabTargetId() != -1 && this.tickCount % 20 == 0) {
                 //抓取攻击
                 if (this.getTarget() != null) {
-                    this.getTarget().damage((ServerWorld) this.getWorld(), this.getTarget().getDamageSources().indirectMagic(this, this), 60F);
+                    this.getTarget().hurtServer((ServerLevel) this.level(), this.getTarget().damageSources().indirectMagic(this, this), 60F);
                 }
             }
-            if (isAiDisabled()) {
+            if (isNoAi()) {
                 //this.setInvulnerable(true);
                 if (stuckCooldown > 0) {
                     stuckCooldown--;
                 } else {
-                    this.setAiDisabled(false);
+                    this.setNoAi(false);
                     stuckCooldown = 200;
                 }
             } else {
@@ -387,15 +393,15 @@ public class DeepCreatureEntity extends HostileEntity implements GeoEntity, ModS
                 chargeTicksLeft--;
                 // 2. 保持朝向
                 float yaw = (float) Math.toDegrees(Math.atan2(-chargeDir.x, chargeDir.z));
-                this.setYaw(yaw);
-                this.headYaw = yaw;
+                this.setYRot(yaw);
+                this.yHeadRot = yaw;
 
                 // 3. 位移：每 gt 走 0.55 格（可调）
-                Vec3d step = chargeDir.multiply(0.65);
-                this.move(MovementType.SELF, step);
+                Vec3 step = chargeDir.scale(0.65);
+                this.move(MoverType.SELF, step);
                 // 4. 撞击检测：以当前碰撞盒稍扩大一点
-                Box hitBox = this.getBoundingBox().expand(8);
-                List<LivingEntity> list = getWorld().getOtherEntities(this, hitBox,
+                AABB hitBox = this.getBoundingBox().inflate(8);
+                List<LivingEntity> list = level().getEntities(this, hitBox,
                                 e -> e instanceof LivingEntity living && EntityUtil.isValidCombatTarget(this, living))
                         .stream()
                         .map(e -> (LivingEntity) e)
@@ -403,8 +409,8 @@ public class DeepCreatureEntity extends HostileEntity implements GeoEntity, ModS
 
 
                 for (LivingEntity e : list) {
-                    e.damage((ServerWorld)this.getWorld(), this.getDamageSources().mobAttack(this), 10.0F);
-                    e.takeKnockback(1.5, chargeDir.x, chargeDir.z);
+                    e.hurtServer((ServerLevel)this.level(), this.damageSources().mobAttack(this), 10.0F);
+                    e.knockback(1.5, chargeDir.x, chargeDir.z);
                 }
 
                 // 5. 结束处理
@@ -432,17 +438,17 @@ public class DeepCreatureEntity extends HostileEntity implements GeoEntity, ModS
             } else if (this.spawnAnimTick == 10){
                 this.spawnAnimTick = 11;
                 if (this.isSpawnAnimEnd()) {
-                    this.setAiDisabled(false);
+                    this.setNoAi(false);
                 }
             }
 
             if (!this.isSpawnAnimEnd()) {
-                this.setAiDisabled(true);
+                this.setNoAi(true);
                 this.setInvulnerable(true);
             }
-            if (this.age > 220 && !this.isSpawnAnimEnd()) {
+            if (this.tickCount > 220 && !this.isSpawnAnimEnd()) {
                 this.setSpawnAnim(true);
-                this.setAiDisabled(false);
+                this.setNoAi(false);
                 this.setInvulnerable(false);
             }
             if (this.isSpawnAnimEnd() && !hasSkill()) {
@@ -454,28 +460,28 @@ public class DeepCreatureEntity extends HostileEntity implements GeoEntity, ModS
     }
 
     @Override
-    public void takeKnockback(double strength, double x, double z) {
-        if (!this.isDead() && !this.isAiDisabled()) super.takeKnockback(strength, x, z);
+    public void knockback(double strength, double x, double z) {
+        if (!this.isDeadOrDying() && !this.isNoAi()) super.knockback(strength, x, z);
     }
     @Override
-    public boolean tryAttack(ServerWorld world, Entity target) {
-        if (!this.getWorld().isClient() && canSkill()) {
+    public boolean doHurtTarget(ServerLevel world, Entity target) {
+        if (!this.level().isClientSide() && canSkill()) {
             setHasSkill(true);
             int index = this.getRandom().nextInt(skills.size());
             skills.get(index).run();
         }
-        return super.tryAttack(world, target);
+        return super.doHurtTarget(world, target);
     }
-    public static DefaultAttributeContainer.Builder createDeepCreatureAttributes() {
-        return HostileEntity.createHostileAttributes()
-                .add(EntityAttributes.FOLLOW_RANGE, 64.0)
-                .add(EntityAttributes.MOVEMENT_SPEED, 0.4F)
-                .add(EntityAttributes.ATTACK_DAMAGE, 0.0)
-                .add(EntityAttributes.ARMOR, 5.0)
-                .add(EntityAttributes.KNOCKBACK_RESISTANCE, 1)
-                .add(EntityAttributes.ARMOR_TOUGHNESS, 5.0)
-                .add(EntityAttributes.MAX_HEALTH, 13000.0) // 确保添加最大生命值属性
-                .add(EntityAttributes.SPAWN_REINFORCEMENTS);
+    public static AttributeSupplier.Builder createDeepCreatureAttributes() {
+        return Monster.createMonsterAttributes()
+                .add(Attributes.FOLLOW_RANGE, 64.0)
+                .add(Attributes.MOVEMENT_SPEED, 0.4F)
+                .add(Attributes.ATTACK_DAMAGE, 0.0)
+                .add(Attributes.ARMOR, 5.0)
+                .add(Attributes.KNOCKBACK_RESISTANCE, 1)
+                .add(Attributes.ARMOR_TOUGHNESS, 5.0)
+                .add(Attributes.MAX_HEALTH, 13000.0) // 确保添加最大生命值属性
+                .add(Attributes.SPAWN_REINFORCEMENTS_CHANCE);
     }
     private final List<Runnable> skills = List.of(
             this::performRoarSkill,
@@ -491,49 +497,49 @@ public class DeepCreatureEntity extends HostileEntity implements GeoEntity, ModS
     private void performRoarSkill() {
         setSkillCooldown(20);
         this.setHasSkill(true);
-        this.setAiDisabled(true);
+        this.setNoAi(true);
         this.triggerAnim("skill_controller", "roar");
     }
     private void performEarthquakeSkill() {
         setSkillCooldown(20);
-        this.setAiDisabled(true);
+        this.setNoAi(true);
         this.setHasSkill(true);
         this.triggerAnim("skill_controller", "earthquake");
     }
     public void performLeftSmashSkill() {
         setSkillCooldown(20);
         this.setHasSkill(true);
-        this.setAiDisabled(true);
+        this.setNoAi(true);
         this.triggerAnim("skill_controller", "lefts_smash");
     }
     public void performRightSmashSkill() {
         setSkillCooldown(20);
         this.setHasSkill(true);
-        this.setAiDisabled(true);
+        this.setNoAi(true);
         this.triggerAnim("skill_controller", "rights_smash");
     }
     public void performLeftSideStrikeSkill() {
         setSkillCooldown(20);
         this.setHasSkill(true);
-        this.setAiDisabled(true);
+        this.setNoAi(true);
         this.triggerAnim("skill_controller", "left_side_strike");
     }
     public void performRightSideStrikeSkill() {
         setSkillCooldown(20);
         this.setHasSkill(true);
-        this.setAiDisabled(true);
+        this.setNoAi(true);
         this.triggerAnim("skill_controller", "right_side_strike");
     }
     public void performSonicBoomSkill() {
         setSkillCooldown(20);
         this.setHasSkill(true);
-        this.setAiDisabled(true);
+        this.setNoAi(true);
         this.triggerAnim("skill_controller", "sonic_boom");
     }
     public void performChargeSkill() {
         setSkillCooldown(20);
         this.setHasSkill(true);
-        this.setAiDisabled(true);
+        this.setNoAi(true);
         this.triggerAnim("skill_controller", "charge");
     }
     public void performJumpSkill() {
@@ -543,34 +549,34 @@ public class DeepCreatureEntity extends HostileEntity implements GeoEntity, ModS
     }
     public void performCatchSkill() {
         setSkillCooldown(20);
-        this.setAiDisabled(true);
+        this.setNoAi(true);
         this.setHasSkill(true);
         this.triggerAnim("skill_controller", "catch");
     }
 
     public boolean hasSkill() {
-        return getDataTracker().get(HAS_SKILL);
+        return getEntityData().get(HAS_SKILL);
     }
     public boolean isSpawnAnimEnd() {
-        return getDataTracker().get(SPAWN_ANIM_BOOLEAN);
+        return getEntityData().get(SPAWN_ANIM_BOOLEAN);
     }
     public int getSkillCooldown() {
-        return getDataTracker().get(SKILL_COOLDOWN);
+        return getEntityData().get(SKILL_COOLDOWN);
     }
     public int getGrabTargetId() {
-        return getDataTracker().get(GRAB_TARGET_ID);
+        return getEntityData().get(GRAB_TARGET_ID);
     }
     public void setGrabTargetId(int id) {
-        getDataTracker().set(GRAB_TARGET_ID, id);
+        getEntityData().set(GRAB_TARGET_ID, id);
     }
     public void setHasSkill(boolean hasSkill) {
-        getDataTracker().set(HAS_SKILL, hasSkill);
+        getEntityData().set(HAS_SKILL, hasSkill);
     }
     public void setSpawnAnim(boolean spawnAnim) {
-        getDataTracker().set(SPAWN_ANIM_BOOLEAN, spawnAnim);
+        getEntityData().set(SPAWN_ANIM_BOOLEAN, spawnAnim);
     }
     public void setSkillCooldown(int cooldown) {
-        getDataTracker().set(SKILL_COOLDOWN, cooldown);
+        getEntityData().set(SKILL_COOLDOWN, cooldown);
     }
 
     @Override

@@ -6,12 +6,12 @@ import com.kltyton.mob_battle.entity.player.IGeoEntityAnimationTickInvoker;
 import com.kltyton.mob_battle.entity.player.IPlayerEntityAccessor;
 import com.kltyton.mob_battle.entity.player.IPlayerSkillAccessor;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.option.Perspective;
-import net.minecraft.client.render.entity.EntityRenderer;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.math.Box;
+import net.minecraft.client.CameraType;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.entity.EntityRenderer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.AABB;
 import software.bernie.geckolib.animatable.GeoAnimatable;
 
 import java.lang.reflect.Method;
@@ -30,26 +30,26 @@ public final class ClientGeckoAnimationTicker {
         ClientTickEvents.END_CLIENT_TICK.register(ClientGeckoAnimationTicker::tick);
     }
 
-    private static void tick(MinecraftClient client) {
-        if (client.world == null || client.player == null || client.isPaused()) {
+    private static void tick(Minecraft client) {
+        if (client.level == null || client.player == null || client.isPaused()) {
             return;
         }
 
         tickPlayerIfNeeded(client);
 
-        Box scanBox = client.player.getBoundingBox().expand(SCAN_RANGE);
-        for (Entity entity : client.world.getEntitiesByClass(Entity.class, scanBox, ClientGeckoAnimationTicker::needsEntityAnimationTick)) {
+        AABB scanBox = client.player.getBoundingBox().inflate(SCAN_RANGE);
+        for (Entity entity : client.level.getEntitiesOfClass(Entity.class, scanBox, ClientGeckoAnimationTicker::needsEntityAnimationTick)) {
             if (entity != client.player) {
                 tickEntityRenderer(client, entity);
             }
         }
     }
 
-    private static void tickPlayerIfNeeded(MinecraftClient client) {
-        PlayerEntity player = client.player;
+    private static void tickPlayerIfNeeded(Minecraft client) {
+        Player player = client.player;
         if (player instanceof GeoAnimatable
                 && ((IPlayerEntityAccessor) player).isUsingGeckoLib()
-                && (client.options.getPerspective() == Perspective.FIRST_PERSON || ((IPlayerSkillAccessor) player).mobBattle$hasSkill())) {
+                && (client.options.getCameraType() == CameraType.FIRST_PERSON || ((IPlayerSkillAccessor) player).mobBattle$hasSkill())) {
             tickEntityRenderer(client, player);
         }
     }
@@ -68,7 +68,7 @@ public final class ClientGeckoAnimationTicker {
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    private static void tickEntityRenderer(MinecraftClient client, Entity entity) {
+    private static void tickEntityRenderer(Minecraft client, Entity entity) {
         EntityRenderer renderer = client.getEntityRenderDispatcher().getRenderer(entity);
         if (renderer instanceof IGeoEntityAnimationTickInvoker invoker) {
             try {

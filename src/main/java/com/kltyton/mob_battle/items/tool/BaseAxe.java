@@ -1,29 +1,29 @@
 package com.kltyton.mob_battle.items.tool;
 
 import com.kltyton.mob_battle.items.ModMaterial;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.AxeItem;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.AxeItem;
+import net.minecraft.world.item.ItemStack;
 
 public class BaseAxe extends AxeItem {
     public float attackCooldown = 0.0F;
-    public BaseAxe(Settings settings) {
+    public BaseAxe(Properties settings) {
         super(ModMaterial.KLTYTON_TOOL_MATERIAL, 46, -3.3f, settings.axe(ModMaterial.KLTYTON_TOOL_MATERIAL,50,0.7f));
     }    public DamageSource getDamageSource(LivingEntity user) {
-        if (user instanceof PlayerEntity playerEntity) {
-            this.attackCooldown = playerEntity.getAttackCooldownProgress(0.0F);
+        if (user instanceof Player playerEntity) {
+            this.attackCooldown = playerEntity.getAttackStrengthScale(0.0F);
         }
         return super.getDamageSource(user);
     }
 
     @Override
-    public void postHit(ItemStack stack, LivingEntity target, LivingEntity attacker) {
-        super.postHit(stack, target, attacker);
+    public void hurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker) {
+        super.hurtEnemy(stack, target, attacker);
         if (this.attackCooldown >= 1.0F)
-            target.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 60, 2, false, true, true), attacker);
+            target.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 60, 2, false, true, true), attacker);
     }
 }

@@ -1,36 +1,35 @@
 package com.kltyton.mob_battle.event.masterscepter;
 
 import com.kltyton.mob_battle.effect.ModEffects;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.util.math.Box;
-
 import java.util.List;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.phys.AABB;
 
 public class SbSw {
-    public static void runCommand(ServerPlayerEntity user) {
+    public static void runCommand(ServerPlayer user) {
         double range = 15.0F;
-        ServerWorld world = user.getWorld();
+        ServerLevel world = user.level();
         world.playSound(null, user.getX(), user.getY(), user.getZ(),
-                SoundEvents.ITEM_FIRECHARGE_USE, SoundCategory.PLAYERS,
+                SoundEvents.FIRECHARGE_USE, SoundSource.PLAYERS,
                 0.5F, 1.0F);
-        if (!world.isClient) {
+        if (!world.isClientSide) {
             /* 缓慢 IV，100 tick */
-            StatusEffectInstance slowness = new StatusEffectInstance(
-                    StatusEffects.SLOWNESS,   // 缓慢
+            MobEffectInstance slowness = new MobEffectInstance(
+                    MobEffects.SLOWNESS,   // 缓慢
                     7 * 20,                      // 持续时间
                     9,                        // amplifier = 3 → 等级 IV
                     false,                    // 是否来自信标
                     true,                     // 显示粒子
                     true                      // 显示图标
             );
-            StatusEffectInstance stun = new StatusEffectInstance(
+            MobEffectInstance stun = new MobEffectInstance(
                     ModEffects.STUN_ENTRY,
                     20,
                     0,
@@ -39,19 +38,19 @@ public class SbSw {
                     true                      // 显示图标
             );
             /* 半径立方体 */
-            Box box = user.getBoundingBox().expand(range, range, range);
-            List<Entity> targets = world.getOtherEntities(user, box,
+            AABB box = user.getBoundingBox().inflate(range, range, range);
+            List<Entity> targets = world.getEntities(user, box,
                     e -> e instanceof LivingEntity         // 只选生物
                             && !e.isSpectator()                   // 忽略旁观
                             && !e.isInvulnerable());              // 忽略无敌
 
 
             for (Entity e : targets) {
-                if (user.isTeammate(e)) {
+                if (user.isAlliedTo(e)) {
                     continue;
                 }
-                ((LivingEntity)e).addStatusEffect(slowness, user);
-                ((LivingEntity)e).addStatusEffect(stun, user);
+                ((LivingEntity)e).addEffect(slowness, user);
+                ((LivingEntity)e).addEffect(stun, user);
             }
         }
     }

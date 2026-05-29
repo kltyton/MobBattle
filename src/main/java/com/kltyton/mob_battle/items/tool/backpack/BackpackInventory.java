@@ -1,16 +1,15 @@
 package com.kltyton.mob_battle.items.tool.backpack;
 
 import com.kltyton.mob_battle.components.ModComponents;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.ContainerComponent;
-import net.minecraft.inventory.SimpleInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.collection.DefaultedList;
-
 import java.util.ArrayList;
 import java.util.List;
+import net.minecraft.core.NonNullList;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.ItemContainerContents;
 
-public class BackpackInventory extends SimpleInventory {
+public class BackpackInventory extends SimpleContainer {
     private final ItemStack stack;
     public static final int PAGE_SIZE = 54;
     public static final int MAX_PAGES = 50;
@@ -19,7 +18,7 @@ public class BackpackInventory extends SimpleInventory {
     public BackpackInventory(ItemStack stack, int slotCount) {
         super(slotCount);
         this.stack = stack;
-        DefaultedList<ItemStack> heldStacks = this.getHeldStacks();
+        NonNullList<ItemStack> heldStacks = this.getItems();
         List<ItemStack> storedStacks = stack.get(ModComponents.BACKPACK_CONTENTS);
         if (storedStacks != null) {
             int count = Math.min(storedStacks.size(), heldStacks.size());
@@ -27,31 +26,31 @@ public class BackpackInventory extends SimpleInventory {
                 heldStacks.set(i, storedStacks.get(i).copy());
             }
         } else {
-            ContainerComponent component = stack.get(DataComponentTypes.CONTAINER);
+            ItemContainerContents component = stack.get(DataComponents.CONTAINER);
             if (component != null) {
-                component.copyTo(heldStacks);
+                component.copyInto(heldStacks);
             }
         }
     }
     @Override
-    public boolean canInsert(ItemStack stack) {
+    public boolean canAddItem(ItemStack stack) {
         if (stack.getItem() instanceof BackpackItem) return false;
-        return super.canInsert(stack);
+        return super.canAddItem(stack);
     }
 
     @Override
-    public boolean isValid(int slot, ItemStack stack) {
+    public boolean canPlaceItem(int slot, ItemStack stack) {
         return !(stack.getItem() instanceof BackpackItem);
     }
 
     @Override
-    public void markDirty() {
-        super.markDirty();
-        List<ItemStack> storedStacks = new ArrayList<>(this.getHeldStacks().size());
-        for (ItemStack heldStack : this.getHeldStacks()) {
+    public void setChanged() {
+        super.setChanged();
+        List<ItemStack> storedStacks = new ArrayList<>(this.getItems().size());
+        for (ItemStack heldStack : this.getItems()) {
             storedStacks.add(heldStack.copy());
         }
         stack.set(ModComponents.BACKPACK_CONTENTS, List.copyOf(storedStacks));
-        stack.remove(DataComponentTypes.CONTAINER);
+        stack.remove(DataComponents.CONTAINER);
     }
 }

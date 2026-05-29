@@ -2,60 +2,60 @@ package com.kltyton.mob_battle.entity.cbot;
 
 import com.kltyton.mob_battle.effect.ModEffects;
 import com.kltyton.mob_battle.utils.EntityUtil;
-import net.minecraft.block.Blocks;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.MovementType;
-import net.minecraft.entity.data.DataTracker;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.entity.projectile.ProjectileEntity;
-import net.minecraft.particle.BlockStateParticleEffect;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.storage.ReadView;
-import net.minecraft.storage.WriteView;
-import net.minecraft.util.math.Box;
-import net.minecraft.world.World;
+import net.minecraft.core.particles.BlockParticleOption;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.phys.AABB;
 
-public class SnowmanIceBlockEntity extends ProjectileEntity {
+public class SnowmanIceBlockEntity extends Projectile {
     private static final int MAX_AGE = 20;
     private static final double HIT_RADIUS = 0.6D;
     private static final double EXPLOSION_RADIUS = 4.0D;
 
-    public SnowmanIceBlockEntity(EntityType<? extends SnowmanIceBlockEntity> entityType, World world) {
+    public SnowmanIceBlockEntity(EntityType<? extends SnowmanIceBlockEntity> entityType, Level world) {
         super(entityType, world);
         this.setNoGravity(true);
     }
 
     @Override
-    protected void initDataTracker(DataTracker.Builder builder) {
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
     }
 
     @Override
-    protected void readCustomData(ReadView view) {
+    protected void readAdditionalSaveData(ValueInput view) {
     }
 
     @Override
-    protected void writeCustomData(WriteView view) {
+    protected void addAdditionalSaveData(ValueOutput view) {
     }
 
     @Override
     public void tick() {
         super.tick();
-        this.move(MovementType.SELF, this.getVelocity());
-        if (this.getWorld().isClient()) {
+        this.move(MoverType.SELF, this.getDeltaMovement());
+        if (this.level().isClientSide()) {
             return;
         }
-        if (this.age >= MAX_AGE || touchesSolidBlock()) {
+        if (this.tickCount >= MAX_AGE || touchesSolidBlock()) {
             explode();
             return;
         }
         Entity owner = this.getOwner();
-        Box box = this.getBoundingBox().expand(HIT_RADIUS);
-        for (LivingEntity target : this.getWorld().getEntitiesByClass(LivingEntity.class, box,
+        AABB box = this.getBoundingBox().inflate(HIT_RADIUS);
+        for (LivingEntity target : this.level().getEntitiesOfClass(LivingEntity.class, box,
                 target -> EntityUtil.isValidSummonCombatTarget(this, owner, target))) {
             explode();
             return;
@@ -63,28 +63,28 @@ public class SnowmanIceBlockEntity extends ProjectileEntity {
     }
 
     private boolean touchesSolidBlock() {
-        return this.getWorld().getBlockState(this.getBlockPos()).isSolidBlock(this.getWorld(), this.getBlockPos());
+        return this.level().getBlockState(this.blockPosition()).isRedstoneConductor(this.level(), this.blockPosition());
     }
 
     private void explode() {
-        if (!(this.getWorld() instanceof ServerWorld world)) {
+        if (!(this.level() instanceof ServerLevel world)) {
             this.discard();
             return;
         }
         Entity owner = this.getOwner();
-        world.spawnParticles(new BlockStateParticleEffect(ParticleTypes.BLOCK, Blocks.ICE.getDefaultState()),
+        world.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, Blocks.ICE.defaultBlockState()),
                 this.getX(), this.getY(), this.getZ(), 45, 1.0D, 0.8D, 1.0D, 0.12D);
-        world.playSound(null, this.getBlockPos(), SoundEvents.BLOCK_GLASS_BREAK, this.getSoundCategory(), 1.3F, 0.7F);
-        Box box = this.getBoundingBox().expand(EXPLOSION_RADIUS);
-        for (LivingEntity target : world.getEntitiesByClass(LivingEntity.class, box,
+        world.playSound(null, this.blockPosition(), SoundEvents.GLASS_BREAK, this.getSoundSource(), 1.3F, 0.7F);
+        AABB box = this.getBoundingBox().inflate(EXPLOSION_RADIUS);
+        for (LivingEntity target : world.getEntitiesOfClass(LivingEntity.class, box,
                 target -> EntityUtil.isValidSummonCombatTarget(this, owner, target))) {
             Entity attacker = owner == null ? this : owner;
-            target.damage(world, this.getDamageSources().explosion(this, attacker), 50.0F);
-            target.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 5 * 20, 1), attacker);
+            target.hurtServer(world, this.damageSources().explosion(this, attacker), 50.0F);
+            target.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 5 * 20, 1), attacker);
             if (attacker instanceof LivingEntity livingAttacker) {
-                target.addStatusEffect(new StatusEffectInstance(ModEffects.ARMOR_PIERCING_ENTRY, 5 * 20, 1), livingAttacker);
+                target.addEffect(new MobEffectInstance(ModEffects.ARMOR_PIERCING_ENTRY, 5 * 20, 1), livingAttacker);
             } else {
-                target.addStatusEffect(new StatusEffectInstance(ModEffects.ARMOR_PIERCING_ENTRY, 5 * 20, 1));
+                target.addEffect(new MobEffectInstance(ModEffects.ARMOR_PIERCING_ENTRY, 5 * 20, 1));
             }
         }
         this.discard();

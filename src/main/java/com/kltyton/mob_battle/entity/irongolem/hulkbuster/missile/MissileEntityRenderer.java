@@ -2,51 +2,51 @@ package com.kltyton.mob_battle.entity.irongolem.hulkbuster.missile;
 
 import com.kltyton.mob_battle.Mob_battle;
 import com.kltyton.mob_battle.client.ModModel;
-import net.minecraft.client.render.OverlayTexture;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.VertexConsumer;
-import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.entity.EntityRenderer;
-import net.minecraft.client.render.entity.EntityRendererFactory;
-import net.minecraft.client.render.entity.state.ArrowEntityRenderState;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.RotationAxis;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.math.Axis;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.entity.EntityRenderer;
+import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.client.renderer.entity.state.TippableArrowRenderState;
+import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.resources.ResourceLocation;
 
-public class MissileEntityRenderer extends EntityRenderer<MissileEntity, ArrowEntityRenderState> {
-    public static final Identifier TEXTURE = Identifier.of(Mob_battle.MOD_ID, "textures/entity/projectiles/missile.png");
-    public static final Identifier TIPPED_TEXTURE = Identifier.ofVanilla("textures/entity/projectiles/missile.png");
+public class MissileEntityRenderer extends EntityRenderer<MissileEntity, TippableArrowRenderState> {
+    public static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "textures/entity/projectiles/missile.png");
+    public static final ResourceLocation TIPPED_TEXTURE = ResourceLocation.withDefaultNamespace("textures/entity/projectiles/missile.png");
     private final MissileEntityModel model;
 
-    public MissileEntityRenderer(EntityRendererFactory.Context context) {
+    public MissileEntityRenderer(EntityRendererProvider.Context context) {
         super(context);
-        this.model = new MissileEntityModel(context.getPart(ModModel.MISSILE));
+        this.model = new MissileEntityModel(context.bakeLayer(ModModel.MISSILE));
     }
     @Override
-    public void render(ArrowEntityRenderState state, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i) {
-        matrixStack.push();
-        matrixStack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(state.yaw));
-        matrixStack.multiply(RotationAxis.POSITIVE_X.rotationDegrees(state.pitch));
-        VertexConsumer vertexConsumer = vertexConsumerProvider.getBuffer(RenderLayer.getEntityCutout(this.getTexture(state)));
-        // 确保你的 setAngles 内部没有会累加旋转的操作
-        this.model.setAngles(state);
-        this.model.render(matrixStack, vertexConsumer, i, OverlayTexture.DEFAULT_UV);
+    public void render(TippableArrowRenderState state, PoseStack matrixStack, MultiBufferSource vertexConsumerProvider, int i) {
+        matrixStack.pushPose();
+        matrixStack.mulPose(Axis.YP.rotationDegrees(state.yRot));
+        matrixStack.mulPose(Axis.XP.rotationDegrees(state.xRot));
+        VertexConsumer vertexConsumer = vertexConsumerProvider.getBuffer(RenderType.entityCutout(this.getTextureLocation(state)));
+        // 纭繚浣犵殑 setAngles 鍐呴儴娌℃湁浼氱疮鍔犳棆杞殑鎿嶄綔
+        this.model.setupAnim(state);
+        this.model.renderToBuffer(matrixStack, vertexConsumer, i, OverlayTexture.NO_OVERLAY);
 
-        matrixStack.pop();
+        matrixStack.popPose();
         super.render(state, matrixStack, vertexConsumerProvider, i);
     }
 
-    public void updateRenderState(MissileEntity persistentProjectileEntity, ArrowEntityRenderState projectileEntityRenderState, float f) {
-        super.updateRenderState(persistentProjectileEntity, projectileEntityRenderState, f);
-        projectileEntityRenderState.pitch = persistentProjectileEntity.getLerpedPitch(f);
-        projectileEntityRenderState.yaw = persistentProjectileEntity.getLerpedYaw(f);
+    public void extractRenderState(MissileEntity persistentProjectileEntity, TippableArrowRenderState projectileEntityRenderState, float f) {
+        super.extractRenderState(persistentProjectileEntity, projectileEntityRenderState, f);
+        projectileEntityRenderState.xRot = persistentProjectileEntity.getXRot(f);
+        projectileEntityRenderState.yRot = persistentProjectileEntity.getYRot(f);
     }
 
-    protected Identifier getTexture(ArrowEntityRenderState arrowEntityRenderState) {
-        return arrowEntityRenderState.tipped ? TIPPED_TEXTURE : TEXTURE;
+    protected ResourceLocation getTextureLocation(TippableArrowRenderState arrowEntityRenderState) {
+        return arrowEntityRenderState.isTipped ? TIPPED_TEXTURE : TEXTURE;
     }
 
-    public ArrowEntityRenderState createRenderState() {
-        return new ArrowEntityRenderState();
+    public TippableArrowRenderState createRenderState() {
+        return new TippableArrowRenderState();
     }
 }

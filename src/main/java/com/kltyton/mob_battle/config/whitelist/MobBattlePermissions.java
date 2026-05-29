@@ -1,10 +1,10 @@
 package com.kltyton.mob_battle.config.whitelist;
 
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
 
 public final class MobBattlePermissions {
 
-    public static boolean canUseProtectedContent(ServerPlayerEntity player) {
+    public static boolean canUseProtectedContent(ServerPlayer player) {
         //return true;
         if (player == null) return false;
         // 纯白名单模式

@@ -1,23 +1,23 @@
 package com.kltyton.mob_battle.event.masterscepter;
 
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.Box;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.phys.AABB;
 
 public class SbD {
-    public static void runCommand(ServerPlayerEntity user) {
+    public static void runCommand(ServerPlayer user) {
         double range = 3.0D;
-        ServerWorld world = user.getWorld();
-        Box damageBox = user.getBoundingBox().expand(range, range, range);
-        world.getOtherEntities(user, damageBox).stream()
+        ServerLevel world = user.level();
+        AABB damageBox = user.getBoundingBox().inflate(range, range, range);
+        world.getEntities(user, damageBox).stream()
                 .filter(entity -> entity instanceof LivingEntity)
-                .filter(entity -> !entity.isTeammate(user))
+                .filter(entity -> !entity.isAlliedTo(user))
                 .filter(entity -> !entity.isSpectator() && entity.isAlive())
-                .filter(entity -> entity.squaredDistanceTo(user) <= range * range)
+                .filter(entity -> entity.distanceToSqr(user) <= range * range)
                 .forEach(entity -> {
                     if (entity != user) {
-                        entity.damage(world, entity.getDamageSources().mobAttack(user), 150F);
+                        entity.hurtServer(world, entity.damageSources().mobAttack(user), 150F);
                     }
                 });
     }

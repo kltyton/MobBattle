@@ -2,57 +2,57 @@ package com.kltyton.mob_battle.entity.villager.militia;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.render.entity.AgeableMobEntityRenderer;
-import net.minecraft.client.render.entity.EntityRendererFactory;
-import net.minecraft.client.render.entity.feature.HeadFeatureRenderer;
-import net.minecraft.client.render.entity.feature.VillagerClothingFeatureRenderer;
-import net.minecraft.client.render.entity.feature.VillagerHeldItemFeatureRenderer;
-import net.minecraft.client.render.entity.model.EntityModelLayers;
-import net.minecraft.client.render.entity.model.VillagerResemblingModel;
-import net.minecraft.client.render.entity.state.ItemHolderEntityRenderState;
-import net.minecraft.client.render.entity.state.VillagerEntityRenderState;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.util.Identifier;
-import net.minecraft.village.VillagerData;
-import net.minecraft.village.VillagerProfession;
-import net.minecraft.village.VillagerType;
+import net.minecraft.client.model.VillagerModel;
+import net.minecraft.client.model.geom.ModelLayers;
+import net.minecraft.client.renderer.entity.AgeableMobRenderer;
+import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.client.renderer.entity.layers.CrossedArmsItemLayer;
+import net.minecraft.client.renderer.entity.layers.CustomHeadLayer;
+import net.minecraft.client.renderer.entity.layers.VillagerProfessionLayer;
+import net.minecraft.client.renderer.entity.state.HoldingEntityRenderState;
+import net.minecraft.client.renderer.entity.state.VillagerRenderState;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.npc.VillagerData;
+import net.minecraft.world.entity.npc.VillagerProfession;
+import net.minecraft.world.entity.npc.VillagerType;
 
 @Environment(EnvType.CLIENT)
-public class MilitiaArcherVillagerRenderer extends AgeableMobEntityRenderer<MilitiaArcherVillager, VillagerEntityRenderState, VillagerResemblingModel> {
-    private static final Identifier TEXTURE = Identifier.ofVanilla("textures/entity/villager/villager.png");
-    public static final HeadFeatureRenderer.HeadTransformation HEAD_TRANSFORMATION = new HeadFeatureRenderer.HeadTransformation(-0.1171875F, -0.07421875F, 1.0F);
+public class MilitiaArcherVillagerRenderer extends AgeableMobRenderer<MilitiaArcherVillager, VillagerRenderState, VillagerModel> {
+    private static final ResourceLocation TEXTURE = ResourceLocation.withDefaultNamespace("textures/entity/villager/villager.png");
+    public static final CustomHeadLayer.Transforms HEAD_TRANSFORMATION = new CustomHeadLayer.Transforms(-0.1171875F, -0.07421875F, 1.0F);
 
-    public MilitiaArcherVillagerRenderer(EntityRendererFactory.Context context) {
+    public MilitiaArcherVillagerRenderer(EntityRendererProvider.Context context) {
         super(
                 context,
-                new VillagerResemblingModel(context.getPart(EntityModelLayers.VILLAGER)),
-                new VillagerResemblingModel(context.getPart(EntityModelLayers.VILLAGER_BABY)),
+                new VillagerModel(context.bakeLayer(ModelLayers.VILLAGER)),
+                new VillagerModel(context.bakeLayer(ModelLayers.VILLAGER_BABY)),
                 0.5F
         );
-        this.addFeature(new HeadFeatureRenderer<>(this, context.getEntityModels(), HEAD_TRANSFORMATION));
-        this.addFeature(new VillagerClothingFeatureRenderer<>(this, context.getResourceManager(), "villager"));
-        this.addFeature(new VillagerHeldItemFeatureRenderer<>(this));
+        this.addLayer(new CustomHeadLayer<>(this, context.getModelSet(), HEAD_TRANSFORMATION));
+        this.addLayer(new VillagerProfessionLayer<>(this, context.getResourceManager(), "villager"));
+        this.addLayer(new CrossedArmsItemLayer<>(this));
     }
 
-    public Identifier getTexture(VillagerEntityRenderState villagerEntityRenderState) {
+    public ResourceLocation getTextureLocation(VillagerRenderState villagerEntityRenderState) {
         return TEXTURE;
     }
 
-    protected float getShadowRadius(VillagerEntityRenderState villagerEntityRenderState) {
+    protected float getShadowRadius(VillagerRenderState villagerEntityRenderState) {
         float f = super.getShadowRadius(villagerEntityRenderState);
-        return villagerEntityRenderState.baby ? f * 0.5F : f;
+        return villagerEntityRenderState.isBaby ? f * 0.5F : f;
     }
 
-    public VillagerEntityRenderState createRenderState() {
-        return new VillagerEntityRenderState();
+    public VillagerRenderState createRenderState() {
+        return new VillagerRenderState();
     }
     @Override
-    public void updateRenderState(MilitiaArcherVillager villagerEntity, VillagerEntityRenderState villagerEntityRenderState, float f) {
-        super.updateRenderState(villagerEntity, villagerEntityRenderState, f);
-        ItemHolderEntityRenderState.update(villagerEntity, villagerEntityRenderState, this.itemModelResolver);
-        RegistryEntry<VillagerType> villagerTypeEntry = Registries.VILLAGER_TYPE.getOrThrow(VillagerType.SAVANNA);
-        RegistryEntry<VillagerProfession> villagerProfessionEntry = Registries.VILLAGER_PROFESSION.getOrThrow(VillagerProfession.FLETCHER);
+    public void extractRenderState(MilitiaArcherVillager villagerEntity, VillagerRenderState villagerEntityRenderState, float f) {
+        super.extractRenderState(villagerEntity, villagerEntityRenderState, f);
+        HoldingEntityRenderState.extractHoldingEntityRenderState(villagerEntity, villagerEntityRenderState, this.itemModelResolver);
+        Holder<VillagerType> villagerTypeEntry = BuiltInRegistries.VILLAGER_TYPE.getOrThrow(VillagerType.SAVANNA);
+        Holder<VillagerProfession> villagerProfessionEntry = BuiltInRegistries.VILLAGER_PROFESSION.getOrThrow(VillagerProfession.FLETCHER);
         // 设置村民为制箭师（Fletcher）和热带草原（Savanna）
         villagerEntityRenderState.villagerData = new VillagerData(
                 villagerTypeEntry, // 热带草原类型

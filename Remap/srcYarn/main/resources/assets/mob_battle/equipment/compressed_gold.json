@@ -1,0 +1,14 @@
+{
+  "layers": {
+    "humanoid": [
+      {
+        "texture": "mob_battle:material/armor/compressed_gold"
+      }
+    ],
+    "humanoid_leggings": [
+      {
+        "texture": "mob_battle:material/armor/compressed_gold"
+      }
+    ]
+  }
+}

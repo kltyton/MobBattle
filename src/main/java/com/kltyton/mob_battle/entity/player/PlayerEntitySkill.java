@@ -4,162 +4,162 @@ import com.kltyton.mob_battle.Mob_battle;
 import com.kltyton.mob_battle.effect.ModEffects;
 import com.kltyton.mob_battle.event.DataTrackersEvent;
 import com.kltyton.mob_battle.utils.EntityUtil;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.attribute.EntityAttributeInstance;
-import net.minecraft.entity.attribute.EntityAttributeModifier;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.WorldEvents;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.block.LevelEvent;
+import net.minecraft.world.phys.Vec3;
 import software.bernie.geckolib.animatable.GeoEntity;
 
 public class PlayerEntitySkill {
-    private static boolean isValidSkillTarget(ServerPlayerEntity player, LivingEntity target) {
-        return target != null && target != player && !target.getUuid().equals(player.getUuid());
+    private static boolean isValidSkillTarget(ServerPlayer player, LivingEntity target) {
+        return target != null && target != player && !target.getUUID().equals(player.getUUID());
     }
 
-    public static void canMove(ServerPlayerEntity player) {
-        player.getDataTracker().set(DataTrackersEvent.CAN_MOVE, true);
+    public static void canMove(ServerPlayer player) {
+        player.getEntityData().set(DataTrackersEvent.CAN_MOVE, true);
     }
-    public static void stopSkill(ServerPlayerEntity player) {
-        player.getDataTracker().set(DataTrackersEvent.HAS_SKILL, false);
+    public static void stopSkill(ServerPlayer player) {
+        player.getEntityData().set(DataTrackersEvent.HAS_SKILL, false);
     }
-    public static void runAttackSkill(ServerPlayerEntity player) {
+    public static void runAttackSkill(ServerPlayer player) {
         EntityUtil.getNearbyEntity(player, LivingEntity.class, 8, false, EntityUtil.TeamFilter.EXCLUDE_TEAM).forEach(livingEntity -> {
             if (!isValidSkillTarget(player, livingEntity)) return;
-            livingEntity.damage(player.getWorld(), player.getDamageSources().playerAttack(player), 130);
-            livingEntity.takeKnockback(1.5, player.getX() - livingEntity.getX(), player.getZ() - livingEntity.getZ());
+            livingEntity.hurtServer(player.level(), player.damageSources().playerAttack(player), 130);
+            livingEntity.knockback(1.5, player.getX() - livingEntity.getX(), player.getZ() - livingEntity.getZ());
         });
     }
-    public static void runAttackSkill_2(ServerPlayerEntity player) {
+    public static void runAttackSkill_2(ServerPlayer player) {
         EntityUtil.getNearbyEntity(player, LivingEntity.class, 8, false, EntityUtil.TeamFilter.EXCLUDE_TEAM).forEach(livingEntity -> {
             if (!isValidSkillTarget(player, livingEntity)) return;
-            livingEntity.damage(player.getWorld(), player.getDamageSources().playerAttack(player), 150);
-            livingEntity.takeKnockback(1.5, player.getX() - livingEntity.getX(), player.getZ() - livingEntity.getZ());
+            livingEntity.hurtServer(player.level(), player.damageSources().playerAttack(player), 150);
+            livingEntity.knockback(1.5, player.getX() - livingEntity.getX(), player.getZ() - livingEntity.getZ());
         });
     }
-    public static void runAttackSkill_2Run(ServerPlayerEntity player) {
+    public static void runAttackSkill_2Run(ServerPlayer player) {
         ((IPlayerSkillAccessor)player).mobBattle$runAttack("attack2", false);
     }
 
 
-    public static void runUpperHookSkill(ServerPlayerEntity player) {
+    public static void runUpperHookSkill(ServerPlayer player) {
         EntityUtil.getNearbyEntity(player, LivingEntity.class, 8, false, EntityUtil.TeamFilter.EXCLUDE_TEAM).forEach(livingEntity -> {
             if (!isValidSkillTarget(player, livingEntity)) return;
-            livingEntity.damage(player.getWorld(), player.getDamageSources().playerAttack(player), 160);
-            livingEntity.takeKnockback(1.5, player.getX() - livingEntity.getX(), player.getZ() - livingEntity.getZ());
+            livingEntity.hurtServer(player.level(), player.damageSources().playerAttack(player), 160);
+            livingEntity.knockback(1.5, player.getX() - livingEntity.getX(), player.getZ() - livingEntity.getZ());
         });
     }
-    public static void runTopKneeSkill(ServerPlayerEntity player) {
+    public static void runTopKneeSkill(ServerPlayer player) {
         LivingEntity livingEntity = EntityUtil.getClosestNearbyEntity(player, LivingEntity.class, 8, EntityUtil.TeamFilter.EXCLUDE_TEAM);
         if (isValidSkillTarget(player, livingEntity)) {
-            livingEntity.damage(player.getWorld(), player.getDamageSources().playerAttack(player), 120);
-            livingEntity.addStatusEffect(new StatusEffectInstance(ModEffects.STUN_ENTRY, 2 * 20));
-            livingEntity.takeKnockback(1.5, player.getX() - livingEntity.getX(), player.getZ() - livingEntity.getZ());
-            livingEntity.velocityDirty = true;
-            livingEntity.setVelocity(livingEntity.getVelocity().x, 1.5, livingEntity.getVelocity().z);
+            livingEntity.hurtServer(player.level(), player.damageSources().playerAttack(player), 120);
+            livingEntity.addEffect(new MobEffectInstance(ModEffects.STUN_ENTRY, 2 * 20));
+            livingEntity.knockback(1.5, player.getX() - livingEntity.getX(), player.getZ() - livingEntity.getZ());
+            livingEntity.hasImpulse = true;
+            livingEntity.setDeltaMovement(livingEntity.getDeltaMovement().x, 1.5, livingEntity.getDeltaMovement().z);
         }
     }
-    public static void runTopKneeSkillRun(ServerPlayerEntity player) {
+    public static void runTopKneeSkillRun(ServerPlayer player) {
         ((IPlayerSkillAccessor)player).mobBattle$runAttack("top_knee", false);
     }
 
 
 
 
-    public static void runCollisionSkillRun(ServerPlayerEntity player) {
+    public static void runCollisionSkillRun(ServerPlayer player) {
         ((IPlayerSkillAccessor)player).mobBattle$runAttack("collision", false);
     }
     // 供 Networking 调用，实际上逻辑由 Mixin 的 Tick 接管
-    public static void startCollisionSkillState(ServerPlayerEntity player) {
+    public static void startCollisionSkillState(ServerPlayer player) {
         ((IPlayerSkillAccessor)player).mobBattle$startCollision();
     }
-    public static void stopCollisionSkillState(ServerPlayerEntity player) {
+    public static void stopCollisionSkillState(ServerPlayer player) {
         ((IPlayerSkillAccessor)player).mobBattle$stopCollision();
     }
 
 
 
-    public static void runLeftWhipSkill(ServerPlayerEntity player) {
+    public static void runLeftWhipSkill(ServerPlayer player) {
         LivingEntity livingEntity = EntityUtil.getClosestNearbyEntity(player, LivingEntity.class, 8, EntityUtil.TeamFilter.EXCLUDE_TEAM);
         if (isValidSkillTarget(player, livingEntity)) {
-            livingEntity.damage(player.getWorld(), player.getDamageSources().playerAttack(player), 120);
-            livingEntity.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 5 * 20, 4));
-            livingEntity.takeKnockback(1.5, player.getX() - livingEntity.getX(), player.getZ() - livingEntity.getZ());
+            livingEntity.hurtServer(player.level(), player.damageSources().playerAttack(player), 120);
+            livingEntity.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 5 * 20, 4));
+            livingEntity.knockback(1.5, player.getX() - livingEntity.getX(), player.getZ() - livingEntity.getZ());
         }
     }
-    public static void runLeftWhipSkillRun(ServerPlayerEntity player) {
+    public static void runLeftWhipSkillRun(ServerPlayer player) {
         ((IPlayerSkillAccessor)player).mobBattle$runAttack("left_whip", false);
     }
 
 
 
 
-    public static void runJumpSkill(ServerPlayerEntity player) {
-        player.velocityDirty = true;
-        player.addVelocity(0, 1.3, 0);
-        EntityAttributeInstance gravity = player.getAttributeInstance(EntityAttributes.GRAVITY);
+    public static void runJumpSkill(ServerPlayer player) {
+        player.hasImpulse = true;
+        player.push(0, 1.3, 0);
+        AttributeInstance gravity = player.getAttribute(Attributes.GRAVITY);
         if (gravity != null) {
-            EntityAttributeModifier gravityModifier = new EntityAttributeModifier(
-                    Identifier.of(Mob_battle.MOD_ID, "player_jump_skill_gravity_modifier"),
+            AttributeModifier gravityModifier = new AttributeModifier(
+                    ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "player_jump_skill_gravity_modifier"),
                     1.5,
-                    EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE
+                    AttributeModifier.Operation.ADD_MULTIPLIED_BASE
             );
-            gravity.addTemporaryModifier(gravityModifier);
+            gravity.addTransientModifier(gravityModifier);
         }
         ((IPlayerSkillAccessor)player).mobBattle$setCanMove(true);
     }
-    public static void runSmashGroundSkillRun(ServerPlayerEntity player) {
+    public static void runSmashGroundSkillRun(ServerPlayer player) {
         ((IPlayerSkillAccessor)player).mobBattle$runAttack("smashing_the_ground", false);
     }
-    public static void runSmashGroundSkill(ServerPlayerEntity player) {
-        ServerWorld world = player.getWorld();
+    public static void runSmashGroundSkill(ServerPlayer player) {
+        ServerLevel world = player.level();
         ((IPlayerSkillAccessor)player).mobBattle$setCanMove(false);
         // 8 格范围搜索
         EntityUtil.getNearbyEntity(player, LivingEntity.class, 8, false, EntityUtil.TeamFilter.EXCLUDE_TEAM).forEach(target -> {
             // 1. 造成 350 点巨额伤害
             if (!isValidSkillTarget(player, target)) return;
-            target.damage(world, player.getDamageSources().playerAttack(player), 300f);
-            target.takeKnockback(5.0, player.getX() - target.getX(), player.getZ() - target.getZ());
+            target.hurtServer(world, player.damageSources().playerAttack(player), 300f);
+            target.knockback(5.0, player.getX() - target.getX(), player.getZ() - target.getZ());
         });
 
-        world.syncWorldEvent(WorldEvents.SMASH_ATTACK, player.getSteppingPos(), 750);
+        world.levelEvent(LevelEvent.PARTICLES_SMASH_ATTACK, player.getOnPos(), 750);
         player.setSpawnExtraParticlesOnFall(true);  // 生成额外的坠落粒子
 
-        EntityAttributeInstance gravity = player.getAttributeInstance(EntityAttributes.GRAVITY);
+        AttributeInstance gravity = player.getAttribute(Attributes.GRAVITY);
         if (gravity != null) {
-            gravity.removeModifier(Identifier.of(Mob_battle.MOD_ID, "player_jump_skill_gravity_modifier"));
+            gravity.removeModifier(ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "player_jump_skill_gravity_modifier"));
         }
     }
 
 
 
-    public static void runRunCollisionSkillRun(ServerPlayerEntity player) {
+    public static void runRunCollisionSkillRun(ServerPlayer player) {
         if (player.isSprinting()) {
             ((IPlayerSkillAccessor)player).mobBattle$runAttack("run_collision", false);
-            Vec3d lookVec = player.getRotationVec(1.0F);
-            Vec3d velocity = new Vec3d(lookVec.x, 0, lookVec.z).normalize().multiply(2.5);
-            player.setVelocity(velocity.x, player.getVelocity().y + 0.22, velocity.z);
-            player.velocityDirty = true;
+            Vec3 lookVec = player.getViewVector(1.0F);
+            Vec3 velocity = new Vec3(lookVec.x, 0, lookVec.z).normalize().scale(2.5);
+            player.setDeltaMovement(velocity.x, player.getDeltaMovement().y + 0.22, velocity.z);
+            player.hasImpulse = true;
         }
     }
-    public static void runRunCollisionSkill(ServerPlayerEntity player) {
+    public static void runRunCollisionSkill(ServerPlayer player) {
         EntityUtil.getNearbyEntity(player, LivingEntity.class, 8, false, EntityUtil.TeamFilter.EXCLUDE_TEAM).forEach(livingEntity -> {
             if (isValidSkillTarget(player, livingEntity)) {
-                livingEntity.damage(player.getWorld(), player.getDamageSources().playerAttack(player), 210);
-                livingEntity.addStatusEffect(new StatusEffectInstance(ModEffects.STUN_ENTRY, 2 * 20));
-                if (livingEntity instanceof PlayerEntity) {
-                    livingEntity.takeKnockback(1.2, player.getX() - livingEntity.getX(), player.getZ() - livingEntity.getZ());
-                    livingEntity.setVelocity(livingEntity.getVelocity().x, Math.max(livingEntity.getVelocity().y, 0.35), livingEntity.getVelocity().z);
-                    livingEntity.velocityDirty = true;
+                livingEntity.hurtServer(player.level(), player.damageSources().playerAttack(player), 210);
+                livingEntity.addEffect(new MobEffectInstance(ModEffects.STUN_ENTRY, 2 * 20));
+                if (livingEntity instanceof Player) {
+                    livingEntity.knockback(1.2, player.getX() - livingEntity.getX(), player.getZ() - livingEntity.getZ());
+                    livingEntity.setDeltaMovement(livingEntity.getDeltaMovement().x, Math.max(livingEntity.getDeltaMovement().y, 0.35), livingEntity.getDeltaMovement().z);
+                    livingEntity.hasImpulse = true;
                 } else {
-                    livingEntity.requestTeleport(livingEntity.getX(), livingEntity.getY() - 1, livingEntity.getZ());
+                    livingEntity.teleportTo(livingEntity.getX(), livingEntity.getY() - 1, livingEntity.getZ());
                 }
             }
         });
@@ -167,10 +167,10 @@ public class PlayerEntitySkill {
 
 
 
-    public static void runScrapingRun(ServerPlayerEntity player) {
+    public static void runScrapingRun(ServerPlayer player) {
         ((IPlayerSkillAccessor)player).mobBattle$runAttack("scraping", false);
     }
-    public static void runScraping(ServerPlayerEntity player) {
+    public static void runScraping(ServerPlayer player) {
         // 1. 寻找 8 格内最近的实体
         LivingEntity target = EntityUtil.getClosestNearbyEntity(player, LivingEntity.class, 8, EntityUtil.TeamFilter.EXCLUDE_TEAM);
         if (isValidSkillTarget(player, target)) {
@@ -181,50 +181,50 @@ public class PlayerEntitySkill {
             ((GeoEntity)player).triggerAnim("attack_controller", "no_scraping");
         }
     }
-    public static void runScrapingAttack(ServerPlayerEntity player) {
+    public static void runScrapingAttack(ServerPlayer player) {
         // 从 Mixin 获取被抓取的实体
         LivingEntity target = ((IPlayerSkillAccessor)player).mobBattle$getGrabbedEntity();
         if (target != null && target.isAlive() && isValidSkillTarget(player, target)) {
-            target.damage(player.getWorld(), player.getDamageSources().playerAttack(player), 135f);
+            target.hurtServer(player.level(), player.damageSources().playerAttack(player), 135f);
             // 反胃 V (Nausea 5) - 10秒
-            target.addStatusEffect(new StatusEffectInstance(StatusEffects.NAUSEA, 200, 4));
+            target.addEffect(new MobEffectInstance(MobEffects.NAUSEA, 200, 4));
             // 虚弱 V (Weakness 5) - 10秒
-            target.addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS, 200, 4));
+            target.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 200, 4));
             // 黑暗 (Darkness) - 10秒
-            target.addStatusEffect(new StatusEffectInstance(StatusEffects.DARKNESS, 200, 0));
+            target.addEffect(new MobEffectInstance(MobEffects.DARKNESS, 200, 0));
             // 缓慢 I (Slowness 1) - 10秒
-            target.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 200, 0));
+            target.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 200, 0));
         }
     }
 
-    public static void runScrapingEnd(ServerPlayerEntity player) {
+    public static void runScrapingEnd(ServerPlayer player) {
         ((IPlayerSkillAccessor)player).mobBattle$setGrabbedEntity(null);
     }
 
 
 
-    public static void runRetreatStepRunSkill(ServerPlayerEntity player) {
+    public static void runRetreatStepRunSkill(ServerPlayer player) {
         ((IPlayerSkillAccessor)player).mobBattle$runAttack("retreat_step", true);
         if (((IPlayerSkillAccessor)player).mobBattle$canAttack("retreat_step")) {
             runRetreatStepSkill(player);
         }
     }
-    public static void runRetreatStepSkill(PlayerEntity player) {
+    public static void runRetreatStepSkill(Player player) {
         // 获取玩家当前朝向（yaw）
-        Vec3d viewForward = player.getRotationVec(1.0F);
+        Vec3 viewForward = player.getViewVector(1.0F);
         // 计算视角反方向（后方），只取水平分量（忽略垂直 Y），并归一化
-        Vec3d viewBack = new Vec3d(-viewForward.x, 0, -viewForward.z).normalize();
+        Vec3 viewBack = new Vec3(-viewForward.x, 0, -viewForward.z).normalize();
 
-        player.velocityDirty = true;
+        player.hasImpulse = true;
         double speed = 1.5;
 
         // 设置水平速度 + 轻微向
         double motionX = viewBack.x * speed;
         double motionZ = viewBack.z * speed;
-        player.setVelocity(motionX, 0.22, motionZ);  // 0.22 ≈ 小跳高度
+        player.setDeltaMovement(motionX, 0.22, motionZ);  // 0.22 ≈ 小跳高度
 
-        if (!player.getWorld().isClient) {
-            ((ServerWorld)(player.getWorld())).spawnParticles(
+        if (!player.level().isClientSide) {
+            ((ServerLevel)(player.level())).sendParticles(
                     ParticleTypes.CLOUD,
                     player.getX(), player.getY() + 0.8, player.getZ(),
                     12, 0.3, 0.4, 0.3, 0.05

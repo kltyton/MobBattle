@@ -4,63 +4,63 @@ import com.kltyton.mob_battle.effect.ModEffects;
 import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.entity.littleperson.archer.littlearrow.LittleArrowEntity;
 import com.kltyton.mob_battle.utils.TaskSchedulerUtil;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.attribute.DefaultAttributeContainer;
-import net.minecraft.entity.boss.BossBar;
-import net.minecraft.entity.boss.ServerBossBar;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.entity.mob.HostileEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerBossEvent;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.BossEvent;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 public class AngelCyborgEntity extends RequestedLittlePersonEntity {
-    private final ServerBossBar bossBar = new ServerBossBar(
+    private final ServerBossEvent bossBar = new ServerBossEvent(
             this.getDisplayName(),
-            BossBar.Color.PURPLE,
-            BossBar.Style.PROGRESS
+            BossEvent.BossBarColor.PURPLE,
+            BossEvent.BossBarOverlay.PROGRESS
     );
 
-    public AngelCyborgEntity(EntityType<? extends HostileEntity> entityType, World world) {
+    public AngelCyborgEntity(EntityType<? extends Monster> entityType, Level world) {
         super(entityType, world, 8);
         this.healPerSecond = 5.0F;
         this.autoSkillRange = 18.0D;
         setCooldownSeconds(12, 20, 10, 15, 20, 30, 18, 30);
     }
 
-    public static DefaultAttributeContainer.Builder createLittlePersonAttributes() {
+    public static AttributeSupplier.Builder createLittlePersonAttributes() {
         return createRequestedAttributes(12000.0D, 100.0D, 0.5D, 40.0D, 0.0D);
     }
 
     @Override
-    public void setCustomName(@Nullable Text name) {
+    public void setCustomName(@Nullable Component name) {
         super.setCustomName(name);
         this.bossBar.setName(this.getDisplayName());
     }
 
     @Override
-    public void onStartedTrackingBy(ServerPlayerEntity player) {
-        super.onStartedTrackingBy(player);
+    public void startSeenByPlayer(ServerPlayer player) {
+        super.startSeenByPlayer(player);
         this.bossBar.addPlayer(player);
     }
 
     @Override
-    public void onStoppedTrackingBy(ServerPlayerEntity player) {
-        super.onStoppedTrackingBy(player);
+    public void stopSeenByPlayer(ServerPlayer player) {
+        super.stopSeenByPlayer(player);
         this.bossBar.removePlayer(player);
     }
 
     @Override
-    protected void mobTick(ServerWorld world) {
-        super.mobTick(world);
+    protected void customServerAiStep(ServerLevel world) {
+        super.customServerAiStep(world);
         updateBossBar();
     }
 
@@ -75,7 +75,7 @@ public class AngelCyborgEntity extends RequestedLittlePersonEntity {
             return;
         }
 
-        this.bossBar.setPercent(Math.clamp(this.getHealth() / this.getMaxHealth(), 0.0F, 1.0F));
+        this.bossBar.setProgress(Math.clamp(this.getHealth() / this.getMaxHealth(), 0.0F, 1.0F));
         this.bossBar.setName(this.getDisplayName());
     }
 
@@ -144,13 +144,13 @@ public class AngelCyborgEntity extends RequestedLittlePersonEntity {
             return;
         }
 
-        target.addStatusEffect(new StatusEffectInstance(StatusEffects.POISON, 10 * 20, 2), this);
-        target.addStatusEffect(new StatusEffectInstance(StatusEffects.NAUSEA, 10 * 20, 2), this);
-        target.addStatusEffect(new StatusEffectInstance(StatusEffects.WITHER, 10 * 20, 2), this);
-        target.addStatusEffect(new StatusEffectInstance(StatusEffects.HUNGER, 10 * 20, 2), this);
-        target.addStatusEffect(new StatusEffectInstance(StatusEffects.DARKNESS, 10 * 20, 2), this);
-        target.addStatusEffect(new StatusEffectInstance(ModEffects.ARMOR_PIERCING_ENTRY, 10 * 20, 2), this);
-        target.addStatusEffect(new StatusEffectInstance(ModEffects.VOID_ARMOR_PIERCING_ENTRY, 10 * 20, 2), this);
+        target.addEffect(new MobEffectInstance(MobEffects.POISON, 10 * 20, 2), this);
+        target.addEffect(new MobEffectInstance(MobEffects.NAUSEA, 10 * 20, 2), this);
+        target.addEffect(new MobEffectInstance(MobEffects.WITHER, 10 * 20, 2), this);
+        target.addEffect(new MobEffectInstance(MobEffects.HUNGER, 10 * 20, 2), this);
+        target.addEffect(new MobEffectInstance(MobEffects.DARKNESS, 10 * 20, 2), this);
+        target.addEffect(new MobEffectInstance(ModEffects.ARMOR_PIERCING_ENTRY, 10 * 20, 2), this);
+        target.addEffect(new MobEffectInstance(ModEffects.VOID_ARMOR_PIERCING_ENTRY, 10 * 20, 2), this);
 
         damageMagic(target, 50.0F);
     }
@@ -204,7 +204,7 @@ public class AngelCyborgEntity extends RequestedLittlePersonEntity {
         }
 
         pullTargetToFront(target, 1.4D);
-        target.addStatusEffect(new StatusEffectInstance(ModEffects.STUN_ENTRY, 40, 0), this);
+        target.addEffect(new MobEffectInstance(ModEffects.STUN_ENTRY, 40, 0), this);
         damagePhysical(target, 200.0F);
     }
 
@@ -221,8 +221,8 @@ public class AngelCyborgEntity extends RequestedLittlePersonEntity {
      * 向上跳起。
      */
     private void runAttack9() {
-        this.setVelocity(this.getVelocity().x, 0.8D, this.getVelocity().z);
-        this.velocityModified = true;
+        this.setDeltaMovement(this.getDeltaMovement().x, 0.8D, this.getDeltaMovement().z);
+        this.hurtMarked = true;
     }
 
     /**
@@ -235,7 +235,7 @@ public class AngelCyborgEntity extends RequestedLittlePersonEntity {
 
     private void shootCyborgArrow() {
         LivingEntity target = this.getTarget();
-        if (target == null || !isValidSummonTarget(target) || !(this.getWorld() instanceof ServerWorld world)) {
+        if (target == null || !isValidSummonTarget(target) || !(this.level() instanceof ServerLevel world)) {
             return;
         }
 
@@ -247,13 +247,13 @@ public class AngelCyborgEntity extends RequestedLittlePersonEntity {
                 null
         );
 
-        arrow.setDamage(100.0D);
+        arrow.setBaseDamage(100.0D);
         arrow.setTrueDamage(true, false);
 
-        Vec3d velocity = target.getEyePos().subtract(this.getEyePos());
-        arrow.setVelocity(velocity.x, velocity.y, velocity.z, 1.8F, 0.01F);
+        Vec3 velocity = target.getEyePosition().subtract(this.getEyePosition());
+        arrow.shoot(velocity.x, velocity.y, velocity.z, 1.8F, 0.01F);
 
-        world.spawnEntity(arrow);
+        world.addFreshEntity(arrow);
 
         TaskSchedulerUtil.runLater(5 * 20, () -> {
             if (!arrow.isRemoved()) {
@@ -261,6 +261,6 @@ public class AngelCyborgEntity extends RequestedLittlePersonEntity {
             }
         });
 
-        this.playSound(SoundEvents.ENTITY_SNOW_GOLEM_SHOOT, 1.0F, 0.8F);
+        this.playSound(SoundEvents.SNOW_GOLEM_SHOOT, 1.0F, 0.8F);
     }
 }

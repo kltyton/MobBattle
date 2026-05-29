@@ -1,7 +1,7 @@
 package com.kltyton.mob_battle.mixin.invisibility;
 
 import com.kltyton.mob_battle.accessor.IModEntityRenderState;
-import net.minecraft.entity.Entity;
+import net.minecraft.world.entity.Entity;
 import org.spongepowered.asm.mixin.Implements;
 import org.spongepowered.asm.mixin.Interface;
 import org.spongepowered.asm.mixin.Mixin;

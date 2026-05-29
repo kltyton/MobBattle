@@ -1,14 +1,14 @@
 package com.kltyton.mob_battle.mixin.maxstack;
 
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.item.ItemStack;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
-@Mixin(DrawContext.class)
+@Mixin(GuiGraphics.class)
 public class DrawContextMixin {
     /**
     * {@code @作者Lonkachu}
@@ -17,8 +17,8 @@ public class DrawContextMixin {
     * ModifyVariable是本节的最佳选择，因为此方法恰好包含一个仅在块文本未覆盖时才使用的字符串，非常简便
      */
 
-    @ModifyVariable(method = "drawStackOverlay(Lnet/minecraft/client/font/TextRenderer;Lnet/minecraft/item/ItemStack;IILjava/lang/String;)V", at = @At("HEAD"), ordinal = 0, argsOnly = true)
-    private String modifyString(String value, TextRenderer textRenderer, ItemStack stack, int x, int y, @Nullable String countOverride) {
+    @ModifyVariable(method = "renderItemDecorations(Lnet/minecraft/client/gui/Font;Lnet/minecraft/world/item/ItemStack;IILjava/lang/String;)V", at = @At("HEAD"), ordinal = 0, argsOnly = true)
+    private String modifyString(String value, Font textRenderer, ItemStack stack, int x, int y, @Nullable String countOverride) {
         int count = stack.getCount();
         if(count > 999999999) {
             count /= 1000000000;

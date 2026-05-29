@@ -1,19 +1,19 @@
 package com.kltyton.mob_battle.effect.harmful;
 
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.entity.effect.StatusEffectCategory;
-import net.minecraft.server.world.ServerWorld;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectCategory;
+import net.minecraft.world.entity.LivingEntity;
 
-public class ProteinEffect extends StatusEffect {
+public class ProteinEffect extends MobEffect {
     public ProteinEffect() {
-        super(StatusEffectCategory.BENEFICIAL, 0xFF9999);
+        super(MobEffectCategory.BENEFICIAL, 0xFF9999);
     }
 
-    public boolean applyUpdateEffect(ServerWorld world, LivingEntity entity, int amplifier) {
-        if (!entity.getWorld().isClient) {
+    public boolean applyEffectTick(ServerLevel world, LivingEntity entity, int amplifier) {
+        if (!entity.level().isClientSide) {
             int maxHeal = amplifier + 2;
-            int healAmount = entity.getRandom().nextBetween(1, maxHeal);
+            int healAmount = entity.getRandom().nextIntBetweenInclusive(1, maxHeal);
 
             entity.heal((float) healAmount);
         }
@@ -21,7 +21,7 @@ public class ProteinEffect extends StatusEffect {
     }
 
     @Override
-    public boolean canApplyUpdateEffect(int duration, int amplifier) {
+    public boolean shouldApplyEffectTickThisTick(int duration, int amplifier) {
         return duration % 20 == 0;
     }
 }

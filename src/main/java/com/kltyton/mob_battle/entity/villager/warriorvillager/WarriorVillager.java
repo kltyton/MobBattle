@@ -3,24 +3,31 @@ package com.kltyton.mob_battle.entity.villager.warriorvillager;
 import com.kltyton.mob_battle.entity.ModSkillEntityType;
 import com.kltyton.mob_battle.entity.ai.goal.GeneralProtectionVillagerGoal;
 import com.kltyton.mob_battle.entity.irongolem.ModBaseIronGolemEntity;
-import net.minecraft.block.BlockState;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.entity.*;
-import net.minecraft.entity.ai.goal.SwimGoal;
-import net.minecraft.entity.ai.pathing.EntityNavigation;
-import net.minecraft.entity.ai.pathing.MobNavigation;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.passive.GolemEntity;
-import net.minecraft.entity.passive.IronGolemEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundEvent;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.random.Random;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.Difficulty;
-import net.minecraft.world.ServerWorldAccess;
-import net.minecraft.world.World;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityEvent;
+import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.goal.FloatGoal;
+import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
+import net.minecraft.world.entity.ai.navigation.PathNavigation;
+import net.minecraft.world.entity.animal.AbstractGolem;
+import net.minecraft.world.entity.animal.IronGolem;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.block.state.BlockState;
 import software.bernie.geckolib.animatable.GeoEntity;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.animatable.manager.AnimatableManager;
@@ -33,43 +40,41 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 import java.util.List;
 
 // 近战村民
-public class WarriorVillager extends IronGolemEntity implements GeoEntity, ModBaseIronGolemEntity {
+public class WarriorVillager extends IronGolem implements GeoEntity, ModBaseIronGolemEntity {
     // 添加群体仇恨的检测范围（64格）
     private static final double ALERT_RANGE = 64.0;
-    public WarriorVillager(EntityType<? extends IronGolemEntity> entityType, World world) {
+    public WarriorVillager(EntityType<? extends IronGolem> entityType, Level world) {
         super(entityType, world);
-        this.getNavigation().setCanSwim(true);
+        this.getNavigation().setCanFloat(true);
     }
     @Override
-    public boolean tryAttack(ServerWorld world, Entity target) {
+    public boolean doHurtTarget(ServerLevel world, Entity target) {
         if (!ModSkillEntityType.canSkill(this)) return false;
-        this.attackTicksLeft = 10;
-        world.sendEntityStatus(this, EntityStatuses.PLAY_ATTACK_SOUND);
-        float f = this.getAttackDamage();
+        world.broadcastEntityEvent(this, EntityEvent.START_ATTACKING);
+        float f = (float)this.getAttributeValue(Attributes.ATTACK_DAMAGE);
         float g = (int)f > 0 ? f / 2.0F + this.random.nextInt((int)f) : f;
-        DamageSource damageSource = this.getDamageSources().mobAttack(this);
-        boolean bl = target.damage(world, damageSource, g);
+        DamageSource damageSource = this.damageSources().mobAttack(this);
+        boolean bl = target.hurtServer(world, damageSource, g);
         if (bl) {
             this.triggerAnim("attack_controller", "attack");
             // 获取目标的击退抗性
-            double d = target instanceof LivingEntity livingEntity ?
-                    livingEntity.getAttributeValue(EntityAttributes.KNOCKBACK_RESISTANCE) : 0.0;
-            // 计算实际击退效果（击退抗性会减少击飞力度）
+            double d = target instanceof LivingEntity livingEntity
+                    ? livingEntity.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE)
+                    : 0.0;
             double e = Math.max(0.0, 1.0 - d);
-            // 设置目标的速度，实现击飞效果（y轴方向增加速度）
-            target.setVelocity(target.getVelocity().add(0.1 * e, 0.0, 0.1 * e));
-            EnchantmentHelper.onTargetDamaged(world, target, damageSource);
+            target.setDeltaMovement(target.getDeltaMovement().add(0.1 * e, 0.0, 0.1 * e));
+            EnchantmentHelper.doPostAttackEffects(world, target, damageSource);
         }
         return bl;
     }
     @Override
-    public boolean damage(ServerWorld world, DamageSource source, float amount) {
-        boolean bl = super.damage(world, source, amount);
-        if (bl && !world.isClient) {
-            Entity attacker = source.getAttacker();
+    public boolean hurtServer(ServerLevel world, DamageSource source, float amount) {
+        boolean bl = super.hurtServer(world, source, amount);
+        if (bl && !world.isClientSide) {
+            Entity attacker = source.getEntity();
             // 确保攻击者是有效生物且不是铁傀儡
-            if (attacker instanceof LivingEntity) {
-                this.alertOthers((LivingEntity)attacker);
+            if (attacker instanceof LivingEntity livingAttacker) {
+                this.alertOthers(livingAttacker);
             }
         }
         return bl;
@@ -77,21 +82,21 @@ public class WarriorVillager extends IronGolemEntity implements GeoEntity, ModBa
 
     private void alertOthers(LivingEntity attacker) {
         // 获取64格范围内所有铁傀儡
-        List<IronGolemEntity> golems = this.getWorld().getEntitiesByClass(
-                IronGolemEntity.class,
-                this.getBoundingBox().expand(ALERT_RANGE),
+        List<IronGolem> golems = this.level().getEntitiesOfClass(
+                IronGolem.class,
+                this.getBoundingBox().inflate(ALERT_RANGE),
                 golem -> golem != this && golem.isAlive()
         );
 
-        for (IronGolemEntity golem : golems) {
+        for (IronGolem golem : golems) {
             // 跳过玩家创建的且攻击者是玩家的铁傀儡
-            if (attacker instanceof GolemEntity) {
+            if (attacker instanceof AbstractGolem) {
                 continue;
             }
 
             // 设置仇恨目标和愤怒时间
-            golem.setAngryAt(attacker.getUuid());
-            golem.setAngerTime(ANGER_TIME_RANGE.get(this.random));
+            golem.setPersistentAngerTarget(attacker.getUUID());
+            golem.startPersistentAngerTimer();
 
             // 立即更新目标选择
             if (golem.getTarget() != attacker) {
@@ -104,15 +109,15 @@ public class WarriorVillager extends IronGolemEntity implements GeoEntity, ModBa
     }
     @Override
     protected SoundEvent getHurtSound(DamageSource source) {
-        return SoundEvents.ENTITY_VILLAGER_HURT;
+        return SoundEvents.VILLAGER_HURT;
     }
     @Override
     protected SoundEvent getDeathSound() {
-        return SoundEvents.ENTITY_VILLAGER_DEATH;
+        return SoundEvents.VILLAGER_DEATH;
     }
 
-    public static boolean checkWarriorSpawnRules(EntityType<WarriorVillager> warriorVillagerEntityType, ServerWorldAccess world, SpawnReason spawnReason, BlockPos pos, Random random) {
-        return world.getLocalDifficulty(pos).getGlobalDifficulty() != Difficulty.PEACEFUL;
+    public static boolean checkWarriorSpawnRules(EntityType<WarriorVillager> warriorVillagerEntityType, ServerLevelAccessor world, EntitySpawnReason spawnReason, BlockPos pos, RandomSource random) {
+        return world.getCurrentDifficultyAt(pos).getDifficulty() != Difficulty.PEACEFUL;
     }
     private final AnimatableInstanceCache geoCache = GeckoLibUtil.createInstanceCache(this);
     protected static final RawAnimation IDEA_ANIM = RawAnimation.begin().thenLoop("idle");
@@ -138,14 +143,14 @@ public class WarriorVillager extends IronGolemEntity implements GeoEntity, ModBa
         return this.geoCache;
     }
     @Override
-    protected void initGoals() {
-        super.initGoals();
-        this.goalSelector.add(0, new SwimGoal(this)); // 添加游泳AI
-        this.targetSelector.add(1, new GeneralProtectionVillagerGoal(this));
+    protected void registerGoals() {
+        super.registerGoals();
+        this.goalSelector.addGoal(0, new FloatGoal(this)); // 添加游泳AI
+        this.targetSelector.addGoal(1, new GeneralProtectionVillagerGoal(this));
     }
     @Override
-    protected EntityNavigation createNavigation(World world) {
-        return new MobNavigation(this, world); // 允许基础游泳
+    protected PathNavigation createNavigation(Level world) {
+        return new GroundPathNavigation(this, world); // 允许基础游泳
     }
 
 }

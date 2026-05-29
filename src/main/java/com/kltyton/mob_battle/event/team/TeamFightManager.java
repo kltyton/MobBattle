@@ -1,21 +1,21 @@
 package com.kltyton.mob_battle.event.team;
 
 import java.util.*;
-import net.minecraft.scoreboard.Team;
+import net.minecraft.world.scores.PlayerTeam;
 
 public class TeamFightManager {
-    private static final Map<Team, Team> FIGHTING_TEAMS = new HashMap<>();
-    private static final Set<Team> ACTIVE_TEAMS = new HashSet<>();
+    private static final Map<PlayerTeam, PlayerTeam> FIGHTING_TEAMS = new HashMap<>();
+    private static final Set<PlayerTeam> ACTIVE_TEAMS = new HashSet<>();
 
-    public static void startTeamFight(Team team1, Team team2) {
+    public static void startTeamFight(PlayerTeam team1, PlayerTeam team2) {
         FIGHTING_TEAMS.put(team1, team2);
         FIGHTING_TEAMS.put(team2, team1);
         ACTIVE_TEAMS.add(team1);
         ACTIVE_TEAMS.add(team2);
     }
 
-    public static void stopTeamFight(Team team) {
-        Team opponent = FIGHTING_TEAMS.remove(team);
+    public static void stopTeamFight(PlayerTeam team) {
+        PlayerTeam opponent = FIGHTING_TEAMS.remove(team);
         if (opponent != null) {
             FIGHTING_TEAMS.remove(opponent);
             ACTIVE_TEAMS.remove(team);
@@ -23,11 +23,11 @@ public class TeamFightManager {
         }
     }
 
-    public static boolean isInFight(Team team) {
+    public static boolean isInFight(PlayerTeam team) {
         return ACTIVE_TEAMS.contains(team);
     }
 
-    public static Team getOpponent(Team team) {
+    public static PlayerTeam getOpponent(PlayerTeam team) {
         return FIGHTING_TEAMS.get(team);
     }
     public static int clearAllFights() {
@@ -40,7 +40,7 @@ public class TeamFightManager {
     // 新增调试方法（可选）
     public static String getActiveFights() {
         StringBuilder sb = new StringBuilder();
-        for (Map.Entry<Team, Team> entry : FIGHTING_TEAMS.entrySet()) {
+        for (Map.Entry<PlayerTeam, PlayerTeam> entry : FIGHTING_TEAMS.entrySet()) {
             sb.append(entry.getKey().getName())
                     .append(" vs ")
                     .append(entry.getValue().getName())

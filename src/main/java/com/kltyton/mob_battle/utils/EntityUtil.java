@@ -1,30 +1,30 @@
 package com.kltyton.mob_battle.utils;
 
 import com.kltyton.mob_battle.entity.OwnedSummon;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.Ownable;
-import net.minecraft.entity.ai.TargetPredicate;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.projectile.ProjectileEntity;
-import net.minecraft.entity.Tameable;
-import net.minecraft.scoreboard.AbstractTeam;
-import net.minecraft.scoreboard.Scoreboard;
-import net.minecraft.scoreboard.Team;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.OwnableEntity;
+import net.minecraft.world.entity.TraceableEntity;
+import net.minecraft.world.entity.ai.targeting.TargetingConditions;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.scores.PlayerTeam;
+import net.minecraft.world.scores.Scoreboard;
+import net.minecraft.world.scores.Team;
 
 public class EntityUtil {
     public static boolean isCreativeOrSpectator(Entity entity) {
-        return entity instanceof PlayerEntity player && (player.isCreative() || player.isSpectator());
+        return entity instanceof Player player && (player.isCreative() || player.isSpectator());
     }
 
     public static boolean isValidCombatTarget(LivingEntity source, LivingEntity target) {
@@ -32,7 +32,7 @@ public class EntityUtil {
                 && target != source
                 && target.isAlive()
                 && !isCreativeOrSpectator(target)
-                && !target.isTeammate(source);
+                && !target.isAlliedTo(source);
     }
 
     @Nullable
@@ -49,13 +49,13 @@ public class EntityUtil {
         if (summonOwner != null) {
             return summonOwner;
         }
-        if (entity instanceof ProjectileEntity projectile) {
+        if (entity instanceof Projectile projectile) {
             return projectile.getOwner();
         }
-        if (entity instanceof Tameable tameable) {
+        if (entity instanceof OwnableEntity tameable) {
             return tameable.getOwner();
         }
-        if (entity instanceof Ownable ownable) {
+        if (entity instanceof TraceableEntity ownable) {
             return ownable.getOwner();
         }
         return null;
@@ -65,7 +65,7 @@ public class EntityUtil {
         if (target == null || target == summon) {
             return true;
         }
-        if (target.isTeammate(summon) || summon.isTeammate(target)) {
+        if (target.isAlliedTo(summon) || summon.isAlliedTo(target)) {
             return true;
         }
 
@@ -99,7 +99,7 @@ public class EntityUtil {
 
     public static boolean shouldBlockOwnedSummonDamage(Entity damagingEntity, LivingEntity target) {
         Entity owner = getSummonOwner(damagingEntity);
-        if (owner == null && damagingEntity instanceof ProjectileEntity projectile) {
+        if (owner == null && damagingEntity instanceof Projectile projectile) {
             Entity projectileOwner = projectile.getOwner();
             Entity projectileOwnerSummoner = projectileOwner == null ? null : getSummonOwner(projectileOwner);
             return projectileOwnerSummoner != null && isFriendlyToSummon(projectileOwner, projectileOwnerSummoner, target);
@@ -111,7 +111,7 @@ public class EntityUtil {
     }
 
     private static boolean isSameOrTeammate(Entity target, Entity owner) {
-        return target == owner || target.isTeammate(owner) || owner.isTeammate(target);
+        return target == owner || target.isAlliedTo(owner) || owner.isAlliedTo(target);
     }
 
     /**
@@ -121,19 +121,19 @@ public class EntityUtil {
      */
     public static void joinSameTeam(Entity targetA, Entity sourceB) {
         // 1. 获取参考实体 B 的队伍
-        AbstractTeam abstractTeam = sourceB.getScoreboardTeam();
+        Team abstractTeam = sourceB.getTeam();
 
         // 只有当 B 确实在一个队伍中时才执行操作
-        if (abstractTeam instanceof Team team) {
-            Scoreboard scoreboard = sourceB.getWorld().getScoreboard();
+        if (abstractTeam instanceof PlayerTeam team) {
+            Scoreboard scoreboard = sourceB.level().getScoreboard();
 
             // 2. 获取实体 A 的标识符
             // 在原版记分板中，玩家使用名称，而实体使用 UUID 字符串
-            String entryA = targetA.getUuidAsString();
+            String entryA = targetA.getStringUUID();
 
             // 3. 将 A 添加到队伍中
             // 该方法会自动将 A 从之前的队伍中移除
-            scoreboard.addScoreHolderToTeam(entryA, team);
+            scoreboard.addPlayerToTeam(entryA, team);
         }
     }
 
@@ -180,7 +180,7 @@ public class EntityUtil {
         return getNearbyEntity(center, clazz, filterClass, radius, includeSelf, teamFilter, null, null);
     }
 
-    public static <T extends LivingEntity> List<T> getNearbyEntity(LivingEntity center, Class<T> clazz, Class<?> filterClass, Box box, boolean includeSelf, TeamFilter teamFilter, TargetPredicate targetPredicate) {
+    public static <T extends LivingEntity> List<T> getNearbyEntity(LivingEntity center, Class<T> clazz, Class<?> filterClass, AABB box, boolean includeSelf, TeamFilter teamFilter, TargetingConditions targetPredicate) {
         return getNearbyEntity(center, clazz, filterClass,1, box, includeSelf, teamFilter, null, targetPredicate);
     }
 
@@ -199,37 +199,37 @@ public class EntityUtil {
         return getNearbyEntity(center, clazz, Object.class, radius, includeSelf, teamFilter);
     }
 
-    public static <T extends LivingEntity> List<T> getNearbyEntity(LivingEntity center, Class<T> clazz, double radius, boolean includeSelf, TeamFilter teamFilter, TargetPredicate targetPredicate) {
+    public static <T extends LivingEntity> List<T> getNearbyEntity(LivingEntity center, Class<T> clazz, double radius, boolean includeSelf, TeamFilter teamFilter, TargetingConditions targetPredicate) {
         return getNearbyEntity(center, clazz, Object.class, radius, includeSelf, teamFilter, null, targetPredicate);
     }
 
     public static <T extends LivingEntity> List<T> getNearbyEntity(LivingEntity center, Class<T> clazz, double radius, boolean includeSelf, TeamFilter teamFilter, Predicate<T> extraPredicate) {
         return getNearbyEntity(center, clazz, Object.class, radius, includeSelf, teamFilter, extraPredicate, null);
     }
-    public static <T extends LivingEntity> List<T> getNearbyEntity(LivingEntity center, Class<T> clazz, Class<?> filterClass, double radius, boolean includeSelf, TeamFilter teamFilter, Predicate<T> extraPredicate, TargetPredicate targetPredicate) {
+    public static <T extends LivingEntity> List<T> getNearbyEntity(LivingEntity center, Class<T> clazz, Class<?> filterClass, double radius, boolean includeSelf, TeamFilter teamFilter, Predicate<T> extraPredicate, TargetingConditions targetPredicate) {
         return EntityUtil.getNearbyEntity(center, clazz, filterClass, radius, null, includeSelf, teamFilter, extraPredicate, targetPredicate);
     }
-    public static <T extends LivingEntity> List<T> getNearbyEntity(LivingEntity center, Class<T> clazz, Class<?> filterClass, double radius, Box box, boolean includeSelf, TeamFilter teamFilter, Predicate<T> extraPredicate, TargetPredicate targetPredicate) {
-        World world = center.getWorld();
-        if (world.isClient()) {
+    public static <T extends LivingEntity> List<T> getNearbyEntity(LivingEntity center, Class<T> clazz, Class<?> filterClass, double radius, AABB box, boolean includeSelf, TeamFilter teamFilter, Predicate<T> extraPredicate, TargetingConditions targetPredicate) {
+        Level world = center.level();
+        if (world.isClientSide()) {
             return List.of();
         }
-        ServerWorld serverWorld = (ServerWorld) world;
+        ServerLevel serverWorld = (ServerLevel) world;
         double radiusSq = radius * radius;
-        if (box == null) box = center.getBoundingBox().expand(radius);
+        if (box == null) box = center.getBoundingBox().inflate(radius);
         Predicate<T> predicate = entity -> {
             if (!entity.isAlive()) return false;
             if (isCreativeOrSpectator(entity)) return false;
             if (!includeSelf && entity == center) return false;
             if (!filterClass.isInstance(entity)) return false;
-            boolean isTeammate = entity.isTeammate(center);
+            boolean isTeammate = entity.isAlliedTo(center);
             if (teamFilter == TeamFilter.EXCLUDE_TEAM && isTeammate) return false;
             if (teamFilter == TeamFilter.ONLY_TEAM && !isTeammate) return false;
-            return entity.squaredDistanceTo(center) <= radiusSq;
+            return entity.distanceToSqr(center) <= radiusSq;
         };
 
         if (extraPredicate != null) predicate = predicate.and(extraPredicate);
-        List<T> finalEntities = world.getEntitiesByClass(clazz, box, predicate);
+        List<T> finalEntities = world.getEntitiesOfClass(clazz, box, predicate);
         if (targetPredicate != null) {
             finalEntities.removeIf(entity -> !targetPredicate.test(serverWorld, center, entity));
         }
@@ -244,13 +244,13 @@ public class EntityUtil {
         return getClosestNearbyEntity(center, clazz, radius, teamFilter, null, null);
     }
     @Nullable
-    public static <T extends LivingEntity> T getClosestNearbyEntity(LivingEntity center, Class<T> clazz, double radius, TeamFilter teamFilter, Predicate<T> extraPredicate, TargetPredicate targetPredicate) {
+    public static <T extends LivingEntity> T getClosestNearbyEntity(LivingEntity center, Class<T> clazz, double radius, TeamFilter teamFilter, Predicate<T> extraPredicate, TargetingConditions targetPredicate) {
         List<T> entities = getNearbyEntity(center, clazz, Object.class, radius, false, teamFilter, extraPredicate, targetPredicate);
         T closest = null;
         double minDistanceSq = -1.0;
 
         for (T entity : entities) {
-            double distSq = entity.squaredDistanceTo(center);
+            double distSq = entity.distanceToSqr(center);
             if (minDistanceSq == -1.0 || distSq < minDistanceSq) {
                 minDistanceSq = distSq;
                 closest = entity;
@@ -266,11 +266,11 @@ public class EntityUtil {
     public static <T extends LivingEntity> List<T> getEntitiesInCone(LivingEntity center, Class<T> clazz, double radius, float arcDegrees, TeamFilter teamFilter) {
         return getEntitiesInCone(center, clazz, radius, arcDegrees, teamFilter, null, null);
     }
-    public static <T extends LivingEntity> List<T> getEntitiesInCone(LivingEntity center, Class<T> clazz, double radius, float arcDegrees, TeamFilter teamFilter, Predicate<T> extraPredicate, TargetPredicate targetPredicate) {
-        Vec3d lookDir = center.getRotationVec(1.0F);
+    public static <T extends LivingEntity> List<T> getEntitiesInCone(LivingEntity center, Class<T> clazz, double radius, float arcDegrees, TeamFilter teamFilter, Predicate<T> extraPredicate, TargetingConditions targetPredicate) {
+        Vec3 lookDir = center.getViewVector(1.0F);
         Predicate<T> basePredicate = entity -> {
-            Vec3d toEntity = entity.getPos().subtract(center.getPos()).normalize();
-            double dotProduct = lookDir.dotProduct(toEntity);
+            Vec3 toEntity = entity.position().subtract(center.position()).normalize();
+            double dotProduct = lookDir.dot(toEntity);
             double angle = Math.acos(dotProduct) * (180.0 / Math.PI);
             return angle <= (arcDegrees / 2.0);
         };
@@ -297,10 +297,10 @@ public class EntityUtil {
      * @param requireGround   是否要求底部有固体方块支撑（true=避免生成在空中直接掉落）
      * @return Optional<Vec3d> 安全位置，如果未找到返回 empty（调用方可自行 fallback）
      */
-    public static Optional<Vec3d> findSafeSpawnPosition(
-            ServerWorld world,
+    public static Optional<Vec3> findSafeSpawnPosition(
+            ServerLevel world,
             Entity entityTemplate,
-            Vec3d center,
+            Vec3 center,
             double horizontalRange,
             double verticalRange,
             int maxAttempts,
@@ -312,23 +312,23 @@ public class EntityUtil {
             double offsetZ = (world.random.nextDouble() - 0.5) * horizontalRange * 2;
             double offsetY = (world.random.nextDouble() - 0.5) * verticalRange * 2; // 垂直范围通常较小
 
-            Vec3d candidatePos = center.add(offsetX, offsetY, offsetZ);
+            Vec3 candidatePos = center.add(offsetX, offsetY, offsetZ);
 
             // 临时设置位置以获取正确的 boundingBox
-            entityTemplate.setPosition(candidatePos);
-            Box boundingBox = entityTemplate.getBoundingBox();
+            entityTemplate.setPos(candidatePos);
+            AABB boundingBox = entityTemplate.getBoundingBox();
 
             // 检查底部是否有支撑
             boolean hasGround = true;
             if (requireGround) {
-                BlockPos bottomPos = BlockPos.ofFloored(candidatePos.x, boundingBox.minY - 0.01, candidatePos.z);
-                hasGround = world.getBlockState(bottomPos).isSolidBlock(world, bottomPos);
+                BlockPos bottomPos = BlockPos.containing(candidatePos.x, boundingBox.minY - 0.01, candidatePos.z);
+                hasGround = world.getBlockState(bottomPos).isRedstoneConductor(world, bottomPos);
             }
 
             // 空间空、无固体方块碰撞、无其他实体占用
             if (hasGround
-                    && world.isSpaceEmpty(entityTemplate, boundingBox) // 更严格的检查（考虑实体碰撞掩码）
-                    && world.getOtherEntities(entityTemplate, boundingBox).isEmpty()) {
+                    && world.noCollision(entityTemplate, boundingBox) // 更严格的检查（考虑实体碰撞掩码）
+                    && world.getEntities(entityTemplate, boundingBox).isEmpty()) {
 
                 return Optional.of(candidatePos);
             }
@@ -340,14 +340,14 @@ public class EntityUtil {
     /**
      * 重载：默认参数（水平6格，垂直±2格，尝试50次，要求地面支撑）
      */
-    public static Optional<Vec3d> findSafeSpawnPosition(ServerWorld world, Entity entityTemplate, Vec3d center) {
+    public static Optional<Vec3> findSafeSpawnPosition(ServerLevel world, Entity entityTemplate, Vec3 center) {
         return findSafeSpawnPosition(world, entityTemplate, center, 6.0, 2.0, 50, true);
     }
 
     /**
      * 重载：不要求地面支撑（飞行实体或允许短暂掉落）
      */
-    public static Optional<Vec3d> findSafeSpawnPositionNoGround(ServerWorld world, Entity entityTemplate, Vec3d center) {
+    public static Optional<Vec3> findSafeSpawnPositionNoGround(ServerLevel world, Entity entityTemplate, Vec3 center) {
         return findSafeSpawnPosition(world, entityTemplate, center, 6.0, 2.0, 50, false);
     }
 

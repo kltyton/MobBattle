@@ -5,27 +5,27 @@ import com.kltyton.mob_battle.entity.general.GeneralEntityOnlyOneSkill;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
 import com.kltyton.mob_battle.tags.ModTags;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.ai.TargetPredicate;
-import net.minecraft.entity.ai.goal.Goal;
-import net.minecraft.entity.attribute.DefaultAttributeContainer;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.data.DataTracker;
-import net.minecraft.entity.data.TrackedData;
-import net.minecraft.entity.data.TrackedDataHandlerRegistry;
-import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.entity.mob.PhantomEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.Heightmap;
-import net.minecraft.world.World;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.goal.Goal;
+import net.minecraft.world.entity.ai.targeting.TargetingConditions;
+import net.minecraft.world.entity.monster.Phantom;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.phys.Vec3;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.animatable.manager.AnimatableManager;
 import software.bernie.geckolib.animatable.processing.AnimationController;
@@ -38,44 +38,44 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 import java.util.Comparator;
 import java.util.List;
 
-public class SilencePhantomEntity extends PhantomEntity implements  GeneralEntityOnlyOneSkill<SilencePhantomEntity> {
-    public static final TrackedData<Boolean> HAS_SKILL = DataTracker.registerData(SilencePhantomEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
-    public SilencePhantomEntity(EntityType<? extends PhantomEntity> entityType, World world) {
+public class SilencePhantomEntity extends Phantom implements  GeneralEntityOnlyOneSkill<SilencePhantomEntity> {
+    public static final EntityDataAccessor<Boolean> HAS_SKILL = SynchedEntityData.defineId(SilencePhantomEntity.class, EntityDataSerializers.BOOLEAN);
+    public SilencePhantomEntity(EntityType<? extends Phantom> entityType, Level world) {
         super(entityType, world);
-        this.setAiDisabled(false);
+        this.setNoAi(false);
         this.setHasSkill(false);
     }
     @Override
-    public boolean tryAttack(ServerWorld world, Entity target) {
+    public boolean doHurtTarget(ServerLevel world, Entity target) {
         if (!ModSkillEntityType.canSkill(this)) return false;
-        return super.tryAttack(world, target);
+        return super.doHurtTarget(world, target);
     }
     @Override
     public boolean hasSkill() {
-        return getDataTracker().get(HAS_SKILL);
+        return getEntityData().get(HAS_SKILL);
     }
     @Override
     public void setHasSkill(boolean hasSkill) {
-        getDataTracker().set(HAS_SKILL, hasSkill);
+        getEntityData().set(HAS_SKILL, hasSkill);
     }
 
     @Override
     public boolean canSkill() {
         if (!ModSkillEntityType.canSkill(this)) return false;
-        return !this.getWorld().isClient() && !hasSkill() && this.getTarget() != null;
+        return !this.level().isClientSide() && !hasSkill() && this.getTarget() != null;
     }
     public void performSkill() {
         this.setHasSkill(true);
-        this.setAiDisabled(true);
-        this.movementType = PhantomMovementType.CIRCLE;
+        this.setNoAi(true);
+        this.attackPhase = Phantom.AttackPhase.CIRCLE;
         this.triggerAnim("attack_controller", "attack");
     }
     @Override
     public void tick() {
         super.tick();
-        if (!this.getWorld().isClient()) {
+        if (!this.level().isClientSide()) {
             if (!hasSkill()) {
-                this.setAiDisabled(false);
+                this.setNoAi(false);
             }
         }
     }
@@ -92,9 +92,9 @@ public class SilencePhantomEntity extends PhantomEntity implements  GeneralEntit
                 })
                         .triggerableAnim("attack", ATTACK_ANIM)
                         .setCustomInstructionKeyframeHandler(s -> {
-                            PlayerEntity player = ClientUtil.getClientPlayer();
+                            Player player = ClientUtil.getClientPlayer();
                             if ("runAttack;".equals(s.keyframeData().getInstructions())) {
-                                player.playSound(SoundEvents.BLOCK_ANVIL_LAND, 1.0F, 1.0F);
+                                player.playSound(SoundEvents.ANVIL_LAND, 1.0F, 1.0F);
                                 ClientPlayNetworking.send(new SkillPayload(
                                         "attack", this.getId()
                                 ));
@@ -114,20 +114,20 @@ public class SilencePhantomEntity extends PhantomEntity implements  GeneralEntit
         }
     }
     @Override
-    protected void initDataTracker(DataTracker.Builder builder) {
-        super.initDataTracker(builder);
-        builder.add(HAS_SKILL, false);
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(HAS_SKILL, false);
     }
     @Override
-    protected void initGoals() {
-        this.goalSelector.add(1, new SilencePhantomEntity.StartAttackGoal());
-        this.goalSelector.add(3, new SilencePhantomEntity.CircleMovementGoal());
-        this.targetSelector.add(1, new SilencePhantomEntity.FindTargetGoal());
+    protected void registerGoals() {
+        this.goalSelector.addGoal(1, new SilencePhantomEntity.StartAttackGoal());
+        this.goalSelector.addGoal(3, new SilencePhantomEntity.CircleMovementGoal());
+        this.targetSelector.addGoal(1, new SilencePhantomEntity.FindTargetGoal());
     }
     @Override
-    public void takeKnockback(double strength, double x, double z) {
-        if (!hasSkill() || !this.isAiDisabled()) {
-            super.takeKnockback(strength, x, z);
+    public void knockback(double strength, double x, double z) {
+        if (!hasSkill() || !this.isNoAi()) {
+            super.knockback(strength, x, z);
         }
     }
     @Override
@@ -138,18 +138,18 @@ public class SilencePhantomEntity extends PhantomEntity implements  GeneralEntit
     @Override
     public void runSkill(SilencePhantomEntity entity) {
         LivingEntity target = entity.getTarget();
-        if (target == null || entity.getWorld().isClient) return;
-        World world = entity.getWorld();
-        if (!(world instanceof ServerWorld serverWorld)) return;
-        Vec3d startPos = entity.getEyePos();
-        Vec3d targetPos = target.getEyePos();
-        Vec3d direction = targetPos.subtract(startPos).normalize();
-        world.playSound(null, entity.getBlockPos(),
-                SoundEvents.ENTITY_WARDEN_SONIC_CHARGE, SoundCategory.HOSTILE, 3.0f, 1.0f);
+        if (target == null || entity.level().isClientSide) return;
+        Level world = entity.level();
+        if (!(world instanceof ServerLevel serverWorld)) return;
+        Vec3 startPos = entity.getEyePosition();
+        Vec3 targetPos = target.getEyePosition();
+        Vec3 direction = targetPos.subtract(startPos).normalize();
+        world.playSound(null, entity.blockPosition(),
+                SoundEvents.WARDEN_SONIC_CHARGE, SoundSource.HOSTILE, 3.0f, 1.0f);
         double distance = startPos.distanceTo(targetPos);
         for (int i = 0; i < (int) distance; i++) {
-            Vec3d particlePos = startPos.add(direction.multiply(i));
-            serverWorld.spawnParticles(
+            Vec3 particlePos = startPos.add(direction.scale(i));
+            serverWorld.sendParticles(
                     ParticleTypes.SONIC_BOOM,
                     particlePos.x, particlePos.y, particlePos.z,
                     1, 0.0, 0.0, 0.0, 0.0
@@ -157,78 +157,82 @@ public class SilencePhantomEntity extends PhantomEntity implements  GeneralEntit
         }
 
         if (distance <= 120.0) {
-            target.takeKnockback(1.5, -direction.x, -direction.z);
-            target.damage(serverWorld,
-                    world.getDamageSources().sonicBoom(entity),
+            target.knockback(1.5, -direction.x, -direction.z);
+            target.hurtServer(serverWorld,
+                    world.damageSources().sonicBoom(entity),
                     20.0f // 伤害数值
             );
-            world.playSound(null, target.getBlockPos(),
-                    SoundEvents.ENTITY_WARDEN_SONIC_BOOM, SoundCategory.HOSTILE, 3.0f, 1.0f);
+            world.playSound(null, target.blockPosition(),
+                    SoundEvents.WARDEN_SONIC_BOOM, SoundSource.HOSTILE, 3.0f, 1.0f);
         }
     }
-    public static DefaultAttributeContainer.Builder createAttributes() {
-        return MobEntity.createMobAttributes()
-                .add(EntityAttributes.MAX_HEALTH, 130.0D);
+    public static AttributeSupplier.Builder createAttributes() {
+        return Mob.createMobAttributes()
+                .add(Attributes.MAX_HEALTH, 130.0D);
     }
     public class StartAttackGoal extends Goal {
         private int cooldown;
 
         @Override
-        public boolean canStart() {
+        public boolean canUse() {
             LivingEntity livingEntity = SilencePhantomEntity.this.getTarget();
-            return livingEntity != null && SilencePhantomEntity.this.testTargetPredicate(castToServerWorld(SilencePhantomEntity.this.getWorld()), livingEntity, TargetPredicate.DEFAULT);
+            return livingEntity != null && SilencePhantomEntity.this.canAttack(getServerLevel(SilencePhantomEntity.this.level()), livingEntity, TargetingConditions.DEFAULT);
         }
 
         @Override
         public void start() {
-            this.cooldown = this.getTickCount(10);
-            SilencePhantomEntity.this.movementType = SilencePhantomEntity.PhantomMovementType.CIRCLE;
+            this.cooldown = this.adjustedTickDelay(10);
+            SilencePhantomEntity.this.attackPhase = Phantom.AttackPhase.CIRCLE;
             this.startSwoop();
         }
 
         @Override
         public void stop() {
-            if (SilencePhantomEntity.this.circlingCenter != null) {
-                SilencePhantomEntity.this.circlingCenter = SilencePhantomEntity.this.getWorld()
-                        .getTopPosition(Heightmap.Type.MOTION_BLOCKING, SilencePhantomEntity.this.circlingCenter)
-                        .up(10 + SilencePhantomEntity.this.random.nextInt(20));
+            if (SilencePhantomEntity.this.anchorPoint != null) {
+                SilencePhantomEntity.this.anchorPoint = SilencePhantomEntity.this.level()
+                        .getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, SilencePhantomEntity.this.anchorPoint)
+                        .above(10 + SilencePhantomEntity.this.random.nextInt(20));
             }
         }
 
         @Override
         public void tick() {
-            if (SilencePhantomEntity.this.movementType == SilencePhantomEntity.PhantomMovementType.CIRCLE) {
+            if (SilencePhantomEntity.this.attackPhase == Phantom.AttackPhase.CIRCLE) {
                 this.cooldown--;
                 if (this.cooldown <= 0) {
-                    SilencePhantomEntity.this.movementType = SilencePhantomEntity.PhantomMovementType.SWOOP;
+                    SilencePhantomEntity.this.attackPhase = Phantom.AttackPhase.SWOOP;
                     this.startSwoop();
-                    this.cooldown = this.getTickCount((8 + SilencePhantomEntity.this.random.nextInt(4)) * 20);
-                    SilencePhantomEntity.this.playSound(SoundEvents.ENTITY_PHANTOM_SWOOP, 10.0F, 0.95F + SilencePhantomEntity.this.random.nextFloat() * 0.1F);
+                    this.cooldown = this.adjustedTickDelay((8 + SilencePhantomEntity.this.random.nextInt(4)) * 20);
+                    SilencePhantomEntity.this.playSound(SoundEvents.PHANTOM_SWOOP, 10.0F, 0.95F + SilencePhantomEntity.this.random.nextFloat() * 0.1F);
                 }
             }
         }
+
         private void startSwoop() {
             performSkill();
         }
     }
+
     public class FindTargetGoal extends Goal {
-        private final TargetPredicate PLAYERS_IN_RANGE_PREDICATE = TargetPredicate.createAttackable().setBaseMaxDistance(64.0F).setPredicate((entity, world) -> !entity.getType().isIn(ModTags.SILENCE_PHANTOM_CANNOT_ATTACK));
-        private int delay = toGoalTicks(20);
+        private final TargetingConditions PLAYERS_IN_RANGE_PREDICATE = TargetingConditions.forCombat().range(64.0)
+                .selector((entity, world) -> !entity.getType().is(ModTags.SILENCE_PHANTOM_CANNOT_ATTACK));
+        private int delay = reducedTickDelay(20);
 
         FindTargetGoal() {
         }
 
-        public boolean canStart() {
+        @Override
+        public boolean canUse() {
             if (this.delay > 0) {
                 --this.delay;
             } else {
-                this.delay = toGoalTicks(60);
-                ServerWorld serverWorld = castToServerWorld(SilencePhantomEntity.this.getWorld());
-                List<? extends LivingEntity> list = serverWorld.getTargets(LivingEntity.class, this.PLAYERS_IN_RANGE_PREDICATE, SilencePhantomEntity.this, SilencePhantomEntity.this.getBoundingBox().expand(16.0F, 64.0F, 16.0F));
+                this.delay = reducedTickDelay(60);
+                ServerLevel serverWorld = getServerLevel(SilencePhantomEntity.this.level());
+                List<LivingEntity> list = serverWorld.getNearbyEntities(LivingEntity.class, this.PLAYERS_IN_RANGE_PREDICATE, SilencePhantomEntity.this, SilencePhantomEntity.this.getBoundingBox().inflate(16.0F, 64.0F, 16.0F));
                 if (!list.isEmpty()) {
-                    list.sort(Comparator.comparing(Entity::getY).reversed());
-                    for(LivingEntity playerEntity : list) {
-                        if (SilencePhantomEntity.this.testTargetPredicate(serverWorld, playerEntity, TargetPredicate.DEFAULT)) {
+                    list.sort(Comparator.<LivingEntity, Double>comparing(Entity::getY).reversed());
+                    for (LivingEntity playerEntity : list) {
+                        if (SilencePhantomEntity.this.canAttack(serverWorld, playerEntity, TargetingConditions.DEFAULT)) {
                             SilencePhantomEntity.this.setTarget(playerEntity);
                             return true;
                         }
@@ -238,12 +242,14 @@ public class SilencePhantomEntity extends PhantomEntity implements  GeneralEntit
             return false;
         }
 
-        public boolean shouldContinue() {
+        @Override
+        public boolean canContinueToUse() {
             LivingEntity livingEntity = SilencePhantomEntity.this.getTarget();
-            return livingEntity != null && SilencePhantomEntity.this.testTargetPredicate(castToServerWorld(SilencePhantomEntity.this.getWorld()), livingEntity, TargetPredicate.DEFAULT);
+            return livingEntity != null && SilencePhantomEntity.this.canAttack(getServerLevel(SilencePhantomEntity.this.level()), livingEntity, TargetingConditions.DEFAULT);
         }
     }
-    public class CircleMovementGoal extends MovementGoal {
+
+    public class CircleMovementGoal extends PhantomMoveTargetGoal {
         private float angle;
         private float radius;
         private float yOffset;
@@ -252,10 +258,12 @@ public class SilencePhantomEntity extends PhantomEntity implements  GeneralEntit
         CircleMovementGoal() {
         }
 
-        public boolean canStart() {
-            return SilencePhantomEntity.this.getTarget() == null || SilencePhantomEntity.this.movementType == SilencePhantomEntity.PhantomMovementType.CIRCLE;
+        @Override
+        public boolean canUse() {
+            return SilencePhantomEntity.this.getTarget() == null || SilencePhantomEntity.this.attackPhase == Phantom.AttackPhase.CIRCLE;
         }
 
+        @Override
         public void start() {
             this.radius = 5.0F + SilencePhantomEntity.this.random.nextFloat() * 10.0F;
             this.yOffset = -4.0F + SilencePhantomEntity.this.random.nextFloat() * 9.0F;
@@ -263,12 +271,13 @@ public class SilencePhantomEntity extends PhantomEntity implements  GeneralEntit
             this.adjustDirection();
         }
 
+        @Override
         public void tick() {
-            if (SilencePhantomEntity.this.random.nextInt(this.getTickCount(350)) == 0) {
+            if (SilencePhantomEntity.this.random.nextInt(this.adjustedTickDelay(350)) == 0) {
                 this.yOffset = -4.0F + SilencePhantomEntity.this.random.nextFloat() * 9.0F;
             }
 
-            if (SilencePhantomEntity.this.random.nextInt(this.getTickCount(250)) == 0) {
+            if (SilencePhantomEntity.this.random.nextInt(this.adjustedTickDelay(250)) == 0) {
                 ++this.radius;
                 if (this.radius > 15.0F) {
                     this.radius = 5.0F;
@@ -276,21 +285,21 @@ public class SilencePhantomEntity extends PhantomEntity implements  GeneralEntit
                 }
             }
 
-            if (SilencePhantomEntity.this.random.nextInt(this.getTickCount(450)) == 0) {
+            if (SilencePhantomEntity.this.random.nextInt(this.adjustedTickDelay(450)) == 0) {
                 this.angle = SilencePhantomEntity.this.random.nextFloat() * 2.0F * (float)Math.PI;
                 this.adjustDirection();
             }
 
-            if (this.isNearTarget()) {
+            if (this.touchingTarget()) {
                 this.adjustDirection();
             }
 
-            if (SilencePhantomEntity.this.targetPosition.y < SilencePhantomEntity.this.getY() && !SilencePhantomEntity.this.getWorld().isAir(SilencePhantomEntity.this.getBlockPos().down(1))) {
+            if (SilencePhantomEntity.this.moveTargetPoint.y < SilencePhantomEntity.this.getY() && !SilencePhantomEntity.this.level().isEmptyBlock(SilencePhantomEntity.this.blockPosition().below(1))) {
                 this.yOffset = Math.max(1.0F, this.yOffset);
                 this.adjustDirection();
             }
 
-            if (SilencePhantomEntity.this.targetPosition.y > SilencePhantomEntity.this.getY() && !SilencePhantomEntity.this.getWorld().isAir(SilencePhantomEntity.this.getBlockPos().up(1))) {
+            if (SilencePhantomEntity.this.moveTargetPoint.y > SilencePhantomEntity.this.getY() && !SilencePhantomEntity.this.level().isEmptyBlock(SilencePhantomEntity.this.blockPosition().above(1))) {
                 this.yOffset = Math.min(-1.0F, this.yOffset);
                 this.adjustDirection();
             }
@@ -298,13 +307,12 @@ public class SilencePhantomEntity extends PhantomEntity implements  GeneralEntit
         }
 
         private void adjustDirection() {
-            if (SilencePhantomEntity.this.circlingCenter == null) {
-                SilencePhantomEntity.this.circlingCenter = SilencePhantomEntity.this.getBlockPos();
+            if (SilencePhantomEntity.this.anchorPoint == null) {
+                SilencePhantomEntity.this.anchorPoint = SilencePhantomEntity.this.blockPosition();
             }
 
             this.angle += this.circlingDirection * 15.0F * ((float)Math.PI / 180F);
-            SilencePhantomEntity.this.targetPosition = Vec3d.of(SilencePhantomEntity.this.circlingCenter).add(this.radius * MathHelper.cos(this.angle), -4.0F + this.yOffset, this.radius * MathHelper.sin(this.angle));
+            SilencePhantomEntity.this.moveTargetPoint = Vec3.atLowerCornerOf(SilencePhantomEntity.this.anchorPoint).add(this.radius * Mth.cos(this.angle), -4.0F + this.yOffset, this.radius * Mth.sin(this.angle));
         }
     }
-
 }

@@ -1,18 +1,18 @@
 package com.kltyton.mob_battle.entity.littleperson.skillentity;
 
 import com.kltyton.mob_battle.utils.EntityUtil;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.data.DataTracker;
-import net.minecraft.entity.data.TrackedData;
-import net.minecraft.entity.data.TrackedDataHandlerRegistry;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.storage.ReadView;
-import net.minecraft.storage.WriteView;
-import net.minecraft.util.math.Box;
-import net.minecraft.world.World;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.phys.AABB;
 import software.bernie.geckolib.animatable.GeoEntity;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.animatable.manager.AnimatableManager;
@@ -21,7 +21,7 @@ import software.bernie.geckolib.animation.RawAnimation;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 public class SkillVisualEntity extends Entity implements GeoEntity {
-    private static final TrackedData<Integer> VARIANT = DataTracker.registerData(SkillVisualEntity.class, TrackedDataHandlerRegistry.INTEGER);
+    private static final EntityDataAccessor<Integer> VARIANT = SynchedEntityData.defineId(SkillVisualEntity.class, EntityDataSerializers.INT);
     private static final RawAnimation ATTACK_ANIM = RawAnimation.begin().thenPlayAndHold("attack");
     private static final RawAnimation ATTACK_1_ANIM = RawAnimation.begin().thenPlayAndHold("attack1");
     private static final RawAnimation ATTACK_2_ANIM = RawAnimation.begin().thenPlayAndHold("attack2");
@@ -34,7 +34,7 @@ public class SkillVisualEntity extends Entity implements GeoEntity {
     private int maxAge = 30;
     private double radius = 1.0D;
 
-    public SkillVisualEntity(EntityType<? extends SkillVisualEntity> entityType, World world) {
+    public SkillVisualEntity(EntityType<? extends SkillVisualEntity> entityType, Level world) {
         super(entityType, world);
     }
 
@@ -44,56 +44,56 @@ public class SkillVisualEntity extends Entity implements GeoEntity {
         this.damageAge = damageAge;
         this.maxAge = maxAge;
         this.radius = radius;
-        this.dataTracker.set(VARIANT, variant);
+        this.entityData.set(VARIANT, variant);
         return this;
     }
 
     @Override
-    protected void initDataTracker(DataTracker.Builder builder) {
-        builder.add(VARIANT, 0);
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        builder.define(VARIANT, 0);
     }
 
     @Override
-    protected void readCustomData(ReadView view) {
+    protected void readAdditionalSaveData(ValueInput view) {
     }
 
     @Override
-    protected void writeCustomData(WriteView view) {
+    protected void addAdditionalSaveData(ValueOutput view) {
     }
 
     @Override
-    public boolean damage(ServerWorld world, DamageSource source, float amount) {
+    public boolean hurtServer(ServerLevel world, DamageSource source, float amount) {
         return false;
     }
 
     @Override
     public void tick() {
         super.tick();
-        if (!this.getWorld().isClient()) {
-            if (this.damageAge >= 0 && this.age == this.damageAge) {
+        if (!this.level().isClientSide()) {
+            if (this.damageAge >= 0 && this.tickCount == this.damageAge) {
                 damageNearby();
             }
-            if (this.age > this.maxAge) {
+            if (this.tickCount > this.maxAge) {
                 this.discard();
             }
         }
     }
 
     private void damageNearby() {
-        if (!(this.getWorld() instanceof ServerWorld world) || this.owner == null || this.damage <= 0.0F) {
+        if (!(this.level() instanceof ServerLevel world) || this.owner == null || this.damage <= 0.0F) {
             return;
         }
-        Box box = this.getBoundingBox().expand(this.radius);
-        for (LivingEntity target : world.getEntitiesByClass(LivingEntity.class, box,
+        AABB box = this.getBoundingBox().inflate(this.radius);
+        for (LivingEntity target : world.getEntitiesOfClass(LivingEntity.class, box,
                 living -> EntityUtil.isValidSummonCombatTarget(this, this.owner, living))) {
-            target.damage(world, this.owner.getDamageSources().mobAttack(this.owner), this.damage);
+            target.hurtServer(world, this.owner.damageSources().mobAttack(this.owner), this.damage);
         }
     }
 
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>("main_controller", 5, state -> {
-            int variant = this.dataTracker.get(VARIANT);
+            int variant = this.entityData.get(VARIANT);
             if (variant == 1) {
                 return state.setAndContinue(ATTACK_1_ANIM);
             }

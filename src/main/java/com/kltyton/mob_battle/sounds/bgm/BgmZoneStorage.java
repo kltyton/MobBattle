@@ -1,11 +1,10 @@
 package com.kltyton.mob_battle.sounds.bgm;
 
 import com.google.gson.*;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.WorldSavePath;
-import net.minecraft.util.math.Box;
-
+import net.minecraft.world.level.storage.LevelResource;
+import net.minecraft.world.phys.AABB;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -19,7 +18,7 @@ public class BgmZoneStorage {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static final String FILE_NAME = "bgm_zones.json";
     private static Path getFilePath(MinecraftServer server) {
-        return server.getSavePath(WorldSavePath.ROOT).resolve("mob_battle").resolve(FILE_NAME);
+        return server.getWorldPath(LevelResource.ROOT).resolve("mob_battle").resolve(FILE_NAME);
     }
 
     public static void save(MinecraftServer server, Collection<BgmZone> zones) {
@@ -59,10 +58,10 @@ public class BgmZoneStorage {
             for (JsonElement el : array) {
                 JsonObject obj = el.getAsJsonObject();
                 String name = obj.get("name").getAsString();
-                Identifier id = Identifier.of(obj.get("musicId").getAsString());
+                ResourceLocation id = ResourceLocation.parse(obj.get("musicId").getAsString());
                 float volume = obj.get("volume").getAsFloat();
                 JsonObject box = obj.get("box").getAsJsonObject();
-                Box area = new Box(
+                AABB area = new AABB(
                         box.get("minX").getAsDouble(),
                         box.get("minY").getAsDouble(),
                         box.get("minZ").getAsDouble(),

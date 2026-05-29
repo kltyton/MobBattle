@@ -1,10 +1,10 @@
 package com.kltyton.mob_battle.effect.harmful;
 
-import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.entity.effect.StatusEffectCategory;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectCategory;
 
-public class DisarmEffect extends StatusEffect {
+public class DisarmEffect extends MobEffect {
     public DisarmEffect() {
-        super(StatusEffectCategory.HARMFUL, 0xFF0000);
+        super(MobEffectCategory.HARMFUL, 0xFF0000);
     }
 }

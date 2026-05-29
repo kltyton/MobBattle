@@ -5,26 +5,29 @@ import com.kltyton.mob_battle.entity.highbird.HighbirdBaseEntity;
 import com.kltyton.mob_battle.entity.highbird.egg.HighbirdSBEntity;
 import com.kltyton.mob_battle.entity.highbird.teenage.HighbirdTeenageEntity;
 import com.kltyton.mob_battle.sounds.ModSounds;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.SpawnReason;
-import net.minecraft.entity.ai.goal.*;
-import net.minecraft.entity.attribute.DefaultAttributeContainer;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.passive.AnimalEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.Items;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.world.World;
+
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
+import net.minecraft.world.entity.ai.goal.target.OwnerHurtByTargetGoal;
+import net.minecraft.world.entity.ai.goal.target.OwnerHurtTargetGoal;
+import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Level;
 
 public class HighbirdBabyEntity extends HighbirdBaseEntity implements HighbirdSBEntity {
     public static final int MAX_INCUBATION_TIME = 240000;
     public static final int MAX_INCUBATION_TIME_WILD = 72000;
 
-    public HighbirdBabyEntity(EntityType<? extends HighbirdBabyEntity> entityType, World world) {
+    public HighbirdBabyEntity(EntityType<? extends HighbirdBabyEntity> entityType, Level world) {
         super(entityType, world);
-        this.experiencePoints = 5;
-        this.getNavigation().setCanSwim(true);
+        this.xpReward = 5;
+        this.getNavigation().setCanFloat(true);
     }
     @Override
     public Item getfoodItem() {
@@ -52,9 +55,9 @@ public class HighbirdBabyEntity extends HighbirdBaseEntity implements HighbirdSB
     @Override
     public void tick() {
         super.tick();
-        if (!this.getWorld().isClient) {
-            if (this.isTamed()) {
-                if (starveTicks % 240 == 0) this.playSound(ModSounds.DOG_JIAO_SOUND_EVENT);
+        if (!this.level().isClientSide) {
+            if (this.isTame()) {
+                if (starveTicks % 240 == 0) this.makeSound(ModSounds.DOG_JIAO_SOUND_EVENT);
                 if (growthValue >= MAX_INCUBATION_TIME) levelUp();
             } else {
                 if (growthValue >= MAX_INCUBATION_TIME_WILD) levelUp();
@@ -63,36 +66,36 @@ public class HighbirdBabyEntity extends HighbirdBaseEntity implements HighbirdSB
     }
     @Override
     public void levelUp() {
-        if (this.getWorld() instanceof ServerWorld serverWorld) {
-            HighbirdTeenageEntity highbird = ModEntities.HIGHBIRD_TEENAGE.create(serverWorld, SpawnReason.CONVERSION);
+        if (this.level() instanceof ServerLevel serverWorld) {
+            HighbirdTeenageEntity highbird = ModEntities.HIGHBIRD_TEENAGE.create(serverWorld, EntitySpawnReason.CONVERSION);
             if (highbird != null) {
-                if (this.isTamed()) {
-                    highbird.setOwner(this.getOwnerReference());
+                if (this.isTame()) {
+                    highbird.setOwnerReference(this.getOwnerReference());
                     highbird.setOwner(this.getOwner());
-                    if (this.getOwner() instanceof PlayerEntity player) highbird.setTamedBy(player);
-                    highbird.setTamed(true, true);
-                    highbird.setPosition(this.getPos());
+                    if (this.getOwner() instanceof Player player) highbird.tame(player);
+                    highbird.setTame(true, true);
+                    highbird.setPos(this.position());
                 }
-                serverWorld.spawnEntity(highbird);
+                serverWorld.addFreshEntity(highbird);
                 this.discard();
             }
         }
     }
     @Override
-    protected void initGoals() {
-        super.initGoals();
-        this.targetSelector.add(1, new AttackWithOwnerGoal(this));   // 当主人攻击某个实体时，宠物也攻击该实体
-        this.targetSelector.add(2, new TrackOwnerAttackerGoal(this)); // 当主人被攻击时，攻击攻击主人的实体
+    protected void registerGoals() {
+        super.registerGoals();
+        this.targetSelector.addGoal(1, new OwnerHurtTargetGoal(this));   // 当主人攻击某个实体时，宠物也攻击该实体
+        this.targetSelector.addGoal(2, new OwnerHurtByTargetGoal(this)); // 当主人被攻击时，攻击攻击主人的实体
         // 添加复仇目标：只攻击攻击过它的实体
-        this.targetSelector.add(3, new RevengeGoal(this));
+        this.targetSelector.addGoal(3, new HurtByTargetGoal(this));
     }
     // 关键修改：覆盖实体分组方法
         /* 属性注册 */
-    public static DefaultAttributeContainer.Builder createHighbirdAttributes() {
-        return AnimalEntity.createAnimalAttributes()
-                .add(EntityAttributes.MAX_HEALTH, 20.0D)
-                .add(EntityAttributes.ATTACK_DAMAGE, 8.0D)
-                .add(EntityAttributes.MOVEMENT_SPEED, 0.3F)
-                .add(EntityAttributes.FOLLOW_RANGE, 16.0D); // 索敌距离
+    public static AttributeSupplier.Builder createHighbirdAttributes() {
+        return Animal.createAnimalAttributes()
+                .add(Attributes.MAX_HEALTH, 20.0D)
+                .add(Attributes.ATTACK_DAMAGE, 8.0D)
+                .add(Attributes.MOVEMENT_SPEED, 0.3F)
+                .add(Attributes.FOLLOW_RANGE, 16.0D); // 索敌距离
     }
 }

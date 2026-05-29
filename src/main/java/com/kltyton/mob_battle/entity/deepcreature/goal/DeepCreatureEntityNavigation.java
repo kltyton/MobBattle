@@ -1,11 +1,11 @@
 package com.kltyton.mob_battle.entity.deepcreature.goal;
 
-import net.minecraft.entity.ai.pathing.MobNavigation;
-import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.world.World;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
+import net.minecraft.world.level.Level;
 
-public class DeepCreatureEntityNavigation extends MobNavigation {
-    public DeepCreatureEntityNavigation(MobEntity mobEntity, World world) {
+public class DeepCreatureEntityNavigation extends GroundPathNavigation {
+    public DeepCreatureEntityNavigation(Mob mobEntity, Level world) {
         super(mobEntity, world);
     }
 /*    @Override

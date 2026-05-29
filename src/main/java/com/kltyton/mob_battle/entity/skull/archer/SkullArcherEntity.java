@@ -7,24 +7,24 @@ import com.kltyton.mob_battle.entity.witherskeletonking.WitherSkeletonKingEntity
 import com.kltyton.mob_battle.network.packet.SkillPayload;
 import com.kltyton.mob_battle.utils.EntityUtil;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LazyEntityReference;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.attribute.DefaultAttributeContainer;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.data.DataTracker;
-import net.minecraft.entity.data.TrackedData;
-import net.minecraft.entity.data.TrackedDataHandlerRegistry;
-import net.minecraft.entity.mob.HostileEntity;
-import net.minecraft.entity.mob.SkeletonEntity;
-import net.minecraft.entity.projectile.PersistentProjectileEntity;
-import net.minecraft.entity.projectile.ProjectileUtil;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.storage.ReadView;
-import net.minecraft.storage.WriteView;
-import net.minecraft.world.World;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.entity.EntityReference;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.entity.monster.Skeleton;
+import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.entity.projectile.ProjectileUtil;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib.animatable.GeoEntity;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
@@ -37,19 +37,19 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 
 import java.util.Optional;
 
-public class SkullArcherEntity extends SkeletonEntity implements GeoEntity, IModSkullEntity {
-    public SkullArcherEntity(EntityType<? extends SkullArcherEntity> entityType, World world) {
+public class SkullArcherEntity extends Skeleton implements GeoEntity, IModSkullEntity {
+    public SkullArcherEntity(EntityType<? extends SkullArcherEntity> entityType, Level world) {
         super(entityType, world);
         this.setHasSkill(false);
-        this.setAiDisabled(false);
+        this.setNoAi(false);
         this.setSkillCooldown(0);
     }
     @Override
-    public boolean isConverting() {
+    public boolean isFreezeConverting() {
         return false;
     }
     @Override
-    public void setConverting(boolean converting) {
+    public void setFreezeConverting(boolean converting) {
     }
     @Override
     public boolean isShaking() {
@@ -58,10 +58,10 @@ public class SkullArcherEntity extends SkeletonEntity implements GeoEntity, IMod
     @Override
     public void tick() {
         super.tick();   // 调用父类 AI、移动等更新
-        if (!this.getWorld().isClient()) {
+        if (!this.level().isClientSide()) {
             killSlave();
             if (!hasSkill()) {
-                this.setAiDisabled(false);
+                this.setNoAi(false);
                 // 冷却递减
                 int cd = getSkillCooldown();
                 if (cd > 0) setSkillCooldown(cd - 1);
@@ -69,25 +69,25 @@ public class SkullArcherEntity extends SkeletonEntity implements GeoEntity, IMod
         }
     }
     @Override
-    protected void convertToStray() {
+    protected void doFreezeConversion() {
     }
     @Override
     public boolean canFreeze() {
         return true;
     }
     @Override
-    protected PersistentProjectileEntity createArrowProjectile(ItemStack arrow, float damageModifier, @Nullable ItemStack shotFrom) {
-        PersistentProjectileEntity persistentProjectileEntity = super.createArrowProjectile(arrow, damageModifier, shotFrom);
+    protected AbstractArrow getArrow(ItemStack arrow, float damageModifier, @Nullable ItemStack shotFrom) {
+        AbstractArrow persistentProjectileEntity = super.getArrow(arrow, damageModifier, shotFrom);
         ((ITrueDamageProjectile) persistentProjectileEntity).setTrueDamage(true, false);
-        persistentProjectileEntity.setDamage(this.getAttributeValue(EntityAttributes.ATTACK_DAMAGE));
+        persistentProjectileEntity.setBaseDamage(this.getAttributeValue(Attributes.ATTACK_DAMAGE));
         return persistentProjectileEntity;
     }
-    public static DefaultAttributeContainer.Builder addAttributes() {
-        return HostileEntity.createHostileAttributes()
-                .add(EntityAttributes.MAX_HEALTH, 120.0D)
-                .add(EntityAttributes.MOVEMENT_SPEED, 0.3D)
-                .add(EntityAttributes.ATTACK_DAMAGE, 120.0D)
-                .add(EntityAttributes.FOLLOW_RANGE, 24.0D);
+    public static AttributeSupplier.Builder addAttributes() {
+        return Monster.createMonsterAttributes()
+                .add(Attributes.MAX_HEALTH, 120.0D)
+                .add(Attributes.MOVEMENT_SPEED, 0.3D)
+                .add(Attributes.ATTACK_DAMAGE, 120.0D)
+                .add(Attributes.FOLLOW_RANGE, 24.0D);
     }
     protected static final RawAnimation IDEA_ANIM = RawAnimation.begin().thenLoop("idle");
     protected static final RawAnimation WALK_ANIM = RawAnimation.begin().thenLoop("walk");
@@ -115,28 +115,28 @@ public class SkullArcherEntity extends SkeletonEntity implements GeoEntity, IMod
     }
     public void shootAtBase(LivingEntity target, float pullProgress) {
         if (!ModSkillEntityType.canSkill(this)) return;
-        ItemStack bowStack = this.getStackInHand(ProjectileUtil.getHandPossiblyHolding(this, Items.BOW));
-        ItemStack arrowStack = this.getProjectileType(bowStack);
-        PersistentProjectileEntity projectile = this.createArrowProjectile(arrowStack, pullProgress, bowStack);
+        ItemStack bowStack = this.getItemInHand(ProjectileUtil.getWeaponHoldingHand(this, Items.BOW));
+        ItemStack arrowStack = this.getProjectile(bowStack);
+        AbstractArrow projectile = this.getArrow(arrowStack, pullProgress, bowStack);
 
         double d = target.getX() - this.getX();
-        double e = target.getBodyY(0.3333333333333333) - projectile.getY();
+        double e = target.getY(0.3333333333333333) - projectile.getY();
         double f = target.getZ() - this.getZ();
         double g = Math.sqrt(d * d + f * f);  // 水平距离
-        projectile.setVelocity(d, e + g * 0.2F, f, 1.6F, 0.0F);
+        projectile.shoot(d, e + g * 0.2F, f, 1.6F, 0.0F);
 
         // 如果是服务器端，生成箭矢实体
-        if (!this.getWorld().isClient) {
-            this.getWorld().spawnEntity(projectile);
+        if (!this.level().isClientSide) {
+            this.level().addFreshEntity(projectile);
         }
-        this.playSound(SoundEvents.ENTITY_SKELETON_SHOOT, 1.0F, 1.0F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
+        this.playSound(SoundEvents.SKELETON_SHOOT, 1.0F, 1.0F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
     }
     @Override
-    public void takeKnockback(double strength, double x, double z) {
-        if (!this.isDead() && !this.isAiDisabled()) super.takeKnockback(strength, x, z);
+    public void knockback(double strength, double x, double z) {
+        if (!this.isDeadOrDying() && !this.isNoAi()) super.knockback(strength, x, z);
     }
     @Override
-    public void shootAt(LivingEntity target, float pullProgress) {
+    public void performRangedAttack(LivingEntity target, float pullProgress) {
         if (!EntityUtil.isValidSummonCombatTarget(this, this.getOwner(), target)) {
             return;
         }
@@ -146,28 +146,28 @@ public class SkullArcherEntity extends SkeletonEntity implements GeoEntity, IMod
     }
     public void performAttack(LivingEntity target, float pullProgress) {
         this.setHasSkill(true);
-        this.setAiDisabled(true);
+        this.setNoAi(true);
         this.setTarget(target);
         this.setSkillCooldown(10);
         this.triggerAnim("skill_controller", "attack");
     }
     public boolean canSkill() {
         if (!ModSkillEntityType.canSkill(this)) return false;
-        return !this.getWorld().isClient() && !hasSkill() && getSkillCooldown() == 0 && this.getTarget() != null;
+        return !this.level().isClientSide() && !hasSkill() && getSkillCooldown() == 0 && this.getTarget() != null;
     }
-    public static final TrackedData<Boolean> HAS_SKILL = DataTracker.registerData(SkullArcherEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
-    public static final TrackedData<Integer> SKILL_COOLDOWN = DataTracker.registerData(SkullArcherEntity.class, TrackedDataHandlerRegistry.INTEGER);
+    public static final EntityDataAccessor<Boolean> HAS_SKILL = SynchedEntityData.defineId(SkullArcherEntity.class, EntityDataSerializers.BOOLEAN);
+    public static final EntityDataAccessor<Integer> SKILL_COOLDOWN = SynchedEntityData.defineId(SkullArcherEntity.class, EntityDataSerializers.INT);
     public boolean hasSkill() {
-        return getDataTracker().get(HAS_SKILL);
+        return getEntityData().get(HAS_SKILL);
     }
     public int getSkillCooldown() {
-        return getDataTracker().get(SKILL_COOLDOWN);
+        return getEntityData().get(SKILL_COOLDOWN);
     }
     public void setHasSkill(boolean hasSkill) {
-        getDataTracker().set(HAS_SKILL, hasSkill);
+        getEntityData().set(HAS_SKILL, hasSkill);
     }
     public void setSkillCooldown(int cooldown) {
-        getDataTracker().set(SKILL_COOLDOWN, cooldown);
+        getEntityData().set(SKILL_COOLDOWN, cooldown);
     }
     private final AnimatableInstanceCache geoCache = GeckoLibUtil.createInstanceCache(this);
     @Override
@@ -182,48 +182,48 @@ public class SkullArcherEntity extends SkeletonEntity implements GeoEntity, IMod
     }
 
 
-    protected static final TrackedData<Optional<LazyEntityReference<LivingEntity>>> OWNER_UUID = DataTracker.registerData(
-            SkullArcherEntity.class, TrackedDataHandlerRegistry.LAZY_ENTITY_REFERENCE
+    protected static final EntityDataAccessor<Optional<EntityReference<LivingEntity>>> OWNER_UUID = SynchedEntityData.defineId(
+            SkullArcherEntity.class, EntityDataSerializers.OPTIONAL_LIVING_ENTITY_REFERENCE
     );
     @Override
-    protected void initDataTracker(DataTracker.Builder builder) {
-        super.initDataTracker(builder);
-        builder.add(HAS_SKILL, false);
-        builder.add(SKILL_COOLDOWN, 0);
-        builder.add(OWNER_UUID, Optional.empty());
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(HAS_SKILL, false);
+        builder.define(SKILL_COOLDOWN, 0);
+        builder.define(OWNER_UUID, Optional.empty());
     }
     @Nullable
-    public LazyEntityReference<LivingEntity> getOwnerReference() {
-        return this.dataTracker.get(OWNER_UUID).orElse(null);
+    public EntityReference<LivingEntity> getOwnerReference() {
+        return this.entityData.get(OWNER_UUID).orElse(null);
     }
     @Override
-    protected void writeCustomData(WriteView view) {
-        super.writeCustomData(view);
-        LazyEntityReference<LivingEntity> lazyEntityReference = this.getOwnerReference();
-        LazyEntityReference.writeData(lazyEntityReference, view, "Owner");
+    protected void addAdditionalSaveData(ValueOutput view) {
+        super.addAdditionalSaveData(view);
+        EntityReference<LivingEntity> lazyEntityReference = this.getOwnerReference();
+        EntityReference.store(lazyEntityReference, view, "Owner");
     }
 
     @Override
-    protected void readCustomData(ReadView view) {
-        super.readCustomData(view);
-        LazyEntityReference<LivingEntity> lazyEntityReference = LazyEntityReference.fromDataOrPlayerName(view, "Owner", this.getWorld());
+    protected void readAdditionalSaveData(ValueInput view) {
+        super.readAdditionalSaveData(view);
+        EntityReference<LivingEntity> lazyEntityReference = EntityReference.readWithOldOwnerConversion(view, "Owner", this.level());
         if (lazyEntityReference != null) {
-            this.dataTracker.set(OWNER_UUID, Optional.of(lazyEntityReference));
+            this.entityData.set(OWNER_UUID, Optional.of(lazyEntityReference));
         } else {
-            this.dataTracker.set(OWNER_UUID, Optional.empty());
+            this.entityData.set(OWNER_UUID, Optional.empty());
         }
     }
     @Override
     public void setOwner(@Nullable LivingEntity owner) {
-        this.dataTracker.set(OWNER_UUID, Optional.ofNullable(owner).map(LazyEntityReference::new));
+        this.entityData.set(OWNER_UUID, Optional.ofNullable(owner).map(EntityReference::new));
     }
     @Override
-    public void setOwner(@Nullable LazyEntityReference<LivingEntity> owner) {
-        this.dataTracker.set(OWNER_UUID, Optional.ofNullable(owner));
+    public void setOwner(@Nullable EntityReference<LivingEntity> owner) {
+        this.entityData.set(OWNER_UUID, Optional.ofNullable(owner));
     }
     @Override
-    public boolean canTarget(LivingEntity target) {
-        return EntityUtil.isValidSummonCombatTarget(this, this.getOwner(), target) && super.canTarget(target);
+    public boolean canAttack(LivingEntity target) {
+        return EntityUtil.isValidSummonCombatTarget(this, this.getOwner(), target) && super.canAttack(target);
     }
     @Override
     public boolean isOwner(LivingEntity entity) {

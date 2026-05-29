@@ -2,9 +2,9 @@ package com.kltyton.mob_battle.entity.littleperson.skillentity.base;
 
 import com.kltyton.mob_battle.Mob_battle;
 import com.kltyton.mob_battle.entity.littleperson.LittlePersonEntity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.LivingEntity;
 import software.bernie.geckolib.animatable.processing.AnimationState;
 import software.bernie.geckolib.cache.object.GeoBone;
 import software.bernie.geckolib.constant.DataTickets;
@@ -20,18 +20,18 @@ public class BaseSkillLittlePersonEntityModel<T extends LivingEntity & LittlePer
         this.hasHand = hasHand;
     }
     @Override
-    public Identifier getModelResource(GeoRenderState renderState) {
-        return Identifier.of(Mob_battle.MOD_ID, name);
+    public ResourceLocation getModelResource(GeoRenderState renderState) {
+        return ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, name);
     }
 
     @Override
-    public Identifier getTextureResource(GeoRenderState renderState) {
-        return Identifier.of(Mob_battle.MOD_ID, "textures/entity/little_person/" + name + ".png");
+    public ResourceLocation getTextureResource(GeoRenderState renderState) {
+        return ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "textures/entity/little_person/" + name + ".png");
     }
 
     @Override
-    public Identifier getAnimationResource(T animatable) {
-        return Identifier.of(Mob_battle.MOD_ID, name);
+    public ResourceLocation getAnimationResource(T animatable) {
+        return ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, name);
     }
     @Override
     public void setCustomAnimations(AnimationState<T> animationState) {
@@ -43,8 +43,8 @@ public class BaseSkillLittlePersonEntityModel<T extends LivingEntity & LittlePer
                 float pitch = animationState.getDataOrDefault(DataTickets.ENTITY_PITCH, 0F);
                 float yaw = animationState.getDataOrDefault(DataTickets.ENTITY_YAW, 0F);
 
-                head.setRotX(-pitch * MathHelper.RADIANS_PER_DEGREE);
-                head.setRotY(-yaw * MathHelper.RADIANS_PER_DEGREE);
+                head.setRotX(-pitch * Mth.DEG_TO_RAD);
+                head.setRotY(-yaw * Mth.DEG_TO_RAD);
             }
         }
     }

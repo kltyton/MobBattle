@@ -1,6 +1,6 @@
 package com.kltyton.mob_battle.accessor;
 
-import net.minecraft.entity.LivingEntity;
+import net.minecraft.world.entity.LivingEntity;
 
 public interface IPiglinEntity {
     LivingEntity getTargetEntity();

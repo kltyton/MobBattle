@@ -2,20 +2,19 @@ package com.kltyton.mob_battle.event.masterscepter;
 
 import com.kltyton.mob_battle.effect.ModEffects;
 import com.kltyton.mob_battle.items.scroll.PurificationScrollItem;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 
 public class MasterScepterManager {
     private static final Map<UUID, Map<String, Long>> COMMAND_COOLDOWNS = new ConcurrentHashMap<>();
-    public static void runCommand(ServerPlayerEntity player, String command) {
-        Map<String, Long> playerCooldowns = COMMAND_COOLDOWNS.computeIfAbsent(player.getUuid(), k -> new ConcurrentHashMap<>());
-        long now = player.getWorld().getTime();
+    public static void runCommand(ServerPlayer player, String command) {
+        Map<String, Long> playerCooldowns = COMMAND_COOLDOWNS.computeIfAbsent(player.getUUID(), k -> new ConcurrentHashMap<>());
+        long now = player.level().getGameTime();
 
         // 定义每个命令的冷却时间（毫秒）
         long cooldownMs = switch (command) {
@@ -28,18 +27,18 @@ public class MasterScepterManager {
         };
         Long lastUse = playerCooldowns.get(command);
         if (lastUse != null && now - lastUse < cooldownMs) {
-            player.sendMessage(Text.literal("§c该命令正在冷却中！剩余 " + (cooldownMs - (now - lastUse)) / 20 + " 秒"), true);
+            player.displayClientMessage(Component.literal("§c该命令正在冷却中！剩余 " + (cooldownMs - (now - lastUse)) / 20 + " 秒"), true);
             return;
         }
 
         boolean applied = switch (command) {
             case "fb" -> {
-                UUID playerId = player.getUuid();
+                UUID playerId = player.getUUID();
 
                 if (!SbFb.ACTIVE_TASKS.contains(playerId)) {
                     SbFb.TASK_QUEUE.add(new SbFb.DelayedTask(
                             playerId,
-                            player.getWorld().getRegistryKey(),
+                            player.level().dimension(),
                             50
                     ));
                     SbFb.ACTIVE_TASKS.add(playerId);
@@ -47,11 +46,11 @@ public class MasterScepterManager {
                 yield true;
             }
             case "bfb" -> {
-                UUID playerId = player.getUuid();
+                UUID playerId = player.getUUID();
                 if (!SbBfb.ACTIVE_TASKS.contains(playerId)) {
                     SbBfb.TASK_QUEUE.add(new SbBfb.DelayedTask(
                             playerId,
-                            player.getWorld().getRegistryKey(),
+                            player.level().dimension(),
                             30
                     ));
                     SbBfb.ACTIVE_TASKS.add(playerId);
@@ -59,7 +58,7 @@ public class MasterScepterManager {
                 yield true;
             }
             case "bfbp" -> {
-                SbBfbp.runCommand(player, player.getWorld());
+                SbBfbp.runCommand(player, player.level());
                 yield true;
             }
             case "pfwull" -> {
@@ -84,25 +83,25 @@ public class MasterScepterManager {
             }
             case "h" -> {
                 // 生命恢复等级5，持续3秒（60 tick）
-                player.addStatusEffect(new StatusEffectInstance(StatusEffects.REGENERATION, 60, 4));
+                player.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 60, 4));
                 yield true;
             }
             case "healttth" -> {
                 // 生命恢复等级3
-                player.addStatusEffect(new StatusEffectInstance(StatusEffects.REGENERATION, 70 * 20, 2));
+                player.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 70 * 20, 2));
                 yield true;
             }
             case "Resistanceee" -> {
-                player.addStatusEffect(new StatusEffectInstance(StatusEffects.RESISTANCE, 60 * 20, 1));
+                player.addEffect(new MobEffectInstance(MobEffects.RESISTANCE, 60 * 20, 1));
                 yield true;
             }
             case "j" -> {
                 PurificationScrollItem.removeStatusEffects(player,
-                        StatusEffects.MINING_FATIGUE,
-                        StatusEffects.BLINDNESS,
-                        StatusEffects.DARKNESS,
-                        StatusEffects.NAUSEA,
-                        StatusEffects.SLOWNESS,
+                        MobEffects.MINING_FATIGUE,
+                        MobEffects.BLINDNESS,
+                        MobEffects.DARKNESS,
+                        MobEffects.NAUSEA,
+                        MobEffects.SLOWNESS,
                         ModEffects.STUN_ENTRY,
                         ModEffects.ICE_ENTRY
                 );
@@ -113,9 +112,9 @@ public class MasterScepterManager {
 
         if (applied) {
             playerCooldowns.put(command, now);
-            player.sendMessage(Text.literal("§a效果已应用！"), true);
+            player.displayClientMessage(Component.literal("§a效果已应用！"), true);
         } else {
-            player.sendMessage(Text.literal("§c未知命令！"), true);
+            player.displayClientMessage(Component.literal("§c未知命令！"), true);
         }
     }
 

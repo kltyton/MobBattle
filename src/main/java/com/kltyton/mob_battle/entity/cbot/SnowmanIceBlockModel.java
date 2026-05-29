@@ -1,26 +1,26 @@
 package com.kltyton.mob_battle.entity.cbot;
 
-import net.minecraft.client.model.Dilation;
-import net.minecraft.client.model.ModelData;
-import net.minecraft.client.model.ModelPart;
-import net.minecraft.client.model.ModelPartBuilder;
-import net.minecraft.client.model.ModelPartData;
-import net.minecraft.client.model.ModelTransform;
-import net.minecraft.client.model.TexturedModelData;
-import net.minecraft.client.render.entity.model.EntityModel;
-import net.minecraft.client.render.entity.state.ProjectileEntityRenderState;
+import net.minecraft.client.model.EntityModel;
+import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.model.geom.PartPose;
+import net.minecraft.client.model.geom.builders.CubeDeformation;
+import net.minecraft.client.model.geom.builders.CubeListBuilder;
+import net.minecraft.client.model.geom.builders.LayerDefinition;
+import net.minecraft.client.model.geom.builders.MeshDefinition;
+import net.minecraft.client.model.geom.builders.PartDefinition;
+import net.minecraft.client.renderer.entity.state.ArrowRenderState;
 
-public class SnowmanIceBlockModel extends EntityModel<ProjectileEntityRenderState> {
+public class SnowmanIceBlockModel extends EntityModel<ArrowRenderState> {
     public SnowmanIceBlockModel(ModelPart root) {
         super(root);
     }
 
-    public static TexturedModelData getTexturedModelData() {
-        ModelData modelData = new ModelData();
-        ModelPartData modelPartData = modelData.getRoot();
-        modelPartData.addChild("bone7",
-                ModelPartBuilder.create().uv(160, 198).cuboid(-9.0F, -18.0F, -9.0F, 18.0F, 18.0F, 18.0F, new Dilation(0.0F)),
-                ModelTransform.origin(0.0F, 24.0F, 0.0F));
-        return TexturedModelData.of(modelData, 256, 256);
+    public static LayerDefinition getTexturedModelData() {
+        MeshDefinition modelData = new MeshDefinition();
+        PartDefinition modelPartData = modelData.getRoot();
+        modelPartData.addOrReplaceChild("bone7",
+                CubeListBuilder.create().texOffs(160, 198).addBox(-9.0F, -18.0F, -9.0F, 18.0F, 18.0F, 18.0F, new CubeDeformation(0.0F)),
+                PartPose.offset(0.0F, 24.0F, 0.0F));
+        return LayerDefinition.create(modelData, 256, 256);
     }
 }

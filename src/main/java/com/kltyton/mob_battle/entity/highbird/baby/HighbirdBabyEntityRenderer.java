@@ -1,20 +1,20 @@
 package com.kltyton.mob_battle.entity.highbird.baby;
 
-import net.minecraft.client.render.OverlayTexture;
-import net.minecraft.client.render.entity.EntityRendererFactory;
-import net.minecraft.client.render.entity.state.LivingEntityRenderState;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.entity.EntityPose;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.RotationAxis;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
+import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
+import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.core.Direction;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Pose;
 import software.bernie.geckolib.constant.DataTickets;
 import software.bernie.geckolib.renderer.GeoEntityRenderer;
 import software.bernie.geckolib.renderer.base.GeoRenderState;
 import software.bernie.geckolib.util.RenderUtil;
 
 public class HighbirdBabyEntityRenderer<R extends LivingEntityRenderState & GeoRenderState> extends GeoEntityRenderer<HighbirdBabyEntity, R> {
-    public HighbirdBabyEntityRenderer(EntityRendererFactory.Context context) {
+    public HighbirdBabyEntityRenderer(EntityRendererProvider.Context context) {
         super(context, new HighbirdBabyEntityModel());
     }
     @Override
@@ -24,37 +24,37 @@ public class HighbirdBabyEntityRenderer<R extends LivingEntityRenderState & GeoR
     @Override
     public int getPackedOverlay(HighbirdBabyEntity animatable, Void relatedObject, float u, float partialTick) {
         if (!(animatable instanceof LivingEntity entity))
-            return OverlayTexture.DEFAULT_UV;
-        if (entity.isDead()) return OverlayTexture.DEFAULT_UV;
-        return OverlayTexture.packUv(OverlayTexture.getU(u), OverlayTexture.getV(entity.hurtTime > 0));
+            return OverlayTexture.NO_OVERLAY;
+        if (entity.isDeadOrDying()) return OverlayTexture.NO_OVERLAY;
+        return OverlayTexture.pack(OverlayTexture.u(u), OverlayTexture.v(entity.hurtTime > 0));
     }
     @Override
-    protected void applyRotations(R renderState, MatrixStack poseStack, float nativeScale) {
+    protected void applyRotations(R renderState, PoseStack poseStack, float nativeScale) {
         float rotationYaw = renderState.getGeckolibData(DataTickets.ENTITY_BODY_YAW);
 
         if (renderState.getGeckolibData(DataTickets.IS_SHAKING))
-            rotationYaw += (float)(Math.cos(renderState.age * 3.25d) * Math.PI * 0.4d);
+            rotationYaw += (float)(Math.cos(renderState.ageInTicks * 3.25d) * Math.PI * 0.4d);
 
-        boolean sleeping = renderState.getGeckolibData(DataTickets.ENTITY_POSE) == EntityPose.SLEEPING;
+        boolean sleeping = renderState.getGeckolibData(DataTickets.ENTITY_POSE) == Pose.SLEEPING;
 
         if (!sleeping)
-            poseStack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(180f - rotationYaw));
+            poseStack.mulPose(Axis.YP.rotationDegrees(180f - rotationYaw));
 
         if (renderState instanceof LivingEntityRenderState livingRenderState) {
-            if (livingRenderState.usingRiptide) {
-                poseStack.multiply(RotationAxis.POSITIVE_X.rotationDegrees(-90f - livingRenderState.pitch));
-                poseStack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(renderState.age * -75f));
+            if (livingRenderState.isAutoSpinAttack) {
+                poseStack.mulPose(Axis.XP.rotationDegrees(-90f - livingRenderState.xRot));
+                poseStack.mulPose(Axis.YP.rotationDegrees(renderState.ageInTicks * -75f));
             }
             else if (sleeping) {
-                Direction bedOrientation = livingRenderState.sleepingDirection;
+                Direction bedOrientation = livingRenderState.bedOrientation;
 
-                poseStack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(bedOrientation != null ? RenderUtil.getDirectionAngle(bedOrientation) : rotationYaw));
-                poseStack.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(getDeathMaxRotation(renderState)));
-                poseStack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(270f));
+                poseStack.mulPose(Axis.YP.rotationDegrees(bedOrientation != null ? RenderUtil.getDirectionAngle(bedOrientation) : rotationYaw));
+                poseStack.mulPose(Axis.ZP.rotationDegrees(getDeathMaxRotation(renderState)));
+                poseStack.mulPose(Axis.YP.rotationDegrees(270f));
             }
-            else if (livingRenderState.flipUpsideDown) {
-                poseStack.translate(0, (livingRenderState.height + 0.1f) / nativeScale, 0);
-                poseStack.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(180f));
+            else if (livingRenderState.isUpsideDown) {
+                poseStack.translate(0, (livingRenderState.boundingBoxHeight + 0.1f) / nativeScale, 0);
+                poseStack.mulPose(Axis.ZP.rotationDegrees(180f));
             }
         }
     }

@@ -2,15 +2,15 @@ package com.kltyton.mob_battle.mixin.client.render.entity.player;
 
 import com.kltyton.mob_battle.Mob_battle;
 import com.kltyton.mob_battle.entity.player.IPlayerEntityAccessor;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gl.RenderPipelines;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.hud.BossBarHud;
-import net.minecraft.client.gui.hud.InGameHud;
-import net.minecraft.client.network.AbstractClientPlayerEntity;
-import net.minecraft.client.render.RenderTickCounter;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.DeltaTracker;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Gui;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.BossHealthOverlay;
+import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.player.Player;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -18,19 +18,19 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(InGameHud.class)
+@Mixin(Gui.class)
 public abstract class CustomHealthBarMixin {
 
     @Shadow
-    public abstract BossBarHud getBossBarHud();
+    public abstract BossHealthOverlay getBossOverlay();
 
     @Unique
-    private static final Identifier HEALTH_FRAME =
-            Identifier.of(Mob_battle.MOD_ID, "textures/gui/health_frame.png");
+    private static final ResourceLocation HEALTH_FRAME =
+            ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "textures/gui/health_frame.png");
 
     @Unique
-    private static final Identifier HEALTH_PROGRESS =
-            Identifier.of(Mob_battle.MOD_ID, "textures/gui/health_progress.png");
+    private static final ResourceLocation HEALTH_PROGRESS =
+            ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "textures/gui/health_progress.png");
 
     @Unique
     private static final int BAR_WIDTH = 224;
@@ -51,7 +51,7 @@ public abstract class CustomHealthBarMixin {
     private static final int PLAYER_HEAD_SIZE = 14;
 
     @Unique
-    private boolean shouldUseCustomHealthBar(PlayerEntity player) {
+    private boolean shouldUseCustomHealthBar(Player player) {
         return ((IPlayerEntityAccessor) player).isUsingGeckoLib() || player.getMaxHealth() >= 20000;
     }
 
@@ -59,13 +59,13 @@ public abstract class CustomHealthBarMixin {
      * 仍然保留：本地玩家自己满足条件时，隐藏原版红心，改成你的自定义血条。
      */
     @Inject(
-            method = "renderHealthBar",
+            method = "renderHearts",
             at = @At("HEAD"),
             cancellable = true
     )
     private void onRenderHealthBar(
-            DrawContext context,
-            PlayerEntity player,
+            GuiGraphics context,
+            Player player,
             int x,
             int y,
             int lines,
@@ -81,7 +81,7 @@ public abstract class CustomHealthBarMixin {
             return;
         }
 
-        int bossCount = this.getBossBarHud().bossBars.size();
+        int bossCount = this.getBossOverlay().events.size();
         int customBarY = BASE_Y + bossCount * PER_BOSS_OFFSET;
 
         renderCustomHealthBar(context, player, customBarY);
@@ -96,18 +96,18 @@ public abstract class CustomHealthBarMixin {
             at = @At("TAIL")
     )
     private void mobBattle$renderOtherPlayerBossHealthBars(
-            DrawContext context, RenderTickCounter tickCounter, CallbackInfo ci
+            GuiGraphics context, DeltaTracker tickCounter, CallbackInfo ci
     ) {
-        MinecraftClient client = MinecraftClient.getInstance();
+        Minecraft client = Minecraft.getInstance();
 
-        if (client.world == null || client.player == null) {
+        if (client.level == null || client.player == null) {
             return;
         }
 
-        int bossCount = this.getBossBarHud().bossBars.size();
+        int bossCount = this.getBossOverlay().events.size();
         int barIndex = 0;
 
-        for (PlayerEntity player : client.world.getPlayers()) {
+        for (Player player : client.level.players()) {
             // 本地玩家已经由 renderHealthBar 处理，避免重复画
             if (player == client.player) {
                 continue;
@@ -136,10 +136,10 @@ public abstract class CustomHealthBarMixin {
     }
 
     @Unique
-    private void renderCustomHealthBar(DrawContext context, PlayerEntity player, int barY) {
-        MinecraftClient client = MinecraftClient.getInstance();
+    private void renderCustomHealthBar(GuiGraphics context, Player player, int barY) {
+        Minecraft client = Minecraft.getInstance();
 
-        int screenWidth = client.getWindow().getScaledWidth();
+        int screenWidth = client.getWindow().getGuiScaledWidth();
         int barX = (screenWidth - BAR_WIDTH) / 2;
 
         float currentHealth = player.getHealth();
@@ -154,7 +154,7 @@ public abstract class CustomHealthBarMixin {
 
         renderPlayerHead(context, player, barX + 105, barY + 9);
 
-        context.drawTexture(
+        context.blit(
                 RenderPipelines.GUI_TEXTURED,
                 HEALTH_FRAME,
                 barX,
@@ -170,7 +170,7 @@ public abstract class CustomHealthBarMixin {
         int filledWidth = (int) (BAR_WIDTH * progress);
 
         if (filledWidth > 0) {
-            context.drawTexture(
+            context.blit(
                     RenderPipelines.GUI_TEXTURED,
                     HEALTH_PROGRESS,
                     barX,
@@ -194,10 +194,10 @@ public abstract class CustomHealthBarMixin {
             text += " (+" + (int) absorption + ")";
         }
 
-        int textWidth = client.textRenderer.getWidth(text);
+        int textWidth = client.font.width(text);
 
-        context.drawText(
-                client.textRenderer,
+        context.drawString(
+                client.font,
                 text,
                 barX + (BAR_WIDTH - textWidth) / 2,
                 barY + (BAR_HEIGHT - 8) / 2,
@@ -207,14 +207,14 @@ public abstract class CustomHealthBarMixin {
     }
 
     @Unique
-    private void renderPlayerHead(DrawContext context, PlayerEntity player, int x, int y) {
-        if (!(player instanceof AbstractClientPlayerEntity clientPlayer)) {
+    private void renderPlayerHead(GuiGraphics context, Player player, int x, int y) {
+        if (!(player instanceof AbstractClientPlayer clientPlayer)) {
             return;
         }
 
-        Identifier skinTexture = clientPlayer.getSkinTextures().texture();
+        ResourceLocation skinTexture = clientPlayer.getSkin().texture();
 
-        context.drawTexture(
+        context.blit(
                 RenderPipelines.GUI_TEXTURED,
                 skinTexture,
                 x,
@@ -228,7 +228,7 @@ public abstract class CustomHealthBarMixin {
                 64,
                 64
         );
-        context.drawTexture(
+        context.blit(
                 RenderPipelines.GUI_TEXTURED,
                 skinTexture,
                 x,

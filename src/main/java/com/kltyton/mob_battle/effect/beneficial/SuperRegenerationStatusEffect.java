@@ -1,16 +1,16 @@
 package com.kltyton.mob_battle.effect.beneficial;
 
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.effect.RegenerationStatusEffect;
-import net.minecraft.entity.effect.StatusEffectCategory;
-import net.minecraft.server.world.ServerWorld;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.effect.MobEffectCategory;
+import net.minecraft.world.effect.RegenerationMobEffect;
+import net.minecraft.world.entity.LivingEntity;
 
-public class SuperRegenerationStatusEffect extends RegenerationStatusEffect {
+public class SuperRegenerationStatusEffect extends RegenerationMobEffect {
     public SuperRegenerationStatusEffect() {
-        super(StatusEffectCategory.BENEFICIAL, 13458603);
+        super(MobEffectCategory.BENEFICIAL, 13458603);
     }
     @Override
-    public boolean applyUpdateEffect(ServerWorld world, LivingEntity entity, int amplifier) {
+    public boolean applyEffectTick(ServerLevel world, LivingEntity entity, int amplifier) {
         if (entity.getHealth() < entity.getMaxHealth()) {
             entity.heal(100.0F);
         }

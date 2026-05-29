@@ -1,6 +1,6 @@
 package com.kltyton.mob_battle.entity.player;
 
-import net.minecraft.entity.LivingEntity;
+import net.minecraft.world.entity.LivingEntity;
 
 public interface IPlayerSkillAccessor {
     boolean mobBattle$hasSkill();

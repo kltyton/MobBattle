@@ -5,13 +5,20 @@ import com.kltyton.mob_battle.block.ModBlocks;
 import com.kltyton.mob_battle.items.ModItems;
 import net.fabricmc.fabric.api.client.datagen.v1.provider.FabricModelProvider;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
-import net.minecraft.block.Block;
-import net.minecraft.client.data.*;
-import net.minecraft.item.Item;
-import net.minecraft.item.SpawnEggItem;
-import net.minecraft.registry.Registries;
-import net.minecraft.util.Identifier;
-
+import net.minecraft.client.data.models.model.ModelTemplate;
+import net.minecraft.client.data.models.BlockModelGenerators;
+import net.minecraft.client.data.models.ItemModelGenerators;
+import net.minecraft.client.data.models.model.ItemModelUtils;
+import net.minecraft.client.data.models.model.ModelLocationUtils;
+import net.minecraft.client.data.models.model.ModelTemplate;
+import net.minecraft.client.data.models.model.ModelTemplates;
+import net.minecraft.client.data.models.model.TextureMapping;
+import net.minecraft.client.data.models.model.TextureSlot;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.SpawnEggItem;
+import net.minecraft.world.level.block.Block;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
@@ -19,15 +26,15 @@ import java.util.Optional;
 public class ModModelGenerator extends FabricModelProvider {
     public final FabricDataOutput output;
 
-    private static final Model EGG_TEMPLATE = new Model(
-            Optional.of(Identifier.of(Mob_battle.MOD_ID, "item/dan")),
+    private static final ModelTemplate EGG_TEMPLATE = new ModelTemplate(
+            Optional.of(ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "item/dan")),
             Optional.empty(),
-            TextureKey.LAYER0
+            TextureSlot.LAYER0
     );
-    private static final Model STICK_TEMPLATE = new Model(
-            Optional.of(Identifier.ofVanilla("item/stick")),
+    private static final ModelTemplate STICK_TEMPLATE = new ModelTemplate(
+            Optional.of(ResourceLocation.withDefaultNamespace("item/stick")),
             Optional.empty(),
-            TextureKey.LAYER0
+            TextureSlot.LAYER0
     );
     public ModModelGenerator(FabricDataOutput output) {
         super(output);
@@ -36,82 +43,82 @@ public class ModModelGenerator extends FabricModelProvider {
     }
 
     @Override
-    public void generateBlockStateModels(BlockStateModelGenerator blockStateCollector) {
-        blockStateCollector.registerSimpleState(ModBlocks.NEST_BLOCK);
-        blockStateCollector.registerSimpleState(ModBlocks.MUSHROOM_BLOCK);
+    public void generateBlockStateModels(BlockModelGenerators blockStateCollector) {
+        blockStateCollector.createNonTemplateModelBlock(ModBlocks.NEST_BLOCK);
+        blockStateCollector.createNonTemplateModelBlock(ModBlocks.MUSHROOM_BLOCK);
         registerCompressedBlock(blockStateCollector, ModBlocks.COMPRESSED_IRON_BLOCK);
         registerCompressedBlock(blockStateCollector, ModBlocks.COMPRESSED_GOLD_BLOCK);
         registerCompressedBlock(blockStateCollector, ModBlocks.COMPRESSED_DIAMOND_BLOCK);
         registerCompressedBlock(blockStateCollector, ModBlocks.COMPRESSED_NETHERITE_BLOCK);
-        blockStateCollector.registerNorthDefaultHorizontalRotation(ModBlocks.MACHINE_WORKTABLE_BLOCK);
-        blockStateCollector.registerParentedItemModel(ModBlocks.MACHINE_WORKTABLE_BLOCK, Identifier.of(Mob_battle.MOD_ID, "block/machine_worktable"));
+        blockStateCollector.createNonTemplateHorizontalBlock(ModBlocks.MACHINE_WORKTABLE_BLOCK);
+        blockStateCollector.registerSimpleItemModel(ModBlocks.MACHINE_WORKTABLE_BLOCK, ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "block/machine_worktable"));
     }
 
-    private void registerCompressedBlock(BlockStateModelGenerator blockStateCollector, Block block) {
-        String blockName = Registries.BLOCK.getId(block).getPath();
-        Identifier modelId = Models.CUBE_ALL.upload(
+    private void registerCompressedBlock(BlockModelGenerators blockStateCollector, Block block) {
+        String blockName = BuiltInRegistries.BLOCK.getKey(block).getPath();
+        ResourceLocation modelId = ModelTemplates.CUBE_ALL.create(
                 block,
-                TextureMap.all(Identifier.of(Mob_battle.MOD_ID, "block/compressed/" + blockName)),
-                blockStateCollector.modelCollector
+                TextureMapping.cube(ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "block/compressed/" + blockName)),
+                blockStateCollector.modelOutput
         );
-        blockStateCollector.blockStateCollector.accept(
-                BlockStateModelGenerator.createSingletonBlockState(block, BlockStateModelGenerator.createWeightedVariant(modelId))
+        blockStateCollector.blockStateOutput.accept(
+                BlockModelGenerators.createSimpleBlock(block, BlockModelGenerators.plainVariant(modelId))
         );
-        blockStateCollector.registerParentedItemModel(block, modelId);
+        blockStateCollector.registerSimpleItemModel(block, modelId);
     }
 
 
     @Override
-    public void generateItemModels(ItemModelGenerator itemModelCollector) {
-        itemModelCollector.register(ModBlocks.NEST_BLOCK.asItem(), Models.GENERATED);
-        itemModelCollector.register(ModBlocks.MUSHROOM_BLOCK.asItem(), Models.GENERATED);
+    public void generateItemModels(ItemModelGenerators itemModelCollector) {
+        itemModelCollector.generateFlatItem(ModBlocks.NEST_BLOCK.asItem(), ModelTemplates.FLAT_ITEM);
+        itemModelCollector.generateFlatItem(ModBlocks.MUSHROOM_BLOCK.asItem(), ModelTemplates.FLAT_ITEM);
 
 /*        itemModelCollector.register(ModBlocks.NEST_BLOCK.asItem(),
                 new Model(Optional.of(Identifier.of(Mob_battle.MOD_ID, "block/nest_block")), Optional.empty()));
         itemModelCollector.register(ModBlocks.MUSHROOM_BLOCK.asItem(),
                 new Model(Optional.of(Identifier.of(Mob_battle.MOD_ID, "block/mushroom_block")), Optional.empty()));*/
-        itemModelCollector.register(ModItems.FINE_KNIFE, Models.HANDHELD);
+        itemModelCollector.generateFlatItem(ModItems.FINE_KNIFE, ModelTemplates.FLAT_HANDHELD_ITEM);
 
-        itemModelCollector.register(ModItems.EMERALD_DIAMOND_HELMET, Models.GENERATED);
-        itemModelCollector.register(ModItems.EMERALD_DIAMOND_CHESTPLATE, Models.GENERATED);
-        itemModelCollector.register(ModItems.EMERALD_DIAMOND_LEGGINGS, Models.GENERATED);
-        itemModelCollector.register(ModItems.EMERALD_DIAMOND_BOOTS, Models.GENERATED);
+        itemModelCollector.generateFlatItem(ModItems.EMERALD_DIAMOND_HELMET, ModelTemplates.FLAT_ITEM);
+        itemModelCollector.generateFlatItem(ModItems.EMERALD_DIAMOND_CHESTPLATE, ModelTemplates.FLAT_ITEM);
+        itemModelCollector.generateFlatItem(ModItems.EMERALD_DIAMOND_LEGGINGS, ModelTemplates.FLAT_ITEM);
+        itemModelCollector.generateFlatItem(ModItems.EMERALD_DIAMOND_BOOTS, ModelTemplates.FLAT_ITEM);
 
-        itemModelCollector.register(ModItems.EMERALD_DIAMOND_SWORD, Models.HANDHELD);
-        itemModelCollector.register(ModItems.ZIJIN_SWORD, Models.HANDHELD);
-        itemModelCollector.register(ModItems.COMPRESSED_IRON_SWORD, Models.HANDHELD);
-        itemModelCollector.register(ModItems.COMPRESSED_GOLD_SWORD, Models.HANDHELD);
-        itemModelCollector.register(ModItems.COMPRESSED_DIAMOND_SWORD, Models.HANDHELD);
-        itemModelCollector.register(ModItems.COMPRESSED_NETHERITE_SWORD, Models.HANDHELD);
+        itemModelCollector.generateFlatItem(ModItems.EMERALD_DIAMOND_SWORD, ModelTemplates.FLAT_HANDHELD_ITEM);
+        itemModelCollector.generateFlatItem(ModItems.ZIJIN_SWORD, ModelTemplates.FLAT_HANDHELD_ITEM);
+        itemModelCollector.generateFlatItem(ModItems.COMPRESSED_IRON_SWORD, ModelTemplates.FLAT_HANDHELD_ITEM);
+        itemModelCollector.generateFlatItem(ModItems.COMPRESSED_GOLD_SWORD, ModelTemplates.FLAT_HANDHELD_ITEM);
+        itemModelCollector.generateFlatItem(ModItems.COMPRESSED_DIAMOND_SWORD, ModelTemplates.FLAT_HANDHELD_ITEM);
+        itemModelCollector.generateFlatItem(ModItems.COMPRESSED_NETHERITE_SWORD, ModelTemplates.FLAT_HANDHELD_ITEM);
 
-        itemModelCollector.register(ModItems.CARDIOTONIC_INJECTION, STICK_TEMPLATE);
+        itemModelCollector.generateFlatItem(ModItems.CARDIOTONIC_INJECTION, STICK_TEMPLATE);
 
-        itemModelCollector.upload(ModItems.ICE_BOW, Models.BOW);
-        itemModelCollector.registerBow(ModItems.ICE_BOW);
+        itemModelCollector.createFlatItemModel(ModItems.ICE_BOW, ModelTemplates.BOW);
+        itemModelCollector.generateBow(ModItems.ICE_BOW);
 
         for (Item item : ModItems.GENERATED_ITEMS.values()) {
-            itemModelCollector.register(item, Models.GENERATED);
+            itemModelCollector.generateFlatItem(item, ModelTemplates.FLAT_ITEM);
         }
 
         // 动态生成蛋的模型
         for (SpawnEggItem item : ModItems.SPAWN_EGG_ITEMS.values()) {
-            String itemName = Registries.ITEM.getId(item).getPath();
-            Identifier textureId;
+            String itemName = BuiltInRegistries.ITEM.getKey(item).getPath();
+            ResourceLocation textureId;
             Path texturePath = this.output.getModContainer().findPath("assets/" + Mob_battle.MOD_ID + "/textures/item/dan/" + itemName + ".png")
                     .orElse(null);
             if (texturePath != null && Files.exists(texturePath)) {
-                textureId = Identifier.of(Mob_battle.MOD_ID, "item/dan/" + itemName);
+                textureId = ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "item/dan/" + itemName);
             } else {
-                textureId = Identifier.of(Mob_battle.MOD_ID, "item/dan/dan");
+                textureId = ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "item/dan/dan");
             }
             // 使用模板生成模型，并注入选定的纹理
-            itemModelCollector.output.accept(
+            itemModelCollector.itemModelOutput.accept(
                     item,
-                    ItemModels.basic(
-                            EGG_TEMPLATE.upload(
-                                    ModelIds.getItemModelId(item),
-                                    TextureMap.layer0(textureId),
-                                    itemModelCollector.modelCollector
+                    ItemModelUtils.plainModel(
+                            EGG_TEMPLATE.create(
+                                    ModelLocationUtils.getModelLocation(item),
+                                    TextureMapping.layer0(textureId),
+                                    itemModelCollector.modelOutput
                             )
                     )
             );

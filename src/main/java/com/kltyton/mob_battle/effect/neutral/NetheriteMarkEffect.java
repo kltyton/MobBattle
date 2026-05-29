@@ -1,10 +1,10 @@
 package com.kltyton.mob_battle.effect.neutral;
 
-import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.entity.effect.StatusEffectCategory;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectCategory;
 
-public class NetheriteMarkEffect extends StatusEffect {
+public class NetheriteMarkEffect extends MobEffect {
     public NetheriteMarkEffect() {
-        super(StatusEffectCategory.NEUTRAL, 0x4E3C52);
+        super(MobEffectCategory.NEUTRAL, 0x4E3C52);
     }
 }

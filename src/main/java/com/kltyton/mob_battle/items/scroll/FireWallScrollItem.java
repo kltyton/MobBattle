@@ -2,40 +2,40 @@ package com.kltyton.mob_battle.items.scroll;
 
 import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.entity.firewall.FireWallEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.stat.Stats;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.world.World;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.stats.Stats;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 
 public class FireWallScrollItem extends Item {
-    public FireWallScrollItem(Item.Settings settings) {
+    public FireWallScrollItem(Item.Properties settings) {
         super(settings);
     }
 
     @Override
-    public ActionResult use(World world, PlayerEntity user, Hand hand) {
-        ItemStack itemStack = user.getStackInHand(hand);
+    public InteractionResult use(Level world, Player user, InteractionHand hand) {
+        ItemStack itemStack = user.getItemInHand(hand);
 
         // 播放使用音效
         world.playSound(null, user.getX(), user.getY(), user.getZ(),
-                SoundEvents.ITEM_FIRECHARGE_USE, SoundCategory.PLAYERS,
+                SoundEvents.FIRECHARGE_USE, SoundSource.PLAYERS,
                 0.5F, 1.0F);
-        if (!world.isClient) {
+        if (!world.isClientSide) {
             FireWallEntity wall = new FireWallEntity(ModEntities.FIRE_WALL, world, user);
-            wall.refreshPositionAndAngles(user.getX(), user.getY(), user.getZ(), user.getYaw(), user.getPitch());
-            world.spawnEntity(wall);
+            wall.snapTo(user.getX(), user.getY(), user.getZ(), user.getYRot(), user.getXRot());
+            world.addFreshEntity(wall);
         }
         // 增加玩家使用统计
-        user.incrementStat(Stats.USED.getOrCreateStat(this));
+        user.awardStat(Stats.ITEM_USED.get(this));
 
         // 消耗物品
-        if (!user.getAbilities().creativeMode) itemStack.decrement(1);
+        if (!user.getAbilities().instabuild) itemStack.shrink(1);
 
-        return ActionResult.SUCCESS;
+        return InteractionResult.SUCCESS;
     }
 }

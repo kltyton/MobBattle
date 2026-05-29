@@ -1,17 +1,17 @@
 package com.kltyton.mob_battle.entity.silverfish.silverfish;
 
 import com.kltyton.mob_battle.utils.EntityUtil;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.attribute.DefaultAttributeContainer;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.entity.mob.SilverfishEntity;
-import net.minecraft.world.World;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.monster.Silverfish;
+import net.minecraft.world.level.Level;
 
 public class LoadSilverfishEntity extends CoalSilverfishEntity {
-    public LoadSilverfishEntity(EntityType<? extends SilverfishEntity> entityType, World world) {
+    public LoadSilverfishEntity(EntityType<? extends Silverfish> entityType, Level world) {
         super(entityType, world);
     }
     @Override
@@ -38,17 +38,17 @@ public class LoadSilverfishEntity extends CoalSilverfishEntity {
     @Override
     public void tick() {
         super.tick();
-        if (this.age % 20 == 0 && !this.getWorld().isClient) {
+        if (this.tickCount % 20 == 0 && !this.level().isClientSide) {
             EntityUtil.getNearbyEntity(this, LivingEntity.class, Object.class, 5, true, EntityUtil.TeamFilter.ONLY_TEAM).forEach(entity -> {
-                entity.addStatusEffect(new StatusEffectInstance(StatusEffects.REGENERATION, 40, 2));
+                entity.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 40, 2));
             });
         }
     }
 
-    public static DefaultAttributeContainer.Builder createAttributes() {
-        return SilverfishEntity.createSilverfishAttributes()
-                .add(EntityAttributes.MAX_HEALTH, 1000.0D)
-                .add(EntityAttributes.ARMOR, 23.0D)
-                .add(EntityAttributes.ARMOR_TOUGHNESS, 20.0D);
+    public static AttributeSupplier.Builder createAttributes() {
+        return Silverfish.createAttributes()
+                .add(Attributes.MAX_HEALTH, 1000.0D)
+                .add(Attributes.ARMOR, 23.0D)
+                .add(Attributes.ARMOR_TOUGHNESS, 20.0D);
     }
 }

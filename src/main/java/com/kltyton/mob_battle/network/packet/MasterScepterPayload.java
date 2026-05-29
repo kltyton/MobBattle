@@ -1,17 +1,17 @@
 package com.kltyton.mob_battle.network.packet;
 
 import com.kltyton.mob_battle.Mob_battle;
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.codec.PacketCodecs;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.util.Identifier;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
 
-public record MasterScepterPayload(String id) implements CustomPayload {
-    public static final CustomPayload.Id<MasterScepterPayload> ID = new CustomPayload.Id<>(Identifier.of(Mob_battle.MOD_ID, "master_scepter"));
-    public static final PacketCodec<RegistryByteBuf, MasterScepterPayload> CODEC = PacketCodec.tuple(
-            PacketCodecs.STRING, MasterScepterPayload::id,
+public record MasterScepterPayload(String id) implements CustomPacketPayload {
+    public static final CustomPacketPayload.Type<MasterScepterPayload> ID = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "master_scepter"));
+    public static final StreamCodec<RegistryFriendlyByteBuf, MasterScepterPayload> CODEC = StreamCodec.composite(
+            ByteBufCodecs.STRING_UTF8, MasterScepterPayload::id,
             MasterScepterPayload::new
     );
-    @Override public CustomPayload.Id<? extends CustomPayload> getId() { return ID; }
+    @Override public CustomPacketPayload.Type<? extends CustomPacketPayload> type() { return ID; }
 }

@@ -1,16 +1,16 @@
 package com.kltyton.mob_battle.network.packet;
 
 import com.kltyton.mob_battle.Mob_battle;
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.util.Identifier;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
 
-public record ShieldSpawnPayload() implements CustomPayload {
-    public static final CustomPayload.Id<ShieldSpawnPayload> ID = new Id<>(Identifier.of(Mob_battle.MOD_ID, "shield_spawn"));
-    public static final PacketCodec<RegistryByteBuf, ShieldSpawnPayload> CODEC = PacketCodec.unit(new ShieldSpawnPayload());
+public record ShieldSpawnPayload() implements CustomPacketPayload {
+    public static final CustomPacketPayload.Type<ShieldSpawnPayload> ID = new Type<>(ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "shield_spawn"));
+    public static final StreamCodec<RegistryFriendlyByteBuf, ShieldSpawnPayload> CODEC = StreamCodec.unit(new ShieldSpawnPayload());
     @Override
-    public Id<? extends CustomPayload> getId() {
+    public Type<? extends CustomPacketPayload> type() {
         return ID;
     }
 }

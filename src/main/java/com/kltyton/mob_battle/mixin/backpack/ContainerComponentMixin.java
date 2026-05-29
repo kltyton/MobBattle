@@ -1,15 +1,15 @@
 package com.kltyton.mob_battle.mixin.backpack;
 
-import net.minecraft.component.type.ContainerComponent;
+import net.minecraft.world.item.component.ItemContainerContents;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.Constant;
 import org.spongepowered.asm.mixin.injection.ModifyConstant;
 
-@Mixin(ContainerComponent.class)
+@Mixin(ItemContainerContents.class)
 public class ContainerComponentMixin {
     // 1. 修改构造函数中的 256 限制检查
     @ModifyConstant(
-            method = "<init>(Lnet/minecraft/util/collection/DefaultedList;)V",
+            method = "<init>(Lnet/minecraft/core/NonNullList;)V",
             constant = @Constant(intValue = 256)
     )
     private static int increaseConstructorLimit(int original) {

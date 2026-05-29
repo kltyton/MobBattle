@@ -9,34 +9,44 @@ import com.kltyton.mob_battle.entity.witherskeletonking.WitherSkeletonKingEntity
 import com.kltyton.mob_battle.network.packet.SkillPayload;
 import com.kltyton.mob_battle.utils.EntityUtil;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.minecraft.block.Blocks;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.entity.*;
-import net.minecraft.entity.attribute.DefaultAttributeContainer;
-import net.minecraft.entity.attribute.EntityAttributeInstance;
-import net.minecraft.entity.attribute.EntityAttributeModifier;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.boss.BossBar;
-import net.minecraft.entity.boss.ServerBossBar;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.data.DataTracker;
-import net.minecraft.entity.data.TrackedData;
-import net.minecraft.entity.data.TrackedDataHandlerRegistry;
-import net.minecraft.entity.mob.HostileEntity;
-import net.minecraft.entity.mob.WitherSkeletonEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.storage.ReadView;
-import net.minecraft.storage.WriteView;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.random.Random;
-import net.minecraft.world.LocalDifficulty;
-import net.minecraft.world.ServerWorldAccess;
-import net.minecraft.world.World;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerBossEvent;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.BossEvent;
+import net.minecraft.world.DifficultyInstance;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityReference;
+import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.SpawnGroupData;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.entity.monster.WitherSkeleton;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib.animatable.GeoEntity;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
@@ -53,34 +63,34 @@ import java.time.temporal.ChronoField;
 import java.util.Objects;
 import java.util.Optional;
 
-public class SkullKingEntity extends WitherSkeletonEntity implements GeoEntity, IModSkullEntity {
-    private final ServerBossBar bossBar = new ServerBossBar(
+public class SkullKingEntity extends WitherSkeleton implements GeoEntity, IModSkullEntity {
+    private final ServerBossEvent bossBar = new ServerBossEvent(
             this.getDisplayName(),
-            BossBar.Color.PURPLE,
-            BossBar.Style.PROGRESS
+            BossEvent.BossBarColor.PURPLE,
+            BossEvent.BossBarOverlay.PROGRESS
     );
-    public static final TrackedData<Boolean> HAS_SKILL = DataTracker.registerData(SkullKingEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
-    public static final TrackedData<Integer> SKILL_COOLDOWN = DataTracker.registerData(SkullKingEntity.class, TrackedDataHandlerRegistry.INTEGER);
-    public static final TrackedData<Integer> SUPER_ATTACK_SKILL_COOLDOWN = DataTracker.registerData(SkullKingEntity.class, TrackedDataHandlerRegistry.INTEGER);
-    public static final TrackedData<Integer> SUMMON_SKULL_COOLDOWN = DataTracker.registerData(SkullKingEntity.class, TrackedDataHandlerRegistry.INTEGER);
+    public static final EntityDataAccessor<Boolean> HAS_SKILL = SynchedEntityData.defineId(SkullKingEntity.class, EntityDataSerializers.BOOLEAN);
+    public static final EntityDataAccessor<Integer> SKILL_COOLDOWN = SynchedEntityData.defineId(SkullKingEntity.class, EntityDataSerializers.INT);
+    public static final EntityDataAccessor<Integer> SUPER_ATTACK_SKILL_COOLDOWN = SynchedEntityData.defineId(SkullKingEntity.class, EntityDataSerializers.INT);
+    public static final EntityDataAccessor<Integer> SUMMON_SKULL_COOLDOWN = SynchedEntityData.defineId(SkullKingEntity.class, EntityDataSerializers.INT);
 
     @Override
-    protected void initDataTracker(DataTracker.Builder builder) {
-        super.initDataTracker(builder);
-        builder.add(HAS_SKILL, false);
-        builder.add(SKILL_COOLDOWN, 20);
-        builder.add(SUPER_ATTACK_SKILL_COOLDOWN, 300);
-        builder.add(SUMMON_SKULL_COOLDOWN, 200);
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(HAS_SKILL, false);
+        builder.define(SKILL_COOLDOWN, 20);
+        builder.define(SUPER_ATTACK_SKILL_COOLDOWN, 300);
+        builder.define(SUMMON_SKULL_COOLDOWN, 200);
     }
     @Override
     public void tick() {
         super.tick();
-        if (!this.getWorld().isClient()) {
+        if (!this.level().isClientSide()) {
             killSlave();
             if (!hasSkill()) {
-                this.setAiDisabled(false);
+                this.setNoAi(false);
                 if (canSummonSkull()) performSummonSkull();
-                // 冷却递减
+                // 鍐峰嵈閫掑噺
                 int cd = getSkillCooldown();
                 if (cd > 0) setSkillCooldown(cd - 1);
                 int superAttackCd = getSuperAttackSkillCooldown();
@@ -91,44 +101,44 @@ public class SkullKingEntity extends WitherSkeletonEntity implements GeoEntity, 
         }
     }
     @Override
-    public void setCustomName(@Nullable Text name) {
+    public void setCustomName(@Nullable Component name) {
         super.setCustomName(name);
         this.bossBar.setName(Objects.requireNonNull(this.getDisplayName()).copy().append(" | " + (int)this.getHealth() + "/" + (int)this.getMaxHealth()));
     }
     @Override
-    public void onStartedTrackingBy(ServerPlayerEntity player) {
-        super.onStartedTrackingBy(player);
+    public void startSeenByPlayer(ServerPlayer player) {
+        super.startSeenByPlayer(player);
         this.bossBar.addPlayer(player);
     }
     @Override
-    public void onStoppedTrackingBy(ServerPlayerEntity player) {
-        super.onStoppedTrackingBy(player);
+    public void stopSeenByPlayer(ServerPlayer player) {
+        super.stopSeenByPlayer(player);
         this.bossBar.removePlayer(player);
     }
     @Override
-    protected void mobTick(ServerWorld world) {
-        super.mobTick(world);
-        this.bossBar.setPercent(this.getHealth() / this.getMaxHealth());
+    protected void customServerAiStep(ServerLevel world) {
+        super.customServerAiStep(world);
+        this.bossBar.setProgress(this.getHealth() / this.getMaxHealth());
         this.bossBar.setName(Objects.requireNonNull(this.getDisplayName()).copy().append(" | " + (int)this.getHealth() + "/" + (int)this.getMaxHealth()));
     }
     @Override
-    public void readCustomData(ReadView nbt) {
-        super.readCustomData(nbt);
+    public void readAdditionalSaveData(ValueInput nbt) {
+        super.readAdditionalSaveData(nbt);
         if (this.hasCustomName()) {
             this.bossBar.setName(Objects.requireNonNull(this.getDisplayName()).copy().append(" | " + (int)this.getHealth() + "/" + (int)this.getMaxHealth()));
         }
     }
     @Override
-    public void writeCustomData(WriteView nbt) {
-        super.writeCustomData(nbt);
+    public void addAdditionalSaveData(ValueOutput nbt) {
+        super.addAdditionalSaveData(nbt);
     }
     @Nullable
-    public EntityData initializeBase(ServerWorldAccess world, LocalDifficulty difficulty, SpawnReason spawnReason, @Nullable EntityData entityData) {
-        Random random = world.getRandom();
-        EntityAttributeInstance entityAttributeInstance = Objects.requireNonNull(this.getAttributeInstance(EntityAttributes.FOLLOW_RANGE));
-        if (!entityAttributeInstance.hasModifier(RANDOM_SPAWN_BONUS_MODIFIER_ID)) {
-            entityAttributeInstance.addPersistentModifier(
-                    new EntityAttributeModifier(RANDOM_SPAWN_BONUS_MODIFIER_ID, random.nextTriangular(0.0, 0.11485000000000001), EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE)
+    public SpawnGroupData initializeBase(ServerLevelAccessor world, DifficultyInstance difficulty, EntitySpawnReason spawnReason, @Nullable SpawnGroupData entityData) {
+        RandomSource random = world.getRandom();
+        AttributeInstance entityAttributeInstance = Objects.requireNonNull(this.getAttribute(Attributes.FOLLOW_RANGE));
+        if (!entityAttributeInstance.hasModifier(RANDOM_SPAWN_BONUS_ID)) {
+            entityAttributeInstance.addPermanentModifier(
+                    new AttributeModifier(RANDOM_SPAWN_BONUS_ID, random.triangle(0.0, 0.11485000000000001), AttributeModifier.Operation.ADD_MULTIPLIED_BASE)
             );
         }
 
@@ -136,20 +146,20 @@ public class SkullKingEntity extends WitherSkeletonEntity implements GeoEntity, 
         return entityData;
     }
     @Nullable
-    public EntityData initializeBase2(ServerWorldAccess world, LocalDifficulty difficulty, SpawnReason spawnReason, @Nullable EntityData entityData) {
+    public SpawnGroupData initializeBase2(ServerLevelAccessor world, DifficultyInstance difficulty, EntitySpawnReason spawnReason, @Nullable SpawnGroupData entityData) {
         entityData = this.initializeBase(world, difficulty, spawnReason, entityData);
-        Random random = world.getRandom();
-        this.initEquipment(random, difficulty);
-        this.updateEnchantments(world, random, difficulty);
-        this.updateAttackType();
-        this.setCanPickUpLoot(random.nextFloat() < 0.55F * difficulty.getClampedLocalDifficulty());
-        if (this.getEquippedStack(EquipmentSlot.HEAD).isEmpty()) {
+        RandomSource random = world.getRandom();
+        this.populateDefaultEquipmentSlots(random, difficulty);
+        this.populateDefaultEquipmentEnchantments(world, random, difficulty);
+        this.reassessWeaponGoal();
+        this.setCanPickUpLoot(random.nextFloat() < 0.55F * difficulty.getSpecialMultiplier());
+        if (this.getItemBySlot(EquipmentSlot.HEAD).isEmpty()) {
             LocalDate localDate = LocalDate.now();
             int i = localDate.get(ChronoField.DAY_OF_MONTH);
             int j = localDate.get(ChronoField.MONTH_OF_YEAR);
             if (j == 10 && i == 31 && random.nextFloat() < 0.25F) {
-                this.equipStack(EquipmentSlot.HEAD, new ItemStack(random.nextFloat() < 0.1F ? Blocks.JACK_O_LANTERN : Blocks.CARVED_PUMPKIN));
-                this.setEquipmentDropChance(EquipmentSlot.HEAD, 0.0F);
+                this.setItemSlot(EquipmentSlot.HEAD, new ItemStack(random.nextFloat() < 0.1F ? Blocks.JACK_O_LANTERN : Blocks.CARVED_PUMPKIN));
+                this.setDropChance(EquipmentSlot.HEAD, 0.0F);
             }
         }
 
@@ -157,49 +167,49 @@ public class SkullKingEntity extends WitherSkeletonEntity implements GeoEntity, 
     }
     @Nullable
     @Override
-    public EntityData initialize(ServerWorldAccess world, LocalDifficulty difficulty, SpawnReason spawnReason, @Nullable EntityData entityData) {
-        EntityData entityData2 = this.initializeBase2(world, difficulty, spawnReason, entityData);
-        Objects.requireNonNull(this.getAttributeInstance(EntityAttributes.ATTACK_DAMAGE)).setBaseValue(90.0D);
-        this.setAiDisabled(false);
-        this.updateAttackType();
+    public SpawnGroupData finalizeSpawn(ServerLevelAccessor world, DifficultyInstance difficulty, EntitySpawnReason spawnReason, @Nullable SpawnGroupData entityData) {
+        SpawnGroupData entityData2 = this.initializeBase2(world, difficulty, spawnReason, entityData);
+        Objects.requireNonNull(this.getAttribute(Attributes.ATTACK_DAMAGE)).setBaseValue(90.0D);
+        this.setNoAi(false);
+        this.reassessWeaponGoal();
         return entityData2;
     }
-    public SkullKingEntity(EntityType<? extends SkullKingEntity> entityType, World world) {
+    public SkullKingEntity(EntityType<? extends SkullKingEntity> entityType, Level world) {
         super(entityType, world);
         this.setHasSkill(false);
-        this.setAiDisabled(false);
+        this.setNoAi(false);
         this.setSkillCooldown(20);
         this.lookControl = new BigBossLookControl(this);
         this.moveControl = new BigBossMoveControl(this);
         this.navigation = new BigBossNavigation(this, world);
     }
-    public boolean tryAttackBase(ServerWorld world, Entity target) {
+    public boolean tryAttackBase(ServerLevel world, Entity target) {
         if (!ModSkillEntityType.canSkill(this)) return false;
         float f = 90.0F;
-        ItemStack itemStack = this.getWeaponStack();
-        DamageSource damageSource = Optional.ofNullable(itemStack.getItem().getDamageSource(this)).orElse(this.getDamageSources().mobAttack(this));
-        f = EnchantmentHelper.getDamage(world, itemStack, target, damageSource, f);
-        f += itemStack.getItem().getBonusAttackDamage(target, f, damageSource);
-        if (this.isTeammate(target)) return false;
-        boolean bl = target.damage(world, damageSource, f);
+        ItemStack itemStack = this.getWeaponItem();
+        DamageSource damageSource = Optional.ofNullable(itemStack.getItem().getDamageSource(this)).orElse(this.damageSources().mobAttack(this));
+        f = EnchantmentHelper.modifyDamage(world, itemStack, target, damageSource, f);
+        f += itemStack.getItem().getAttackDamageBonus(target, f, damageSource);
+        if (this.isAlliedTo(target)) return false;
+        boolean bl = target.hurtServer(world, damageSource, f);
         if (bl) {
-            float g = this.getAttackKnockbackAgainst(target, damageSource);
-            target.damage(world, this.getDamageSources().magic(), 10);
+            float g = this.getKnockback(target, damageSource);
+            target.hurtServer(world, this.damageSources().magic(), 10);
             if (g > 0.0F && target instanceof LivingEntity livingEntity) {
-                livingEntity.takeKnockback(g * 0.5F, MathHelper.sin(this.getYaw() * (float) (Math.PI / 180.0)), -MathHelper.cos(this.getYaw() * (float) (Math.PI / 180.0)));
-                this.setVelocity(this.getVelocity().multiply(0.6, 1.0, 0.6));
+                livingEntity.knockback(g * 0.5F, Mth.sin(this.getYRot() * (float) (Math.PI / 180.0)), -Mth.cos(this.getYRot() * (float) (Math.PI / 180.0)));
+                this.setDeltaMovement(this.getDeltaMovement().multiply(0.6, 1.0, 0.6));
             }
             if (target instanceof LivingEntity livingEntity) {
-                itemStack.postHit(livingEntity, this);
+                itemStack.hurtEnemy(livingEntity, this);
             }
-            EnchantmentHelper.onTargetDamaged(world, target, damageSource);
-            this.onAttacking(target);
+            EnchantmentHelper.doPostAttackEffects(world, target, damageSource);
+            this.setLastHurtMob(target);
             this.playAttackSound();
         }
         return bl;
     }
     @Override
-    public boolean tryAttack(ServerWorld world, Entity target) {
+    public boolean doHurtTarget(ServerLevel world, Entity target) {
         if (!ModSkillEntityType.canSkill(this)) return false;
         if (this.canSuperAttack()) {
             performSuperAttack();
@@ -212,20 +222,20 @@ public class SkullKingEntity extends WitherSkeletonEntity implements GeoEntity, 
     }
     public void performAttack() {
         setHasSkill(true);
-        this.setAiDisabled(true);
+        this.setNoAi(true);
         setSkillCooldown(20);
         this.triggerAnim("skill_controller", "attack");
     }
     public void performSuperAttack() {
         setHasSkill(true);
-        this.setAiDisabled(true);
+        this.setNoAi(true);
         setSkillCooldown(20);
         setSuperAttackSkillCooldown(300);
         this.triggerAnim("skill_controller", "super_attack");
     }
     public void performSummonSkull() {
         setHasSkill(true);
-        this.setAiDisabled(true);
+        this.setNoAi(true);
         setSkillCooldown(20);
         setSummonSkullCooldown(300);
         this.triggerAnim("skill_controller", "summon_skull");
@@ -239,7 +249,7 @@ public class SkullKingEntity extends WitherSkeletonEntity implements GeoEntity, 
     }
     public boolean canSkill() {
         if (!ModSkillEntityType.canSkill(this)) return false;
-        return !this.getWorld().isClient() && !hasSkill() && getSkillCooldown() == 0 && this.getTarget() != null;
+        return !this.level().isClientSide() && !hasSkill() && getSkillCooldown() == 0 && this.getTarget() != null;
     }
     protected static final RawAnimation IDEA_ANIM = RawAnimation.begin().thenLoop("idle");
     protected static final RawAnimation WALK_ANIM = RawAnimation.begin().thenLoop("walk");
@@ -262,15 +272,15 @@ public class SkullKingEntity extends WitherSkeletonEntity implements GeoEntity, 
                 .triggerableAnim("summon_skull", SUMMON_SKULL_ANIM)
                 .setSoundKeyframeHandler(s -> {})
                 .setCustomInstructionKeyframeHandler(s -> {
-                    PlayerEntity player = ClientUtil.getClientPlayer();
+                    Player player = ClientUtil.getClientPlayer();
                     if ("runAttack".equals(s.keyframeData().getInstructions())) {
-                        player.playSound(SoundEvents.ENTITY_PLAYER_ATTACK_SWEEP, 1.0F, 1.0F);
+                        player.playSound(SoundEvents.PLAYER_ATTACK_SWEEP, 1.0F, 1.0F);
                         ClientPlayNetworking.send(new SkillPayload(
                                 "attack", this.getId()
                         ));
                     }
                     if ("runSuperAttack".equals(s.keyframeData().getInstructions())) {
-                        player.playSound(SoundEvents.ENTITY_PLAYER_SMALL_FALL, 1.0F, 1.0F);
+                        player.playSound(SoundEvents.PLAYER_SMALL_FALL, 1.0F, 1.0F);
                         ClientPlayNetworking.send(new SkillPayload(
                                 "super_attack", this.getId()
                         ));
@@ -293,48 +303,48 @@ public class SkullKingEntity extends WitherSkeletonEntity implements GeoEntity, 
         }
         return state.setAndContinue(IDEA_ANIM);
     }
-    public static DefaultAttributeContainer.Builder addAttributes() {
-        return HostileEntity.createHostileAttributes()
-                .add(EntityAttributes.MAX_HEALTH, 3500.0D)
-                .add(EntityAttributes.MOVEMENT_SPEED, 0.3D)
-                .add(EntityAttributes.ATTACK_DAMAGE, 90.0D)
-                .add(EntityAttributes.FOLLOW_RANGE, 24.0D)
-                .add(EntityAttributes.STEP_HEIGHT, 3.0);
+    public static AttributeSupplier.Builder addAttributes() {
+        return Monster.createMonsterAttributes()
+                .add(Attributes.MAX_HEALTH, 3500.0D)
+                .add(Attributes.MOVEMENT_SPEED, 0.3D)
+                .add(Attributes.ATTACK_DAMAGE, 90.0D)
+                .add(Attributes.FOLLOW_RANGE, 24.0D)
+                .add(Attributes.STEP_HEIGHT, 3.0);
     }
     public boolean hasSkill() {
-        return getDataTracker().get(HAS_SKILL);
+        return getEntityData().get(HAS_SKILL);
     }
     public int getSkillCooldown() {
-        return getDataTracker().get(SKILL_COOLDOWN);
+        return getEntityData().get(SKILL_COOLDOWN);
     }
     public int getSuperAttackSkillCooldown() {
-        return getDataTracker().get(SUPER_ATTACK_SKILL_COOLDOWN);
+        return getEntityData().get(SUPER_ATTACK_SKILL_COOLDOWN);
     }
     @Override
-    public void takeKnockback(double strength, double x, double z) {
-        if (!this.isDead() && !this.isAiDisabled()) super.takeKnockback(strength, x, z);
+    public void knockback(double strength, double x, double z) {
+        if (!this.isDeadOrDying() && !this.isNoAi()) super.knockback(strength, x, z);
     }
     public int getSummonSkullCooldown() {
-        return getDataTracker().get(SUMMON_SKULL_COOLDOWN);
+        return getEntityData().get(SUMMON_SKULL_COOLDOWN);
     }
     public void setHasSkill(boolean hasSkill) {
-        getDataTracker().set(HAS_SKILL, hasSkill);
+        getEntityData().set(HAS_SKILL, hasSkill);
     }
     public void setSkillCooldown(int cooldown) {
-        getDataTracker().set(SKILL_COOLDOWN, cooldown);
+        getEntityData().set(SKILL_COOLDOWN, cooldown);
     }
     public void setSuperAttackSkillCooldown(int cooldown) {
-        getDataTracker().set(SUPER_ATTACK_SKILL_COOLDOWN, cooldown);
+        getEntityData().set(SUPER_ATTACK_SKILL_COOLDOWN, cooldown);
     }
     public void setSummonSkullCooldown(int cooldown) {
-        getDataTracker().set(SUMMON_SKULL_COOLDOWN, cooldown);
+        getEntityData().set(SUMMON_SKULL_COOLDOWN, cooldown);
     }
     @Override
-    public boolean canPickupItem(ItemStack stack) {
+    public boolean canHoldItem(ItemStack stack) {
         return false;
     }
     @Override
-    protected void initEquipment(Random random, LocalDifficulty localDifficulty) {
+    protected void populateDefaultEquipmentSlots(RandomSource random, DifficultyInstance localDifficulty) {
     }
 
     @Override
@@ -342,7 +352,7 @@ public class SkullKingEntity extends WitherSkeletonEntity implements GeoEntity, 
     }
 
     @Override
-    public @Nullable LazyEntityReference<LivingEntity> getOwnerReference() {
+    public @Nullable EntityReference<LivingEntity> getOwnerReference() {
         return null;
     }
 
@@ -357,11 +367,11 @@ public class SkullKingEntity extends WitherSkeletonEntity implements GeoEntity, 
     }
 
     @Override
-    public void setOwner(@Nullable LazyEntityReference<LivingEntity> owner) {
+    public void setOwner(@Nullable EntityReference<LivingEntity> owner) {
 
     }
-    public boolean canTarget(LivingEntity target) {
-        if (target instanceof IModSkullEntity iModSkullEntity) return !iModSkullEntity.isOwner(this) && super.canTarget(target);
-        return super.canTarget(target);
+    public boolean canAttack(LivingEntity target) {
+        if (target instanceof IModSkullEntity iModSkullEntity) return !iModSkullEntity.isOwner(this) && super.canAttack(target);
+        return super.canAttack(target);
     }
 }

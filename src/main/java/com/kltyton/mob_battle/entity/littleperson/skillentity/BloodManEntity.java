@@ -1,18 +1,18 @@
 package com.kltyton.mob_battle.entity.littleperson.skillentity;
 
 import com.kltyton.mob_battle.entity.ModEntities;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.SpawnReason;
-import net.minecraft.entity.attribute.DefaultAttributeContainer;
-import net.minecraft.entity.mob.HostileEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 
 public class BloodManEntity extends RequestedLittlePersonEntity {
-    public BloodManEntity(EntityType<? extends HostileEntity> entityType, World world) {
+    public BloodManEntity(EntityType<? extends Monster> entityType, Level world) {
         super(entityType, world, 5);
         this.healPerSecond = 10.0F;
         this.blockChance = 30;
@@ -21,7 +21,7 @@ public class BloodManEntity extends RequestedLittlePersonEntity {
         setCooldownSeconds(10, 20, 15, 20, 30);
     }
 
-    public static DefaultAttributeContainer.Builder createLittlePersonAttributes() {
+    public static AttributeSupplier.Builder createLittlePersonAttributes() {
         return createRequestedAttributes(5500.0D, 95.0D, 0.5D, 40.0D, 0.0D);
     }
 
@@ -49,19 +49,19 @@ public class BloodManEntity extends RequestedLittlePersonEntity {
     }
 
     private void shootBloodBlades() {
-        if (!(this.getWorld() instanceof ServerWorld world)) {
+        if (!(this.level() instanceof ServerLevel world)) {
             return;
         }
         for (float yawOffset : new float[]{-10.0F, 0.0F, 10.0F}) {
-            SkillProjectileEntity projectile = ModEntities.BLOOD_SWORD_ENERGY.create(world, SpawnReason.MOB_SUMMONED);
+            SkillProjectileEntity projectile = ModEntities.BLOOD_SWORD_ENERGY.create(world, EntitySpawnReason.MOB_SUMMONED);
             if (projectile == null) {
                 continue;
             }
-            Vec3d direction = Vec3d.fromPolar(0.0F, this.getYaw() + yawOffset).normalize();
-            Vec3d start = this.getEyePos().add(direction.multiply(0.8D));
-            projectile.configure(this, start, direction.multiply(0.85D), 100.0F, 0.0F, true, true, false, 45);
-            world.spawnEntity(projectile);
+            Vec3 direction = Vec3.directionFromRotation(0.0F, this.getYRot() + yawOffset).normalize();
+            Vec3 start = this.getEyePosition().add(direction.scale(0.8D));
+            projectile.configure(this, start, direction.scale(0.85D), 100.0F, 0.0F, true, true, false, 45);
+            world.addFreshEntity(projectile);
         }
-        this.playSound(SoundEvents.ENTITY_PLAYER_ATTACK_SWEEP, 1.0F, 0.7F);
+        this.playSound(SoundEvents.PLAYER_ATTACK_SWEEP, 1.0F, 0.7F);
     }
 }

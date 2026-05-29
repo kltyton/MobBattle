@@ -4,61 +4,61 @@ import com.kltyton.mob_battle.entity.boss.dragon.EnderDragonAccessor;
 import com.kltyton.mob_battle.entity.boss.dragon.EnderDragonShadowEntity;
 import com.kltyton.mob_battle.entity.boss.dragon.EnderDragonSkillManager;
 import com.kltyton.mob_battle.sounds.ModSounds;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.boss.dragon.EnderDragonEntity;
-import net.minecraft.entity.boss.dragon.EnderDragonPart;
-import net.minecraft.entity.boss.dragon.phase.PhaseManager;
-import net.minecraft.entity.boss.dragon.phase.PhaseType;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.data.DataTracker;
-import net.minecraft.entity.data.TrackedData;
-import net.minecraft.entity.data.TrackedDataHandlerRegistry;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.registry.tag.DamageTypeTags;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.storage.ReadView;
-import net.minecraft.storage.WriteView;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.List;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.boss.EnderDragonPart;
+import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
+import net.minecraft.world.entity.boss.enderdragon.phases.EnderDragonPhase;
+import net.minecraft.world.entity.boss.enderdragon.phases.EnderDragonPhaseManager;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
-@Mixin(EnderDragonEntity.class)
+@Mixin(EnderDragon.class)
 @Implements(@Interface(iface = EnderDragonAccessor.class, prefix = "custom$"))
-public abstract class EnderDragonEntityMixin extends MobEntity {
+public abstract class EnderDragonEntityMixin extends Mob {
     // ==================== 新增字段（放在类顶部） ====================
     @Unique
-    private static final TrackedData<Boolean> IS_SHADOW = DataTracker.registerData(EnderDragonEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
+    private static final EntityDataAccessor<Boolean> IS_SHADOW = SynchedEntityData.defineId(EnderDragon.class, EntityDataSerializers.BOOLEAN);
     @Unique
     private EnderDragonShadowEntity shadow;
     @Unique
     private long shadowRespawnTime = -1L;
     @Unique
     public boolean custom$isShadow() {
-        return this.getDataTracker().get(IS_SHADOW);
+        return this.getEntityData().get(IS_SHADOW);
     }
     @Unique
     public void custom$setShadow(boolean shadow) {
-        this.getDataTracker().set(IS_SHADOW, shadow);
+        this.getEntityData().set(IS_SHADOW, shadow);
     }
-    @Inject(method = "initDataTracker", at = @At("RETURN"))
-    protected void initDataTracker(DataTracker.Builder builder, CallbackInfo ci) {
-        builder.add(IS_SHADOW, false);
+    @Inject(method = "defineSynchedData", at = @At("RETURN"))
+    protected void initDataTracker(SynchedEntityData.Builder builder, CallbackInfo ci) {
+        builder.define(IS_SHADOW, false);
     }
     @Shadow
     @Final
@@ -70,12 +70,12 @@ public abstract class EnderDragonEntityMixin extends MobEntity {
 
     @Shadow
     @Final
-    private PhaseManager phaseManager;
+    private EnderDragonPhaseManager phaseManager;
 
     @Shadow
-    protected abstract void parentDamage(ServerWorld world, DamageSource source, float amount);
+    protected abstract void reallyHurt(ServerLevel world, DamageSource source, float amount);
 
-    protected EnderDragonEntityMixin(EntityType<? extends MobEntity> entityType, World world) {
+    protected EnderDragonEntityMixin(EntityType<? extends Mob> entityType, Level world) {
         super(entityType, world);
     }
 
@@ -84,24 +84,24 @@ public abstract class EnderDragonEntityMixin extends MobEntity {
 
     @Inject(method = "<init>", at = @At("RETURN"))
     private void initSkillManager(CallbackInfo ci) {
-        EnderDragonEntity self = (EnderDragonEntity) (Object) this;
+        EnderDragon self = (EnderDragon) (Object) this;
         this.skillManager = new EnderDragonSkillManager(self);
     }
 
-    @Inject(method = "tickMovement", at = @At("HEAD"))
+    @Inject(method = "aiStep", at = @At("HEAD"))
     private void tickSkills(CallbackInfo ci) {
-        EnderDragonEntity self = (EnderDragonEntity) (Object) this;
-        if (self.getWorld() instanceof ServerWorld serverWorld) {
+        EnderDragon self = (EnderDragon) (Object) this;
+        if (self.level() instanceof ServerLevel serverWorld) {
             skillManager.tick(serverWorld);
         }
     }
     // ==================== 新增：50%血量召唤 + 复活 + 死亡联动 ====================
-    @Inject(method = "tickMovement", at = @At("TAIL"))
+    @Inject(method = "aiStep", at = @At("TAIL"))
     private void manageShadowDragon(CallbackInfo ci) {
-        EnderDragonEntity self = (EnderDragonEntity) (Object) this;
-        if (!(self.getWorld() instanceof ServerWorld world)) return;
+        EnderDragon self = (EnderDragon) (Object) this;
+        if (!(self.level() instanceof ServerLevel world)) return;
         if (self instanceof EnderDragonShadowEntity) return;
-        if (self.isDead()) {
+        if (self.isDeadOrDying()) {
             if (shadow != null) {
                 shadow.kill(world);
                 shadow = null;
@@ -117,65 +117,65 @@ public abstract class EnderDragonEntityMixin extends MobEntity {
         }
 
         // 复活计时器
-        if (shadowRespawnTime > 0 && world.getTime() >= shadowRespawnTime && shadow == null) {
+        if (shadowRespawnTime > 0 && world.getGameTime() >= shadowRespawnTime && shadow == null) {
             summonShadow(world, self);
             shadowRespawnTime = -1L;
         }
     }
     @Unique
-    private void summonShadow(ServerWorld world, EnderDragonEntity owner) {
+    private void summonShadow(ServerLevel world, EnderDragon owner) {
         EnderDragonShadowEntity newShadow = new EnderDragonShadowEntity(EntityType.ENDER_DRAGON, world);
         newShadow.setOwner(owner);
-        newShadow.refreshPositionAndAngles(
+        newShadow.snapTo(
                 owner.getX() + 12 + world.random.nextDouble() * 8,
                 owner.getY() + 10,
                 owner.getZ() + 12 + world.random.nextDouble() * 8,
                 world.random.nextFloat() * 360, 0
         );
-        newShadow.getPhaseManager().setPhase(PhaseType.HOLDING_PATTERN);
-        newShadow.getAttributeInstance(EntityAttributes.MAX_HEALTH).setBaseValue(10000);
+        newShadow.getPhaseManager().setPhase(EnderDragonPhase.HOLDING_PATTERN);
+        newShadow.getAttribute(Attributes.MAX_HEALTH).setBaseValue(10000);
         newShadow.setHealth(10000);
         ((EnderDragonAccessor) newShadow).setShadow(true);
-        world.spawnEntity(newShadow);
+        world.addFreshEntity(newShadow);
         this.shadow = newShadow;
         // 特效
-        world.spawnParticles(ParticleTypes.EXPLOSION_EMITTER, newShadow.getX(), newShadow.getY() + 5, newShadow.getZ(), 1, 0, 0, 0, 0);
-        world.playSound(null, newShadow.getBlockPos(), SoundEvents.ENTITY_ENDER_DRAGON_GROWL, SoundCategory.HOSTILE, 6.0F, 0.8F);
+        world.sendParticles(ParticleTypes.EXPLOSION_EMITTER, newShadow.getX(), newShadow.getY() + 5, newShadow.getZ(), 1, 0, 0, 0, 0);
+        world.playSound(null, newShadow.blockPosition(), SoundEvents.ENDER_DRAGON_GROWL, SoundSource.HOSTILE, 6.0F, 0.8F);
     }
-    @Inject(method = "tickMovement", at = @At(value = "INVOKE",
-            target = "Lnet/minecraft/entity/boss/dragon/EnderDragonEntity;move(Lnet/minecraft/entity/MovementType;Lnet/minecraft/util/math/Vec3d;)V",
+    @Inject(method = "aiStep", at = @At(value = "INVOKE",
+            target = "Lnet/minecraft/world/entity/boss/enderdragon/EnderDragon;move(Lnet/minecraft/world/entity/MoverType;Lnet/minecraft/world/phys/Vec3;)V",
             shift = At.Shift.AFTER))
     private void checkRushCollision(CallbackInfo ci) {
-        EnderDragonEntity self = (EnderDragonEntity) (Object) this;
-        if (!(self.getWorld() instanceof ServerWorld world)) return;
+        EnderDragon self = (EnderDragon) (Object) this;
+        if (!(self.level() instanceof ServerLevel world)) return;
 
         if (skillManager != null && skillManager.isChargingRush()) {
             // 检测头部/身体附近实体（类似原版翅膀碰撞，但更强）
-            Box headBox = this.head.getBoundingBox().expand(2.0, 1.5, 2.0);
-            Box bodyBox = this.body.getBoundingBox().expand(3.0, 2.0, 3.0);
-            if (world.getTime() > skillManager.rushEndTime) return;
-            for (Entity entity : world.getOtherEntities(self, headBox.union(bodyBox))) {
+            AABB headBox = this.head.getBoundingBox().inflate(2.0, 1.5, 2.0);
+            AABB bodyBox = this.body.getBoundingBox().inflate(3.0, 2.0, 3.0);
+            if (world.getGameTime() > skillManager.rushEndTime) return;
+            for (Entity entity : world.getEntities(self, headBox.minmax(bodyBox))) {
                 if (entity instanceof LivingEntity living && !entity.isSpectator() && living != self) {
-                    if (living instanceof PlayerEntity player && (player.isCreative() || player.isSpectator())) continue;
-                    if (living.isTeammate(self)) continue;  // 跳过队友
+                    if (living instanceof Player player && (player.isCreative() || player.isSpectator())) continue;
+                    if (living.isAlliedTo(self)) continue;  // 跳过队友
                     // 330点物理伤害（用mobAttack来源）
-                    DamageSource source = self.getDamageSources().mobAttack(self);
-                    living.damage(world, source, 330.0F);
+                    DamageSource source = self.damageSources().mobAttack(self);
+                    living.hurtServer(world, source, 330.0F);
 
                     // 击退翻倍（原版冲撞击退 ≈ 2~3，这里翻倍 ≈ 4~6）
-                    Vec3d knockDir = living.getPos().subtract(self.getPos()).normalize();
-                    living.addVelocity(knockDir.x * 1.2, 0.8, knockDir.z * 1.2); // y向上抬高
-                    living.velocityModified = true;
+                    Vec3 knockDir = living.position().subtract(self.position()).normalize();
+                    living.push(knockDir.x * 1.2, 0.8, knockDir.z * 1.2); // y向上抬高
+                    living.hurtMarked = true;
 
                     // 失明3秒
-                    living.addStatusEffect(new StatusEffectInstance(StatusEffects.BLINDNESS, 60, 0));
+                    living.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, 60, 0));
 
                     // 铁砧落地音效
                     world.playSound(null, living.getX(), living.getY(), living.getZ(),
-                            ModSounds.PLAYER_ATTACK_SOUND_EVENT, SoundCategory.HOSTILE, 1.8F, 0.7F + world.random.nextFloat() * 0.4F);
+                            ModSounds.PLAYER_ATTACK_SOUND_EVENT, SoundSource.HOSTILE, 1.8F, 0.7F + world.random.nextFloat() * 0.4F);
 
                     // 可选：粒子冲击
-                    world.spawnParticles(ParticleTypes.EXPLOSION, living.getX(), living.getY() + 1, living.getZ(), 8, 0.6, 0.6, 0.6, 0.1);
+                    world.sendParticles(ParticleTypes.EXPLOSION, living.getX(), living.getY() + 1, living.getZ(), 8, 0.6, 0.6, 0.6, 0.1);
                     break;
                 }
             }
@@ -186,10 +186,10 @@ public abstract class EnderDragonEntityMixin extends MobEntity {
 
     // ==================== 1. 血量改为 50000 ====================
     @ModifyArg(
-            method = "createEnderDragonAttributes",
+            method = "createAttributes",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/entity/attribute/DefaultAttributeContainer$Builder;add(Lnet/minecraft/registry/entry/RegistryEntry;D)Lnet/minecraft/entity/attribute/DefaultAttributeContainer$Builder;",
+                    target = "Lnet/minecraft/world/entity/ai/attributes/AttributeSupplier$Builder;add(Lnet/minecraft/core/Holder;D)Lnet/minecraft/world/entity/ai/attributes/AttributeSupplier$Builder;",
                     ordinal = 0
             )
     )
@@ -200,34 +200,37 @@ public abstract class EnderDragonEntityMixin extends MobEntity {
     // ==================== 2. 整体尺寸放大 1.5 倍（碰撞箱完美放大） ====================
     @Redirect(
             method = "<init>",
-            at = @At(value = "NEW", target = "Lnet/minecraft/entity/boss/dragon/EnderDragonPart;")
+            at = @At(value = "NEW", target = "Lnet/minecraft/world/entity/boss/EnderDragonPart;")
     )
-    private EnderDragonPart scalePart(EnderDragonEntity owner, String name, float width, float height) {
+    private EnderDragonPart scalePart(EnderDragon owner, String name, float width, float height) {
         return new EnderDragonPart(owner, name, width * SCALE, height * SCALE);
     }
 
     // ==================== 3. 对爆炸伤害 60% 免伤（实际只承受40%） ====================
     @ModifyVariable(
-            method = "damagePart",
+            method = "hurt(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/boss/EnderDragonPart;Lnet/minecraft/world/damagesource/DamageSource;F)Z",
             at = @At("HEAD"),
             argsOnly = true
     )
-    private float reduceExplosionDamage(float amount, ServerWorld world, EnderDragonPart part, DamageSource source) {
-        if (source.isIn(DamageTypeTags.IS_EXPLOSION)) {
+    private float reduceExplosionDamage(float amount, ServerLevel world, EnderDragonPart part, DamageSource source) {
+        if (source.is(DamageTypeTags.IS_EXPLOSION)) {
             return amount * 0.4F;
         }
         return amount;
     }
 
     // ==================== 4. 翅膀尖端持续紫色粒子（每 tick 生成，更明显） ====================
-    @Inject(method = "tickMovement", at = @At("TAIL"))
+    @Inject(method = "aiStep", at = @At("TAIL"))
     private void addWingTipParticles(CallbackInfo ci) {
-        EnderDragonEntity dragon = (EnderDragonEntity) (Object) this;
-        if (dragon.isDead()) return;
-        if (dragon.getWorld().isClient) {
+        EnderDragon dragon = (EnderDragon) (Object) this;
+        if (dragon.isDeadOrDying()) return;
+        if (dragon.level().isClientSide) {
             // 分别为左右翅膀生成尾迹
-            spawnJetParticle(dragon.leftWing, true);
-            spawnJetParticle(dragon.rightWing, false);
+            EnderDragonPart[] parts = dragon.getSubEntities();
+            if (parts.length > 7) {
+                spawnJetParticle(parts[7], true);
+                spawnJetParticle(parts[6], false);
+            }
         }
     }
     @Unique
@@ -236,11 +239,11 @@ public abstract class EnderDragonEntityMixin extends MobEntity {
     private double lastRightWingX, lastRightWingY, lastRightWingZ;
     @Unique
     private void spawnJetParticle(EnderDragonPart wing, boolean isLeft) {
-        World world = wing.getWorld();
+        Level world = wing.level();
 
         // 获取当前位置
         double curX = wing.getX();
-        double curY = wing.getY() + (wing.getHeight() / 2.0); // 从翅膀中部喷出
+        double curY = wing.getY() + (wing.getBbHeight() / 2.0); // 从翅膀中部喷出
         double curZ = wing.getZ();
 
         // 获取上一帧位置（如果是第一次执行则初始化）
@@ -257,7 +260,7 @@ public abstract class EnderDragonEntityMixin extends MobEntity {
             double z = prevZ + (curZ - prevZ) * f;
 
             // 1. 核心浓烟效果 (DRAGON_BREATH)
-            world.addParticleClient(
+            world.addParticle(
                     ParticleTypes.DRAGON_BREATH,
                     x, y, z,
                     (world.random.nextDouble() - 0.5) * 0.1, // 稍微抖动
@@ -267,7 +270,7 @@ public abstract class EnderDragonEntityMixin extends MobEntity {
 
             // 2. 边缘闪烁效果 (REVERSE_PORTAL) - 只有部分粒子生成这个，增加层次感
             if (world.random.nextFloat() > 0.7f) {
-                world.addParticleClient(
+                world.addParticle(
                         ParticleTypes.REVERSE_PORTAL,
                         x, y, z,
                         0, 0, 0
@@ -283,72 +286,72 @@ public abstract class EnderDragonEntityMixin extends MobEntity {
         }
     }
 
-    @Inject(method = "launchLivingEntities", at = @At("HEAD"), cancellable = true)
-    private void cancelLaunchLivingEntities(ServerWorld world, List<Entity> entities, CallbackInfo ci) {
+    @Inject(method = "knockBack", at = @At("HEAD"), cancellable = true)
+    private void cancelLaunchLivingEntities(ServerLevel world, List<Entity> entities, CallbackInfo ci) {
         ci.cancel();
         double d = (this.body.getBoundingBox().minX + this.body.getBoundingBox().maxX) / 2.0;
         double e = (this.body.getBoundingBox().minZ + this.body.getBoundingBox().maxZ) / 2.0;
 
         for (Entity entity : entities) {
             if (entity instanceof LivingEntity livingEntity) {
-                if (livingEntity instanceof PlayerEntity player && (player.isCreative() || player.isSpectator())) continue;
-                if (livingEntity.isTeammate(this)) continue;
+                if (livingEntity instanceof Player player && (player.isCreative() || player.isSpectator())) continue;
+                if (livingEntity.isAlliedTo(this)) continue;
                 double f = entity.getX() - d;
                 double g = entity.getZ() - e;
                 double h = Math.max(f * f + g * g, 0.1);
-                entity.addVelocity(f / h * 4.0, 0.2F, g / h * 4.0);
-                if (this.phaseManager.getCurrent() != null && !this.phaseManager.getCurrent().isSittingOrHovering() && livingEntity.getLastAttackedTime() < entity.age - 2) {
-                    DamageSource damageSource = this.getDamageSources().mobAttack(this);
-                    entity.damage(world, damageSource, 5.0F);
-                    EnchantmentHelper.onTargetDamaged(world, entity, damageSource);
+                entity.push(f / h * 4.0, 0.2F, g / h * 4.0);
+                if (this.phaseManager.getCurrentPhase() != null && !this.phaseManager.getCurrentPhase().isSitting() && livingEntity.getLastHurtByMobTimestamp() < entity.tickCount - 2) {
+                    DamageSource damageSource = this.damageSources().mobAttack(this);
+                    entity.hurtServer(world, damageSource, 5.0F);
+                    EnchantmentHelper.doPostAttackEffects(world, entity, damageSource);
                 }
             }
         }
     }
-    @Inject(method = "damageLivingEntities", at = @At("HEAD"), cancellable = true)
-    private void cancelDamageLivingEntities(ServerWorld world, List<Entity> entities, CallbackInfo ci) {
+    @Inject(method = "hurt(Lnet/minecraft/server/level/ServerLevel;Ljava/util/List;)V", at = @At("HEAD"), cancellable = true)
+    private void cancelDamageLivingEntities(ServerLevel world, List<Entity> entities, CallbackInfo ci) {
         ci.cancel();
         for (Entity entity : entities) {
             if (entity instanceof LivingEntity) {
-                if (entity instanceof PlayerEntity player && (player.isCreative() || player.isSpectator())) continue;
-                if (entity.isTeammate(this)) continue;
-                DamageSource damageSource = this.getDamageSources().mobAttack(this);
-                entity.damage(world, damageSource, 10.0F);
-                EnchantmentHelper.onTargetDamaged(world, entity, damageSource);
+                if (entity instanceof Player player && (player.isCreative() || player.isSpectator())) continue;
+                if (entity.isAlliedTo(this)) continue;
+                DamageSource damageSource = this.damageSources().mobAttack(this);
+                entity.hurtServer(world, damageSource, 10.0F);
+                EnchantmentHelper.doPostAttackEffects(world, entity, damageSource);
             }
         }
     }
-    @Inject(method = "writeCustomData", at = @At("RETURN"))
-    protected void writeCustomData(WriteView view, CallbackInfo ci) {
+    @Inject(method = "addAdditionalSaveData", at = @At("RETURN"))
+    protected void writeCustomData(ValueOutput view, CallbackInfo ci) {
         view.putBoolean("IsShadow", this.custom$isShadow());
     }
 
-    @Inject(method = "readCustomData", at = @At("RETURN"))
-    protected void readCustomData(ReadView view, CallbackInfo ci) {
-        this.custom$setShadow(view.getBoolean("IsShadow", false));
+    @Inject(method = "readAdditionalSaveData", at = @At("RETURN"))
+    protected void readCustomData(ValueInput view, CallbackInfo ci) {
+        this.custom$setShadow(view.getBooleanOr("IsShadow", false));
     }
-    @Inject(method = "damagePart", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "hurt(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/boss/EnderDragonPart;Lnet/minecraft/world/damagesource/DamageSource;F)Z", at = @At("HEAD"), cancellable = true)
     private void removeAllDragonInvulnerability(
-            ServerWorld world,
+            ServerLevel world,
             EnderDragonPart part,
             DamageSource source,
             float amount,
             CallbackInfoReturnable<Boolean> cir
     ) {
-        if (source.getSource() instanceof EnderDragonEntity || source.getAttacker() instanceof EnderDragonEntity) {
+        if (source.getDirectEntity() instanceof EnderDragon || source.getEntity() instanceof EnderDragon) {
             cir.setReturnValue(false);
             return;
         }
-        EnderDragonEntity self = (EnderDragonEntity)(Object)this;
+        EnderDragon self = (EnderDragon)(Object)this;
         if (amount <= 0.0F) {
             cir.setReturnValue(false);
             return;
         }
-        this.parentDamage(world, source, amount);
+        this.reallyHurt(world, source, amount);
         // 保留原版死亡切相逻辑，避免直接把整套 Boss death sequence 弄坏
-        if (self.getPhaseManager().getCurrent() != null && self.isDead() && self.getPhaseManager().getCurrent().getType() != PhaseType.DYING) {
+        if (self.getPhaseManager().getCurrentPhase() != null && self.isDeadOrDying() && self.getPhaseManager().getCurrentPhase().getPhase() != EnderDragonPhase.DYING) {
             self.setHealth(1.0F);
-            self.getPhaseManager().setPhase(PhaseType.DYING);
+            self.getPhaseManager().setPhase(EnderDragonPhase.DYING);
         }
 
         cir.setReturnValue(true);

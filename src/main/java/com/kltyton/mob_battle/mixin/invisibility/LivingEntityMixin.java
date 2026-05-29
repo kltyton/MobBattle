@@ -3,19 +3,19 @@ package com.kltyton.mob_battle.mixin.invisibility;
 import com.kltyton.mob_battle.accessor.IModEntityRenderState;
 import com.kltyton.mob_battle.effect.ModEffects;
 import com.kltyton.mob_battle.entity.ModEntityAttributes;
-import net.minecraft.entity.Attackable;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.attribute.AttributeContainer;
-import net.minecraft.entity.attribute.EntityAttribute;
-import net.minecraft.entity.data.DataTracker;
-import net.minecraft.entity.data.TrackedData;
-import net.minecraft.entity.data.TrackedDataHandlerRegistry;
-import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.world.World;
-import net.minecraft.world.waypoint.ServerWaypoint;
+import net.minecraft.core.Holder;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.entity.Attackable;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.AttributeMap;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.waypoints.WaypointTransmitter;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -25,47 +25,47 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(LivingEntity.class)
 @Implements(@Interface(iface = IModEntityRenderState.class, prefix = "custom$"))
-public abstract class LivingEntityMixin extends Entity implements Attackable, ServerWaypoint {
+public abstract class LivingEntityMixin extends Entity implements Attackable, WaypointTransmitter {
     @Shadow
-    public abstract boolean hasStatusEffect(RegistryEntry<StatusEffect> effect);
+    public abstract boolean hasEffect(Holder<MobEffect> effect);
 
     @Unique
-    private static final TrackedData<Boolean> TRUE_INVISIBLE = DataTracker.registerData(LivingEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
+    private static final EntityDataAccessor<Boolean> TRUE_INVISIBLE = SynchedEntityData.defineId(LivingEntity.class, EntityDataSerializers.BOOLEAN);
 
-    public LivingEntityMixin(EntityType<?> type, World world) {
+    public LivingEntityMixin(EntityType<?> type, Level world) {
         super(type, world);
     }
 
     @Unique
     public void custom$setTrueInvisible(boolean invisible) {
-        this.dataTracker.set(TRUE_INVISIBLE, invisible);
+        this.entityData.set(TRUE_INVISIBLE, invisible);
     }
 
     @Unique
     public boolean custom$isTrueInvisible() {
-        return this.dataTracker.get(TRUE_INVISIBLE);
+        return this.entityData.get(TRUE_INVISIBLE);
     }
-    @Inject(method = "initDataTracker", at = @At("TAIL"))
-    protected void initCustomDataTracker(DataTracker.Builder builder, CallbackInfo ci) {
-        builder.add(TRUE_INVISIBLE, false);
+    @Inject(method = "defineSynchedData", at = @At("TAIL"))
+    protected void initCustomDataTracker(SynchedEntityData.Builder builder, CallbackInfo ci) {
+        builder.define(TRUE_INVISIBLE, false);
     }
-    @Inject(method = "updatePotionVisibility", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;updatePotionSwirls()V"))
+    @Inject(method = "updateInvisibilityStatus", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;updateSynchronizedMobEffectParticles()V"))
     protected void updatePotionVisibility(CallbackInfo ci) {
-        this.custom$setTrueInvisible(this.hasStatusEffect(ModEffects.TRUE_INVISIBLE_ENTRY));
+        this.custom$setTrueInvisible(this.hasEffect(ModEffects.TRUE_INVISIBLE_ENTRY));
     }
 
     @ModifyArg(
-            method = "updatePotionVisibility",
+            method = "updateInvisibilityStatus",
             at = @At(
-                    value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;setInvisible(Z)V",
+                    value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;setInvisible(Z)V",
                     ordinal = 1
             )
     )
     protected boolean modifyInvisible(boolean invisible) {
-        return invisible || this.hasStatusEffect(ModEffects.TRUE_INVISIBLE_ENTRY);
+        return invisible || this.hasEffect(ModEffects.TRUE_INVISIBLE_ENTRY);
     }
     @ModifyVariable(
-            method = "damage",
+            method = "hurtServer",
             at = @At("HEAD"),
             argsOnly = true,
             index = 3
@@ -73,8 +73,8 @@ public abstract class LivingEntityMixin extends Entity implements Attackable, Se
     private float applyBlockEffectReduction(float amount) {
         LivingEntity entity = (LivingEntity) (Object) this;
         // 检查实体是否有格挡效果
-        if (entity.hasStatusEffect(ModEffects.BLOCK_ENTRY)) {
-            int amplifier = entity.getStatusEffect(ModEffects.BLOCK_ENTRY).getAmplifier();
+        if (entity.hasEffect(ModEffects.BLOCK_ENTRY)) {
+            int amplifier = entity.getEffect(ModEffects.BLOCK_ENTRY).getAmplifier();
             int reduction = amplifier + 1;
             amount = Math.max(0, amount - reduction);
         }
@@ -82,13 +82,13 @@ public abstract class LivingEntityMixin extends Entity implements Attackable, Se
     }
 
     @Shadow
-    public abstract AttributeContainer getAttributes();
+    public abstract AttributeMap getAttributes();
 
     @Shadow
-    public abstract double getAttributeValue(RegistryEntry<EntityAttribute> attribute);
+    public abstract double getAttributeValue(Holder<Attribute> attribute);
 
     @ModifyVariable(
-            method = "damage",
+            method = "hurtServer",
             at = @At("HEAD"),
             argsOnly = true,
             index = 3

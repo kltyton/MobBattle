@@ -11,35 +11,46 @@ import com.kltyton.mob_battle.network.packet.SkillPayload;
 import com.kltyton.mob_battle.utils.CombatEffectUtil;
 import com.kltyton.mob_battle.utils.EntityUtil;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.ai.goal.*;
-import net.minecraft.entity.attribute.DefaultAttributeContainer;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.boss.BossBar;
-import net.minecraft.entity.boss.ServerBossBar;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.data.DataTracker;
-import net.minecraft.entity.data.TrackedData;
-import net.minecraft.entity.data.TrackedDataHandlerRegistry;
-import net.minecraft.entity.mob.HostileEntity;
-import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.entity.mob.Monster;
-import net.minecraft.entity.passive.IronGolemEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.storage.ReadView;
-import net.minecraft.storage.WriteView;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerBossEvent;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.Mth;
+import net.minecraft.world.BossEvent;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.goal.GolemRandomStrollInVillageGoal;
+import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
+import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
+import net.minecraft.world.entity.ai.goal.MoveBackToVillageGoal;
+import net.minecraft.world.entity.ai.goal.MoveTowardsTargetGoal;
+import net.minecraft.world.entity.ai.goal.OfferFlowerGoal;
+import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
+import net.minecraft.world.entity.ai.goal.target.DefendVillageTargetGoal;
+import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
+import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
+import net.minecraft.world.entity.ai.goal.target.ResetUniversalAngerTargetGoal;
+import net.minecraft.world.entity.animal.IronGolem;
+import net.minecraft.world.entity.monster.Enemy;
+import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib.animatable.GeoEntity;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
@@ -54,7 +65,7 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
-public class HulkbusterEntity extends IronGolemEntity implements GeoEntity, ModBaseIronGolemEntity, ModSkillEntityType {
+public class HulkbusterEntity extends IronGolem implements GeoEntity, ModBaseIronGolemEntity, ModSkillEntityType {
     public static final int SKILL_COOLDOWN_MAX = 20;
     public static final int SUPER_ATTACK_COOLDOWN_MAX = 8 * 20;
     public static final int MINI_ATTACK_COOLDOWN_MAX = 18 * 20;
@@ -62,36 +73,36 @@ public class HulkbusterEntity extends IronGolemEntity implements GeoEntity, ModB
     public static final int CLAP_HANDS_COOLDOWN_MAX = 20 * 20;
     public static final int PUNCH_COOLDOWN_MAX = 25 * 20;
 
-    private final ServerBossBar bossBar = new ServerBossBar(
-            Text.empty(),
-            BossBar.Color.PURPLE,
-            BossBar.Style.PROGRESS
+    private final ServerBossEvent bossBar = new ServerBossEvent(
+            Component.empty(),
+            BossEvent.BossBarColor.PURPLE,
+            BossEvent.BossBarOverlay.PROGRESS
     );
-    public static final TrackedData<Boolean> HAS_SKILL = DataTracker.registerData(HulkbusterEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
-    public static final TrackedData<Integer> SKILL_COOLDOWN = DataTracker.registerData(HulkbusterEntity.class, TrackedDataHandlerRegistry.INTEGER);
-    public static final TrackedData<Integer> SUPER_ATTACK_SKILL_COOLDOWN = DataTracker.registerData(HulkbusterEntity.class, TrackedDataHandlerRegistry.INTEGER);
-    public static final TrackedData<Integer> MINI_ATTACK_SKILL_COOLDOWN = DataTracker.registerData(HulkbusterEntity.class, TrackedDataHandlerRegistry.INTEGER);
-    public static final TrackedData<Integer> MAX_ATTACK_SKILL_COOLDOWN = DataTracker.registerData(HulkbusterEntity.class, TrackedDataHandlerRegistry.INTEGER);
-    public static final TrackedData<Integer> CLAP_HANDS_COOLDOWN = DataTracker.registerData(HulkbusterEntity.class, TrackedDataHandlerRegistry.INTEGER);
-    public static final TrackedData<Integer> PUNCH_COOLDOWN = DataTracker.registerData(HulkbusterEntity.class, TrackedDataHandlerRegistry.INTEGER);
+    public static final EntityDataAccessor<Boolean> HAS_SKILL = SynchedEntityData.defineId(HulkbusterEntity.class, EntityDataSerializers.BOOLEAN);
+    public static final EntityDataAccessor<Integer> SKILL_COOLDOWN = SynchedEntityData.defineId(HulkbusterEntity.class, EntityDataSerializers.INT);
+    public static final EntityDataAccessor<Integer> SUPER_ATTACK_SKILL_COOLDOWN = SynchedEntityData.defineId(HulkbusterEntity.class, EntityDataSerializers.INT);
+    public static final EntityDataAccessor<Integer> MINI_ATTACK_SKILL_COOLDOWN = SynchedEntityData.defineId(HulkbusterEntity.class, EntityDataSerializers.INT);
+    public static final EntityDataAccessor<Integer> MAX_ATTACK_SKILL_COOLDOWN = SynchedEntityData.defineId(HulkbusterEntity.class, EntityDataSerializers.INT);
+    public static final EntityDataAccessor<Integer> CLAP_HANDS_COOLDOWN = SynchedEntityData.defineId(HulkbusterEntity.class, EntityDataSerializers.INT);
+    public static final EntityDataAccessor<Integer> PUNCH_COOLDOWN = SynchedEntityData.defineId(HulkbusterEntity.class, EntityDataSerializers.INT);
     private final Set<Integer> punchHitEntities = new HashSet<>();
     private boolean punching;
     private int deathAnimationTicks;
     @Override
-    protected void initDataTracker(DataTracker.Builder builder) {
-        super.initDataTracker(builder);
-        builder.add(HAS_SKILL, false);
-        builder.add(SKILL_COOLDOWN, SKILL_COOLDOWN_MAX);
-        builder.add(SUPER_ATTACK_SKILL_COOLDOWN, SUPER_ATTACK_COOLDOWN_MAX);
-        builder.add(MINI_ATTACK_SKILL_COOLDOWN, MINI_ATTACK_COOLDOWN_MAX);
-        builder.add(MAX_ATTACK_SKILL_COOLDOWN, MAX_ATTACK_COOLDOWN_MAX);
-        builder.add(CLAP_HANDS_COOLDOWN, CLAP_HANDS_COOLDOWN_MAX);
-        builder.add(PUNCH_COOLDOWN, PUNCH_COOLDOWN_MAX);
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(HAS_SKILL, false);
+        builder.define(SKILL_COOLDOWN, SKILL_COOLDOWN_MAX);
+        builder.define(SUPER_ATTACK_SKILL_COOLDOWN, SUPER_ATTACK_COOLDOWN_MAX);
+        builder.define(MINI_ATTACK_SKILL_COOLDOWN, MINI_ATTACK_COOLDOWN_MAX);
+        builder.define(MAX_ATTACK_SKILL_COOLDOWN, MAX_ATTACK_COOLDOWN_MAX);
+        builder.define(CLAP_HANDS_COOLDOWN, CLAP_HANDS_COOLDOWN_MAX);
+        builder.define(PUNCH_COOLDOWN, PUNCH_COOLDOWN_MAX);
     }
-    public HulkbusterEntity(EntityType<? extends IronGolemEntity> entityType, World world) {
+    public HulkbusterEntity(EntityType<? extends IronGolem> entityType, Level world) {
         super(entityType, world);
         this.setHasSkill(false);
-        this.setAiDisabled(false);
+        this.setNoAi(false);
         this.setSkillCooldown(SKILL_COOLDOWN_MAX);
         this.lookControl = new BigBossLookControl(this);
         this.moveControl = new BigBossMoveControl(this);
@@ -100,12 +111,12 @@ public class HulkbusterEntity extends IronGolemEntity implements GeoEntity, ModB
     @Override
     public void tick() {
         super.tick();
-        if (!this.getWorld().isClient()) {
+        if (!this.level().isClientSide()) {
             if (this.deathAnimationTicks > 0) {
                 tickDeathAnimation();
                 return;
             }
-            if(this.age % 20 == 0) this.heal(1);
+            if(this.tickCount % 20 == 0) this.heal(1);
             // 冷却递减
             int cd = getSkillCooldown();
             if (cd > 0) setSkillCooldown(cd - 1);
@@ -120,51 +131,51 @@ public class HulkbusterEntity extends IronGolemEntity implements GeoEntity, ModB
             int punchCd = getPunchCooldown();
             if (punchCd > 0) setPunchCooldown(punchCd - 1);
             if (this.punching) {
-                tickPunch((ServerWorld) this.getWorld());
+                tickPunch((ServerLevel) this.level());
             }
             if (this.canMaxAttack()) {
                 performMaxAttack();
             }
             if (!hasSkill()) {
-                this.setAiDisabled(false);
+                this.setNoAi(false);
             }
         }
     }
     @Override
-    public void takeKnockback(double strength, double x, double z) {
+    public void knockback(double strength, double x, double z) {
     }
     @Override
-    public void setCustomName(@Nullable Text name) {
+    public void setCustomName(@Nullable Component name) {
         super.setCustomName(name);
         updateBossBar();
     }
     @Override
-    public void onStartedTrackingBy(ServerPlayerEntity player) {
-        super.onStartedTrackingBy(player);
-        CustomBossBarSync.add(player, this.bossBar.getUuid(), CustomBossBarStyles.HULKBUSTER);
+    public void startSeenByPlayer(ServerPlayer player) {
+        super.startSeenByPlayer(player);
+        CustomBossBarSync.add(player, this.bossBar.getId(), CustomBossBarStyles.HULKBUSTER);
         this.bossBar.addPlayer(player);
     }
     @Override
-    public void onStoppedTrackingBy(ServerPlayerEntity player) {
-        super.onStoppedTrackingBy(player);
+    public void stopSeenByPlayer(ServerPlayer player) {
+        super.stopSeenByPlayer(player);
         this.bossBar.removePlayer(player);
-        CustomBossBarSync.remove(player, this.bossBar.getUuid());
+        CustomBossBarSync.remove(player, this.bossBar.getId());
     }
     @Override
-    protected void mobTick(ServerWorld world) {
-        super.mobTick(world);
+    protected void customServerAiStep(ServerLevel world) {
+        super.customServerAiStep(world);
         updateBossBar();
     }
     @Override
-    public void readCustomData(ReadView nbt) {
-        super.readCustomData(nbt);
+    public void readAdditionalSaveData(ValueInput nbt) {
+        super.readAdditionalSaveData(nbt);
         if (this.hasCustomName()) {
             updateBossBar();
         }
     }
     @Override
-    public void writeCustomData(WriteView nbt) {
-        super.writeCustomData(nbt);
+    public void addAdditionalSaveData(ValueOutput nbt) {
+        super.addAdditionalSaveData(nbt);
     }
     @Override
     public void setHealth(float health) {
@@ -175,47 +186,47 @@ public class HulkbusterEntity extends IronGolemEntity implements GeoEntity, ModB
     }
 
     private void updateBossBar() {
-        this.bossBar.setPercent(this.getHealth() / this.getMaxHealth());
+        this.bossBar.setProgress(this.getHealth() / this.getMaxHealth());
         this.bossBar.setName(this.getDisplayName().copy().append(" | " + (int) Math.ceil(this.getHealth()) + "/" + (int) this.getMaxHealth()));
     }
     @Override
-    public boolean isInAttackRange(LivingEntity entity) {
-        Box attackBox = this.getAttackBox().expand(1.05);
-        return attackBox.intersects(entity.getHitbox());
+    public boolean isWithinMeleeAttackRange(LivingEntity entity) {
+        AABB attackBox = this.getAttackBoundingBox().inflate(1.05);
+        return attackBox.intersects(entity.getBoundingBox());
     }
-    public boolean tryAttackBase(ServerWorld world, LivingEntity target) {
+    public boolean tryAttackBase(ServerLevel world, LivingEntity target) {
         if (!ModSkillEntityType.canSkill(this)) return false;
-        return tryAttackBaseDamage(world, target, (float) this.getAttributeValue(EntityAttributes.ATTACK_DAMAGE));
+        return tryAttackBaseDamage(world, target, (float) this.getAttributeValue(Attributes.ATTACK_DAMAGE));
     }
-    public boolean tryAttackBaseDamage(ServerWorld world, Entity target, float damage) {
+    public boolean tryAttackBaseDamage(ServerLevel world, Entity target, float damage) {
         if (!ModSkillEntityType.canSkill(this)) return false;
         float f = damage;
-        ItemStack itemStack = this.getWeaponStack();
-        DamageSource damageSource = Optional.ofNullable(itemStack.getItem().getDamageSource(this)).orElse(this.getDamageSources().mobAttack(this));
-        f = EnchantmentHelper.getDamage(world, itemStack, target, damageSource, f);
-        f += itemStack.getItem().getBonusAttackDamage(target, f, damageSource);
-        boolean bl = target.damage(world, damageSource, f);
+        ItemStack itemStack = this.getWeaponItem();
+        DamageSource damageSource = Optional.ofNullable(itemStack.getItem().getDamageSource(this)).orElse(this.damageSources().mobAttack(this));
+        f = EnchantmentHelper.modifyDamage(world, itemStack, target, damageSource, f);
+        f += itemStack.getItem().getAttackDamageBonus(target, f, damageSource);
+        boolean bl = target.hurtServer(world, damageSource, f);
         if (bl) {
-            float g = this.getAttackKnockbackAgainst(target, damageSource);
+            float g = this.getKnockback(target, damageSource);
             if (g > 0.0F && target instanceof LivingEntity livingEntity) {
-                livingEntity.takeKnockback(g * 0.5F, MathHelper.sin(this.getYaw() * (float) (Math.PI / 180.0)), -MathHelper.cos(this.getYaw() * (float) (Math.PI / 180.0)));
-                this.setVelocity(this.getVelocity().multiply(0.6, 1.0, 0.6));
+                livingEntity.knockback(g * 0.5F, Mth.sin(this.getYRot() * (float) (Math.PI / 180.0)), -Mth.cos(this.getYRot() * (float) (Math.PI / 180.0)));
+                this.setDeltaMovement(this.getDeltaMovement().multiply(0.6, 1.0, 0.6));
             }
 
             if (target instanceof LivingEntity livingEntity) {
-                itemStack.postHit(livingEntity, this);
+                itemStack.hurtEnemy(livingEntity, this);
                 CombatEffectUtil.addStackingArmorPiercing(livingEntity, this);
             }
 
-            EnchantmentHelper.onTargetDamaged(world, target, damageSource);
-            this.onAttacking(target);
+            EnchantmentHelper.doPostAttackEffects(world, target, damageSource);
+            this.setLastHurtMob(target);
             this.playAttackSound();
         }
 
         return bl;
     }
     @Override
-    public boolean tryAttack(ServerWorld world, Entity target) {
+    public boolean doHurtTarget(ServerLevel world, Entity target) {
         if (!ModSkillEntityType.canSkill(this)) return false;
         if (this.canPunch()) {
             performPunch();
@@ -237,41 +248,41 @@ public class HulkbusterEntity extends IronGolemEntity implements GeoEntity, ModB
     }
     public void performAttack() {
         setHasSkill(true);
-        this.setAiDisabled(true);
+        this.setNoAi(true);
         setSkillCooldown(SKILL_COOLDOWN_MAX);
         this.triggerAnim("skill_controller", "attack");
     }
     public void performSuperAttack() {
         setHasSkill(true);
-        this.setAiDisabled(true);
+        this.setNoAi(true);
         setSkillCooldown(SKILL_COOLDOWN_MAX);
         setSuperAttackSkillCooldown(SUPER_ATTACK_COOLDOWN_MAX);
         this.triggerAnim("skill_controller", "super_attack");
     }
     public void performMiniAttack() {
         setHasSkill(true);
-        this.setAiDisabled(true);
+        this.setNoAi(true);
         setSkillCooldown(SKILL_COOLDOWN_MAX);
         setMiniAttackSkillCooldown(MINI_ATTACK_COOLDOWN_MAX);
         this.triggerAnim("skill_controller", "mini_attack");
     }
     public void performMaxAttack() {
         setHasSkill(true);
-        this.setAiDisabled(true);
+        this.setNoAi(true);
         setSkillCooldown(SKILL_COOLDOWN_MAX);
         setMaxAttackSkillCooldown(MAX_ATTACK_COOLDOWN_MAX);
         this.triggerAnim("skill_controller", "max_attack");
     }
     public void performClapHands() {
         setHasSkill(true);
-        this.setAiDisabled(true);
+        this.setNoAi(true);
         setSkillCooldown(SKILL_COOLDOWN_MAX);
         setClapHandsCooldown(CLAP_HANDS_COOLDOWN_MAX);
         this.triggerAnim("skill_controller", "clap_hands");
     }
     public void performPunch() {
         setHasSkill(true);
-        this.setAiDisabled(true);
+        this.setNoAi(true);
         setSkillCooldown(SKILL_COOLDOWN_MAX);
         setPunchCooldown(PUNCH_COOLDOWN_MAX);
         this.triggerAnim("skill_controller", "punch");
@@ -293,75 +304,75 @@ public class HulkbusterEntity extends IronGolemEntity implements GeoEntity, ModB
     }
     public boolean canSkill() {
         if (!ModSkillEntityType.canSkill(this)) return false;
-        return !this.getWorld().isClient() && !hasSkill() && getSkillCooldown() == 0 && this.getTarget() != null;
+        return !this.level().isClientSide() && !hasSkill() && getSkillCooldown() == 0 && this.getTarget() != null;
     }
     public boolean hasSkill() {
-        return getDataTracker().get(HAS_SKILL);
+        return getEntityData().get(HAS_SKILL);
     }
     public int getSkillCooldown() {
-        return getDataTracker().get(SKILL_COOLDOWN);
+        return getEntityData().get(SKILL_COOLDOWN);
     }
     public int getSuperAttackSkillCooldown() {
-        return getDataTracker().get(SUPER_ATTACK_SKILL_COOLDOWN);
+        return getEntityData().get(SUPER_ATTACK_SKILL_COOLDOWN);
     }
     public int getMiniAttackSkillCooldown() {
-        return getDataTracker().get(MINI_ATTACK_SKILL_COOLDOWN);
+        return getEntityData().get(MINI_ATTACK_SKILL_COOLDOWN);
     }
     public int getMaxAttackSkillCooldown() {
-        return getDataTracker().get(MAX_ATTACK_SKILL_COOLDOWN);
+        return getEntityData().get(MAX_ATTACK_SKILL_COOLDOWN);
     }
     public int getClapHandsCooldown() {
-        return getDataTracker().get(CLAP_HANDS_COOLDOWN);
+        return getEntityData().get(CLAP_HANDS_COOLDOWN);
     }
     public int getPunchCooldown() {
-        return getDataTracker().get(PUNCH_COOLDOWN);
+        return getEntityData().get(PUNCH_COOLDOWN);
     }
     public void setHasSkill(boolean hasSkill) {
-        getDataTracker().set(HAS_SKILL, hasSkill);
+        getEntityData().set(HAS_SKILL, hasSkill);
     }
     public void setSkillCooldown(int cooldown) {
-        getDataTracker().set(SKILL_COOLDOWN, cooldown);
+        getEntityData().set(SKILL_COOLDOWN, cooldown);
     }
     public void setSuperAttackSkillCooldown(int cooldown) {
-        getDataTracker().set(SUPER_ATTACK_SKILL_COOLDOWN, cooldown);
+        getEntityData().set(SUPER_ATTACK_SKILL_COOLDOWN, cooldown);
     }
     public void setMiniAttackSkillCooldown(int cooldown) {
-        getDataTracker().set(MINI_ATTACK_SKILL_COOLDOWN, cooldown);
+        getEntityData().set(MINI_ATTACK_SKILL_COOLDOWN, cooldown);
     }
     public void setMaxAttackSkillCooldown(int cooldown) {
-        getDataTracker().set(MAX_ATTACK_SKILL_COOLDOWN, cooldown);
+        getEntityData().set(MAX_ATTACK_SKILL_COOLDOWN, cooldown);
     }
     public void setClapHandsCooldown(int cooldown) {
-        getDataTracker().set(CLAP_HANDS_COOLDOWN, cooldown);
+        getEntityData().set(CLAP_HANDS_COOLDOWN, cooldown);
     }
     public void setPunchCooldown(int cooldown) {
-        getDataTracker().set(PUNCH_COOLDOWN, cooldown);
+        getEntityData().set(PUNCH_COOLDOWN, cooldown);
     }
-    public static DefaultAttributeContainer.Builder addAttributes() {
-        return HostileEntity.createHostileAttributes()
-                .add(EntityAttributes.MAX_HEALTH, 30000.0D)
-                .add(EntityAttributes.MOVEMENT_SPEED, 0.3D)
-                .add(EntityAttributes.KNOCKBACK_RESISTANCE, 1.0D)
-                .add(EntityAttributes.ATTACK_DAMAGE, 150.0D)
-                .add(EntityAttributes.FOLLOW_RANGE, 24.0D)
-                .add(EntityAttributes.ARMOR, 25.0D)
-                .add(EntityAttributes.STEP_HEIGHT, 3)
-                .add(EntityAttributes.ARMOR_TOUGHNESS, 20.0D);
+    public static AttributeSupplier.Builder addAttributes() {
+        return Monster.createMonsterAttributes()
+                .add(Attributes.MAX_HEALTH, 30000.0D)
+                .add(Attributes.MOVEMENT_SPEED, 0.3D)
+                .add(Attributes.KNOCKBACK_RESISTANCE, 1.0D)
+                .add(Attributes.ATTACK_DAMAGE, 150.0D)
+                .add(Attributes.FOLLOW_RANGE, 24.0D)
+                .add(Attributes.ARMOR, 25.0D)
+                .add(Attributes.STEP_HEIGHT, 3)
+                .add(Attributes.ARMOR_TOUGHNESS, 20.0D);
     }
     @Override
-    protected void initGoals() {
-        this.goalSelector.add(1, new MeleeAttackGoal(this, 1.0, true));
-        this.goalSelector.add(2, new WanderNearTargetGoal(this, 0.9, 32.0F));
-        this.goalSelector.add(2, new WanderAroundPointOfInterestGoal(this, 0.6, false));
-        this.goalSelector.add(4, new IronGolemWanderAroundGoal(this, 0.6));
-        this.goalSelector.add(5, new IronGolemLookGoal(this));
-        this.goalSelector.add(7, new LookAtEntityGoal(this, PlayerEntity.class, 6.0F));
-        this.goalSelector.add(8, new LookAroundGoal(this));
-        this.targetSelector.add(1, new TrackIronGolemTargetGoal(this));
-        this.targetSelector.add(2, new RevengeGoal(this));
-        this.targetSelector.add(3, new ActiveTargetGoal<>(this, PlayerEntity.class, 10, true, false, this::shouldAngerAt));
-        this.targetSelector.add(3, new ActiveTargetGoal<>(this, MobEntity.class, 5, false, false, (entity, world) -> entity instanceof Monster));
-        this.targetSelector.add(4, new UniversalAngerGoal<>(this, false));
+    protected void registerGoals() {
+        this.goalSelector.addGoal(1, new MeleeAttackGoal(this, 1.0, true));
+        this.goalSelector.addGoal(2, new MoveTowardsTargetGoal(this, 0.9, 32.0F));
+        this.goalSelector.addGoal(2, new MoveBackToVillageGoal(this, 0.6, false));
+        this.goalSelector.addGoal(4, new GolemRandomStrollInVillageGoal(this, 0.6));
+        this.goalSelector.addGoal(5, new OfferFlowerGoal(this));
+        this.goalSelector.addGoal(7, new LookAtPlayerGoal(this, Player.class, 6.0F));
+        this.goalSelector.addGoal(8, new RandomLookAroundGoal(this));
+        this.targetSelector.addGoal(1, new DefendVillageTargetGoal(this));
+        this.targetSelector.addGoal(2, new HurtByTargetGoal(this));
+        this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, Player.class, 10, true, false, this::isAngryAt));
+        this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, Mob.class, 5, false, false, (entity, world) -> entity instanceof Enemy));
+        this.targetSelector.addGoal(4, new ResetUniversalAngerTargetGoal<>(this, false));
     }
     protected static final RawAnimation IDEA_ANIM = RawAnimation.begin().thenLoop("idle");
     protected static final RawAnimation WALK_ANIM = RawAnimation.begin().thenLoop("walk");
@@ -401,25 +412,25 @@ public class HulkbusterEntity extends IronGolemEntity implements GeoEntity, ModB
                         s.getRenderState().addGeckolibData(HulkbusterEntityRenderer.SYNC_CATCH, false);
                     }
                     if ("runAttack;".equals(instruction)) {
-                        this.playSound(SoundEvents.ENTITY_PLAYER_ATTACK_SWEEP, 1.0F, 1.0F);
+                        this.playSound(SoundEvents.PLAYER_ATTACK_SWEEP, 1.0F, 1.0F);
                         ClientPlayNetworking.send(new SkillPayload(
                                 "attack", this.getId()
                         ));
                     }
                     if ("runSuperAttack;".equals(instruction)) {
-                        this.playSound(SoundEvents.ENTITY_PLAYER_SMALL_FALL, 1.0F, 1.0F);
+                        this.playSound(SoundEvents.PLAYER_SMALL_FALL, 1.0F, 1.0F);
                         ClientPlayNetworking.send(new SkillPayload(
                                 "super_attack", this.getId()
                         ));
                     }
                     if ("runMiniAttack;".equals(instruction)) {
-                        this.playSound(SoundEvents.ENTITY_PLAYER_SMALL_FALL, 1.0F, 1.0F);
+                        this.playSound(SoundEvents.PLAYER_SMALL_FALL, 1.0F, 1.0F);
                         ClientPlayNetworking.send(new SkillPayload(
                                 "mini_attack", this.getId()
                         ));
                     }
                     if ("runMaxAttack;".equals(instruction)) {
-                        this.playSound(SoundEvents.ENTITY_PLAYER_SMALL_FALL, 1.0F, 1.0F);
+                        this.playSound(SoundEvents.PLAYER_SMALL_FALL, 1.0F, 1.0F);
                         ClientPlayNetworking.send(new SkillPayload(
                                 "max_attack", this.getId()
                         ));
@@ -441,39 +452,39 @@ public class HulkbusterEntity extends IronGolemEntity implements GeoEntity, ModB
         return this.geoCache;
     }
     private PlayState animationController(final AnimationTest<HulkbusterEntity> state) {
-        state.renderState().addGeckolibData(HulkbusterEntityRenderer.ENTITY_ID, this.getUuid());
+        state.renderState().addGeckolibData(HulkbusterEntityRenderer.ENTITY_ID, this.getUUID());
         if (state.isMoving()) {
             return state.setAndContinue(WALK_ANIM);
         }
         return state.setAndContinue(IDEA_ANIM);
     }
-    public Vec3d leftMuzzle = Vec3d.ZERO;
-    public Vec3d rightMuzzle = Vec3d.ZERO;
+    public Vec3 leftMuzzle = Vec3.ZERO;
+    public Vec3 rightMuzzle = Vec3.ZERO;
 
     public void startPunch() {
         this.punching = true;
         this.punchHitEntities.clear();
-        this.setAiDisabled(false);
+        this.setNoAi(false);
     }
 
     public void stopPunch() {
         this.punching = false;
-        this.setVelocity(Vec3d.ZERO);
-        this.velocityModified = true;
+        this.setDeltaMovement(Vec3.ZERO);
+        this.hurtMarked = true;
         HulkbusterEntitySkill.runPunchEndSkill(this);
     }
 
-    private void tickPunch(ServerWorld world) {
-        Vec3d look = this.getRotationVec(1.0F);
-        Vec3d horizontal = new Vec3d(look.x, 0.0D, look.z);
-        if (horizontal.lengthSquared() < 1.0E-4D) {
-            horizontal = Vec3d.fromPolar(0.0F, this.getYaw());
+    private void tickPunch(ServerLevel world) {
+        Vec3 look = this.getViewVector(1.0F);
+        Vec3 horizontal = new Vec3(look.x, 0.0D, look.z);
+        if (horizontal.lengthSqr() < 1.0E-4D) {
+            horizontal = Vec3.directionFromRotation(0.0F, this.getYRot());
         }
-        Vec3d velocity = horizontal.normalize().multiply(0.55D);
-        this.setVelocity(velocity.x, this.getVelocity().y, velocity.z);
-        this.velocityModified = true;
-        Box box = this.getBoundingBox().expand(1.0D);
-        for (LivingEntity target : world.getEntitiesByClass(LivingEntity.class, box,
+        Vec3 velocity = horizontal.normalize().scale(0.55D);
+        this.setDeltaMovement(velocity.x, this.getDeltaMovement().y, velocity.z);
+        this.hurtMarked = true;
+        AABB box = this.getBoundingBox().inflate(1.0D);
+        for (LivingEntity target : world.getEntitiesOfClass(LivingEntity.class, box,
                 living -> EntityUtil.isValidCombatTarget(this, living))) {
             if (this.punchHitEntities.add(target.getId())) {
                 this.tryAttackBaseDamage(world, target, 300.0F);
@@ -482,7 +493,7 @@ public class HulkbusterEntity extends IronGolemEntity implements GeoEntity, ModB
     }
 
     @Override
-    public boolean damage(ServerWorld world, DamageSource source, float amount) {
+    public boolean hurtServer(ServerLevel world, DamageSource source, float amount) {
         if (this.deathAnimationTicks > 0) {
             return false;
         }
@@ -490,12 +501,12 @@ public class HulkbusterEntity extends IronGolemEntity implements GeoEntity, ModB
             startDeathAnimation();
             return true;
         }
-        return super.damage(world, source, amount);
+        return super.hurtServer(world, source, amount);
     }
 
     private void startDeathAnimation() {
         this.setHealth(1.0F);
-        this.setAiDisabled(true);
+        this.setNoAi(true);
         this.setHasSkill(true);
         this.deathAnimationTicks = 90;
         this.triggerAnim("skill_controller", "death");

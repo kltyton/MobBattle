@@ -1,9 +1,9 @@
 package com.kltyton.mob_battle.mixin.maxstack;
 
-import net.minecraft.item.Item;
+import net.minecraft.world.item.Item;
 import org.spongepowered.asm.mixin.Mixin;
 
-@Mixin(Item.Settings.class)
+@Mixin(Item.Properties.class)
 public class ItemSettingsMixin {
     //将所有堆栈大小限制为1024000000
 /*    @ModifyVariable(method = "maxCount", at = @At("HEAD"), argsOnly = true)

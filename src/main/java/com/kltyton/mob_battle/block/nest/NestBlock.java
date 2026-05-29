@@ -1,25 +1,25 @@
 package com.kltyton.mob_battle.block.nest;
 
 import com.mojang.serialization.MapCodec;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.BlockWithEntity;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.BaseEntityBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 
-public class NestBlock extends BlockWithEntity {
+public class NestBlock extends BaseEntityBlock {
 
-    public NestBlock(Settings settings) {
+    public NestBlock(Properties settings) {
         super(settings);
     }
 
     @Override
-    protected MapCodec<? extends BlockWithEntity> getCodec()  {
-        return createCodec(NestBlock::new);
+    protected MapCodec<? extends BaseEntityBlock> codec()  {
+        return simpleCodec(NestBlock::new);
     }
 
     @Override
-    public @Nullable BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
+    public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new NestBlockEntity(pos, state);
     }
 }

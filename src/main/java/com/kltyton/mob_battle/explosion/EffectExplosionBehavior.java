@@ -1,20 +1,20 @@
 package com.kltyton.mob_battle.explosion;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.world.explosion.Explosion;
-import net.minecraft.world.explosion.ExplosionBehavior;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.Explosion;
+import net.minecraft.world.level.ExplosionDamageCalculator;
 
-public class EffectExplosionBehavior extends ExplosionBehavior {
+public class EffectExplosionBehavior extends ExplosionDamageCalculator {
     public Entity ownerEntity;
     public EffectExplosionBehavior(Entity entity) {
         super();
         this.ownerEntity = entity;
     }
-    public boolean shouldDamage(Explosion explosion, Entity entity) {
-        return !ownerEntity.isTeammate(entity) && super.shouldDamage(explosion, entity);
+    public boolean shouldDamageEntity(Explosion explosion, Entity entity) {
+        return !ownerEntity.isAlliedTo(entity) && super.shouldDamageEntity(explosion, entity);
     }
 
-    public float getKnockbackModifier(Entity entity) {
-        return ownerEntity.isTeammate(entity) ? 0.0f : super.getKnockbackModifier(entity);
+    public float getKnockbackMultiplier(Entity entity) {
+        return ownerEntity.isAlliedTo(entity) ? 0.0f : super.getKnockbackMultiplier(entity);
     }
 }

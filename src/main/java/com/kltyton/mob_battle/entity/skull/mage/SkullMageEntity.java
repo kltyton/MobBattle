@@ -8,26 +8,26 @@ import com.kltyton.mob_battle.network.packet.SkillPayload;
 import com.kltyton.mob_battle.utils.EntityUtil;
 import com.kltyton.mob_battle.utils.ModTrackedDataHandler;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LazyEntityReference;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.attribute.DefaultAttributeContainer;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.data.DataTracker;
-import net.minecraft.entity.data.TrackedData;
-import net.minecraft.entity.data.TrackedDataHandlerRegistry;
-import net.minecraft.entity.mob.HostileEntity;
-import net.minecraft.entity.mob.SkeletonEntity;
-import net.minecraft.entity.projectile.PersistentProjectileEntity;
-import net.minecraft.entity.projectile.ProjectileUtil;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.storage.ReadView;
-import net.minecraft.storage.WriteView;
-import net.minecraft.world.World;
-import net.minecraft.world.entity.UniquelyIdentifiable;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityReference;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.entity.monster.Skeleton;
+import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.entity.projectile.ProjectileUtil;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.entity.UniquelyIdentifyable;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib.animatable.GeoEntity;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
@@ -40,19 +40,19 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 
 import java.util.Optional;
 
-public class SkullMageEntity extends SkeletonEntity implements GeoEntity, IModSkullEntity {
-    public SkullMageEntity(EntityType<? extends SkullMageEntity> entityType, World world) {
+public class SkullMageEntity extends Skeleton implements GeoEntity, IModSkullEntity {
+    public SkullMageEntity(EntityType<? extends SkullMageEntity> entityType, Level world) {
         super(entityType, world);
         this.setHasSkill(false);
-        this.setAiDisabled(false);
+        this.setNoAi(false);
         this.setSkillCooldown(0);
     }
     @Override
-    public boolean isConverting() {
+    public boolean isFreezeConverting() {
         return false;
     }
     @Override
-    public void setConverting(boolean converting) {
+    public void setFreezeConverting(boolean converting) {
     }
     @Override
     public boolean isShaking() {
@@ -61,10 +61,10 @@ public class SkullMageEntity extends SkeletonEntity implements GeoEntity, IModSk
     @Override
     public void tick() {
         super.tick();   // 调用父类 AI、移动等更新
-        if (!this.getWorld().isClient()) {
+        if (!this.level().isClientSide()) {
             killSlave();
             if (!hasSkill()) {
-                this.setAiDisabled(false);
+                this.setNoAi(false);
                 // 冷却递减
                 if (canSummonSkull()) performSummonSkull();
                 int cd = getSkillCooldown();
@@ -72,22 +72,22 @@ public class SkullMageEntity extends SkeletonEntity implements GeoEntity, IModSk
                 int summonSkullCooldown = getSummonSkullCooldown();
                 if (summonSkullCooldown > 0) setSummonSkullCooldown(summonSkullCooldown - 1);
             }
-            this.dataTracker.get(MAGIC_PROJECTILE_ID).ifPresent(ref -> {
-                Entity projectile = ((LazyEntityReference<Entity>) (Object) ref).resolve(this.getWorld(), Entity.class);
-                if (projectile == null || !projectile.isAlive() || projectile.isOnGround()) {
-                    this.dataTracker.set(MAGIC_PROJECTILE_ID, Optional.empty());
+            this.entityData.get(MAGIC_PROJECTILE_ID).ifPresent(ref -> {
+                Entity projectile = ((EntityReference<Entity>) (Object) ref).getEntity(this.level(), Entity.class);
+                if (projectile == null || !projectile.isAlive() || projectile.onGround()) {
+                    this.entityData.set(MAGIC_PROJECTILE_ID, Optional.empty());
                 }
             });
         } else {
             // 客户端渲染
-            if (this.age % 2 == 0) { // 可以通过模运算控制粒子密度
+            if (this.tickCount % 2 == 0) { // 可以通过模运算控制粒子密度
                 renderMagicLink();
             }
         }
     }
     public void performSummonSkull() {
         setHasSkill(true);
-        this.setAiDisabled(true);
+        this.setNoAi(true);
         setSummonSkullCooldown(140);
         this.triggerAnim("skill_controller", "summon_skull");
     }
@@ -95,8 +95,8 @@ public class SkullMageEntity extends SkeletonEntity implements GeoEntity, IModSk
         return canSkill() && getSummonSkullCooldown() == 0;
     }
     private void renderMagicLink() {
-        this.dataTracker.get(MAGIC_PROJECTILE_ID).ifPresent(ref -> {
-            Entity projectile = ((LazyEntityReference<Entity>) (Object) ref).resolve(this.getWorld(), Entity.class);
+        this.entityData.get(MAGIC_PROJECTILE_ID).ifPresent(ref -> {
+            Entity projectile = ((EntityReference<Entity>) (Object) ref).getEntity(this.level(), Entity.class);
             if (projectile != null && projectile.isAlive()) {
                 double startX = this.getX();
                 double startY = this.getEyeY() - 0.2;
@@ -122,7 +122,7 @@ public class SkullMageEntity extends SkeletonEntity implements GeoEntity, IModSk
                     double offsetY = (this.random.nextDouble() - 0.5) * 0.1;
                     double offsetZ = (this.random.nextDouble() - 0.5) * 0.1;
 
-                    this.getWorld().addParticleClient(
+                    this.level().addParticle(
                             ParticleTypes.WITCH,
                             startX + dx * ratio + offsetX,
                             startY + dy * ratio + offsetY,
@@ -133,7 +133,7 @@ public class SkullMageEntity extends SkeletonEntity implements GeoEntity, IModSk
 
                     // 进阶优化：如果是关键节点，添加额外的闪烁粒子
                     if (i % 5 == 0) {
-                        this.getWorld().addParticleClient(
+                        this.level().addParticle(
                                 ParticleTypes.INSTANT_EFFECT,
                                 startX + dx * ratio, startY + dy * ratio, startZ + dz * ratio,
                                 0, 0, 0
@@ -144,33 +144,33 @@ public class SkullMageEntity extends SkeletonEntity implements GeoEntity, IModSk
         });
     }
     @Override
-    protected void convertToStray() {
+    protected void doFreezeConversion() {
     }
     @Override
     public boolean canFreeze() {
         return true;
     }
     @Override
-    protected PersistentProjectileEntity createArrowProjectile(ItemStack arrow, float damageModifier, @Nullable ItemStack shotFrom) {
-        PersistentProjectileEntity persistentProjectileEntity = super.createArrowProjectile(arrow, damageModifier, shotFrom);
+    protected AbstractArrow getArrow(ItemStack arrow, float damageModifier, @Nullable ItemStack shotFrom) {
+        AbstractArrow persistentProjectileEntity = super.getArrow(arrow, damageModifier, shotFrom);
         ((ITrueDamageProjectile) persistentProjectileEntity).setTrueDamage(true, true);
-        persistentProjectileEntity.setDamage(this.getAttributeValue(EntityAttributes.ATTACK_DAMAGE));
+        persistentProjectileEntity.setBaseDamage(this.getAttributeValue(Attributes.ATTACK_DAMAGE));
         persistentProjectileEntity.setInvisible(true);
         persistentProjectileEntity.setNoGravity(true);
         // 服务端：更新数据追踪器，记录当前射出的箭
-        if (!this.getWorld().isClient()) {
-            this.dataTracker.set(MAGIC_PROJECTILE_ID, Optional.of(persistentProjectileEntity).map(LazyEntityReference::new));
+        if (!this.level().isClientSide()) {
+            this.entityData.set(MAGIC_PROJECTILE_ID, Optional.of(persistentProjectileEntity).map(EntityReference::new));
         }
         return persistentProjectileEntity;
     }
 
-    public static DefaultAttributeContainer.Builder addAttributes() {
-        return HostileEntity.createHostileAttributes()
-                .add(EntityAttributes.MAX_HEALTH, 900.0D)
+    public static AttributeSupplier.Builder addAttributes() {
+        return Monster.createMonsterAttributes()
+                .add(Attributes.MAX_HEALTH, 900.0D)
 
-                .add(EntityAttributes.MOVEMENT_SPEED, 0.3D)
-                .add(EntityAttributes.ATTACK_DAMAGE, 45.0D)
-                .add(EntityAttributes.FOLLOW_RANGE, 24.0D);
+                .add(Attributes.MOVEMENT_SPEED, 0.3D)
+                .add(Attributes.ATTACK_DAMAGE, 45.0D)
+                .add(Attributes.FOLLOW_RANGE, 24.0D);
     }
     protected static final RawAnimation IDEA_ANIM = RawAnimation.begin().thenLoop("idle");
     protected static final RawAnimation WALK_ANIM = RawAnimation.begin().thenLoop("walk");
@@ -204,28 +204,28 @@ public class SkullMageEntity extends SkeletonEntity implements GeoEntity, IModSk
                 }));
     }
     @Override
-    public void takeKnockback(double strength, double x, double z) {
-        if (!this.isDead() && !this.isAiDisabled()) super.takeKnockback(strength, x, z);
+    public void knockback(double strength, double x, double z) {
+        if (!this.isDeadOrDying() && !this.isNoAi()) super.knockback(strength, x, z);
     }
     public void shootAtBase(LivingEntity target, float pullProgress) {
         if (!ModSkillEntityType.canSkill(this)) return;
-        ItemStack bowStack = this.getStackInHand(ProjectileUtil.getHandPossiblyHolding(this, Items.BOW));
-        ItemStack arrowStack = this.getProjectileType(bowStack);
-        PersistentProjectileEntity projectile = this.createArrowProjectile(arrowStack, pullProgress, bowStack);
+        ItemStack bowStack = this.getItemInHand(ProjectileUtil.getWeaponHoldingHand(this, Items.BOW));
+        ItemStack arrowStack = this.getProjectile(bowStack);
+        AbstractArrow projectile = this.getArrow(arrowStack, pullProgress, bowStack);
 
         double d = target.getX() - this.getX();
-        double e = target.getBodyY(0.3333333333333333) - projectile.getY();
+        double e = target.getY(0.3333333333333333) - projectile.getY();
         double f = target.getZ() - this.getZ();
         double g = Math.sqrt(d * d + f * f);  // 水平距离
-        projectile.setVelocity(d, e + g * 0.2F, f, 1.6F, 0.0F);
+        projectile.shoot(d, e + g * 0.2F, f, 1.6F, 0.0F);
 
         // 如果是服务器端，生成箭矢实体
-        if (!this.getWorld().isClient) {
-            this.getWorld().spawnEntity(projectile);
+        if (!this.level().isClientSide) {
+            this.level().addFreshEntity(projectile);
         }
     }
     @Override
-    public void shootAt(LivingEntity target, float pullProgress) {
+    public void performRangedAttack(LivingEntity target, float pullProgress) {
         if (!EntityUtil.isValidSummonCombatTarget(this, this.getOwner(), target)) {
             return;
         }
@@ -235,36 +235,36 @@ public class SkullMageEntity extends SkeletonEntity implements GeoEntity, IModSk
     }
     public void performAttack(LivingEntity target, float pullProgress) {
         this.setHasSkill(true);
-        this.setAiDisabled(true);
+        this.setNoAi(true);
         this.setTarget(target);
         this.setSkillCooldown(10);
         this.triggerAnim("skill_controller", "attack");
     }
     public boolean canSkill() {
         if (!ModSkillEntityType.canSkill(this)) return false;
-        return !this.getWorld().isClient() && !hasSkill() && getSkillCooldown() == 0 && this.getTarget() != null;
+        return !this.level().isClientSide() && !hasSkill() && getSkillCooldown() == 0 && this.getTarget() != null;
     }
-    public static final TrackedData<Boolean> HAS_SKILL = DataTracker.registerData(SkullMageEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
-    public static final TrackedData<Integer> SKILL_COOLDOWN = DataTracker.registerData(SkullMageEntity.class, TrackedDataHandlerRegistry.INTEGER);
-    public static final TrackedData<Integer> SUMMON_SKULL_COOLDOWN = DataTracker.registerData(SkullMageEntity.class, TrackedDataHandlerRegistry.INTEGER);
+    public static final EntityDataAccessor<Boolean> HAS_SKILL = SynchedEntityData.defineId(SkullMageEntity.class, EntityDataSerializers.BOOLEAN);
+    public static final EntityDataAccessor<Integer> SKILL_COOLDOWN = SynchedEntityData.defineId(SkullMageEntity.class, EntityDataSerializers.INT);
+    public static final EntityDataAccessor<Integer> SUMMON_SKULL_COOLDOWN = SynchedEntityData.defineId(SkullMageEntity.class, EntityDataSerializers.INT);
 
     public boolean hasSkill() {
-        return getDataTracker().get(HAS_SKILL);
+        return getEntityData().get(HAS_SKILL);
     }
     public int getSkillCooldown() {
-        return getDataTracker().get(SKILL_COOLDOWN);
+        return getEntityData().get(SKILL_COOLDOWN);
     }
     public int getSummonSkullCooldown() {
-        return getDataTracker().get(SUMMON_SKULL_COOLDOWN);
+        return getEntityData().get(SUMMON_SKULL_COOLDOWN);
     }
     public void setHasSkill(boolean hasSkill) {
-        getDataTracker().set(HAS_SKILL, hasSkill);
+        getEntityData().set(HAS_SKILL, hasSkill);
     }
     public void setSkillCooldown(int cooldown) {
-        getDataTracker().set(SKILL_COOLDOWN, cooldown);
+        getEntityData().set(SKILL_COOLDOWN, cooldown);
     }
     public void setSummonSkullCooldown(int cooldown) {
-        getDataTracker().set(SUMMON_SKULL_COOLDOWN, cooldown);
+        getEntityData().set(SUMMON_SKULL_COOLDOWN, cooldown);
     }
     private final AnimatableInstanceCache geoCache = GeckoLibUtil.createInstanceCache(this);
     @Override
@@ -279,52 +279,52 @@ public class SkullMageEntity extends SkeletonEntity implements GeoEntity, IModSk
     }
 
 
-    protected static final TrackedData<Optional<LazyEntityReference<LivingEntity>>> OWNER_UUID = DataTracker.registerData(
-            SkullMageEntity.class, TrackedDataHandlerRegistry.LAZY_ENTITY_REFERENCE
+    protected static final EntityDataAccessor<Optional<EntityReference<LivingEntity>>> OWNER_UUID = SynchedEntityData.defineId(
+            SkullMageEntity.class, EntityDataSerializers.OPTIONAL_LIVING_ENTITY_REFERENCE
     );
-    public static final TrackedData<Optional<LazyEntityReference<UniquelyIdentifiable>>> MAGIC_PROJECTILE_ID =
-            DataTracker.registerData(SkullMageEntity.class, ModTrackedDataHandler.ANY_ENTITY_LAZY_REFERENCE);
+    public static final EntityDataAccessor<Optional<EntityReference<UniquelyIdentifyable>>> MAGIC_PROJECTILE_ID =
+            SynchedEntityData.defineId(SkullMageEntity.class, ModTrackedDataHandler.ANY_ENTITY_LAZY_REFERENCE);
     @Override
-    protected void initDataTracker(DataTracker.Builder builder) {
-        super.initDataTracker(builder);
-        builder.add(HAS_SKILL, false);
-        builder.add(SKILL_COOLDOWN, 0);
-        builder.add(SUMMON_SKULL_COOLDOWN, 140);
-        builder.add(OWNER_UUID, Optional.empty());
-        builder.add(MAGIC_PROJECTILE_ID, Optional.empty());
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(HAS_SKILL, false);
+        builder.define(SKILL_COOLDOWN, 0);
+        builder.define(SUMMON_SKULL_COOLDOWN, 140);
+        builder.define(OWNER_UUID, Optional.empty());
+        builder.define(MAGIC_PROJECTILE_ID, Optional.empty());
     }
     @Nullable
-    public LazyEntityReference<LivingEntity> getOwnerReference() {
-        return this.dataTracker.get(OWNER_UUID).orElse(null);
+    public EntityReference<LivingEntity> getOwnerReference() {
+        return this.entityData.get(OWNER_UUID).orElse(null);
     }
     @Override
-    protected void writeCustomData(WriteView view) {
-        super.writeCustomData(view);
-        LazyEntityReference<LivingEntity> lazyEntityReference = this.getOwnerReference();
-        LazyEntityReference.writeData(lazyEntityReference, view, "Owner");
+    protected void addAdditionalSaveData(ValueOutput view) {
+        super.addAdditionalSaveData(view);
+        EntityReference<LivingEntity> lazyEntityReference = this.getOwnerReference();
+        EntityReference.store(lazyEntityReference, view, "Owner");
     }
 
     @Override
-    protected void readCustomData(ReadView view) {
-        super.readCustomData(view);
-        LazyEntityReference<LivingEntity> lazyEntityReference = LazyEntityReference.fromDataOrPlayerName(view, "Owner", this.getWorld());
+    protected void readAdditionalSaveData(ValueInput view) {
+        super.readAdditionalSaveData(view);
+        EntityReference<LivingEntity> lazyEntityReference = EntityReference.readWithOldOwnerConversion(view, "Owner", this.level());
         if (lazyEntityReference != null) {
-            this.dataTracker.set(OWNER_UUID, Optional.of(lazyEntityReference));
+            this.entityData.set(OWNER_UUID, Optional.of(lazyEntityReference));
         } else {
-            this.dataTracker.set(OWNER_UUID, Optional.empty());
+            this.entityData.set(OWNER_UUID, Optional.empty());
         }
     }
     @Override
     public void setOwner(@Nullable LivingEntity owner) {
-        this.dataTracker.set(OWNER_UUID, Optional.ofNullable(owner).map(LazyEntityReference::new));
+        this.entityData.set(OWNER_UUID, Optional.ofNullable(owner).map(EntityReference::new));
     }
     @Override
-    public void setOwner(@Nullable LazyEntityReference<LivingEntity> owner) {
-        this.dataTracker.set(OWNER_UUID, Optional.ofNullable(owner));
+    public void setOwner(@Nullable EntityReference<LivingEntity> owner) {
+        this.entityData.set(OWNER_UUID, Optional.ofNullable(owner));
     }
     @Override
-    public boolean canTarget(LivingEntity target) {
-        return EntityUtil.isValidSummonCombatTarget(this, this.getOwner(), target) && super.canTarget(target);
+    public boolean canAttack(LivingEntity target) {
+        return EntityUtil.isValidSummonCombatTarget(this, this.getOwner(), target) && super.canAttack(target);
     }
     @Override
     public boolean isOwner(LivingEntity entity) {

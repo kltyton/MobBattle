@@ -6,9 +6,6 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.Suggestion;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import net.minecraft.command.CommandSource;
-import net.minecraft.command.suggestion.SuggestionProviders;
-import net.minecraft.util.Identifier;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -18,16 +15,18 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.resources.ResourceLocation;
 
-@Mixin(SuggestionProviders.LocalProvider.class)
+@Mixin(targets = "net.minecraft.commands.synchronization.SuggestionProviders$RegisteredSuggestion")
 public abstract class SuggestionProvidersLocalProviderMixin {
 
     @Shadow @Final
-    Identifier id;
+    ResourceLocation name;
 
     @Inject(method = "getSuggestions", at = @At("RETURN"), cancellable = true)
     private void mob_battle$filterSummonableEntities(
-            CommandContext<CommandSource> context,
+            CommandContext<SharedSuggestionProvider> context,
             SuggestionsBuilder builder,
             CallbackInfoReturnable<CompletableFuture<Suggestions>> cir
     ) {
@@ -35,7 +34,7 @@ public abstract class SuggestionProvidersLocalProviderMixin {
             return;
         }
 
-        if (!Identifier.ofVanilla("summonable_entities").equals(this.id)) {
+        if (!ResourceLocation.withDefaultNamespace("summonable_entities").equals(this.name)) {
             return;
         }
 

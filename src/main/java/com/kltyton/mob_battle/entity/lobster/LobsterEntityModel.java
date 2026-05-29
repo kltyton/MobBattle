@@ -1,26 +1,26 @@
 package com.kltyton.mob_battle.entity.lobster;
 
 import com.kltyton.mob_battle.Mob_battle;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import software.bernie.geckolib.model.GeoModel;
 import software.bernie.geckolib.renderer.base.GeoRenderState;
 
 public class LobsterEntityModel extends GeoModel<LobsterEntity> {
-    private final Identifier model = Identifier.of(Mob_battle.MOD_ID, "lobster_entity");
-    private final Identifier animations = Identifier.of(Mob_battle.MOD_ID, "lobster_entity");
-    private final Identifier red_texture = Identifier.of(Mob_battle.MOD_ID, "textures/entity/lobster_entity/lobster_red.png");
-    private final Identifier blue_texture = Identifier.of(Mob_battle.MOD_ID, "textures/entity/lobster_entity/lobster_blue.png");
-    private final Identifier gray_texture = Identifier.of(Mob_battle.MOD_ID, "textures/entity/lobster_entity/lobster_gray.png");
-    private final Identifier white_texture = Identifier.of(Mob_battle.MOD_ID, "textures/entity/lobster_entity/lobster_white.png");
-    private final Identifier gold_texture = Identifier.of(Mob_battle.MOD_ID, "textures/entity/lobster_entity/lobster_gold.png");
+    private final ResourceLocation model = ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "lobster_entity");
+    private final ResourceLocation animations = ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "lobster_entity");
+    private final ResourceLocation red_texture = ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "textures/entity/lobster_entity/lobster_red.png");
+    private final ResourceLocation blue_texture = ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "textures/entity/lobster_entity/lobster_blue.png");
+    private final ResourceLocation gray_texture = ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "textures/entity/lobster_entity/lobster_gray.png");
+    private final ResourceLocation white_texture = ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "textures/entity/lobster_entity/lobster_white.png");
+    private final ResourceLocation gold_texture = ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "textures/entity/lobster_entity/lobster_gold.png");
 
     @Override
-    public Identifier getModelResource(GeoRenderState renderState) {
+    public ResourceLocation getModelResource(GeoRenderState renderState) {
         return model;
     }
 
     @Override
-    public Identifier getTextureResource(GeoRenderState renderState) {
+    public ResourceLocation getTextureResource(GeoRenderState renderState) {
         LobsterVariant variant = renderState.getGeckolibData(LobsterEntityRenderer.LOBSTER_VARIANT);
 
         if (variant == null) {
@@ -36,7 +36,7 @@ public class LobsterEntityModel extends GeoModel<LobsterEntity> {
     }
 
     @Override
-    public Identifier getAnimationResource(LobsterEntity animatable) {
+    public ResourceLocation getAnimationResource(LobsterEntity animatable) {
         return animations;
     }
 }

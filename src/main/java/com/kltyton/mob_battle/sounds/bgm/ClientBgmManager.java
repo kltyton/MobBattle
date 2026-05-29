@@ -2,13 +2,13 @@ package com.kltyton.mob_battle.sounds.bgm;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 
 @Environment(EnvType.CLIENT)
 public class ClientBgmManager {
     @Nullable
-    public static Identifier forcedMusicId = null;
+    public static ResourceLocation forcedMusicId = null;
     public static float forcedVolume = 1.0F;
 
     // 淡出相关
@@ -16,7 +16,7 @@ public class ClientBgmManager {
     public static final int MAX_FADE_OUT_TICKS = 40;
     public static boolean isFadingOut = false;
     @Nullable
-    public static Identifier fadingOutMusicId = null;
+    public static ResourceLocation fadingOutMusicId = null;
     public static float fadingOutVolume = 1.0F;
     public static float currentFadeOutVolume = 1.0F; // 新增：记录淡出过程中的当前音量
 
@@ -42,7 +42,7 @@ public class ClientBgmManager {
     }
 
     // 开始淡出
-    public static void startFadeOut(@Nullable Identifier currentMusicId, float currentVolume) {
+    public static void startFadeOut(@Nullable ResourceLocation currentMusicId, float currentVolume) {
         isFadingOut = true;
         fadeOutTicks = MAX_FADE_OUT_TICKS;
         fadingOutMusicId = currentMusicId;
@@ -60,7 +60,7 @@ public class ClientBgmManager {
     }
 
     // 开始淡入恢复（从淡出时的当前音量开始）
-    public static void startFadeIn(@Nullable Identifier musicId, float targetVolume) {
+    public static void startFadeIn(@Nullable ResourceLocation musicId, float targetVolume) {
         isFadingIn = true;
         fadeInTicks = MAX_FADE_IN_TICKS;
         fadeInStartVolume = currentFadeOutVolume; // 从淡出时的当前音量开始

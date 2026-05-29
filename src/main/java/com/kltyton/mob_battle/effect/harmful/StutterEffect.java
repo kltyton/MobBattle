@@ -1,10 +1,10 @@
 package com.kltyton.mob_battle.effect.harmful;
 
-import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.entity.effect.StatusEffectCategory;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectCategory;
 
-public class StutterEffect extends StatusEffect {
+public class StutterEffect extends MobEffect {
     public StutterEffect() {
-        super(StatusEffectCategory.HARMFUL, 0x404040);
+        super(MobEffectCategory.HARMFUL, 0x404040);
     }
 }

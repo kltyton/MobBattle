@@ -1,20 +1,20 @@
 package com.kltyton.mob_battle.effect.harmful;
 
-import net.minecraft.entity.attribute.EntityAttributeInstance;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.mob.WardenEntity;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.monster.warden.Warden;
 
 public class ProInsectBiteEffect extends InsectBiteEffect {
-    protected void setupWardenAttributes(WardenEntity warden) {
+    protected void setupWardenAttributes(Warden warden) {
         // 设置最大生命值
-        EntityAttributeInstance maxHealth = warden.getAttributeInstance(EntityAttributes.MAX_HEALTH);
+        AttributeInstance maxHealth = warden.getAttribute(Attributes.MAX_HEALTH);
         if (maxHealth != null) {
             maxHealth.setBaseValue(500.0f);
             warden.setHealth(500.0f);
         }
 
         // 设置攻击伤害
-        EntityAttributeInstance attackDamage = warden.getAttributeInstance(EntityAttributes.ATTACK_DAMAGE);
+        AttributeInstance attackDamage = warden.getAttribute(Attributes.ATTACK_DAMAGE);
         if (attackDamage != null) {
             attackDamage.setBaseValue(60.0);
         }

@@ -2,25 +2,25 @@ package com.kltyton.mob_battle.items.food;
 
 import com.kltyton.mob_battle.items.ModFabricItem;
 import com.kltyton.mob_battle.items.ModItems;
-import net.minecraft.entity.ItemEntity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.world.World;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 
 public class MagmaLobsterItemMod extends Item implements ModFabricItem {
-    public MagmaLobsterItemMod(Settings settings) {
+    public MagmaLobsterItemMod(Properties settings) {
         super(settings);
     }
 
     @Override
-    public ItemStack finishUsing(ItemStack stack, World world, LivingEntity user) {
-        ItemStack result = super.finishUsing(stack, world, user);
+    public ItemStack finishUsingItem(ItemStack stack, Level world, LivingEntity user) {
+        ItemStack result = super.finishUsingItem(stack, world, user);
 
-        if (!world.isClient) {
-            user.setOnFireFor(5);
+        if (!world.isClientSide) {
+            user.igniteForSeconds(5);
         }
 
         return result;
@@ -36,24 +36,24 @@ public class MagmaLobsterItemMod extends Item implements ModFabricItem {
     public static void tryTransformInWater(ItemEntity entity) {
         if (entity == null || !entity.isAlive()) return;
 
-        ItemStack stack = entity.getStack();
+        ItemStack stack = entity.getItem();
         if (stack.isEmpty()) return;
         if (!(stack.getItem() instanceof MagmaLobsterItemMod)) return;
 
-        World world = entity.getWorld();
-        if (world.isClient) return;
+        Level world = entity.level();
+        if (world.isClientSide) return;
 
-        if (!entity.isTouchingWater()) return;
+        if (!entity.isInWater()) return;
 
         ItemStack newStack = new ItemStack(ModItems.OBSIDIAN_LOBSTER, stack.getCount());
 
-        entity.setStack(newStack);
+        entity.setItem(newStack);
 
         world.playSound(
                 null,
-                entity.getBlockPos(),
-                SoundEvents.BLOCK_LAVA_EXTINGUISH,
-                SoundCategory.PLAYERS,
+                entity.blockPosition(),
+                SoundEvents.LAVA_EXTINGUISH,
+                SoundSource.PLAYERS,
                 1.0F,
                 1.0F
         );

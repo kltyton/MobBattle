@@ -1,57 +1,57 @@
 package com.kltyton.mob_battle.entity.misc;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.data.DataTracker;
-import net.minecraft.entity.data.TrackedData;
-import net.minecraft.entity.data.TrackedDataHandlerRegistry;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.storage.ReadView;
-import net.minecraft.storage.WriteView;
-import net.minecraft.world.World;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import software.bernie.geckolib.animatable.GeoEntity;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.animatable.manager.AnimatableManager;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 public class PoisonousBeachEntity extends Entity implements GeoEntity {
-    private static final TrackedData<Integer> AGE = DataTracker.registerData(PoisonousBeachEntity.class, TrackedDataHandlerRegistry.INTEGER);
+    private static final EntityDataAccessor<Integer> AGE = SynchedEntityData.defineId(PoisonousBeachEntity.class, EntityDataSerializers.INT);
 
-    public PoisonousBeachEntity(EntityType<?> type, World world) {
+    public PoisonousBeachEntity(EntityType<?> type, Level world) {
         super(type, world);
-        this.noClip = true; // 护盾本身不被物理引擎阻挡
+        this.noPhysics = true; // 护盾本身不被物理引擎阻挡
     }
 
     @Override
-    protected void initDataTracker(DataTracker.Builder builder) {
-        builder.add(AGE, 0);
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        builder.define(AGE, 0);
     }
     @Override
     public void tick() {
         super.tick();
-        int age = this.dataTracker.get(AGE);
-        this.dataTracker.set(AGE, age + 1);
+        int age = this.entityData.get(AGE);
+        this.entityData.set(AGE, age + 1);
 
-        if (!getWorld().isClient) {
+        if (!level().isClientSide) {
             if (age > 600) {
                 this.discard();
             }
         }
     }
     @Override
-    public boolean damage(ServerWorld world, DamageSource source, float amount) {
+    public boolean hurtServer(ServerLevel world, DamageSource source, float amount) {
         return false;
     }
 
     @Override
-    protected void readCustomData(ReadView view) {
-        this.dataTracker.set(AGE, view.getInt("age", 0));
+    protected void readAdditionalSaveData(ValueInput view) {
+        this.entityData.set(AGE, view.getIntOr("age", 0));
     }
 
     @Override
-    protected void writeCustomData(WriteView view) {
-        view.putInt("age", this.dataTracker.get(AGE));
+    protected void addAdditionalSaveData(ValueOutput view) {
+        view.putInt("age", this.entityData.get(AGE));
     }
 
     @Override

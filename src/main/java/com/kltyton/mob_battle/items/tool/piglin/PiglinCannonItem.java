@@ -6,34 +6,34 @@ import com.kltyton.mob_battle.entity.bullet.GoldenTrailProjectile;
 import com.kltyton.mob_battle.items.ModItems;
 import com.kltyton.mob_battle.utils.EntityUtil;
 import com.kltyton.mob_battle.utils.TaskSchedulerUtil;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.NbtComponent;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.mob.AbstractPiglinEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.consume.UseAction;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.particle.DustParticleEffect;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.particles.DustParticleOptions;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.monster.piglin.AbstractPiglin;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemUseAnimation;
+import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 public class PiglinCannonItem extends Item {
     private static final String FAST_COUNTER_KEY = "FastCounter";
@@ -44,46 +44,46 @@ public class PiglinCannonItem extends Item {
     private static final int FAST_FIRE_INTERVAL = 3;
     private static final int HEAVY_CHARGE_TICKS = 120;
 
-    public PiglinCannonItem(Settings settings) {
+    public PiglinCannonItem(Properties settings) {
         super(settings);
     }
 
     @Override
-    public ActionResult use(World world, PlayerEntity user, Hand hand) {
-        ItemStack stack = user.getStackInHand(hand);
+    public InteractionResult use(Level world, Player user, InteractionHand hand) {
+        ItemStack stack = user.getItemInHand(hand);
 
-        if (user.isSneaking()) {
+        if (user.isShiftKeyDown()) {
             PiglinCannonModeUtil.Mode mode = PiglinCannonModeUtil.toggleMode(stack);
-            if (!world.isClient) {
-                user.sendMessage(Text.literal(mode == PiglinCannonModeUtil.Mode.FAST_FIRE ? "切换为速射形态" : "切换为重击模式"), true);
+            if (!world.isClientSide) {
+                user.displayClientMessage(Component.literal(mode == PiglinCannonModeUtil.Mode.FAST_FIRE ? "切换为速射形态" : "切换为重击模式"), true);
             }
-            return ActionResult.SUCCESS;
+            return InteractionResult.SUCCESS;
         }
 
         resetHeavyState(stack);
-        user.setCurrentHand(hand);
-        return ActionResult.CONSUME;
+        user.startUsingItem(hand);
+        return InteractionResult.CONSUME;
     }
 
     @Override
-    public int getMaxUseTime(ItemStack stack, LivingEntity user) {
+    public int getUseDuration(ItemStack stack, LivingEntity user) {
         return 72000;
     }
 
     @Override
-    public UseAction getUseAction(ItemStack stack) {
-        return UseAction.BOW;
+    public ItemUseAnimation getUseAnimation(ItemStack stack) {
+        return ItemUseAnimation.BOW;
     }
 
     @Override
-    public void inventoryTick(ItemStack stack, ServerWorld world, Entity entity, @Nullable EquipmentSlot slot) {
+    public void inventoryTick(ItemStack stack, ServerLevel world, Entity entity, @Nullable EquipmentSlot slot) {
         super.inventoryTick(stack, world, entity, slot);
 
-        if (!(entity instanceof PlayerEntity player)) {
+        if (!(entity instanceof Player player)) {
             return;
         }
 
-        if (!(player.isUsingItem() && player.getActiveItem() == stack)) {
+        if (!(player.isUsingItem() && player.getUseItem() == stack)) {
             return;
         }
         PiglinCannonModeUtil.Mode mode = PiglinCannonModeUtil.getMode(stack);
@@ -95,11 +95,11 @@ public class PiglinCannonItem extends Item {
     }
 
     @Override
-    public boolean onStoppedUsing(ItemStack stack, World world, LivingEntity user, int remainingUseTicks) {
-        if (!(world instanceof ServerWorld serverWorld)) {
+    public boolean releaseUsing(ItemStack stack, Level world, LivingEntity user, int remainingUseTicks) {
+        if (!(world instanceof ServerLevel serverWorld)) {
             return false;
         }
-        if (!(user instanceof PlayerEntity player)) {
+        if (!(user instanceof Player player)) {
             return false;
         }
 
@@ -108,7 +108,7 @@ public class PiglinCannonItem extends Item {
             return true;
         }
 
-        int usedTicks = this.getMaxUseTime(stack, user) - remainingUseTicks;
+        int usedTicks = this.getUseDuration(stack, user) - remainingUseTicks;
         boolean failed = getBoolean(stack, HEAVY_FAILED_KEY);
 
         if (!failed && usedTicks >= HEAVY_CHARGE_TICKS) {
@@ -121,8 +121,8 @@ public class PiglinCannonItem extends Item {
     }
 
 
-    private void handleFastFireTick(ServerWorld world, PlayerEntity player, ItemStack stack) {
-        long now = world.getTime();
+    private void handleFastFireTick(ServerLevel world, Player player, ItemStack stack) {
+        long now = world.getGameTime();
         long lastFire = getLong(stack, LAST_FAST_FIRE_TICK_KEY);
 
         if (now - lastFire < FAST_FIRE_INTERVAL) {
@@ -133,11 +133,11 @@ public class PiglinCannonItem extends Item {
         if (fired) {
             setLong(stack, LAST_FAST_FIRE_TICK_KEY, now);
         } else {
-            player.clearActiveItem();
+            player.stopUsingItem();
         }
     }
 
-    private boolean fireFastShot(ServerWorld world, PlayerEntity player, ItemStack stack) {
+    private boolean fireFastShot(ServerLevel world, Player player, ItemStack stack) {
         boolean consumedGold = consumeOneGoldBlock(player);
         boolean bloodStrengthen = false;
 
@@ -162,27 +162,27 @@ public class PiglinCannonItem extends Item {
                 stack
         );
 
-        projectile.pickupType = GoldenTrailProjectile.PickupPermission.DISALLOWED;
-        projectile.setVelocity(player, player.getPitch(), player.getYaw(), 0.0F, 4.0F, 0.35F);
-        projectile.setDamage(90.0F);
+        projectile.pickup = net.minecraft.world.entity.projectile.AbstractArrow.Pickup.DISALLOWED;
+        projectile.shootFromRotation(player, player.getXRot(), player.getYRot(), 0.0F, 4.0F, 0.35F);
+        projectile.setBaseDamage(90.0F);
         projectile.setTrueDamage(true, false);
 
         projectile.setStrengthen(strengthen);
         projectile.setBloodStrengthen(bloodStrengthen);
 
-        world.spawnEntity(projectile);
+        world.addFreshEntity(projectile);
 
         if (strengthen) {
-            world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.ENTITY_ZOMBIFIED_PIGLIN_ANGRY, SoundCategory.PLAYERS, 0.7F, 1.25F);
+            world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.ZOMBIFIED_PIGLIN_ANGRY, SoundSource.PLAYERS, 0.7F, 1.25F);
         } else {
-            world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.ENTITY_ARROW_SHOOT, SoundCategory.PLAYERS, 0.7F, 1.4F);
+            world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.ARROW_SHOOT, SoundSource.PLAYERS, 0.7F, 1.4F);
         }
 
         return true;
     }
 
-    private void handleHeavyChargeTick(ServerWorld world, PlayerEntity player, ItemStack stack) {
-        int elapsed = this.getMaxUseTime(stack, player) - player.getItemUseTimeLeft();
+    private void handleHeavyChargeTick(ServerLevel world, Player player, ItemStack stack) {
+        int elapsed = this.getUseDuration(stack, player) - player.getUseItemRemainingTicks();
         if (elapsed <= 0) {
             return;
         }
@@ -199,45 +199,45 @@ public class PiglinCannonItem extends Item {
 
             if (!success) {
                 setBoolean(stack, HEAVY_FAILED_KEY, true);
-                player.clearActiveItem();
-                world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.BLOCK_FIRE_EXTINGUISH, SoundCategory.PLAYERS, 0.8F, 0.8F);
+                player.stopUsingItem();
+                world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.FIRE_EXTINGUISH, SoundSource.PLAYERS, 0.8F, 0.8F);
                 return;
             }
 
-            world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.PLAYERS, 0.5F, 0.7F + step * 0.05F);
+            world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 0.5F, 0.7F + step * 0.05F);
         }
     }
 
-    private void fireHeavyBlast(ServerWorld world, PlayerEntity player, ItemStack stack) {
-        Vec3d start = player.getEyePos();
-        Vec3d dir = player.getRotationVec(1.0F).normalize();
-        Vec3d end = start.add(dir.multiply(50.0D));
+    private void fireHeavyBlast(ServerLevel world, Player player, ItemStack stack) {
+        Vec3 start = player.getEyePosition();
+        Vec3 dir = player.getViewVector(1.0F).normalize();
+        Vec3 end = start.add(dir.scale(50.0D));
         Mob_battle.LOGGER.info("Heavy blast: " + start + " -> " + end);
 
         spawnHeavyLaserLine(world, start, end);
 
-        world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.ENTITY_GENERIC_EXPLODE, SoundCategory.PLAYERS, 1.0F, 0.6F);
+        world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.GENERIC_EXPLODE, SoundSource.PLAYERS, 1.0F, 0.6F);
 
         TaskSchedulerUtil.runLater(20, () -> {
             Mob_battle.LOGGER.info("Exploding heavy blast: " + start + " -> " + end);
-            if (!player.isAlive() || player.getWorld() != world) {
+            if (!player.isAlive() || player.level() != world) {
                 return;
             }
             explodeHeavyLaser(world, player, start, end);
         });
     }
 
-    private void spawnHeavyLaserLine(ServerWorld world, Vec3d start, Vec3d end) {
+    private void spawnHeavyLaserLine(ServerLevel world, Vec3 start, Vec3 end) {
         Mob_battle.LOGGER.info("Spawning heavy laser line: " + start + " -> " + end);
-        Vec3d diff = end.subtract(start);
+        Vec3 diff = end.subtract(start);
         int steps = 60;
 
         for (int i = 0; i <= steps; i++) {
             double t = i / (double) steps;
-            Vec3d pos = start.add(diff.multiply(t));
+            Vec3 pos = start.add(diff.scale(t));
 
-            world.spawnParticles(
-                    new DustParticleEffect(0xFFD54A, 1.8F),
+            world.sendParticles(
+                    new DustParticleOptions(0xFFD54A, 1.8F),
                     pos.x, pos.y, pos.z,
                     4,
                     0.08, 0.08, 0.08,
@@ -245,7 +245,7 @@ public class PiglinCannonItem extends Item {
             );
 
             if (i % 2 == 0) {
-                world.spawnParticles(
+                world.sendParticles(
                         ParticleTypes.GLOW,
                         pos.x, pos.y, pos.z,
                         2,
@@ -256,17 +256,17 @@ public class PiglinCannonItem extends Item {
         }
     }
 
-    private void explodeHeavyLaser(ServerWorld world, PlayerEntity player, Vec3d start, Vec3d end) {
+    private void explodeHeavyLaser(ServerLevel world, Player player, Vec3 start, Vec3 end) {
         Mob_battle.LOGGER.info("Exploding heavy laser: " + start + " -> " + end);
-        Vec3d diff = end.subtract(start);
+        Vec3 diff = end.subtract(start);
         int steps = 30;
         Set<LivingEntity> hitEntities = new HashSet<>();
 
         for (int i = 0; i <= steps; i++) {
             double t = i / (double) steps;
-            Vec3d pos = start.add(diff.multiply(t));
+            Vec3 pos = start.add(diff.scale(t));
 
-            world.spawnParticles(
+            world.sendParticles(
                     ParticleTypes.EXPLOSION,
                     pos.x, pos.y, pos.z,
                     1,
@@ -274,12 +274,12 @@ public class PiglinCannonItem extends Item {
                     0.0
             );
 
-            Box box = new Box(
+            AABB box = new AABB(
                     pos.x - 1.5, pos.y - 1.5, pos.z - 1.5,
                     pos.x + 1.5, pos.y + 1.5, pos.z + 1.5
             );
 
-            List<LivingEntity> list = world.getEntitiesByClass(
+            List<LivingEntity> list = world.getEntitiesOfClass(
                     LivingEntity.class,
                     box,
                     entity -> entity.isAlive() && entity != player
@@ -288,48 +288,48 @@ public class PiglinCannonItem extends Item {
         }
 
         for (LivingEntity entity : hitEntities) {
-            entity.damage(world, entity.getDamageSources().explosion(player, player), 220.0F);
-            entity.damage(world, entity.getDamageSources().mobProjectile(player, player), 100.0F);
+            entity.hurtServer(world, entity.damageSources().explosion(player, player), 220.0F);
+            entity.hurtServer(world, entity.damageSources().mobProjectile(player, player), 100.0F);
         }
 
-        world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.ENTITY_DRAGON_FIREBALL_EXPLODE, SoundCategory.PLAYERS, 1.2F, 0.8F);
+        world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.DRAGON_FIREBALL_EXPLODE, SoundSource.PLAYERS, 1.2F, 0.8F);
     }
 
 
 
-    private boolean consumeOneGoldBlock(PlayerEntity player) {
-        if (player.isInCreativeMode()) {
+    private boolean consumeOneGoldBlock(Player player) {
+        if (player.hasInfiniteMaterials()) {
             return true;
         }
 
-        for (int i = 0; i < player.getInventory().size(); i++) {
-            ItemStack inv = player.getInventory().getStack(i);
-            if (inv.isOf(ModItems.TRAIN_BULLET)) {
-                inv.decrement(1);
+        for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
+            ItemStack inv = player.getInventory().getItem(i);
+            if (inv.is(ModItems.TRAIN_BULLET)) {
+                inv.shrink(1);
                 return true;
             }
         }
         return false;
     }
 
-    private boolean drainPiglinHealth(ServerWorld world, PlayerEntity player, double amount) {
+    private boolean drainPiglinHealth(ServerLevel world, Player player, double amount) {
         if (player.isCreative()) return true;
         double remain = amount;
 
         while (remain > 0.0D) {
-            List<AbstractPiglinEntity> piglins = new ArrayList<>(
-                    EntityUtil.getNearbyEntity(player, AbstractPiglinEntity.class, 8.0, false, EntityUtil.TeamFilter.ALL)
+            List<AbstractPiglin> piglins = new ArrayList<>(
+                    EntityUtil.getNearbyEntity(player, AbstractPiglin.class, 8.0, false, EntityUtil.TeamFilter.ALL)
             );
 
             if (piglins.isEmpty()) {
                 return false;
             }
 
-            AbstractPiglinEntity piglin = piglins.get(world.random.nextInt(piglins.size()));
+            AbstractPiglin piglin = piglins.get(world.random.nextInt(piglins.size()));
             float health = piglin.getHealth();
             double take = Math.min(remain, health);
 
-            piglin.damage(world, piglin.getDamageSources().magic(), (float) take);
+            piglin.hurtServer(world, piglin.damageSources().magic(), (float) take);
             remain -= take;
 
             if (!piglin.isAlive() && remain <= 0.0D) {
@@ -341,36 +341,36 @@ public class PiglinCannonItem extends Item {
     }
 
     private static int getInt(ItemStack stack, String key) {
-        NbtCompound nbt = stack.getOrDefault(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT).copyNbt();
-        return nbt.getInt(key, 0);
+        CompoundTag nbt = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
+        return nbt.getIntOr(key, 0);
     }
 
     private static void setInt(ItemStack stack, String key, int value) {
-        NbtCompound nbt = stack.getOrDefault(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT).copyNbt();
+        CompoundTag nbt = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
         nbt.putInt(key, value);
-        stack.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(nbt));
+        stack.set(DataComponents.CUSTOM_DATA, CustomData.of(nbt));
     }
 
     private static long getLong(ItemStack stack, String key) {
-        NbtCompound nbt = stack.getOrDefault(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT).copyNbt();
-        return nbt.getLong(key, 0);
+        CompoundTag nbt = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
+        return nbt.getLongOr(key, 0);
     }
 
     private static void setLong(ItemStack stack, String key, long value) {
-        NbtCompound nbt = stack.getOrDefault(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT).copyNbt();
+        CompoundTag nbt = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
         nbt.putLong(key, value);
-        stack.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(nbt));
+        stack.set(DataComponents.CUSTOM_DATA, CustomData.of(nbt));
     }
 
     private static boolean getBoolean(ItemStack stack, String key) {
-        NbtCompound nbt = stack.getOrDefault(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT).copyNbt();
-        return nbt.getBoolean(key, false);
+        CompoundTag nbt = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
+        return nbt.getBooleanOr(key, false);
     }
 
     private static void setBoolean(ItemStack stack, String key, boolean value) {
-        NbtCompound nbt = stack.getOrDefault(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT).copyNbt();
+        CompoundTag nbt = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
         nbt.putBoolean(key, value);
-        stack.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(nbt));
+        stack.set(DataComponents.CUSTOM_DATA, CustomData.of(nbt));
     }
 
     private static void resetHeavyState(ItemStack stack) {

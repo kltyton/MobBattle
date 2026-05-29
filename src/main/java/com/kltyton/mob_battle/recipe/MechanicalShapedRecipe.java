@@ -4,35 +4,35 @@ import com.kltyton.mob_battle.block.ModBlocks;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.item.ItemStack;
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.recipe.Ingredient;
-import net.minecraft.recipe.IngredientPlacement;
-import net.minecraft.recipe.RawShapedRecipe;
-import net.minecraft.recipe.RecipeSerializer;
-import net.minecraft.recipe.book.CraftingRecipeCategory;
-import net.minecraft.recipe.book.RecipeBookCategory;
-import net.minecraft.recipe.display.RecipeDisplay;
-import net.minecraft.recipe.display.ShapedCraftingRecipeDisplay;
-import net.minecraft.recipe.display.SlotDisplay;
-import net.minecraft.recipe.input.CraftingRecipeInput;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingBookCategory;
+import net.minecraft.world.item.crafting.CraftingInput;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.PlacementInfo;
+import net.minecraft.world.item.crafting.RecipeBookCategory;
+import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.item.crafting.ShapedRecipePattern;
+import net.minecraft.world.item.crafting.display.RecipeDisplay;
+import net.minecraft.world.item.crafting.display.ShapedCraftingRecipeDisplay;
+import net.minecraft.world.item.crafting.display.SlotDisplay;
+import net.minecraft.world.level.Level;
 
 public class MechanicalShapedRecipe implements MechanicalCraftingRecipe {
-    private final RawShapedRecipe raw;
+    private final ShapedRecipePattern raw;
     private final ItemStack result;
     private final String group;
-    private final CraftingRecipeCategory category;
+    private final CraftingBookCategory category;
     private final boolean showNotification;
     @Nullable
-    private IngredientPlacement ingredientPlacement;
+    private PlacementInfo ingredientPlacement;
 
-    public MechanicalShapedRecipe(String group, CraftingRecipeCategory category, RawShapedRecipe raw, ItemStack result, boolean showNotification) {
+    public MechanicalShapedRecipe(String group, CraftingBookCategory category, ShapedRecipePattern raw, ItemStack result, boolean showNotification) {
         this.group = group;
         this.category = category;
         this.raw = raw;
@@ -46,19 +46,19 @@ public class MechanicalShapedRecipe implements MechanicalCraftingRecipe {
     }
 
     @Override
-    public String getGroup() {
+    public String group() {
         return this.group;
     }
 
     @Override
-    public CraftingRecipeCategory getCategory() {
+    public CraftingBookCategory category() {
         return this.category;
     }
 
     @Override
-    public IngredientPlacement getIngredientPlacement() {
+    public PlacementInfo placementInfo() {
         if (this.ingredientPlacement == null) {
-            this.ingredientPlacement = IngredientPlacement.forMultipleSlots(this.raw.getIngredients());
+            this.ingredientPlacement = PlacementInfo.createFromOptionals(this.raw.ingredients());
         }
 
         return this.ingredientPlacement;
@@ -70,48 +70,48 @@ public class MechanicalShapedRecipe implements MechanicalCraftingRecipe {
     }
 
     @Override
-    public boolean matches(CraftingRecipeInput input, World world) {
+    public boolean matches(CraftingInput input, Level world) {
         return this.raw.matches(input);
     }
 
     @Override
-    public ItemStack craft(CraftingRecipeInput input, RegistryWrapper.WrapperLookup registries) {
+    public ItemStack assemble(CraftingInput input, HolderLookup.Provider registries) {
         return this.result.copy();
     }
 
     @Override
-    public List<RecipeDisplay> getDisplays() {
+    public List<RecipeDisplay> display() {
         return List.of(
                 new ShapedCraftingRecipeDisplay(
-                        this.raw.getWidth(),
-                        this.raw.getHeight(),
-                        this.raw.getIngredients()
+                        this.raw.width(),
+                        this.raw.height(),
+                        this.raw.ingredients()
                                 .stream()
-                                .map(ingredient -> (SlotDisplay) ingredient.map(Ingredient::toDisplay).orElse(SlotDisplay.EmptySlotDisplay.INSTANCE))
+                                .map(ingredient -> (SlotDisplay) ingredient.map(Ingredient::display).orElse(SlotDisplay.Empty.INSTANCE))
                                 .toList(),
-                        new SlotDisplay.StackSlotDisplay(this.result),
+                        new SlotDisplay.ItemStackSlotDisplay(this.result),
                         new SlotDisplay.ItemSlotDisplay(ModBlocks.MACHINE_WORKTABLE_BLOCK.asItem())
                 )
         );
     }
 
     @Override
-    public RecipeBookCategory getRecipeBookCategory() {
+    public RecipeBookCategory recipeBookCategory() {
         return ModRecipeTypes.MECHANICAL_CRAFTING_CATEGORY;
     }
 
     public static class Serializer implements RecipeSerializer<MechanicalShapedRecipe> {
         public static final MapCodec<MechanicalShapedRecipe> CODEC = RecordCodecBuilder.mapCodec(
                 instance -> instance.group(
-                                Codec.STRING.optionalFieldOf("group", "").forGetter(MechanicalShapedRecipe::getGroup),
-                                CraftingRecipeCategory.CODEC.fieldOf("category").orElse(CraftingRecipeCategory.MISC).forGetter(MechanicalShapedRecipe::getCategory),
-                                RawShapedRecipe.CODEC.forGetter(recipe -> recipe.raw),
-                                ItemStack.VALIDATED_CODEC.fieldOf("result").forGetter(recipe -> recipe.result),
+                                Codec.STRING.optionalFieldOf("group", "").forGetter(MechanicalShapedRecipe::group),
+                                CraftingBookCategory.CODEC.fieldOf("category").orElse(CraftingBookCategory.MISC).forGetter(MechanicalShapedRecipe::category),
+                                ShapedRecipePattern.MAP_CODEC.forGetter(recipe -> recipe.raw),
+                                ItemStack.STRICT_CODEC.fieldOf("result").forGetter(recipe -> recipe.result),
                                 Codec.BOOL.optionalFieldOf("show_notification", true).forGetter(MechanicalShapedRecipe::showNotification)
                         )
                         .apply(instance, MechanicalShapedRecipe::new)
         );
-        public static final PacketCodec<RegistryByteBuf, MechanicalShapedRecipe> PACKET_CODEC = PacketCodec.ofStatic(
+        public static final StreamCodec<RegistryFriendlyByteBuf, MechanicalShapedRecipe> PACKET_CODEC = StreamCodec.of(
                 MechanicalShapedRecipe.Serializer::write,
                 MechanicalShapedRecipe.Serializer::read
         );
@@ -122,24 +122,24 @@ public class MechanicalShapedRecipe implements MechanicalCraftingRecipe {
         }
 
         @Override
-        public PacketCodec<RegistryByteBuf, MechanicalShapedRecipe> packetCodec() {
+        public StreamCodec<RegistryFriendlyByteBuf, MechanicalShapedRecipe> streamCodec() {
             return PACKET_CODEC;
         }
 
-        private static MechanicalShapedRecipe read(RegistryByteBuf buf) {
-            String group = buf.readString();
-            CraftingRecipeCategory category = buf.readEnumConstant(CraftingRecipeCategory.class);
-            RawShapedRecipe raw = RawShapedRecipe.PACKET_CODEC.decode(buf);
-            ItemStack result = ItemStack.PACKET_CODEC.decode(buf);
+        private static MechanicalShapedRecipe read(RegistryFriendlyByteBuf buf) {
+            String group = buf.readUtf();
+            CraftingBookCategory category = buf.readEnum(CraftingBookCategory.class);
+            ShapedRecipePattern raw = ShapedRecipePattern.STREAM_CODEC.decode(buf);
+            ItemStack result = ItemStack.STREAM_CODEC.decode(buf);
             boolean showNotification = buf.readBoolean();
             return new MechanicalShapedRecipe(group, category, raw, result, showNotification);
         }
 
-        private static void write(RegistryByteBuf buf, MechanicalShapedRecipe recipe) {
-            buf.writeString(recipe.group);
-            buf.writeEnumConstant(recipe.category);
-            RawShapedRecipe.PACKET_CODEC.encode(buf, recipe.raw);
-            ItemStack.PACKET_CODEC.encode(buf, recipe.result);
+        private static void write(RegistryFriendlyByteBuf buf, MechanicalShapedRecipe recipe) {
+            buf.writeUtf(recipe.group);
+            buf.writeEnum(recipe.category);
+            ShapedRecipePattern.STREAM_CODEC.encode(buf, recipe.raw);
+            ItemStack.STREAM_CODEC.encode(buf, recipe.result);
             buf.writeBoolean(recipe.showNotification);
         }
     }

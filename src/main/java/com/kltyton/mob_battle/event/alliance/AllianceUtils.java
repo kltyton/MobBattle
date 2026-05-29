@@ -1,8 +1,8 @@
 package com.kltyton.mob_battle.event.alliance;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.scoreboard.AbstractTeam;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.scores.Team;
 
 public class AllianceUtils {
     public static boolean isSameAlliance(Entity entity1, Entity entity2) {
@@ -11,12 +11,12 @@ public class AllianceUtils {
         MinecraftServer server = entity1.getServer();
         if (server == null) return false;
 
-        AbstractTeam team1 = entity1.getScoreboardTeam();
-        AbstractTeam team2 = entity2.getScoreboardTeam();
+        Team team1 = entity1.getTeam();
+        Team team2 = entity2.getTeam();
 
         if (team1 == null || team2 == null) return false;
 
-        if (team1.isEqual(team2)) return true;
+        if (team1.isAlliedTo(team2)) return true;
 
         // 从持久化数据中查询同盟关系
         AllianceState state = AllianceState.get(server);

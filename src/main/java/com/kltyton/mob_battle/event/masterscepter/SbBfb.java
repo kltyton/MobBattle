@@ -2,14 +2,13 @@ package com.kltyton.mob_battle.event.masterscepter;
 
 import com.kltyton.mob_battle.entity.customfireball.CustomFireballEntity;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
-
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -24,11 +23,11 @@ public class SbBfb {
     // 延时任务数据结构
     public static class DelayedTask {
         final UUID playerId;
-        final RegistryKey<World> worldKey;
+        final ResourceKey<Level> worldKey;
         int remainingFireballs;
         int delayTicks;
 
-        DelayedTask(UUID playerId, RegistryKey<World> worldKey, int fireballs) {
+        DelayedTask(UUID playerId, ResourceKey<Level> worldKey, int fireballs) {
             this.playerId = playerId;
             this.worldKey = worldKey;
             this.remainingFireballs = fireballs;
@@ -48,8 +47,8 @@ public class SbBfb {
                 }
 
                 // 获取玩家和世界
-                ServerWorld world = server.getWorld(task.worldKey);
-                PlayerEntity player = world != null ? world.getPlayerByUuid(task.playerId) : null;
+                ServerLevel world = server.getLevel(task.worldKey);
+                Player player = world != null ? world.getPlayerByUUID(task.playerId) : null;
 
                 // 检查有效性
                 if (world == null || player == null || !player.isAlive()) {
@@ -59,24 +58,24 @@ public class SbBfb {
                 }
 
                 // 发射火球
-                Vec3d eyePos = player.getEyePos();
+                Vec3 eyePos = player.getEyePosition();
                 CustomFireballEntity fireball = new CustomFireballEntity(world, player, 2.5F, true, 50.0F);
-                fireball.setPosition(eyePos);
+                fireball.setPos(eyePos);
 
-                Vec3d lookVec = player.getRotationVec(1.0F);
-                Vec3d spreadVec = lookVec.addRandom(player.getRandom(), 0.1F);
+                Vec3 lookVec = player.getViewVector(1.0F);
+                Vec3 spreadVec = lookVec.offsetRandom(player.getRandom(), 0.1F);
                 float speed = 1.2F * 2;
-                fireball.setVelocity(
+                fireball.setDeltaMovement(
                         spreadVec.x * speed,
                         spreadVec.y * speed,
                         spreadVec.z * speed
                 );
 
-                world.spawnEntity(fireball);
+                world.addFreshEntity(fireball);
 
                 // 播放音效
                 world.playSound(null, eyePos.x, eyePos.y, eyePos.z,
-                        SoundEvents.ENTITY_BLAZE_SHOOT, SoundCategory.PLAYERS,
+                        SoundEvents.BLAZE_SHOOT, SoundSource.PLAYERS,
                         0.5F, 1.2F + player.getRandom().nextFloat() * 0.2F
                 );
 

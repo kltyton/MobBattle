@@ -8,17 +8,17 @@ import com.kltyton.mob_battle.entity.littleperson.skillentity.IronManEntity;
 import com.kltyton.mob_battle.entity.littleperson.skillentity.KeyframedLittlePersonEntity;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityStatuses;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.attribute.DefaultAttributeContainer;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.data.DataTracker;
-import net.minecraft.entity.data.TrackedData;
-import net.minecraft.entity.data.TrackedDataHandlerRegistry;
-import net.minecraft.entity.mob.HostileEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.world.World;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityEvent;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.level.Level;
 import software.bernie.geckolib.animatable.manager.AnimatableManager;
 import software.bernie.geckolib.animatable.processing.AnimationController;
 import software.bernie.geckolib.animation.PlayState;
@@ -39,37 +39,37 @@ public class BaseSkillLittlePersonEntity extends LittlePersonMilitiaEntity imple
     public int COOL_DOWN_TIME_10 = -1;
     private boolean normalAttackKnockbackAllowed;
 
-    public static final TrackedData<Boolean> HAS_SKILL = DataTracker.registerData(BaseSkillLittlePersonEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
-    public static final TrackedData<Integer> SKILL_COOLDOWN_1 = DataTracker.registerData(BaseSkillLittlePersonEntity.class, TrackedDataHandlerRegistry.INTEGER);
-    public static final TrackedData<Integer> SKILL_COOLDOWN_2 = DataTracker.registerData(BaseSkillLittlePersonEntity.class, TrackedDataHandlerRegistry.INTEGER);
-    public static final TrackedData<Integer> SKILL_COOLDOWN_3 = DataTracker.registerData(BaseSkillLittlePersonEntity.class, TrackedDataHandlerRegistry.INTEGER);
-    public static final TrackedData<Integer> SKILL_COOLDOWN_4 = DataTracker.registerData(BaseSkillLittlePersonEntity.class, TrackedDataHandlerRegistry.INTEGER);
-    public static final TrackedData<Integer> SKILL_COOLDOWN_5 = DataTracker.registerData(BaseSkillLittlePersonEntity.class, TrackedDataHandlerRegistry.INTEGER);
-    public static final TrackedData<Integer> SKILL_COOLDOWN_6 = DataTracker.registerData(BaseSkillLittlePersonEntity.class, TrackedDataHandlerRegistry.INTEGER);
-    public static final TrackedData<Integer> SKILL_COOLDOWN_7 = DataTracker.registerData(BaseSkillLittlePersonEntity.class, TrackedDataHandlerRegistry.INTEGER);
-    public static final TrackedData<Integer> SKILL_COOLDOWN_8 = DataTracker.registerData(BaseSkillLittlePersonEntity.class, TrackedDataHandlerRegistry.INTEGER);
-    public static final TrackedData<Integer> SKILL_COOLDOWN_9 = DataTracker.registerData(BaseSkillLittlePersonEntity.class, TrackedDataHandlerRegistry.INTEGER);
-    public static final TrackedData<Integer> SKILL_COOLDOWN_10 = DataTracker.registerData(BaseSkillLittlePersonEntity.class, TrackedDataHandlerRegistry.INTEGER);
-    public BaseSkillLittlePersonEntity(EntityType<? extends HostileEntity> entityType, World world, int skillCount) {
+    public static final EntityDataAccessor<Boolean> HAS_SKILL = SynchedEntityData.defineId(BaseSkillLittlePersonEntity.class, EntityDataSerializers.BOOLEAN);
+    public static final EntityDataAccessor<Integer> SKILL_COOLDOWN_1 = SynchedEntityData.defineId(BaseSkillLittlePersonEntity.class, EntityDataSerializers.INT);
+    public static final EntityDataAccessor<Integer> SKILL_COOLDOWN_2 = SynchedEntityData.defineId(BaseSkillLittlePersonEntity.class, EntityDataSerializers.INT);
+    public static final EntityDataAccessor<Integer> SKILL_COOLDOWN_3 = SynchedEntityData.defineId(BaseSkillLittlePersonEntity.class, EntityDataSerializers.INT);
+    public static final EntityDataAccessor<Integer> SKILL_COOLDOWN_4 = SynchedEntityData.defineId(BaseSkillLittlePersonEntity.class, EntityDataSerializers.INT);
+    public static final EntityDataAccessor<Integer> SKILL_COOLDOWN_5 = SynchedEntityData.defineId(BaseSkillLittlePersonEntity.class, EntityDataSerializers.INT);
+    public static final EntityDataAccessor<Integer> SKILL_COOLDOWN_6 = SynchedEntityData.defineId(BaseSkillLittlePersonEntity.class, EntityDataSerializers.INT);
+    public static final EntityDataAccessor<Integer> SKILL_COOLDOWN_7 = SynchedEntityData.defineId(BaseSkillLittlePersonEntity.class, EntityDataSerializers.INT);
+    public static final EntityDataAccessor<Integer> SKILL_COOLDOWN_8 = SynchedEntityData.defineId(BaseSkillLittlePersonEntity.class, EntityDataSerializers.INT);
+    public static final EntityDataAccessor<Integer> SKILL_COOLDOWN_9 = SynchedEntityData.defineId(BaseSkillLittlePersonEntity.class, EntityDataSerializers.INT);
+    public static final EntityDataAccessor<Integer> SKILL_COOLDOWN_10 = SynchedEntityData.defineId(BaseSkillLittlePersonEntity.class, EntityDataSerializers.INT);
+    public BaseSkillLittlePersonEntity(EntityType<? extends Monster> entityType, Level world, int skillCount) {
         super(entityType, world);
-        this.setAiDisabled(false);
+        this.setNoAi(false);
         this.setHasSkill(false);
         this.skillCount = skillCount;
     }
     @Override
-    protected void initDataTracker(DataTracker.Builder builder) {
-        super.initDataTracker(builder);
-        builder.add(HAS_SKILL, false);
-        builder.add(SKILL_COOLDOWN_1, COOL_DOWN_TIME_1);
-        builder.add(SKILL_COOLDOWN_2, COOL_DOWN_TIME_2);
-        builder.add(SKILL_COOLDOWN_3, COOL_DOWN_TIME_3);
-        builder.add(SKILL_COOLDOWN_4, COOL_DOWN_TIME_4);
-        builder.add(SKILL_COOLDOWN_5, COOL_DOWN_TIME_5);
-        builder.add(SKILL_COOLDOWN_6, COOL_DOWN_TIME_6);
-        builder.add(SKILL_COOLDOWN_7, COOL_DOWN_TIME_7);
-        builder.add(SKILL_COOLDOWN_8, COOL_DOWN_TIME_8);
-        builder.add(SKILL_COOLDOWN_9, COOL_DOWN_TIME_9);
-        builder.add(SKILL_COOLDOWN_10, COOL_DOWN_TIME_10);
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(HAS_SKILL, false);
+        builder.define(SKILL_COOLDOWN_1, COOL_DOWN_TIME_1);
+        builder.define(SKILL_COOLDOWN_2, COOL_DOWN_TIME_2);
+        builder.define(SKILL_COOLDOWN_3, COOL_DOWN_TIME_3);
+        builder.define(SKILL_COOLDOWN_4, COOL_DOWN_TIME_4);
+        builder.define(SKILL_COOLDOWN_5, COOL_DOWN_TIME_5);
+        builder.define(SKILL_COOLDOWN_6, COOL_DOWN_TIME_6);
+        builder.define(SKILL_COOLDOWN_7, COOL_DOWN_TIME_7);
+        builder.define(SKILL_COOLDOWN_8, COOL_DOWN_TIME_8);
+        builder.define(SKILL_COOLDOWN_9, COOL_DOWN_TIME_9);
+        builder.define(SKILL_COOLDOWN_10, COOL_DOWN_TIME_10);
     }
     public void init() {
         setSkillCooldown("attack2");
@@ -85,21 +85,21 @@ public class BaseSkillLittlePersonEntity extends LittlePersonMilitiaEntity imple
     }
     public boolean canSkill(String skill) {
         if (!canSkill()) return false;
-        return !this.getWorld().isClient()
+        return !this.level().isClientSide()
                 && !hasSkill()
                 && getSkillCooldown(skill) == 0
                 && this.getTarget() != null
                 && isValidSummonTarget(this.getTarget());
     }
     public boolean hasSkill() {
-        return this.dataTracker.get(HAS_SKILL);
+        return this.entityData.get(HAS_SKILL);
     }
     public void setHasSkill(boolean hasSkill) {
         endDamage = false;
         if (!hasSkill) {
             setNormalAttackKnockbackAllowed(false);
         }
-        this.dataTracker.set(HAS_SKILL, hasSkill);
+        this.entityData.set(HAS_SKILL, hasSkill);
     }
     public boolean allowsNormalAttackKnockback() {
         return this.normalAttackKnockbackAllowed;
@@ -110,7 +110,7 @@ public class BaseSkillLittlePersonEntity extends LittlePersonMilitiaEntity imple
     public void performSkill(String skill, boolean isAfterSkill) {
         setNormalAttackKnockbackAllowed(false);
         this.setHasSkill(true);
-        this.setAiDisabled(true);
+        this.setNoAi(true);
         if (isAfterSkill) this.setSkillCooldown(skill);
         this.triggerAnim("skill_controller", skill);
     }
@@ -177,58 +177,58 @@ public class BaseSkillLittlePersonEntity extends LittlePersonMilitiaEntity imple
         setSkillCooldown10(0);
     }
     public int getSkillCooldown1() {
-        return this.dataTracker.get(SKILL_COOLDOWN_1);
+        return this.entityData.get(SKILL_COOLDOWN_1);
     }
     public void setSkillCooldown1(int skillCooldown1) {
-        this.dataTracker.set(SKILL_COOLDOWN_1, skillCooldown1);
+        this.entityData.set(SKILL_COOLDOWN_1, skillCooldown1);
     }
     public int getSkillCooldown2() {
-        return this.dataTracker.get(SKILL_COOLDOWN_2);
+        return this.entityData.get(SKILL_COOLDOWN_2);
     }
     public void setSkillCooldown2(int skillCooldown2) {
-        this.dataTracker.set(SKILL_COOLDOWN_2, skillCooldown2);
+        this.entityData.set(SKILL_COOLDOWN_2, skillCooldown2);
     }
     public int getSkillCooldown3() {
-        return this.dataTracker.get(SKILL_COOLDOWN_3);
+        return this.entityData.get(SKILL_COOLDOWN_3);
     }
     public void setSkillCooldown3(int skillCooldown3) {
-        this.dataTracker.set(SKILL_COOLDOWN_3, skillCooldown3);
+        this.entityData.set(SKILL_COOLDOWN_3, skillCooldown3);
     }
     public int getSkillCooldown4() {
-        return this.dataTracker.get(SKILL_COOLDOWN_4);
+        return this.entityData.get(SKILL_COOLDOWN_4);
     }
     public void setSkillCooldown4(int skillCooldown4) {
-        this.dataTracker.set(SKILL_COOLDOWN_4, skillCooldown4);
+        this.entityData.set(SKILL_COOLDOWN_4, skillCooldown4);
     }
     public int getSkillCooldown5() {
-        return this.dataTracker.get(SKILL_COOLDOWN_5);
+        return this.entityData.get(SKILL_COOLDOWN_5);
     }
     public void setSkillCooldown5(int skillCooldown5) {
-        this.dataTracker.set(SKILL_COOLDOWN_5, skillCooldown5);
+        this.entityData.set(SKILL_COOLDOWN_5, skillCooldown5);
     }
-    public int getSkillCooldown6() {return this.dataTracker.get(SKILL_COOLDOWN_6);}
+    public int getSkillCooldown6() {return this.entityData.get(SKILL_COOLDOWN_6);}
     public void setSkillCooldown6(int skillCooldown6) {
-        this.dataTracker.set(SKILL_COOLDOWN_6, skillCooldown6);
+        this.entityData.set(SKILL_COOLDOWN_6, skillCooldown6);
     }
-    public int getSkillCooldown7() {return this.dataTracker.get(SKILL_COOLDOWN_7);}
+    public int getSkillCooldown7() {return this.entityData.get(SKILL_COOLDOWN_7);}
     public void setSkillCooldown7(int skillCooldown7) {
-        this.dataTracker.set(SKILL_COOLDOWN_7, skillCooldown7);
+        this.entityData.set(SKILL_COOLDOWN_7, skillCooldown7);
     }
-    public int getSkillCooldown8() {return this.dataTracker.get(SKILL_COOLDOWN_8);}
+    public int getSkillCooldown8() {return this.entityData.get(SKILL_COOLDOWN_8);}
     public void setSkillCooldown8(int skillCooldown8) {
-        this.dataTracker.set(SKILL_COOLDOWN_8, skillCooldown8);
+        this.entityData.set(SKILL_COOLDOWN_8, skillCooldown8);
     }
-    public int getSkillCooldown9() {return this.dataTracker.get(SKILL_COOLDOWN_9);}
+    public int getSkillCooldown9() {return this.entityData.get(SKILL_COOLDOWN_9);}
     public void setSkillCooldown9(int skillCooldown9) {
-        this.dataTracker.set(SKILL_COOLDOWN_9, skillCooldown9);
+        this.entityData.set(SKILL_COOLDOWN_9, skillCooldown9);
     }
-    public int getSkillCooldown10() {return this.dataTracker.get(SKILL_COOLDOWN_10);}
+    public int getSkillCooldown10() {return this.entityData.get(SKILL_COOLDOWN_10);}
     public void setSkillCooldown10(int skillCooldown10) {
-        this.dataTracker.set(SKILL_COOLDOWN_10, skillCooldown10);
+        this.entityData.set(SKILL_COOLDOWN_10, skillCooldown10);
     }
     @Override
-    public boolean tryAttack(ServerWorld world, Entity target) {
-        if (target instanceof net.minecraft.entity.LivingEntity living && !isValidSummonTarget(living)) {
+    public boolean doHurtTarget(ServerLevel world, Entity target) {
+        if (target instanceof net.minecraft.world.entity.LivingEntity living && !isValidSummonTarget(living)) {
             return false;
         }
         if (!ModSkillEntityType.canSkill(this)) return false;
@@ -240,19 +240,19 @@ public class BaseSkillLittlePersonEntity extends LittlePersonMilitiaEntity imple
                 return true;
             }
         }
-        return super.tryAttack(world, target);
+        return super.doHurtTarget(world, target);
     }
     @Override
     public void tick() {
         super.tick();
-        if (!this.getWorld().isClient) {
-            this.setAttacking(this.getTarget() != null);
-            if (this.isDead()) {
-                this.setAiDisabled(true);
+        if (!this.level().isClientSide) {
+            this.setAggressive(this.getTarget() != null);
+            if (this.isDeadOrDying()) {
+                this.setNoAi(true);
                 this.triggerAnim("skill_controller", "die");
             }
             if (!hasSkill()) {
-                this.setAiDisabled(false);
+                this.setNoAi(false);
                 // 冷却递减
                 decrementCooldownIfPositive(SKILL_COOLDOWN_1);
                 decrementCooldownIfPositive(SKILL_COOLDOWN_2);
@@ -267,16 +267,16 @@ public class BaseSkillLittlePersonEntity extends LittlePersonMilitiaEntity imple
             }
         }
     }
-    private void decrementCooldownIfPositive(TrackedData<Integer> cooldownField) {
-        int currentCooldown = this.dataTracker.get(cooldownField);
+    private void decrementCooldownIfPositive(EntityDataAccessor<Integer> cooldownField) {
+        int currentCooldown = this.entityData.get(cooldownField);
         if (currentCooldown > 0) {
-            this.dataTracker.set(cooldownField, currentCooldown - 1);
+            this.entityData.set(cooldownField, currentCooldown - 1);
         }
     }
     @Override
-    public void takeKnockback(double strength, double x, double z) {
-        if (!hasSkill() || !this.isAiDisabled() || !this.isDead()) {
-            super.takeKnockback(strength, x, z);
+    public void knockback(double strength, double x, double z) {
+        if (!hasSkill() || !this.isNoAi() || !this.isDeadOrDying()) {
+            super.knockback(strength, x, z);
         }
     }
     protected static final RawAnimation ATTACK_ANIM_2 = RawAnimation.begin().thenPlay("attack2");
@@ -344,11 +344,11 @@ public class BaseSkillLittlePersonEntity extends LittlePersonMilitiaEntity imple
     public boolean handleSkillPayload(String skillName) {
         return switch (skillName) {
             case "stop_ai" -> {
-                this.setAiDisabled(true);
+                this.setNoAi(true);
                 yield true;
             }
             case "start_ai" -> {
-                this.setAiDisabled(false);
+                this.setNoAi(false);
                 yield true;
             }
             case "die" -> {
@@ -357,7 +357,7 @@ public class BaseSkillLittlePersonEntity extends LittlePersonMilitiaEntity imple
             }
             case "stop" -> {
                 this.setHasSkill(false);
-                this.setAiDisabled(false);
+                this.setNoAi(false);
                 yield true;
             }
             default -> skillName.startsWith("attack") && handleAttackPayload(skillName);
@@ -437,21 +437,21 @@ public class BaseSkillLittlePersonEntity extends LittlePersonMilitiaEntity imple
     public void die(BaseSkillLittlePersonEntity entity) {
 
     }
-    protected void updatePostDeath() {
+    protected void tickDeath() {
         if (this instanceof IronManEntity) {
             this.deathTime++;
-            if (this.deathTime >= 400 && !this.getWorld().isClient() && !this.isRemoved()) {
+            if (this.deathTime >= 400 && !this.level().isClientSide() && !this.isRemoved()) {
                 die(this);
-                this.getWorld().sendEntityStatus(this, EntityStatuses.ADD_DEATH_PARTICLES);
+                this.level().broadcastEntityEvent(this, EntityEvent.POOF);
                 this.remove(Entity.RemovalReason.KILLED);
             }
         } else {
-            super.updatePostDeath();
+            super.tickDeath();
         }
     }
-    public static DefaultAttributeContainer.Builder createAttributes() {
+    public static AttributeSupplier.Builder createAttributes() {
         return LittlePersonEntity.createLittlePersonAttributes()
-                .add(EntityAttributes.FOLLOW_RANGE, 40.0)
+                .add(Attributes.FOLLOW_RANGE, 40.0)
                 .add(ModEntityAttributes.DAMAGE_REDUCTION, 0);
     }
 

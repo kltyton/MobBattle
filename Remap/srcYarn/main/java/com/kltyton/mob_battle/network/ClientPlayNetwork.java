@@ -1,0 +1,93 @@
+package com.kltyton.mob_battle.network;
+
+import com.kltyton.mob_battle.accessor.ILead;
+import com.kltyton.mob_battle.bossbar.CustomBossBarClientState;
+import com.kltyton.mob_battle.config.whitelist.ClientPermissionState;
+import com.kltyton.mob_battle.items.itemgroup.ClientTagManager;
+import com.kltyton.mob_battle.network.packet.*;
+import com.kltyton.mob_battle.sounds.bgm.ClientBgmManager;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.entity.Entity;
+import net.minecraft.util.Identifier;
+
+public class ClientPlayNetwork {
+    public static void init() {
+        ClientPlayNetworking.registerGlobalReceiver(SoundPayload.ID, (payload, context)  -> {
+            String soundName = payload.soundNmae();
+            float volume = payload.volume();
+            MinecraftClient client = context.client();
+            client.execute(() -> {
+                if ("fade_out".equals(soundName)) {
+                    // 收到淡出指令
+                    if (ClientBgmManager.forcedMusicId != null && !ClientBgmManager.isFadingOut) {
+                        ClientBgmManager.startFadeOut(ClientBgmManager.forcedMusicId, ClientBgmManager.forcedVolume);
+                    }
+                    ClientBgmManager.forcedMusicId = null;
+                    ClientBgmManager.forcedVolume = 0f;
+                } else {
+                    // 收到正常播放指令
+                    Identifier id = Identifier.of(soundName);
+
+                    // 如果正在淡出且是同一首音乐，则开始淡入恢复
+                    if (ClientBgmManager.isFadingOut &&
+                            ClientBgmManager.fadingOutMusicId != null &&
+                            ClientBgmManager.fadingOutMusicId.equals(id)) {
+                        ClientBgmManager.startFadeIn(id, volume);
+                    } else {
+                        // 全新播放或切换音乐
+                        ClientBgmManager.resetAll();
+                        ClientBgmManager.forcedMusicId = id;
+                        ClientBgmManager.forcedVolume = volume;
+                    }
+                }
+            });
+        });
+        ClientPlayNetworking.registerGlobalReceiver(ItemGroupPayload.ID, (payload, context) -> {
+            MinecraftClient client = context.client();
+            boolean isOpen = payload.isOpen();
+            client.execute(() -> ClientTagManager.isShen = isOpen);
+        });
+        ClientPlayNetworking.registerGlobalReceiver(ILeadUpdatePayload.ID, (payload, context) -> {
+            MinecraftClient client = context.client();
+            Entity entity = client.world.getEntityById(payload.entityId());
+            int iLead_1 = payload.iLead_1();
+            int iLead_2 = payload.iLead_2();
+            client.execute(() -> {
+                if (entity != null) {
+                    if (iLead_1 != 3) ((ILead) entity).setIsUniversalLeadEnyity(iLead_1 == 1);
+                    if (iLead_2 != 3) ((ILead) entity).setIsInvisibleUniversalLeadEnyity(iLead_2 == 1);
+                }
+            });
+        });
+        ClientPlayNetworking.registerGlobalReceiver(PlayerSkillUtilPayload.ID, (payload, context) -> {
+            MinecraftClient client = context.client();
+            client.execute(() -> {
+                if (client.player != null) {
+                    switch (payload.name()) {
+/*                        case "setPerson_1" -> client.options.setPerspective(Perspective.FIRST_PERSON);
+                        case "setPerson_2" -> client.options.setPerspective(Perspective.THIRD_PERSON_BACK);
+                        case "setPerson_3" -> client.options.setPerspective(Perspective.THIRD_PERSON_FRONT);*/
+                    }
+                }
+            });
+        });
+        ClientPlayNetworking.registerGlobalReceiver(PermissionPayload.ID, (payload, context) -> {
+            MinecraftClient client = context.client();
+            boolean isWhitelisted = payload.isWhitelisted();
+            client.execute(() -> {
+                ClientPermissionState.setWhitelisted(isWhitelisted);
+            });
+        });
+        ClientPlayNetworking.registerGlobalReceiver(CustomBossBarPayload.ID, (payload, context) -> {
+            MinecraftClient client = context.client();
+            client.execute(() -> {
+                if (payload.visible()) {
+                    CustomBossBarClientState.set(payload.bossBarUuid(), payload.styleId());
+                } else {
+                    CustomBossBarClientState.remove(payload.bossBarUuid());
+                }
+            });
+        });
+    }
+}

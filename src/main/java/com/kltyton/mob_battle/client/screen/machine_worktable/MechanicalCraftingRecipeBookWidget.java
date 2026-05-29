@@ -4,34 +4,33 @@ import com.kltyton.mob_battle.block.ModBlocks;
 import com.kltyton.mob_battle.recipe.ModRecipeTypes;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.gui.screen.ButtonTextures;
-import net.minecraft.client.gui.screen.recipebook.GhostRecipe;
-import net.minecraft.client.gui.screen.recipebook.RecipeBookWidget;
-import net.minecraft.client.gui.screen.recipebook.RecipeResultCollection;
-import net.minecraft.item.ItemStack;
-import net.minecraft.recipe.RecipeFinder;
-import net.minecraft.recipe.RecipeGridAligner;
-import net.minecraft.recipe.display.RecipeDisplay;
-import net.minecraft.recipe.display.ShapedCraftingRecipeDisplay;
-import net.minecraft.screen.slot.Slot;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.context.ContextParameterMap;
-
+import net.minecraft.client.gui.components.WidgetSprites;
+import net.minecraft.client.gui.screens.recipebook.GhostSlots;
+import net.minecraft.client.gui.screens.recipebook.RecipeBookComponent;
+import net.minecraft.client.gui.screens.recipebook.RecipeCollection;
+import net.minecraft.network.chat.Component;
+import net.minecraft.recipebook.PlaceRecipeHelper;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.context.ContextMap;
+import net.minecraft.world.entity.player.StackedItemContents;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.display.RecipeDisplay;
+import net.minecraft.world.item.crafting.display.ShapedCraftingRecipeDisplay;
 import java.util.List;
 import java.util.Optional;
 
 @Environment(EnvType.CLIENT)
-public class MechanicalCraftingRecipeBookWidget extends RecipeBookWidget<MechanicalWorktableScreenHandler> {
-    private static final ButtonTextures TEXTURES = new ButtonTextures(
-            Identifier.ofVanilla("recipe_book/filter_enabled"),
-            Identifier.ofVanilla("recipe_book/filter_disabled"),
-            Identifier.ofVanilla("recipe_book/filter_enabled_highlighted"),
-            Identifier.ofVanilla("recipe_book/filter_disabled_highlighted")
+public class MechanicalCraftingRecipeBookWidget extends RecipeBookComponent<MechanicalWorktableScreenHandler> {
+    private static final WidgetSprites TEXTURES = new WidgetSprites(
+            ResourceLocation.withDefaultNamespace("recipe_book/filter_enabled"),
+            ResourceLocation.withDefaultNamespace("recipe_book/filter_disabled"),
+            ResourceLocation.withDefaultNamespace("recipe_book/filter_enabled_highlighted"),
+            ResourceLocation.withDefaultNamespace("recipe_book/filter_disabled_highlighted")
     );
-    private static final Text TOGGLE_CRAFTABLE_TEXT = Text.translatable("gui.recipebook.toggleRecipes.craftable");
-    private static final List<RecipeBookWidget.Tab> TABS = List.of(
-            new RecipeBookWidget.Tab(
+    private static final Component TOGGLE_CRAFTABLE_TEXT = Component.translatable("gui.recipebook.toggleRecipes.craftable");
+    private static final List<RecipeBookComponent.TabInfo> TABS = List.of(
+            new RecipeBookComponent.TabInfo(
                     new ItemStack(ModBlocks.MACHINE_WORKTABLE_BLOCK),
                     Optional.empty(),
                     ModRecipeTypes.MECHANICAL_CRAFTING_CATEGORY
@@ -43,13 +42,13 @@ public class MechanicalCraftingRecipeBookWidget extends RecipeBookWidget<Mechani
     }
 
     @Override
-    protected boolean isValid(Slot slot) {
-        return this.craftingScreenHandler.getOutputSlot() == slot || this.craftingScreenHandler.getInputSlots().contains(slot);
+    protected boolean isCraftingSlot(Slot slot) {
+        return this.menu.getResultSlot() == slot || this.menu.getInputGridSlots().contains(slot);
     }
 
     private boolean canDisplay(RecipeDisplay display) {
-        int width = this.craftingScreenHandler.getWidth();
-        int height = this.craftingScreenHandler.getHeight();
+        int width = this.menu.getGridWidth();
+        int height = this.menu.getGridHeight();
 
         return switch (display) {
             case ShapedCraftingRecipeDisplay shaped -> width >= shaped.width() && height >= shaped.height();
@@ -58,36 +57,36 @@ public class MechanicalCraftingRecipeBookWidget extends RecipeBookWidget<Mechani
     }
 
     @Override
-    protected void showGhostRecipe(GhostRecipe ghostRecipe, RecipeDisplay display, ContextParameterMap context) {
-        ghostRecipe.addResults(this.craftingScreenHandler.getOutputSlot(), context, display.result());
+    protected void fillGhostRecipe(GhostSlots ghostRecipe, RecipeDisplay display, ContextMap context) {
+        ghostRecipe.setResult(this.menu.getResultSlot(), context, display.result());
         if (display instanceof ShapedCraftingRecipeDisplay shaped) {
-            List<Slot> slots = this.craftingScreenHandler.getInputSlots();
-            RecipeGridAligner.alignRecipeToGrid(
-                    this.craftingScreenHandler.getWidth(),
-                    this.craftingScreenHandler.getHeight(),
+            List<Slot> slots = this.menu.getInputGridSlots();
+            PlaceRecipeHelper.placeRecipe(
+                    this.menu.getGridWidth(),
+                    this.menu.getGridHeight(),
                     shaped.width(),
                     shaped.height(),
                     shaped.ingredients(),
                     (slot, index, x, y) -> {
                         Slot inputSlot = slots.get(index);
-                        ghostRecipe.addInputs(inputSlot, context, slot);
+                        ghostRecipe.setInput(inputSlot, context, slot);
                     }
             );
         }
     }
 
     @Override
-    protected void setBookButtonTexture() {
-        this.toggleCraftableButton.setTextures(TEXTURES);
+    protected void initFilterButtonTextures() {
+        this.filterButton.initTextureValues(TEXTURES);
     }
 
     @Override
-    protected Text getToggleCraftableButtonText() {
+    protected Component getRecipeFilterName() {
         return TOGGLE_CRAFTABLE_TEXT;
     }
 
     @Override
-    protected void populateRecipes(RecipeResultCollection recipeResultCollection, RecipeFinder recipeFinder) {
-        recipeResultCollection.populateRecipes(recipeFinder, this::canDisplay);
+    protected void selectMatchingRecipes(RecipeCollection recipeResultCollection, StackedItemContents recipeFinder) {
+        recipeResultCollection.selectRecipes(recipeFinder, this::canDisplay);
     }
 }

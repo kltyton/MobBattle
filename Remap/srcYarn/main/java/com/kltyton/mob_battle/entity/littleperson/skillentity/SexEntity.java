@@ -1,0 +1,352 @@
+package com.kltyton.mob_battle.entity.littleperson.skillentity;
+
+import com.kltyton.mob_battle.Mob_battle;
+import com.kltyton.mob_battle.entity.ModEntityAttributes;
+import com.kltyton.mob_battle.entity.littleperson.militia.LittlePersonMilitiaEntity;
+import com.kltyton.mob_battle.entity.littleperson.skillentity.base.BaseSkillLittlePersonEntity;
+import com.kltyton.mob_battle.network.packet.SkillPayload;
+import com.kltyton.mob_battle.utils.EntityUtil;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.attribute.DefaultAttributeContainer;
+import net.minecraft.entity.attribute.EntityAttributeInstance;
+import net.minecraft.entity.attribute.EntityAttributeModifier;
+import net.minecraft.entity.attribute.EntityAttributes;
+import net.minecraft.entity.boss.BossBar;
+import net.minecraft.entity.boss.ServerBossBar;
+import net.minecraft.entity.data.DataTracker;
+import net.minecraft.entity.data.TrackedData;
+import net.minecraft.entity.data.TrackedDataHandlerRegistry;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.storage.ReadView;
+import net.minecraft.storage.WriteView;
+import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.math.Box;
+import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
+import software.bernie.geckolib.animatable.processing.AnimationController;
+import software.bernie.geckolib.animatable.processing.AnimationTest;
+import software.bernie.geckolib.animation.PlayState;
+import software.bernie.geckolib.animation.RawAnimation;
+
+import java.util.*;
+
+public class SexEntity extends BaseSkillLittlePersonEntity {
+    private static final TrackedData<Integer> GRABBED_ENTITY_ID = DataTracker.registerData(SexEntity.class, TrackedDataHandlerRegistry.INTEGER);
+    private final List<LivingEntity> knockedTargets = new ArrayList<>();
+    protected static final RawAnimation RUN_ANIM = RawAnimation.begin().thenLoop("run");
+    protected static final RawAnimation SEX_ATTACK_ANIM_5 = RawAnimation.begin().thenPlay("attack5").thenPlay("attack8");
+
+    private final ServerBossBar bossBar = new ServerBossBar(
+            this.getDisplayName(),
+            BossBar.Color.PURPLE,
+            BossBar.Style.PROGRESS
+    );
+    @Override
+    public void setCustomName(@Nullable Text name) {
+        super.setCustomName(name);
+        this.bossBar.setName(Objects.requireNonNull(this.getDisplayName()).copy().append(" | " + (int)this.getHealth() + "/" + (int)this.getMaxHealth()));
+    }
+    @Override
+    public void onStartedTrackingBy(ServerPlayerEntity player) {
+        super.onStartedTrackingBy(player);
+        this.bossBar.addPlayer(player);
+    }
+    @Override
+    public void onStoppedTrackingBy(ServerPlayerEntity player) {
+        super.onStoppedTrackingBy(player);
+        this.bossBar.removePlayer(player);
+    }
+    @Override
+    protected void mobTick(ServerWorld world) {
+        super.mobTick(world);
+        this.bossBar.setPercent(this.getHealth() / this.getMaxHealth());
+        this.bossBar.setName(Objects.requireNonNull(this.getDisplayName()).copy().append(" | " + (int)this.getHealth() + "/" + (int)this.getMaxHealth()));
+    }
+
+    @Override
+    public void readCustomData(ReadView nbt) {
+        super.readCustomData(nbt);
+        if (this.hasCustomName()) {
+            this.bossBar.setName(Objects.requireNonNull(this.getDisplayName()).copy().append(" | " + (int)this.getHealth() + "/" + (int)this.getMaxHealth()));
+        }
+    }
+    @Override
+    public void writeCustomData(WriteView nbt) {
+        super.writeCustomData(nbt);
+    }
+    @Override
+    public void setHealth(float health) {
+        super.setHealth(health);
+        if (this.bossBar != null) {
+            this.bossBar.setPercent(health / this.getMaxHealth());
+            this.bossBar.setName(Objects.requireNonNull(this.getDisplayName()).copy().append(" | " + (int)this.getHealth() + "/" + (int)this.getMaxHealth()));
+        }
+    }
+
+    @Override
+    protected void initDataTracker(DataTracker.Builder builder) {
+        super.initDataTracker(builder);
+        builder.add(GRABBED_ENTITY_ID, -1);
+    }
+    public void setGrabbedEntityId(int id) {
+        this.dataTracker.set(GRABBED_ENTITY_ID, id);
+    }
+
+    public int getGrabbedEntityId() {
+        return this.dataTracker.get(GRABBED_ENTITY_ID);
+    }
+    @Override
+    public PlayState mainController(final AnimationTest<LittlePersonMilitiaEntity> event) {
+        if (event.isMoving()) {
+            return this.isAttacking() ? event.setAndContinue(RUN_ANIM) : event.setAndContinue(WALK_ANIM);
+        } else return event.setAndContinue(IDLE_ANIM);
+    }
+    public AnimationController<?> sexEntitySkillController = new AnimationController<>( "skill_controller", animTest -> {
+        if (animTest.controller().getAnimationState() == AnimationController.State.STOPPED) {
+            if (this.hasSkill()) ClientPlayNetworking.send(new SkillPayload("stop", this.getId()));
+            if (animTest.isCurrentAnimation(DIE_ANIM)) {
+                this.deathTime = 400;
+                ClientPlayNetworking.send(new SkillPayload(
+                        "die", this.getId()
+                ));
+            }
+        }
+        return PlayState.STOP;
+    })
+            .triggerableAnim("attack2", ATTACK_ANIM_2)
+            .triggerableAnim("attack3", ATTACK_ANIM_3)
+            .triggerableAnim("attack4", ATTACK_ANIM_4)
+            .triggerableAnim("attack5", SEX_ATTACK_ANIM_5)
+            .triggerableAnim("attack6", ATTACK_ANIM_6)
+            .triggerableAnim("attack7", ATTACK_ANIM_7)
+            .triggerableAnim("attack8", ATTACK_ANIM_8)
+            .triggerableAnim("attack9", ATTACK_ANIM_9)
+            .triggerableAnim("attack10", ATTACK_ANIM_10)
+            .triggerableAnim("attack11", ATTACK_ANIM_11)
+            .triggerableAnim("die", DIE_ANIM)
+            .setCustomInstructionKeyframeHandler(s -> dispatchSkillKeyframe(s.keyframeData().getInstructions()));
+    @Override
+    public AnimationController<?> getSkillController() {
+        return this.sexEntitySkillController;
+    }
+    public SexEntity(EntityType<? extends BaseSkillLittlePersonEntity> entityType, World world) {
+        super(entityType, world, 6);
+        COOL_DOWN_TIME_1 = 5 * 20;
+        COOL_DOWN_TIME_2 = 10 * 20;
+        COOL_DOWN_TIME_3 = 8 * 20;
+        COOL_DOWN_TIME_4 = 12 * 20;
+        COOL_DOWN_TIME_5 = 18 * 20;
+        COOL_DOWN_TIME_6 = 15 * 20;
+        init();
+    }
+    @Override
+    public void heal() {
+        this.heal(5f);
+    }
+
+    @Override
+    protected void updatePostDeath() {
+        this.deathTime++;
+        if (this.deathTime == 1 && !this.getWorld().isClient()) {
+            this.setAiDisabled(true);
+            this.triggerAnim("skill_controller", "die");
+        }
+        if (this.deathTime >= 400 && !this.getWorld().isClient() && !this.isRemoved()) {
+            die(this);
+            this.getWorld().sendEntityStatus(this, net.minecraft.entity.EntityStatuses.ADD_DEATH_PARTICLES);
+            this.remove(Entity.RemovalReason.KILLED);
+        }
+    }
+    @Override
+    public int blockProbability() {
+        return 20;
+    }
+    @Override
+    public float maxBlockDamage() {
+        return 300f;
+    }
+    @Override
+    public void tick() {
+        super.tick();
+        if (!this.getWorld().isClient) {
+            if (this.endDamage) {
+                for (LivingEntity entity : EntityUtil.getNearbyEntity(this, LivingEntity.class, Object.class, 2, false, EntityUtil.TeamFilter.EXCLUDE_TEAM)) {
+                    entity.damage((ServerWorld) this.getWorld(), this.getDamageSources().mobAttack(this), 85);
+                }
+            }
+            int grabbedId = this.getGrabbedEntityId();
+            if (grabbedId != -1 && !this.getWorld().isClient) {
+                Entity grabbedEntity = this.getWorld().getEntityById(grabbedId);
+                // 如果技能结束、目标死亡或目标离得太远，释放
+                if (!this.hasSkill() || grabbedEntity == null || !grabbedEntity.isAlive()) {
+                    this.setGrabbedEntityId(-1);
+                } else {
+                    // 计算自己面前的安全位置，避免把目标强行塞进墙里。
+                    double distance = 1.5;
+                    double radians = Math.toRadians(this.getYaw());
+                    double targetX = this.getX() - Math.sin(radians) * distance;
+                    double targetZ = this.getZ() + Math.cos(radians) * distance;
+                    double targetY = this.getY();
+                    // 强制传送目标并清除动能
+                    if (grabbedEntity instanceof LivingEntity living) {
+                        Box movedBox = living.getBoundingBox().offset(targetX - living.getX(), targetY - living.getY(), targetZ - living.getZ());
+                        if (this.getWorld().isSpaceEmpty(living, movedBox)) {
+                            living.teleport((ServerWorld) this.getWorld(), targetX, targetY, targetZ, Set.of(), grabbedEntity.getYaw(), grabbedEntity.getPitch(), true);
+                        }
+                        living.setVelocity(0, 0, 0);
+                        living.velocityDirty = true;
+                    }
+                }
+            }
+            // 检查被击飞的目标
+            Iterator<LivingEntity> iterator = this.knockedTargets.iterator();
+            while (iterator.hasNext()) {
+                LivingEntity le = iterator.next();
+                if (le == null || le.isRemoved() || le.isOnGround()) {
+                    // 落地或死亡/移除 → 恢复重力
+                    EntityAttributeInstance inst = null;
+                    if (le != null) {
+                        inst = le.getAttributeInstance(EntityAttributes.GRAVITY);
+                    }
+                    if (inst != null) {
+                        inst.removeModifier(Identifier.of(Mob_battle.MOD_ID, "kltyton_double_gravity"));
+                    }
+                    iterator.remove();
+                }
+            }
+        }
+    }
+    @Override
+    public void onRemove(Entity.RemovalReason reason){
+        // 清理所有仍在列表中的目标
+        for (LivingEntity le : new ArrayList<>(this.knockedTargets)) {
+            if (le != null && !le.isRemoved()) {
+                EntityAttributeInstance inst = le.getAttributeInstance(EntityAttributes.GRAVITY);
+                if (inst != null) {
+                    inst.removeModifier(Identifier.of(Mob_battle.MOD_ID, "kltyton_double_gravity"));
+                }
+            }
+        }
+        this.knockedTargets.clear();
+        super.onRemove(reason);
+    }
+    public static DefaultAttributeContainer.Builder createLittlePersonAttributes() {
+        return BaseSkillLittlePersonEntity.createAttributes()
+                .add(EntityAttributes.MAX_HEALTH, 12000.0)
+                .add(EntityAttributes.ATTACK_DAMAGE, 75.0)
+                .add(EntityAttributes.MOVEMENT_SPEED, 0.55)
+                .add(EntityAttributes.KNOCKBACK_RESISTANCE, 0.5)
+                .add(ModEntityAttributes.DAMAGE_REDUCTION, 0.0);
+    }
+    @Override
+    public void runSkill_2(BaseSkillLittlePersonEntity entity) {
+        EntityUtil.getNearbyEntity(entity, LivingEntity.class, 5, false, EntityUtil.TeamFilter.EXCLUDE_TEAM).forEach(livingEntity -> {
+            livingEntity.damage((ServerWorld) entity.getWorld(), entity.getDamageSources().mobAttack(entity), 120);
+        });
+    }
+    @Override
+    public void runSkill_3(BaseSkillLittlePersonEntity entity) {
+        EntityUtil.getNearbyEntity(entity, LivingEntity.class, 5, false, EntityUtil.TeamFilter.EXCLUDE_TEAM).forEach(livingEntity -> {
+            livingEntity.damage((ServerWorld) entity.getWorld(), entity.getDamageSources().mobAttack(entity), 145);
+        });
+    }
+    @Override
+    public void runSkill_4(BaseSkillLittlePersonEntity entity) {
+        LivingEntity livingEntity = entity.getTarget();
+        if (livingEntity != null) {
+            boolean result = livingEntity.damage((ServerWorld) entity.getWorld(), entity.getDamageSources().mobAttack(entity), 180);
+            if (result) {
+                double d = livingEntity.getAttributeValue(EntityAttributes.KNOCKBACK_RESISTANCE);
+                double e = Math.max(0.0, 1.0 - d);
+                livingEntity.setVelocity(livingEntity.getVelocity().add(0.0, 0.6F * e, 0.0));
+                EntityAttributeInstance gravityInst = livingEntity.getAttributeInstance(EntityAttributes.GRAVITY);
+                if (gravityInst != null && !this.knockedTargets.contains(livingEntity)) {
+                    double currentGravity = gravityInst.getValue();
+                    EntityAttributeModifier gravityModifier = new EntityAttributeModifier(
+                            Identifier.of(Mob_battle.MOD_ID, "kltyton_double_gravity"),
+                            currentGravity,
+                            EntityAttributeModifier.Operation.ADD_VALUE
+                    );
+                    gravityInst.addTemporaryModifier(gravityModifier);
+                    this.knockedTargets.add(livingEntity);
+                }
+            }
+        }
+
+    }
+    @Override
+    public void runSkill_5(BaseSkillLittlePersonEntity entity) {
+        LivingEntity livingEntity = entity.getTarget();
+        if (livingEntity != null) {
+            boolean result = livingEntity.damage((ServerWorld) entity.getWorld(), entity.getDamageSources().mobAttack(entity), 150);
+            if (result) {
+                double d = livingEntity.getAttributeValue(EntityAttributes.KNOCKBACK_RESISTANCE);
+                double e = Math.max(0.0, 1.0 - d);
+                livingEntity.setVelocity(livingEntity.getVelocity().add(0.0, 0.4F * e, 0.0));
+            }
+        }
+
+    }
+    @Override
+    public void runSkill_8(BaseSkillLittlePersonEntity entity) {
+        LivingEntity livingEntity = entity.getTarget();
+        if (livingEntity != null) {
+            boolean result = livingEntity.damage((ServerWorld) entity.getWorld(), entity.getDamageSources().mobAttack(entity), 150);
+            if (result) {
+                EntityUtil.getNearbyEntity(entity, LivingEntity.class, 5, false, EntityUtil.TeamFilter.EXCLUDE_TEAM).forEach(livingEntity1 -> {
+                    livingEntity1.damage((ServerWorld) entity.getWorld(), entity.getDamageSources().mobAttack(entity), 120);
+                });
+            }
+        }
+
+    }
+    @Override
+    public void runSkill_6(BaseSkillLittlePersonEntity entity) {
+        if (this.getWorld().isClient) return;
+        LivingEntity target = EntityUtil.getClosestNearbyEntity(entity, LivingEntity.class, 5, EntityUtil.TeamFilter.EXCLUDE_TEAM);
+        // 2. 如果找到了目标，设置 ID
+        if (target != null) {
+            if (target instanceof LivingEntity livingEntity) {
+                double dx = entity.getX() - livingEntity.getX();
+                double dz = entity.getZ() - livingEntity.getZ();
+                float yaw = (float) (Math.toDegrees(Math.atan2(dz, dx)) - 90.0);
+                livingEntity.setYaw(yaw);
+                livingEntity.setHeadYaw(yaw);
+                livingEntity.setBodyYaw(yaw);
+            }
+            this.setGrabbedEntityId(target.getId());
+            performSkill("attack9");
+        }
+    }
+    @Override
+    public void runSkill_9(BaseSkillLittlePersonEntity entity) {
+        if (this.getWorld().isClient) return;
+        Entity target = entity.getWorld().getEntityById(this.getGrabbedEntityId());
+        if (target instanceof LivingEntity livingEntity) {
+            livingEntity.damage((ServerWorld) entity.getWorld(), entity.getDamageSources().mobAttack(entity), 100);
+        }
+    }
+    @Override
+    public void runSkill_10(BaseSkillLittlePersonEntity entity) {
+        if (this.getWorld().isClient) return;
+        Entity target = entity.getWorld().getEntityById(this.getGrabbedEntityId());
+        if (target instanceof LivingEntity livingEntity) {
+            this.setGrabbedEntityId(-1);
+            livingEntity.takeKnockback(2.4, livingEntity.getX() - this.getX(), livingEntity.getZ() - this.getZ());
+            livingEntity.damage((ServerWorld) entity.getWorld(), entity.getDamageSources().indirectMagic(entity, entity), 150);
+        }
+    }
+
+
+    @Override
+    public void runSkill_7(BaseSkillLittlePersonEntity entity) {
+        this.setAiDisabled(false);
+        entity.endDamage = true;
+    }
+
+}

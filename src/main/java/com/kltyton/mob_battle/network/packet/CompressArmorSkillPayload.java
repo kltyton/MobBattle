@@ -1,20 +1,20 @@
 package com.kltyton.mob_battle.network.packet;
 
 import com.kltyton.mob_battle.Mob_battle;
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.codec.PacketCodecs;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.util.Identifier;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
 
-public record CompressArmorSkillPayload(int skill_id) implements CustomPayload {
-    public static final CustomPayload.Id<CompressArmorSkillPayload> ID = new Id<>(Identifier.of(Mob_battle.MOD_ID, "compress_armor_skill"));
-    public static final PacketCodec<RegistryByteBuf, CompressArmorSkillPayload> CODEC = PacketCodec.tuple(
-            PacketCodecs.VAR_INT, CompressArmorSkillPayload::skill_id,
+public record CompressArmorSkillPayload(int skill_id) implements CustomPacketPayload {
+    public static final CustomPacketPayload.Type<CompressArmorSkillPayload> ID = new Type<>(ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "compress_armor_skill"));
+    public static final StreamCodec<RegistryFriendlyByteBuf, CompressArmorSkillPayload> CODEC = StreamCodec.composite(
+            ByteBufCodecs.VAR_INT, CompressArmorSkillPayload::skill_id,
             CompressArmorSkillPayload::new
     );
     @Override
-    public Id<? extends CustomPayload> getId() {
+    public Type<? extends CustomPacketPayload> type() {
         return ID;
     }
 }

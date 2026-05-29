@@ -7,17 +7,16 @@ import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.items.ModItems;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricLanguageProvider;
-import net.minecraft.registry.RegistryWrapper;
-
+import net.minecraft.core.HolderLookup;
 import java.util.concurrent.CompletableFuture;
 
 public class ModChineseLangProvider extends FabricLanguageProvider {
-    public ModChineseLangProvider(FabricDataOutput dataOutput, CompletableFuture<RegistryWrapper.WrapperLookup> registryLookup) {
+    public ModChineseLangProvider(FabricDataOutput dataOutput, CompletableFuture<HolderLookup.Provider> registryLookup) {
         super(dataOutput, "zh_cn", registryLookup);
     }
 
     @Override
-    public void generateTranslations(RegistryWrapper.WrapperLookup registryLookup, TranslationBuilder translationBuilder) {
+    public void generateTranslations(HolderLookup.Provider registryLookup, TranslationBuilder translationBuilder) {
         translationBuilder.add("message.mob_battle.gold_bullet_mode", "金套弹种：%s");
         translationBuilder.add("message.mob_battle.missing_projectile_item", "缺少发射物品：%s");
         translationBuilder.add("message.mob_battle.armor_skill_cooling_down", "套装技能冷却中，还需等待 %s 秒");

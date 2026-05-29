@@ -3,9 +3,9 @@ package com.kltyton.mob_battle.entity.general;
 import com.kltyton.mob_battle.entity.ModSkillEntityType;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.minecraft.entity.data.DataTracker;
-import net.minecraft.entity.data.TrackedData;
-import net.minecraft.entity.mob.MobEntity;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.world.entity.Mob;
 import software.bernie.geckolib.animatable.GeoEntity;
 import software.bernie.geckolib.animatable.manager.AnimatableManager;
 import software.bernie.geckolib.animatable.processing.AnimationController;
@@ -13,44 +13,44 @@ import software.bernie.geckolib.animatable.processing.AnimationTest;
 import software.bernie.geckolib.animation.PlayState;
 import software.bernie.geckolib.animation.RawAnimation;
 
-public interface GeneralEntity<T extends MobEntity> extends ModSkillEntityType, GeoEntity {
-    MobEntity getEntity();
+public interface GeneralEntity<T extends Mob> extends ModSkillEntityType, GeoEntity {
+    Mob getEntity();
     int getSkillCount();
-    TrackedData<Boolean> getHasSkillKey();
-    TrackedData<Integer> getCooldownKey1();
-    TrackedData<Integer> getCooldownKey2();
-    TrackedData<Integer> getCooldownKey3();
-    TrackedData<Integer> getCooldownKey4();
-    TrackedData<Integer> getCooldownKey5();
+    EntityDataAccessor<Boolean> getHasSkillKey();
+    EntityDataAccessor<Integer> getCooldownKey1();
+    EntityDataAccessor<Integer> getCooldownKey2();
+    EntityDataAccessor<Integer> getCooldownKey3();
+    EntityDataAccessor<Integer> getCooldownKey4();
+    EntityDataAccessor<Integer> getCooldownKey5();
     default int getSkillCooldown1() {
-        return getEntity().dataTracker.get(getCooldownKey1());
+        return getEntity().getEntityData().get(getCooldownKey1());
     }
     default void setSkillCooldown1(int skillCooldown1) {
-        getEntity().dataTracker.set(getCooldownKey1(), skillCooldown1);
+        getEntity().getEntityData().set(getCooldownKey1(), skillCooldown1);
     }
     default int getSkillCooldown2() {
-        return getEntity().dataTracker.get(getCooldownKey2());
+        return getEntity().getEntityData().get(getCooldownKey2());
     }
     default void setSkillCooldown2(int skillCooldown2) {
-        getEntity().dataTracker.set(getCooldownKey2(), skillCooldown2);
+        getEntity().getEntityData().set(getCooldownKey2(), skillCooldown2);
     }
     default int getSkillCooldown3() {
-        return getEntity().dataTracker.get(getCooldownKey3());
+        return getEntity().getEntityData().get(getCooldownKey3());
     }
     default void setSkillCooldown3(int skillCooldown3) {
-        getEntity().dataTracker.set(getCooldownKey3(), skillCooldown3);
+        getEntity().getEntityData().set(getCooldownKey3(), skillCooldown3);
     }
     default int getSkillCooldown4() {
-        return getEntity().dataTracker.get(getCooldownKey4());
+        return getEntity().getEntityData().get(getCooldownKey4());
     }
     default void setSkillCooldown4(int skillCooldown4) {
-        getEntity().dataTracker.set(getCooldownKey4(), skillCooldown4);
+        getEntity().getEntityData().set(getCooldownKey4(), skillCooldown4);
     }
     default int getSkillCooldown5() {
-        return getEntity().dataTracker.get(getCooldownKey5());
+        return getEntity().getEntityData().get(getCooldownKey5());
     }
     default void setSkillCooldown5(int skillCooldown5) {
-        getEntity().dataTracker.set(getCooldownKey5(), skillCooldown5);
+        getEntity().getEntityData().set(getCooldownKey5(), skillCooldown5);
     }
     default int getMaxSkillCooldown_1() {
         return -1;
@@ -98,27 +98,27 @@ public interface GeneralEntity<T extends MobEntity> extends ModSkillEntityType, 
             default -> 114514;
         };
     }
-    default void entityInitDataTracker(DataTracker.Builder builder) {
-        builder.add(getHasSkillKey(), false);
-        builder.add(getCooldownKey1(), getMaxCooldownForSkill(1));
-        builder.add(getCooldownKey2(), getMaxCooldownForSkill(2));
-        builder.add(getCooldownKey3(), getMaxCooldownForSkill(3));
-        builder.add(getCooldownKey4(), getMaxCooldownForSkill(4));
-        builder.add(getCooldownKey5(), getMaxCooldownForSkill(5));
+    default void entityInitDataTracker(SynchedEntityData.Builder builder) {
+        builder.define(getHasSkillKey(), false);
+        builder.define(getCooldownKey1(), getMaxCooldownForSkill(1));
+        builder.define(getCooldownKey2(), getMaxCooldownForSkill(2));
+        builder.define(getCooldownKey3(), getMaxCooldownForSkill(3));
+        builder.define(getCooldownKey4(), getMaxCooldownForSkill(4));
+        builder.define(getCooldownKey5(), getMaxCooldownForSkill(5));
     }
     default boolean hasSkill() {
-        return getEntity().dataTracker.get(getHasSkillKey());
+        return getEntity().getEntityData().get(getHasSkillKey());
     }
     default void setHasSkill(boolean hasSkill) {
-        getEntity().dataTracker.set(getHasSkillKey(), hasSkill);
+        getEntity().getEntityData().set(getHasSkillKey(), hasSkill);
     }
     default boolean canSkill(String skill) {
         if (!canSkill()) return false;
-        return !getEntity().getWorld().isClient() && !hasSkill() && getSkillCooldown(skill) == 0 && getEntity().getTarget() != null;
+        return !getEntity().level().isClientSide() && !hasSkill() && getSkillCooldown(skill) == 0 && getEntity().getTarget() != null;
     }
     default void performSkill(String skill) {
         this.setHasSkill(true);
-        getEntity().setAiDisabled(true);
+        getEntity().setNoAi(true);
         this.setSkillCooldown(skill);
         this.triggerAnim("skill_controller", skill);
     }
@@ -127,9 +127,9 @@ public interface GeneralEntity<T extends MobEntity> extends ModSkillEntityType, 
         return ModSkillEntityType.canSkill(getEntity());
     }
     default void entityTick() {
-        if (!getEntity().getWorld().isClient) {
+        if (!getEntity().level().isClientSide) {
             if (!hasSkill()) {
-                getEntity().setAiDisabled(false);
+                getEntity().setNoAi(false);
                 // 冷却递减
                 decrementCooldownIfPositive(getCooldownKey1());
                 decrementCooldownIfPositive(getCooldownKey2());
@@ -151,10 +151,10 @@ public interface GeneralEntity<T extends MobEntity> extends ModSkillEntityType, 
         this.triggerAnim("skill_controller", "attack");
         return false;
     }
-    default void decrementCooldownIfPositive(TrackedData<Integer> cooldownField) {
-        int currentCooldown = getEntity().dataTracker.get(cooldownField);
+    default void decrementCooldownIfPositive(EntityDataAccessor<Integer> cooldownField) {
+        int currentCooldown = getEntity().getEntityData().get(cooldownField);
         if (currentCooldown > 0) {
-            getEntity().dataTracker.set(cooldownField, currentCooldown - 1);
+            getEntity().getEntityData().set(cooldownField, currentCooldown - 1);
         }
     }
     RawAnimation IDLE_ANIM = RawAnimation.begin().thenLoop("idle");

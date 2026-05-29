@@ -3,98 +3,97 @@ package com.kltyton.mob_battle.items.misc;
 import com.kltyton.mob_battle.Mob_battle;
 import com.kltyton.mob_battle.effect.ModEffects;
 import com.kltyton.mob_battle.entity.player.IPlayerEntityAccessor;
-import net.minecraft.entity.attribute.EntityAttributeModifier;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.Identifier;
-import net.minecraft.world.World;
-
 import java.util.Collections;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 
 public class CardiotonicInjectionItem extends Item {
-    public static final Identifier CARDIOTONIC_MODIFIER_ID = Identifier.of(Mob_battle.MOD_ID, "cardiotonic_modifier");
+    public static final ResourceLocation CARDIOTONIC_MODIFIER_ID = ResourceLocation.fromNamespaceAndPath(Mob_battle.MOD_ID, "cardiotonic_modifier");
 
-    public CardiotonicInjectionItem(Settings settings) {
+    public CardiotonicInjectionItem(Properties settings) {
         super(settings);
     }
 
-    public ActionResult use(World world, PlayerEntity user, Hand hand) {
-        ItemStack itemStack = user.getStackInHand(hand);
+    public InteractionResult use(Level world, Player user, InteractionHand hand) {
+        ItemStack itemStack = user.getItemInHand(hand);
         if (!((IPlayerEntityAccessor)user).isUsingGeckoLib()) {
             ((IPlayerEntityAccessor)user).setUseGeckoLib(true);
-            var maxHealth = user.getAttributeInstance(EntityAttributes.MAX_HEALTH);
-            var scaleAttr = user.getAttributeInstance(EntityAttributes.SCALE);
-            var speedAttr = user.getAttributeInstance(EntityAttributes.MOVEMENT_SPEED);
-            var jumpAttr = user.getAttributeInstance(EntityAttributes.JUMP_STRENGTH);
-            var block_interaction_range = user.getAttributeInstance(EntityAttributes.BLOCK_INTERACTION_RANGE);
-            var entity_interaction_range = user.getAttributeInstance(EntityAttributes.ENTITY_INTERACTION_RANGE);
-            var salfAttr = user.getAttributeInstance(EntityAttributes.SAFE_FALL_DISTANCE);
+            var maxHealth = user.getAttribute(Attributes.MAX_HEALTH);
+            var scaleAttr = user.getAttribute(Attributes.SCALE);
+            var speedAttr = user.getAttribute(Attributes.MOVEMENT_SPEED);
+            var jumpAttr = user.getAttribute(Attributes.JUMP_STRENGTH);
+            var block_interaction_range = user.getAttribute(Attributes.BLOCK_INTERACTION_RANGE);
+            var entity_interaction_range = user.getAttribute(Attributes.ENTITY_INTERACTION_RANGE);
+            var salfAttr = user.getAttribute(Attributes.SAFE_FALL_DISTANCE);
             if (scaleAttr != null) {
                 scaleAttr.removeModifier(CARDIOTONIC_MODIFIER_ID);
-                scaleAttr.addPersistentModifier(new EntityAttributeModifier(
+                scaleAttr.addPermanentModifier(new AttributeModifier(
                         CARDIOTONIC_MODIFIER_ID,
                         2,
-                        EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE
+                        AttributeModifier.Operation.ADD_MULTIPLIED_BASE
                 ));
             }
             if (speedAttr != null) {
                 speedAttr.removeModifier(CARDIOTONIC_MODIFIER_ID);
-                speedAttr.addPersistentModifier(new EntityAttributeModifier(
+                speedAttr.addPermanentModifier(new AttributeModifier(
                         CARDIOTONIC_MODIFIER_ID,
                         0.16,
-                        EntityAttributeModifier.Operation.ADD_VALUE
+                        AttributeModifier.Operation.ADD_VALUE
                 ));
             }
             if (jumpAttr != null) {
                 jumpAttr.removeModifier(CARDIOTONIC_MODIFIER_ID);
-                jumpAttr.addPersistentModifier(new EntityAttributeModifier(
+                jumpAttr.addPermanentModifier(new AttributeModifier(
                         CARDIOTONIC_MODIFIER_ID,
                         0.75,
-                        EntityAttributeModifier.Operation.ADD_VALUE
+                        AttributeModifier.Operation.ADD_VALUE
                 ));
             }
             if (maxHealth != null) {
                 maxHealth.removeModifier(CARDIOTONIC_MODIFIER_ID);
-                maxHealth.addPersistentModifiers(Collections.singleton(new EntityAttributeModifier(
+                maxHealth.addPermanentModifiers(Collections.singleton(new AttributeModifier(
                         CARDIOTONIC_MODIFIER_ID,
                         21980,
-                        EntityAttributeModifier.Operation.ADD_VALUE
+                        AttributeModifier.Operation.ADD_VALUE
                 )));
             }
             if (block_interaction_range != null) {
                 block_interaction_range.removeModifier(CARDIOTONIC_MODIFIER_ID);
-                block_interaction_range.addPersistentModifier(new EntityAttributeModifier(
+                block_interaction_range.addPermanentModifier(new AttributeModifier(
                         CARDIOTONIC_MODIFIER_ID,
                         2.5,
-                        EntityAttributeModifier.Operation.ADD_VALUE
+                        AttributeModifier.Operation.ADD_VALUE
                 ));
             }
             if (entity_interaction_range != null) {
                 entity_interaction_range.removeModifier(CARDIOTONIC_MODIFIER_ID);
-                entity_interaction_range.addPersistentModifier(new EntityAttributeModifier(
+                entity_interaction_range.addPermanentModifier(new AttributeModifier(
                         CARDIOTONIC_MODIFIER_ID,
                         2.5,
-                        EntityAttributeModifier.Operation.ADD_VALUE
+                        AttributeModifier.Operation.ADD_VALUE
                 ));
             }
             if (salfAttr != null) {
                 salfAttr.removeModifier(CARDIOTONIC_MODIFIER_ID);
-                salfAttr.addPersistentModifier(new EntityAttributeModifier(
+                salfAttr.addPermanentModifier(new AttributeModifier(
                         CARDIOTONIC_MODIFIER_ID,
                         6,
-                        EntityAttributeModifier.Operation.ADD_VALUE
+                        AttributeModifier.Operation.ADD_VALUE
                 ));
             }
-            user.addStatusEffect(new StatusEffectInstance(ModEffects.SUPER_REGENERATION_ENTRY, 240, 255, false, false));
+            user.addEffect(new MobEffectInstance(ModEffects.SUPER_REGENERATION_ENTRY, 240, 255, false, false));
             if (!user.isCreative()) {
-                itemStack.decrement(1);
+                itemStack.shrink(1);
             }
-            return ActionResult.SUCCESS;
+            return InteractionResult.SUCCESS;
         }
         return super.use(world, user, hand);
     }

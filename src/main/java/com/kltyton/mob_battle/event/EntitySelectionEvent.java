@@ -3,102 +3,101 @@ package com.kltyton.mob_battle.event;
 import com.kltyton.mob_battle.items.ModItems;
 import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityPose;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.ai.brain.Brain;
-import net.minecraft.entity.ai.brain.MemoryModuleType;
-import net.minecraft.entity.mob.Angriness;
-import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.entity.mob.WardenEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
-import net.minecraft.world.World;
-
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.Pose;
+import net.minecraft.world.entity.ai.Brain;
+import net.minecraft.world.entity.ai.memory.MemoryModuleType;
+import net.minecraft.world.entity.monster.warden.AngerLevel;
+import net.minecraft.world.entity.monster.warden.Warden;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 import java.util.Map;
 import java.util.UUID;
 import java.util.WeakHashMap;
 
 public class EntitySelectionEvent {
-    private static final Map<PlayerEntity, UUID> selectedEntityA = new WeakHashMap<>();
-    private static final Map<PlayerEntity, UUID> selectedEntityB = new WeakHashMap<>();
+    private static final Map<Player, UUID> selectedEntityA = new WeakHashMap<>();
+    private static final Map<Player, UUID> selectedEntityB = new WeakHashMap<>();
 
     public static void init() {
         AttackEntityCallback.EVENT.register((player, world, hand, entity, hitResult) -> {
-            if (world.isClient) return ActionResult.PASS;
+            if (world.isClientSide) return InteractionResult.PASS;
             if (isHoldingStick(player)) {
                 handleLeftClick(player, entity);
-                return ActionResult.FAIL;
+                return InteractionResult.FAIL;
             }
-            return ActionResult.PASS;
+            return InteractionResult.PASS;
         });
 
         UseEntityCallback.EVENT.register((player, world, hand, entity, hitResult) -> {
-            if (world.isClient) return ActionResult.PASS;
+            if (world.isClientSide) return InteractionResult.PASS;
             if (isHoldingStick(player)) {
                 return handleRightClick(player, entity, world);
             }
-            return ActionResult.PASS;
+            return InteractionResult.PASS;
         });
     }
 
-    private static boolean isHoldingStick(PlayerEntity player) {
-        return player.getMainHandStack().getItem() == ModItems.MUTUAL_ATTACK_STICK;
+    private static boolean isHoldingStick(Player player) {
+        return player.getMainHandItem().getItem() == ModItems.MUTUAL_ATTACK_STICK;
     }
 
-    private static void handleLeftClick(PlayerEntity player, Entity entity) {
+    private static void handleLeftClick(Player player, Entity entity) {
         if (isValidTarget(entity)) {
-            selectedEntityA.put(player, entity.getUuid());
-            player.sendMessage(Text.literal("实体A已选择: " + entity.getType().toString() +
-                    (entity instanceof PlayerEntity ? " (玩家)" : "")), true);
+            selectedEntityA.put(player, entity.getUUID());
+            player.displayClientMessage(Component.literal("实体A已选择: " + entity.getType().toString() +
+                    (entity instanceof Player ? " (玩家)" : "")), true);
         } else {
-            player.sendMessage(Text.literal("实体A选择无效"), true);
+            player.displayClientMessage(Component.literal("实体A选择无效"), true);
         }
     }
 
-    private static ActionResult handleRightClick(PlayerEntity player, Entity entity, World world) {
+    private static InteractionResult handleRightClick(Player player, Entity entity, Level world) {
         if (isValidTarget(entity)) {
-            selectedEntityB.put(player, entity.getUuid());
-            player.sendMessage(Text.literal("实体B已选择: " + entity.getType().toString() +
-                    (entity instanceof PlayerEntity ? " (玩家)" : "")), true);
+            selectedEntityB.put(player, entity.getUUID());
+            player.displayClientMessage(Component.literal("实体B已选择: " + entity.getType().toString() +
+                    (entity instanceof Player ? " (玩家)" : "")), true);
             tryStartMutualAttack(player, world);
-            return ActionResult.SUCCESS;
+            return InteractionResult.SUCCESS;
         } else {
-            player.sendMessage(Text.literal("实体B选择无效"), true);
-            return ActionResult.PASS;
+            player.displayClientMessage(Component.literal("实体B选择无效"), true);
+            return InteractionResult.PASS;
         }
     }
 
     private static boolean isValidTarget(Entity entity) {
-        return entity instanceof MobEntity mob && mob.canTakeDamage() && mob.isAlive()
-                || entity instanceof PlayerEntity;
+        return entity instanceof Mob mob && mob.canBeSeenAsEnemy() && mob.isAlive()
+                || entity instanceof Player;
     }
 
-    private static void tryStartMutualAttack(PlayerEntity player, World world) {
+    private static void tryStartMutualAttack(Player player, Level world) {
         if (selectedEntityA.containsKey(player) && selectedEntityB.containsKey(player)) {
             Entity entityA = world.getEntity(selectedEntityA.get(player));
             Entity entityB = world.getEntity(selectedEntityB.get(player));
 
             if (entityA == null || entityB == null) {
-                player.sendMessage(Text.literal("选择的实体不存在"), true);
+                player.displayClientMessage(Component.literal("选择的实体不存在"), true);
                 selectedEntityA.remove(player);
                 selectedEntityB.remove(player);
                 return;
             }
 
             // 双方都是 MobEntity → 互相攻击
-            if (entityA instanceof MobEntity mobA && entityB instanceof MobEntity mobB) {
+            if (entityA instanceof Mob mobA && entityB instanceof Mob mobB) {
                 setMobTarget(mobA, mobB, world);
                 setMobTarget(mobB, mobA, world);
             }
             // A 是玩家，B 是 Mob → 只让 MobB 攻击玩家A
-            else if (entityA instanceof PlayerEntity && entityB instanceof MobEntity mobB) {
-                setMobTarget(mobB, (PlayerEntity) entityA, world);
+            else if (entityA instanceof Player && entityB instanceof Mob mobB) {
+                setMobTarget(mobB, (Player) entityA, world);
             }
             // B 是玩家，A 是 Mob → 只让 MobA 攻击玩家B
-            else if (entityB instanceof PlayerEntity && entityA instanceof MobEntity mobA) {
-                setMobTarget(mobA, (PlayerEntity) entityB, world);
+            else if (entityB instanceof Player && entityA instanceof Mob mobA) {
+                setMobTarget(mobA, (Player) entityB, world);
             }
 
             selectedEntityA.remove(player);
@@ -106,35 +105,35 @@ public class EntitySelectionEvent {
         }
     }
 
-    private static void setMobTarget(MobEntity mob, LivingEntity target, World world) {
-        if (mob instanceof WardenEntity warden) {
+    private static void setMobTarget(Mob mob, LivingEntity target, Level world) {
+        if (mob instanceof Warden warden) {
             forceWardenTarget(warden, target, world);
         } else {
             mob.setTarget(target);
-            mob.setAttacking(true);
-            mob.getLookControl().lookAt(target);
+            mob.setAggressive(true);
+            mob.getLookControl().setLookAt(target);
         }
     }
 
-    public static void forceWardenTarget(WardenEntity warden, LivingEntity target, World world) {
-        if (world.isClient) return;
+    public static void forceWardenTarget(Warden warden, LivingEntity target, Level world) {
+        if (world.isClientSide) return;
 
         // 设置强制攻击标志
-        warden.dataTracker.set(DataTrackersEvent.FORCED_ATTACK_FLAG, true);
+        warden.getEntityData().set(DataTrackersEvent.FORCED_ATTACK_FLAG, true);
 
         // 更新攻击目标
-        warden.updateAttackTarget(target);
+        warden.setAttackTarget(target);
 
         // 设置愤怒值到攻击阈值
-        warden.increaseAngerAt(target, Angriness.ANGRY.getThreshold() + 20, false);
+        warden.increaseAngerAt(target, AngerLevel.ANGRY.getMinimumAnger() + 20, false);
 
         // 强制大脑更新
-        Brain<WardenEntity> brain = warden.getBrain();
-        brain.forget(MemoryModuleType.ROAR_TARGET);
-        brain.remember(MemoryModuleType.ATTACK_TARGET, target);
-        brain.forget(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE);
+        Brain<Warden> brain = warden.getBrain();
+        brain.eraseMemory(MemoryModuleType.ROAR_TARGET);
+        brain.setMemory(MemoryModuleType.ATTACK_TARGET, target);
+        brain.eraseMemory(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE);
 
         // 重置姿势
-        warden.setPose(EntityPose.STANDING);
+        warden.setPose(Pose.STANDING);
     }
 }

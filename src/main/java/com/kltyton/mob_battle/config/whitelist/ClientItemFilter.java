@@ -1,9 +1,9 @@
 package com.kltyton.mob_battle.config.whitelist;
 
 import com.kltyton.mob_battle.Mob_battle;
-import net.minecraft.item.ItemStack;
-import net.minecraft.registry.Registries;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
 
 public final class ClientItemFilter {
 
@@ -11,7 +11,7 @@ public final class ClientItemFilter {
         if (ClientPermissionState.isWhitelisted()) return false;
         if (stack == null || stack.isEmpty()) return false;
 
-        Identifier id = Registries.ITEM.getId(stack.getItem());
+        ResourceLocation id = BuiltInRegistries.ITEM.getKey(stack.getItem());
         return Mob_battle.MOD_ID.equals(id.getNamespace());
     }
     public static boolean shouldHideSuggestion(String text) {

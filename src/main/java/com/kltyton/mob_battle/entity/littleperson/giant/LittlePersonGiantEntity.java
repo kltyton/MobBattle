@@ -6,18 +6,18 @@ import com.kltyton.mob_battle.entity.littleperson.LittlePersonEntity;
 import com.kltyton.mob_battle.entity.littleperson.militia.LittlePersonMilitiaEntity;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.attribute.DefaultAttributeContainer;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.data.DataTracker;
-import net.minecraft.entity.data.TrackedData;
-import net.minecraft.entity.data.TrackedDataHandlerRegistry;
-import net.minecraft.entity.mob.HostileEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.world.World;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 import software.bernie.geckolib.animatable.manager.AnimatableManager;
 import software.bernie.geckolib.animatable.processing.AnimationController;
@@ -25,39 +25,39 @@ import software.bernie.geckolib.animation.PlayState;
 import software.bernie.geckolib.animation.RawAnimation;
 
 public class LittlePersonGiantEntity extends LittlePersonMilitiaEntity {
-    public static final TrackedData<Boolean> HAS_SKILL = DataTracker.registerData(LittlePersonGiantEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
-    public static final TrackedData<Integer> SKILL_COOLDOWN_1 = DataTracker.registerData(LittlePersonGiantEntity.class, TrackedDataHandlerRegistry.INTEGER);
-    public static final TrackedData<Integer> SKILL_COOLDOWN_2 = DataTracker.registerData(LittlePersonGiantEntity.class, TrackedDataHandlerRegistry.INTEGER);
-    public static final TrackedData<Integer> SKILL_COOLDOWN_3 = DataTracker.registerData(LittlePersonGiantEntity.class, TrackedDataHandlerRegistry.INTEGER);
-    public LittlePersonGiantEntity(EntityType<? extends HostileEntity> entityType, World world) {
+    public static final EntityDataAccessor<Boolean> HAS_SKILL = SynchedEntityData.defineId(LittlePersonGiantEntity.class, EntityDataSerializers.BOOLEAN);
+    public static final EntityDataAccessor<Integer> SKILL_COOLDOWN_1 = SynchedEntityData.defineId(LittlePersonGiantEntity.class, EntityDataSerializers.INT);
+    public static final EntityDataAccessor<Integer> SKILL_COOLDOWN_2 = SynchedEntityData.defineId(LittlePersonGiantEntity.class, EntityDataSerializers.INT);
+    public static final EntityDataAccessor<Integer> SKILL_COOLDOWN_3 = SynchedEntityData.defineId(LittlePersonGiantEntity.class, EntityDataSerializers.INT);
+    public LittlePersonGiantEntity(EntityType<? extends Monster> entityType, Level world) {
         super(entityType, world);
-        this.setAiDisabled(false);
+        this.setNoAi(false);
         this.setHasSkill(false);
     }
     @Override
-    protected void initDataTracker(DataTracker.Builder builder) {
-        super.initDataTracker(builder);
-        builder.add(HAS_SKILL, false);
-        builder.add(SKILL_COOLDOWN_1, 600);
-        builder.add(SKILL_COOLDOWN_2, 300);
-        builder.add(SKILL_COOLDOWN_3, 500);
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(HAS_SKILL, false);
+        builder.define(SKILL_COOLDOWN_1, 600);
+        builder.define(SKILL_COOLDOWN_2, 300);
+        builder.define(SKILL_COOLDOWN_3, 500);
     }
     public boolean canSkill(String skill) {
         if (!canSkill()) return false;
-        return !this.getWorld().isClient() && !hasSkill() && getSkillCooldown(skill) == 0 && this.getTarget() != null;
+        return !this.level().isClientSide() && !hasSkill() && getSkillCooldown(skill) == 0 && this.getTarget() != null;
     }
 
     public void performSkill(String skill) {
         this.setHasSkill(true);
-        this.setAiDisabled(true);
+        this.setNoAi(true);
         this.setSkillCooldown(skill);
         this.triggerAnim("skill_controller", skill);
     }
     public boolean hasSkill() {
-        return this.dataTracker.get(HAS_SKILL);
+        return this.entityData.get(HAS_SKILL);
     }
     public void setHasSkill(boolean hasSkill) {
-        this.dataTracker.set(HAS_SKILL, hasSkill);
+        this.entityData.set(HAS_SKILL, hasSkill);
     }
     public int getSkillCooldown(String skill) {
         return switch (skill) {
@@ -75,22 +75,22 @@ public class LittlePersonGiantEntity extends LittlePersonMilitiaEntity {
         }
     }
     public int getSkillCooldown1() {
-        return this.dataTracker.get(SKILL_COOLDOWN_1);
+        return this.entityData.get(SKILL_COOLDOWN_1);
     }
     public void setSkillCooldown1(int skillCooldown1) {
-        this.dataTracker.set(SKILL_COOLDOWN_1, skillCooldown1);
+        this.entityData.set(SKILL_COOLDOWN_1, skillCooldown1);
     }
     public int getSkillCooldown2() {
-        return this.dataTracker.get(SKILL_COOLDOWN_2);
+        return this.entityData.get(SKILL_COOLDOWN_2);
     }
     public void setSkillCooldown2(int skillCooldown2) {
-        this.dataTracker.set(SKILL_COOLDOWN_2, skillCooldown2);
+        this.entityData.set(SKILL_COOLDOWN_2, skillCooldown2);
     }
     public int getSkillCooldown3() {
-        return this.dataTracker.get(SKILL_COOLDOWN_3);
+        return this.entityData.get(SKILL_COOLDOWN_3);
     }
     public void setSkillCooldown3(int skillCooldown3) {
-        this.dataTracker.set(SKILL_COOLDOWN_3, skillCooldown3);
+        this.entityData.set(SKILL_COOLDOWN_3, skillCooldown3);
     }
     @Override
     public void heal() {
@@ -99,21 +99,21 @@ public class LittlePersonGiantEntity extends LittlePersonMilitiaEntity {
     @Override
     public void tick() {
         super.tick();
-        if (!this.getWorld().isClient) {
+        if (!this.level().isClientSide) {
             if (!hasSkill()) {
-                this.setAiDisabled(false);
+                this.setNoAi(false);
                 // 冷却递减
                 decrementCooldownIfPositive(SKILL_COOLDOWN_1);
                 decrementCooldownIfPositive(SKILL_COOLDOWN_2);
                 decrementCooldownIfPositive(SKILL_COOLDOWN_3);
-                if (this.getTarget() != null && this.squaredDistanceTo(this.getTarget()) <= 20.0D * 20.0D && canSkill("attack4")) {
+                if (this.getTarget() != null && this.distanceToSqr(this.getTarget()) <= 20.0D * 20.0D && canSkill("attack4")) {
                     performSkill("attack4");
                 }
             }
         }
     }
     @Override
-    public boolean tryAttack(ServerWorld world, Entity target) {
+    public boolean doHurtTarget(ServerLevel world, Entity target) {
         if (!ModSkillEntityType.canSkill(this)) return false;
         if (canSkill("attack2")) {
             performSkill("attack2");
@@ -127,18 +127,18 @@ public class LittlePersonGiantEntity extends LittlePersonMilitiaEntity {
             performSkill("attack4");
             return true;
         }
-        return super.tryAttack(world, target);
+        return super.doHurtTarget(world, target);
     }
-    private void decrementCooldownIfPositive(TrackedData<Integer> cooldownField) {
-        int currentCooldown = this.dataTracker.get(cooldownField);
+    private void decrementCooldownIfPositive(EntityDataAccessor<Integer> cooldownField) {
+        int currentCooldown = this.entityData.get(cooldownField);
         if (currentCooldown > 0) {
-            this.dataTracker.set(cooldownField, currentCooldown - 1);
+            this.entityData.set(cooldownField, currentCooldown - 1);
         }
     }
     @Override
-    public void takeKnockback(double strength, double x, double z) {
-        if (!hasSkill() || !this.isAiDisabled()) {
-            super.takeKnockback(strength, x, z);
+    public void knockback(double strength, double x, double z) {
+        if (!hasSkill() || !this.isNoAi()) {
+            super.knockback(strength, x, z);
         }
     }
     @Override
@@ -164,19 +164,19 @@ public class LittlePersonGiantEntity extends LittlePersonMilitiaEntity {
                 .triggerableAnim("attack4", ATTACK_ANIM_4)
                 .setCustomInstructionKeyframeHandler(s -> {
                     if ("attack2".equals(s.keyframeData().getInstructions())) {
-                        this.playSound(SoundEvents.BLOCK_ANVIL_LAND, 1.0F, 1.0F);
+                        this.playSound(SoundEvents.ANVIL_LAND, 1.0F, 1.0F);
                         ClientPlayNetworking.send(new SkillPayload(
                                 "attack2", this.getId()
                         ));
                     }
                     if ("attack3".equals(s.keyframeData().getInstructions())) {
-                        this.playSound(SoundEvents.BLOCK_ANVIL_LAND, 1.0F, 1.0F);
+                        this.playSound(SoundEvents.ANVIL_LAND, 1.0F, 1.0F);
                         ClientPlayNetworking.send(new SkillPayload(
                                 "attack3", this.getId()
                         ));
                     }
                     if ("attack4".equals(s.keyframeData().getInstructions())) {
-                        this.playSound(SoundEvents.BLOCK_ANVIL_LAND, 1.0F, 1.0F);
+                        this.playSound(SoundEvents.ANVIL_LAND, 1.0F, 1.0F);
                         ClientPlayNetworking.send(new SkillPayload(
                                 "attack4", this.getId()
                         ));
@@ -184,12 +184,12 @@ public class LittlePersonGiantEntity extends LittlePersonMilitiaEntity {
                 })
         );
     }
-    public static DefaultAttributeContainer.Builder createLittlePersonGiantAttributes() {
+    public static AttributeSupplier.Builder createLittlePersonGiantAttributes() {
         return LittlePersonEntity.createLittlePersonAttributes()
-                .add(EntityAttributes.MAX_HEALTH, 1300.0)
-                .add(EntityAttributes.FOLLOW_RANGE, 40.0)
-                .add(EntityAttributes.MOVEMENT_SPEED, 0.3)
-                .add(EntityAttributes.ATTACK_DAMAGE, 50.0)
+                .add(Attributes.MAX_HEALTH, 1300.0)
+                .add(Attributes.FOLLOW_RANGE, 40.0)
+                .add(Attributes.MOVEMENT_SPEED, 0.3)
+                .add(Attributes.ATTACK_DAMAGE, 50.0)
                 .add(ModEntityAttributes.DAMAGE_REDUCTION, 0);
     }
 }

@@ -1,6 +1,6 @@
 package com.kltyton.mob_battle.entity.bullet;
 
-import net.minecraft.entity.Entity;
+import net.minecraft.world.entity.Entity;
 import org.jetbrains.annotations.Nullable;
 
 public interface ITrueDamageProjectile {

@@ -1,15 +1,15 @@
 package com.kltyton.mob_battle.effect.harmful;
 
-import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.entity.effect.StatusEffectCategory;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectCategory;
 
-public class PigSpiritMarkEffect extends StatusEffect {
+public class PigSpiritMarkEffect extends MobEffect {
     public PigSpiritMarkEffect() {
-        super(StatusEffectCategory.HARMFUL, 0x925a5a);
+        super(MobEffectCategory.HARMFUL, 0x925a5a);
     }
 
     @Override
-    public boolean canApplyUpdateEffect(int duration, int amplifier) {
+    public boolean shouldApplyEffectTickThisTick(int duration, int amplifier) {
         return false;
     }
 }

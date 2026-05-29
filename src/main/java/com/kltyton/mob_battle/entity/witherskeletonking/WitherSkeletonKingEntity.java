@@ -10,40 +10,50 @@ import com.kltyton.mob_battle.entity.witherskeletonking.skill.WitherSkeletonKing
 import com.kltyton.mob_battle.network.packet.SkillPayload;
 import com.kltyton.mob_battle.utils.CombatEffectUtil;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.minecraft.block.Blocks;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.entity.*;
-import net.minecraft.entity.attribute.DefaultAttributeContainer;
-import net.minecraft.entity.attribute.EntityAttributeInstance;
-import net.minecraft.entity.attribute.EntityAttributeModifier;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.boss.BossBar;
-import net.minecraft.entity.boss.ServerBossBar;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.data.DataTracker;
-import net.minecraft.entity.data.TrackedData;
-import net.minecraft.entity.data.TrackedDataHandlerRegistry;
-import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.entity.mob.HostileEntity;
-import net.minecraft.entity.mob.WitherSkeletonEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.storage.ReadView;
-import net.minecraft.storage.WriteView;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.random.Random;
-import net.minecraft.world.LocalDifficulty;
-import net.minecraft.world.ServerWorldAccess;
-import net.minecraft.world.World;
+import net.minecraft.core.Holder;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.Entity.RemovalReason;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerBossEvent;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.BossEvent;
+import net.minecraft.world.DifficultyInstance;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.SpawnGroupData;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.entity.monster.WitherSkeleton;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.phys.AABB;
 import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib.animatable.GeoEntity;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
@@ -60,61 +70,61 @@ import java.time.temporal.ChronoField;
 import java.util.Objects;
 import java.util.Optional;
 
-public class WitherSkeletonKingEntity extends WitherSkeletonEntity implements GeoEntity, ModSkillEntityType {
+public class WitherSkeletonKingEntity extends WitherSkeleton implements GeoEntity, ModSkillEntityType {
 
-    private final ServerBossBar bossBar = new ServerBossBar(
-            Text.empty(),
-            BossBar.Color.PURPLE,
-            BossBar.Style.PROGRESS
+    private final ServerBossEvent bossBar = new ServerBossEvent(
+            Component.empty(),
+            BossEvent.BossBarColor.PURPLE,
+            BossEvent.BossBarOverlay.PROGRESS
     );
-    public static final TrackedData<Boolean> HAS_SKILL = DataTracker.registerData(WitherSkeletonKingEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
-    public static final TrackedData<Integer> SKILL_COOLDOWN = DataTracker.registerData(WitherSkeletonKingEntity.class, TrackedDataHandlerRegistry.INTEGER);
-    public static final TrackedData<Integer> SUPER_ATTACK_SKILL_COOLDOWN = DataTracker.registerData(WitherSkeletonKingEntity.class, TrackedDataHandlerRegistry.INTEGER);
-    public static final TrackedData<Integer> SHOT_WITHER_SKULL_COOLDOWN = DataTracker.registerData(WitherSkeletonKingEntity.class, TrackedDataHandlerRegistry.INTEGER);
-    public static final TrackedData<Integer> SUPER_SHOT_WITHER_SKULL_COOLDOWN = DataTracker.registerData(WitherSkeletonKingEntity.class, TrackedDataHandlerRegistry.INTEGER);
-    public static final TrackedData<Integer> SHOT_ALL_WITHER_SKULL_COOLDOWN = DataTracker.registerData(WitherSkeletonKingEntity.class, TrackedDataHandlerRegistry.INTEGER);
-    public static final TrackedData<Integer> THORN_COOLDOWN = DataTracker.registerData(WitherSkeletonKingEntity.class, TrackedDataHandlerRegistry.INTEGER);
-    public static final TrackedData<Integer> ENHANCE_WITHER_CALL_COOLDOWN = DataTracker.registerData(WitherSkeletonKingEntity.class, TrackedDataHandlerRegistry.INTEGER);
+    public static final EntityDataAccessor<Boolean> HAS_SKILL = SynchedEntityData.defineId(WitherSkeletonKingEntity.class, EntityDataSerializers.BOOLEAN);
+    public static final EntityDataAccessor<Integer> SKILL_COOLDOWN = SynchedEntityData.defineId(WitherSkeletonKingEntity.class, EntityDataSerializers.INT);
+    public static final EntityDataAccessor<Integer> SUPER_ATTACK_SKILL_COOLDOWN = SynchedEntityData.defineId(WitherSkeletonKingEntity.class, EntityDataSerializers.INT);
+    public static final EntityDataAccessor<Integer> SHOT_WITHER_SKULL_COOLDOWN = SynchedEntityData.defineId(WitherSkeletonKingEntity.class, EntityDataSerializers.INT);
+    public static final EntityDataAccessor<Integer> SUPER_SHOT_WITHER_SKULL_COOLDOWN = SynchedEntityData.defineId(WitherSkeletonKingEntity.class, EntityDataSerializers.INT);
+    public static final EntityDataAccessor<Integer> SHOT_ALL_WITHER_SKULL_COOLDOWN = SynchedEntityData.defineId(WitherSkeletonKingEntity.class, EntityDataSerializers.INT);
+    public static final EntityDataAccessor<Integer> THORN_COOLDOWN = SynchedEntityData.defineId(WitherSkeletonKingEntity.class, EntityDataSerializers.INT);
+    public static final EntityDataAccessor<Integer> ENHANCE_WITHER_CALL_COOLDOWN = SynchedEntityData.defineId(WitherSkeletonKingEntity.class, EntityDataSerializers.INT);
     private int deathAnimationTicks;
     private boolean summonDogsAfterSuperShot;
     @Override
-    protected void initDataTracker(DataTracker.Builder builder) {
-        super.initDataTracker(builder);
-        builder.add(HAS_SKILL, false);
-        builder.add(SKILL_COOLDOWN, 20);
-        builder.add(SUPER_ATTACK_SKILL_COOLDOWN, 15 * 20);
-        builder.add(SHOT_WITHER_SKULL_COOLDOWN, 16 * 20);
-        builder.add(SUPER_SHOT_WITHER_SKULL_COOLDOWN, 42 * 20);
-        builder.add(SHOT_ALL_WITHER_SKULL_COOLDOWN, 50 * 20);
-        builder.add(THORN_COOLDOWN, 25 * 20);
-        builder.add(ENHANCE_WITHER_CALL_COOLDOWN, 80 * 20);
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(HAS_SKILL, false);
+        builder.define(SKILL_COOLDOWN, 20);
+        builder.define(SUPER_ATTACK_SKILL_COOLDOWN, 15 * 20);
+        builder.define(SHOT_WITHER_SKULL_COOLDOWN, 16 * 20);
+        builder.define(SUPER_SHOT_WITHER_SKULL_COOLDOWN, 42 * 20);
+        builder.define(SHOT_ALL_WITHER_SKULL_COOLDOWN, 50 * 20);
+        builder.define(THORN_COOLDOWN, 25 * 20);
+        builder.define(ENHANCE_WITHER_CALL_COOLDOWN, 80 * 20);
     }
     @Override
-    public boolean canHaveStatusEffect(StatusEffectInstance effect) {
-        RegistryEntry<StatusEffect> effectType = effect.getEffectType();
-        if (effectType.equals(StatusEffects.SLOWNESS)) {
+    public boolean canBeAffected(MobEffectInstance effect) {
+        Holder<MobEffect> effectType = effect.getEffect();
+        if (effectType.equals(MobEffects.SLOWNESS)) {
             return false;
         }
-        return super.canHaveStatusEffect(effect);
+        return super.canBeAffected(effect);
     }
     @Override
     public void tick() {
         super.tick();
-        if (!this.getWorld().isClient()) {
-            if (this.age % 20 == 0) this.heal(1.0F);
+        if (!this.level().isClientSide()) {
+            if (this.tickCount % 20 == 0) this.heal(1.0F);
             if (this.deathAnimationTicks > 0) {
                 tickDeathAnimation();
                 return;
             }
             if (!hasSkill()) {
-                this.setAiDisabled(false);
+                this.setNoAi(false);
                 if (canEnhanceWitherCall()) performEnhanceWitherCall();
                 if (canThorn()) performThorn();
                 if (canShotWitherSkull()) performShotWitherSkull();
                 if (canSuperShotWitherSkull()) performSuperShotWitherSkull();
                 if (canShotAllWitherSkull()) performShotAllWitherSkull();
 
-                // 冷却递减
+                // 鍐峰嵈閫掑噺
                 int cd = getSkillCooldown();
                 if (cd > 0) setSkillCooldown(cd - 1);
                 int superAttackCd = getSuperAttackSkillCooldown();
@@ -133,53 +143,53 @@ public class WitherSkeletonKingEntity extends WitherSkeletonEntity implements Ge
         }
     }
     @Override
-    public void takeKnockback(double strength, double x, double z) {
+    public void knockback(double strength, double x, double z) {
     }
     @Override
-    public void setCustomName(@Nullable Text name) {
+    public void setCustomName(@Nullable Component name) {
         super.setCustomName(name);
         updateBossBar();
     }
     @Override
-    public void onStartedTrackingBy(ServerPlayerEntity player) {
-        super.onStartedTrackingBy(player);
-        CustomBossBarSync.add(player, this.bossBar.getUuid(), CustomBossBarStyles.WITHER_SKELETON_KING);
+    public void startSeenByPlayer(ServerPlayer player) {
+        super.startSeenByPlayer(player);
+        CustomBossBarSync.add(player, this.bossBar.getId(), CustomBossBarStyles.WITHER_SKELETON_KING);
         this.bossBar.addPlayer(player);
     }
     @Override
-    public void onStoppedTrackingBy(ServerPlayerEntity player) {
-        super.onStoppedTrackingBy(player);
+    public void stopSeenByPlayer(ServerPlayer player) {
+        super.stopSeenByPlayer(player);
         this.bossBar.removePlayer(player);
-        CustomBossBarSync.remove(player, this.bossBar.getUuid());
+        CustomBossBarSync.remove(player, this.bossBar.getId());
     }
     @Override
-    protected void mobTick(ServerWorld world) {
-        super.mobTick(world);
+    protected void customServerAiStep(ServerLevel world) {
+        super.customServerAiStep(world);
         updateBossBar();
     }
     @Override
-    public void readCustomData(ReadView nbt) {
-        super.readCustomData(nbt);
+    public void readAdditionalSaveData(ValueInput nbt) {
+        super.readAdditionalSaveData(nbt);
         if (this.hasCustomName()) {
             updateBossBar();
         }
     }
     @Override
-    public void writeCustomData(WriteView nbt) {
-        super.writeCustomData(nbt);
+    public void addAdditionalSaveData(ValueOutput nbt) {
+        super.addAdditionalSaveData(nbt);
     }
     @Override
-    public boolean isInAttackRange(LivingEntity entity) {
-        Box attackBox = this.getAttackBox().expand(1.25);
-        return attackBox.intersects(entity.getHitbox());
+    public boolean isWithinMeleeAttackRange(LivingEntity entity) {
+        AABB attackBox = this.getAttackBoundingBox().inflate(1.25);
+        return attackBox.intersects(entity.getBoundingBox());
     }
     @Nullable
-    public EntityData initializeBase(ServerWorldAccess world, LocalDifficulty difficulty, SpawnReason spawnReason, @Nullable EntityData entityData) {
-        Random random = world.getRandom();
-        EntityAttributeInstance entityAttributeInstance = (EntityAttributeInstance)Objects.requireNonNull(this.getAttributeInstance(EntityAttributes.FOLLOW_RANGE));
-        if (!entityAttributeInstance.hasModifier(RANDOM_SPAWN_BONUS_MODIFIER_ID)) {
-            entityAttributeInstance.addPersistentModifier(
-                    new EntityAttributeModifier(RANDOM_SPAWN_BONUS_MODIFIER_ID, random.nextTriangular(0.0, 0.11485000000000001), EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE)
+    public SpawnGroupData initializeBase(ServerLevelAccessor world, DifficultyInstance difficulty, EntitySpawnReason spawnReason, @Nullable SpawnGroupData entityData) {
+        RandomSource random = world.getRandom();
+        AttributeInstance entityAttributeInstance = (AttributeInstance)Objects.requireNonNull(this.getAttribute(Attributes.FOLLOW_RANGE));
+        if (!entityAttributeInstance.hasModifier(RANDOM_SPAWN_BONUS_ID)) {
+            entityAttributeInstance.addPermanentModifier(
+                    new AttributeModifier(RANDOM_SPAWN_BONUS_ID, random.triangle(0.0, 0.11485000000000001), AttributeModifier.Operation.ADD_MULTIPLIED_BASE)
             );
         }
 
@@ -187,20 +197,20 @@ public class WitherSkeletonKingEntity extends WitherSkeletonEntity implements Ge
         return entityData;
     }
     @Nullable
-    public EntityData initializeBase2(ServerWorldAccess world, LocalDifficulty difficulty, SpawnReason spawnReason, @Nullable EntityData entityData) {
+    public SpawnGroupData initializeBase2(ServerLevelAccessor world, DifficultyInstance difficulty, EntitySpawnReason spawnReason, @Nullable SpawnGroupData entityData) {
         entityData = this.initializeBase(world, difficulty, spawnReason, entityData);
-        Random random = world.getRandom();
-        this.initEquipment(random, difficulty);
-        this.updateEnchantments(world, random, difficulty);
-        this.updateAttackType();
-        this.setCanPickUpLoot(random.nextFloat() < 0.55F * difficulty.getClampedLocalDifficulty());
-        if (this.getEquippedStack(EquipmentSlot.HEAD).isEmpty()) {
+        RandomSource random = world.getRandom();
+        this.populateDefaultEquipmentSlots(random, difficulty);
+        this.populateDefaultEquipmentEnchantments(world, random, difficulty);
+        this.reassessWeaponGoal();
+        this.setCanPickUpLoot(random.nextFloat() < 0.55F * difficulty.getSpecialMultiplier());
+        if (this.getItemBySlot(EquipmentSlot.HEAD).isEmpty()) {
             LocalDate localDate = LocalDate.now();
             int i = localDate.get(ChronoField.DAY_OF_MONTH);
             int j = localDate.get(ChronoField.MONTH_OF_YEAR);
             if (j == 10 && i == 31 && random.nextFloat() < 0.25F) {
-                this.equipStack(EquipmentSlot.HEAD, new ItemStack(random.nextFloat() < 0.1F ? Blocks.JACK_O_LANTERN : Blocks.CARVED_PUMPKIN));
-                this.setEquipmentDropChance(EquipmentSlot.HEAD, 0.0F);
+                this.setItemSlot(EquipmentSlot.HEAD, new ItemStack(random.nextFloat() < 0.1F ? Blocks.JACK_O_LANTERN : Blocks.CARVED_PUMPKIN));
+                this.setDropChance(EquipmentSlot.HEAD, 0.0F);
             }
         }
 
@@ -208,80 +218,80 @@ public class WitherSkeletonKingEntity extends WitherSkeletonEntity implements Ge
     }
     @Nullable
     @Override
-    public EntityData initialize(ServerWorldAccess world, LocalDifficulty difficulty, SpawnReason spawnReason, @Nullable EntityData entityData) {
-        EntityData entityData2 = this.initializeBase2(world, difficulty, spawnReason, entityData);
-        Objects.requireNonNull(this.getAttributeInstance(EntityAttributes.ATTACK_DAMAGE)).setBaseValue(100.0D);
-        this.setAiDisabled(false);
-        this.updateAttackType();
+    public SpawnGroupData finalizeSpawn(ServerLevelAccessor world, DifficultyInstance difficulty, EntitySpawnReason spawnReason, @Nullable SpawnGroupData entityData) {
+        SpawnGroupData entityData2 = this.initializeBase2(world, difficulty, spawnReason, entityData);
+        Objects.requireNonNull(this.getAttribute(Attributes.ATTACK_DAMAGE)).setBaseValue(100.0D);
+        this.setNoAi(false);
+        this.reassessWeaponGoal();
         return entityData2;
     }
-    public WitherSkeletonKingEntity(EntityType<? extends WitherSkeletonEntity> entityType, World world) {
+    public WitherSkeletonKingEntity(EntityType<? extends WitherSkeleton> entityType, Level world) {
         super(entityType, world);
         this.setHasSkill(false);
-        this.setAiDisabled(false);
+        this.setNoAi(false);
         this.setSkillCooldown(20);
         this.lookControl = new BigBossLookControl(this);
         this.moveControl = new BigBossMoveControl(this);
         this.navigation = new BigBossNavigation(this, world);
-        addStatusEffect(new StatusEffectInstance(
-                StatusEffects.FIRE_RESISTANCE,
+        addEffect(new MobEffectInstance(
+                MobEffects.FIRE_RESISTANCE,
                 -1,
                 0,
                 true, true, true));
     }
     @Override
-    public boolean canPickupItem(ItemStack stack) {
+    public boolean canHoldItem(ItemStack stack) {
         return false;
     }
     @Override
-    protected void initEquipment(Random random, LocalDifficulty localDifficulty) {
+    protected void populateDefaultEquipmentSlots(RandomSource random, DifficultyInstance localDifficulty) {
     }
-    private boolean tryAttackBase(ServerWorld world, Entity target) {
+    private boolean tryAttackBase(ServerLevel world, Entity target) {
         if (!ModSkillEntityType.canSkill(this)) return false;
         float f = 100.0F;
-        ItemStack itemStack = this.getWeaponStack();
-        DamageSource damageSource = Optional.ofNullable(itemStack.getItem().getDamageSource(this)).orElse(this.getDamageSources().mobAttack(this));
-        f = EnchantmentHelper.getDamage(world, itemStack, target, damageSource, f);
-        f += itemStack.getItem().getBonusAttackDamage(target, f, damageSource);
-        if (this.isTeammate(target)) return false;
-        boolean bl = target.damage(world, damageSource, f);
+        ItemStack itemStack = this.getWeaponItem();
+        DamageSource damageSource = Optional.ofNullable(itemStack.getItem().getDamageSource(this)).orElse(this.damageSources().mobAttack(this));
+        f = EnchantmentHelper.modifyDamage(world, itemStack, target, damageSource, f);
+        f += itemStack.getItem().getAttackDamageBonus(target, f, damageSource);
+        if (this.isAlliedTo(target)) return false;
+        boolean bl = target.hurtServer(world, damageSource, f);
         if (bl) {
             if (target instanceof LivingEntity livingEntity) {
                 CombatEffectUtil.addStackingArmorPiercing(livingEntity, this);
             }
-            float g = this.getAttackKnockbackAgainst(target, damageSource);
+            float g = this.getKnockback(target, damageSource);
             if (g > 0.0F && target instanceof LivingEntity livingEntity) {
-                livingEntity.takeKnockback(g * 0.5F, MathHelper.sin(this.getYaw() * (float) (Math.PI / 180.0)), -MathHelper.cos(this.getYaw() * (float) (Math.PI / 180.0)));
-                this.setVelocity(this.getVelocity().multiply(0.6, 1.0, 0.6));
+                livingEntity.knockback(g * 0.5F, Mth.sin(this.getYRot() * (float) (Math.PI / 180.0)), -Mth.cos(this.getYRot() * (float) (Math.PI / 180.0)));
+                this.setDeltaMovement(this.getDeltaMovement().multiply(0.6, 1.0, 0.6));
             }
 
             if (target instanceof LivingEntity livingEntity) {
-                itemStack.postHit(livingEntity, this);
+                itemStack.hurtEnemy(livingEntity, this);
             }
 
-            EnchantmentHelper.onTargetDamaged(world, target, damageSource);
-            this.onAttacking(target);
+            EnchantmentHelper.doPostAttackEffects(world, target, damageSource);
+            this.setLastHurtMob(target);
             this.playAttackSound();
         }
         return bl;
     }
-    public boolean tryAttackBase2(ServerWorld world, Entity target) {
+    public boolean tryAttackBase2(ServerLevel world, Entity target) {
         if (!ModSkillEntityType.canSkill(this)) return false;
         if (!this.tryAttackBase(world, target)) {
             return false;
         } else {
             if (target instanceof LivingEntity livingEntity) {
-                livingEntity.addStatusEffect(new StatusEffectInstance(StatusEffects.WITHER, 5 * 20, 4), this);
-                if (livingEntity.isDead()) this.heal(5.0F);
-                if (!(target instanceof PlayerEntity)) {
-                    livingEntity.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 100, 1), this);
+                livingEntity.addEffect(new MobEffectInstance(MobEffects.WITHER, 5 * 20, 4), this);
+                if (livingEntity.isDeadOrDying()) this.heal(5.0F);
+                if (!(target instanceof Player)) {
+                    livingEntity.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 100, 1), this);
                 }
             }
             return true;
         }
     }
     @Override
-    public boolean tryAttack(ServerWorld world, Entity target) {
+    public boolean doHurtTarget(ServerLevel world, Entity target) {
         if (!ModSkillEntityType.canSkill(this)) return false;
         if (this.canEnhanceWitherCall()) {
             performEnhanceWitherCall();
@@ -300,7 +310,7 @@ public class WitherSkeletonKingEntity extends WitherSkeletonEntity implements Ge
     }
     public void performAttack() {
         setHasSkill(true);
-        this.setAiDisabled(true);
+        this.setNoAi(true);
         setSkillCooldown(20);
         this.triggerAnim("skill_controller", "attack");
     }
@@ -310,7 +320,7 @@ public class WitherSkeletonKingEntity extends WitherSkeletonEntity implements Ge
     public void performSuperAttack() {
         setHasSkill(true);
         setSkillCooldown(20);
-        this.setAiDisabled(true);
+        this.setNoAi(true);
         int cd = 300;
         if (this.isHealthy(0.35)) cd = 220;
         else if (this.isHealthy(0.75)) cd = 260;
@@ -320,14 +330,14 @@ public class WitherSkeletonKingEntity extends WitherSkeletonEntity implements Ge
     public void performShotWitherSkull() {
         setHasSkill(true);
         setSkillCooldown(20);
-        this.setAiDisabled(true);
+        this.setNoAi(true);
         setShotWitherSkullCooldown(this.isHealthy(0.35) ? 160 : 320);
         this.triggerAnim("skill_controller", "shot_wither_skull");
     }
     public void performSuperShotWitherSkull() {
         setHasSkill(true);
         setSkillCooldown(20);
-        this.setAiDisabled(true);
+        this.setNoAi(true);
         this.summonDogsAfterSuperShot = true;
         setSuperShotWitherSkullCooldown(42 * 20);
         this.triggerAnim("skill_controller", "super_shot_wither_skull");
@@ -335,21 +345,21 @@ public class WitherSkeletonKingEntity extends WitherSkeletonEntity implements Ge
     public void performShotAllWitherSkull() {
         setHasSkill(true);
         setSkillCooldown(20);
-        this.setAiDisabled(true);
+        this.setNoAi(true);
         setShotAllWitherSkullCooldown(isHealthy(0.35) ? 600 : 1000);
         this.triggerAnim("skill_controller", "shot_all_wither_skull");
     }
     public void performThorn() {
         setHasSkill(true);
         setSkillCooldown(20);
-        this.setAiDisabled(true);
+        this.setNoAi(true);
         setThornCooldown(25 * 20);
         this.triggerAnim("skill_controller", "thorn");
     }
     public void performEnhanceWitherCall() {
         setHasSkill(true);
         setSkillCooldown(20);
-        this.setAiDisabled(true);
+        this.setNoAi(true);
         setEnhanceWitherCallCooldown(80 * 20);
         this.triggerAnim("skill_controller", "enhance_wither_call");
     }
@@ -376,7 +386,7 @@ public class WitherSkeletonKingEntity extends WitherSkeletonEntity implements Ge
     }
     public boolean canSkill() {
         if (!ModSkillEntityType.canSkill(this)) return false;
-        return !this.getWorld().isClient() && !hasSkill() && getSkillCooldown() == 0 && this.getTarget() != null;
+        return !this.level().isClientSide() && !hasSkill() && getSkillCooldown() == 0 && this.getTarget() != null;
     }
     protected static final RawAnimation IDEA_ANIM = RawAnimation.begin().thenLoop("idle");
     protected static final RawAnimation WALK_ANIM = RawAnimation.begin().thenLoop("walk");
@@ -410,7 +420,7 @@ public class WitherSkeletonKingEntity extends WitherSkeletonEntity implements Ge
                 .triggerableAnim("death", DEATH)
                 .setSoundKeyframeHandler(s -> {})
                 .setCustomInstructionKeyframeHandler(s -> {
-                    PlayerEntity player = ClientUtil.getClientPlayer();
+                    Player player = ClientUtil.getClientPlayer();
                     String instruction = s.keyframeData().getInstructions().replaceAll("\\s+", "");
                     if ("canHalo".equals(instruction)) {
                         s.animationState().renderState().addGeckolibData(WitherSkeletonKingRenderer.CAN_HALO, true);
@@ -419,13 +429,13 @@ public class WitherSkeletonKingEntity extends WitherSkeletonEntity implements Ge
                         s.animationState().renderState().addGeckolibData(WitherSkeletonKingRenderer.CAN_HALO, false);
                     }
                     if ("runAttack".equals(instruction)) {
-                        player.playSound(SoundEvents.ENTITY_PLAYER_ATTACK_SWEEP, 1.0F, 1.0F);
+                        player.playSound(SoundEvents.PLAYER_ATTACK_SWEEP, 1.0F, 1.0F);
                         ClientPlayNetworking.send(new SkillPayload(
                                 "attack", this.getId()
                         ));
                     }
                     if ("runSuperAttack".equals(instruction)) {
-                        player.playSound(SoundEvents.ENTITY_PLAYER_SMALL_FALL, 1.0F, 1.0F);
+                        player.playSound(SoundEvents.PLAYER_SMALL_FALL, 1.0F, 1.0F);
                         ClientPlayNetworking.send(new SkillPayload(
                                 "super_attack", this.getId()
                         ));
@@ -465,36 +475,36 @@ public class WitherSkeletonKingEntity extends WitherSkeletonEntity implements Ge
         }
         return state.setAndContinue(IDEA_ANIM);
     }
-    public static DefaultAttributeContainer.Builder addAttributes() {
-        return HostileEntity.createHostileAttributes()
-                .add(EntityAttributes.MAX_HEALTH, 30000.0D)
-                .add(EntityAttributes.MOVEMENT_SPEED, 0.3D)
-                .add(EntityAttributes.KNOCKBACK_RESISTANCE, 1.0D)
-                .add(EntityAttributes.ATTACK_KNOCKBACK, 1.5D)
-                .add(EntityAttributes.ATTACK_DAMAGE, 100.0D)
-                .add(EntityAttributes.FOLLOW_RANGE, 24.0D)
-                .add(EntityAttributes.STEP_HEIGHT, 3)
-                .add(EntityAttributes.ARMOR, 25.0D)
-                .add(EntityAttributes.ARMOR_TOUGHNESS, 20.0D);
+    public static AttributeSupplier.Builder addAttributes() {
+        return Monster.createMonsterAttributes()
+                .add(Attributes.MAX_HEALTH, 30000.0D)
+                .add(Attributes.MOVEMENT_SPEED, 0.3D)
+                .add(Attributes.KNOCKBACK_RESISTANCE, 1.0D)
+                .add(Attributes.ATTACK_KNOCKBACK, 1.5D)
+                .add(Attributes.ATTACK_DAMAGE, 100.0D)
+                .add(Attributes.FOLLOW_RANGE, 24.0D)
+                .add(Attributes.STEP_HEIGHT, 3)
+                .add(Attributes.ARMOR, 25.0D)
+                .add(Attributes.ARMOR_TOUGHNESS, 20.0D);
     }
     boolean isPlaySound = false;
     @Override
     public void setHealth(float health) {
         super.setHealth(health);
-        if (!this.getWorld().isClient() && this.isHealthy(0.35)) {
-            this.addStatusEffect(new StatusEffectInstance(
-                    StatusEffects.SPEED,
+        if (!this.level().isClientSide() && this.isHealthy(0.35)) {
+            this.addEffect(new MobEffectInstance(
+                    MobEffects.SPEED,
                     -1,
                     0,
                     true, true, true));
-            this.addStatusEffect(new StatusEffectInstance(
-                    StatusEffects.RESISTANCE,
+            this.addEffect(new MobEffectInstance(
+                    MobEffects.RESISTANCE,
                     -1,
                     0,
                     true, true, true));
         }
-        if (!this.getWorld().isClient() && this.getHealth() == this.getMaxHealth() * 0.35 && !isPlaySound) {
-            this.getWorld().playSound(this, this.getX(), this.getY(), this.getZ(), SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundCategory.HOSTILE, 3.0F, 1.0F);
+        if (!this.level().isClientSide() && this.getHealth() == this.getMaxHealth() * 0.35 && !isPlaySound) {
+            this.level().playSound(this, this.getX(), this.getY(), this.getZ(), SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.HOSTILE, 3.0F, 1.0F);
             isPlaySound = true;
         }
         if (this.bossBar != null) {
@@ -503,69 +513,69 @@ public class WitherSkeletonKingEntity extends WitherSkeletonEntity implements Ge
     }
 
     private void updateBossBar() {
-        this.bossBar.setPercent(this.getHealth() / this.getMaxHealth());
+        this.bossBar.setProgress(this.getHealth() / this.getMaxHealth());
         this.bossBar.setName(this.getDisplayName().copy().append(" | " + (int) Math.ceil(this.getHealth()) + "/" + (int) this.getMaxHealth()));
     }
     public boolean hasSkill() {
-        return getDataTracker().get(HAS_SKILL);
+        return getEntityData().get(HAS_SKILL);
     }
     public int getSkillCooldown() {
-        return getDataTracker().get(SKILL_COOLDOWN);
+        return getEntityData().get(SKILL_COOLDOWN);
     }
     public int getSuperAttackSkillCooldown() {
-        return getDataTracker().get(SUPER_ATTACK_SKILL_COOLDOWN);
+        return getEntityData().get(SUPER_ATTACK_SKILL_COOLDOWN);
     }
     public int getShotWitherSkullCooldown() {
-        return getDataTracker().get(SHOT_WITHER_SKULL_COOLDOWN);
+        return getEntityData().get(SHOT_WITHER_SKULL_COOLDOWN);
     }
     public int getSuperShotWitherSkullCooldown() {
-        return getDataTracker().get(SUPER_SHOT_WITHER_SKULL_COOLDOWN);
+        return getEntityData().get(SUPER_SHOT_WITHER_SKULL_COOLDOWN);
     }
     public int getShotAllWitherSkullCooldown() {
-        return getDataTracker().get(SHOT_ALL_WITHER_SKULL_COOLDOWN);
+        return getEntityData().get(SHOT_ALL_WITHER_SKULL_COOLDOWN);
     }
     public int getThornCooldown() {
-        return getDataTracker().get(THORN_COOLDOWN);
+        return getEntityData().get(THORN_COOLDOWN);
     }
     public int getEnhanceWitherCallCooldown() {
-        return getDataTracker().get(ENHANCE_WITHER_CALL_COOLDOWN);
+        return getEntityData().get(ENHANCE_WITHER_CALL_COOLDOWN);
     }
     public void setHasSkill(boolean hasSkill) {
-        getDataTracker().set(HAS_SKILL, hasSkill);
+        getEntityData().set(HAS_SKILL, hasSkill);
     }
     public void setSkillCooldown(int cooldown) {
-        getDataTracker().set(SKILL_COOLDOWN, cooldown);
+        getEntityData().set(SKILL_COOLDOWN, cooldown);
     }
     public void setSuperAttackSkillCooldown(int cooldown) {
-        getDataTracker().set(SUPER_ATTACK_SKILL_COOLDOWN, cooldown);
+        getEntityData().set(SUPER_ATTACK_SKILL_COOLDOWN, cooldown);
     }
     public void setShotWitherSkullCooldown(int cooldown) {
-        getDataTracker().set(SHOT_WITHER_SKULL_COOLDOWN, cooldown);
+        getEntityData().set(SHOT_WITHER_SKULL_COOLDOWN, cooldown);
     }
     public void setSuperShotWitherSkullCooldown(int cooldown) {
-        getDataTracker().set(SUPER_SHOT_WITHER_SKULL_COOLDOWN, cooldown);
+        getEntityData().set(SUPER_SHOT_WITHER_SKULL_COOLDOWN, cooldown);
     }
     public void setShotAllWitherSkullCooldown(int cooldown) {
-        getDataTracker().set(SHOT_ALL_WITHER_SKULL_COOLDOWN, cooldown);
+        getEntityData().set(SHOT_ALL_WITHER_SKULL_COOLDOWN, cooldown);
     }
     public void setThornCooldown(int cooldown) {
-        getDataTracker().set(THORN_COOLDOWN, cooldown);
+        getEntityData().set(THORN_COOLDOWN, cooldown);
     }
     public void setEnhanceWitherCallCooldown(int cooldown) {
-        getDataTracker().set(ENHANCE_WITHER_CALL_COOLDOWN, cooldown);
+        getEntityData().set(ENHANCE_WITHER_CALL_COOLDOWN, cooldown);
     }
 
     public void finishSkill() {
-        if (!this.getWorld().isClient() && this.summonDogsAfterSuperShot) {
+        if (!this.level().isClientSide() && this.summonDogsAfterSuperShot) {
             WitherSkeletonKingEntitySkill.spawnWitherSkeletonDogs(this);
         }
         this.summonDogsAfterSuperShot = false;
         this.setHasSkill(false);
-        this.setAiDisabled(false);
+        this.setNoAi(false);
     }
 
     @Override
-    public boolean damage(ServerWorld world, DamageSource source, float amount) {
+    public boolean hurtServer(ServerLevel world, DamageSource source, float amount) {
         if (this.deathAnimationTicks > 0) {
             return false;
         }
@@ -573,12 +583,12 @@ public class WitherSkeletonKingEntity extends WitherSkeletonEntity implements Ge
             startDeathAnimation();
             return true;
         }
-        return super.damage(world, source, amount);
+        return super.hurtServer(world, source, amount);
     }
 
     private void startDeathAnimation() {
         this.setHealth(1.0F);
-        this.setAiDisabled(true);
+        this.setNoAi(true);
         this.setHasSkill(true);
         this.summonDogsAfterSuperShot = false;
         this.deathAnimationTicks = 90;

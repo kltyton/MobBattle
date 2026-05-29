@@ -1,26 +1,26 @@
 package com.kltyton.mob_battle.entity.general;
 
 import com.kltyton.mob_battle.network.packet.SkillPayload;
-import net.minecraft.entity.mob.MobEntity;
+import net.minecraft.world.entity.Mob;
 
 public class GeneralEntitySkillHelper {
-    public static <E extends MobEntity> void handleSkillPayload(GeneralEntityOnlyOneSkill<E> skillInterface, SkillPayload payload) {
-        if (skillInterface instanceof MobEntity mobEntity) {
+    public static <E extends Mob> void handleSkillPayload(GeneralEntityOnlyOneSkill<E> skillInterface, SkillPayload payload) {
+        if (skillInterface instanceof Mob mobEntity) {
             @SuppressWarnings("unchecked")
             E entity = (E) mobEntity;
             switch (payload.skillName()) {
                 case "attack" -> skillInterface.runSkill(entity);
-                case "stop_ai" -> mobEntity.setAiDisabled(true);
-                case "start_ai" -> mobEntity.setAiDisabled(false);
+                case "stop_ai" -> mobEntity.setNoAi(true);
+                case "start_ai" -> mobEntity.setNoAi(false);
                 case "stop" -> {
                     skillInterface.stopSkill();
-                    mobEntity.setAiDisabled(false);
+                    mobEntity.setNoAi(false);
                 }
             }
         }
     }
-    public static <E extends MobEntity> void handleSkillPayload(GeneralEntity<E> skillInterface, SkillPayload payload) {
-        if (skillInterface instanceof MobEntity mobEntity) {
+    public static <E extends Mob> void handleSkillPayload(GeneralEntity<E> skillInterface, SkillPayload payload) {
+        if (skillInterface instanceof Mob mobEntity) {
             @SuppressWarnings("unchecked")
             E entity = (E) mobEntity;
             switch (payload.skillName()) {
@@ -40,11 +40,11 @@ public class GeneralEntitySkillHelper {
                 case "attack7" -> skillInterface.runSkill_7(entity);
                 case "attack7_1" -> skillInterface.runSkill_7_1(entity);
                 case "buff" -> skillInterface.runBuff(entity);
-                case "stop_ai" -> mobEntity.setAiDisabled(true);
-                case "start_ai" -> mobEntity.setAiDisabled(false);
+                case "stop_ai" -> mobEntity.setNoAi(true);
+                case "start_ai" -> mobEntity.setNoAi(false);
                 case "stop" -> {
                     skillInterface.setHasSkill(false);
-                    mobEntity.setAiDisabled(false);
+                    mobEntity.setNoAi(false);
                 }
             }
         }

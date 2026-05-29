@@ -2,44 +2,44 @@ package com.kltyton.mob_battle.entity.customfireball;
 
 import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.utils.EntityUtil;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.hit.EntityHitResult;
-import net.minecraft.util.hit.HitResult;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.TeleportTarget;
-import net.minecraft.world.World;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.portal.TeleportTransition;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 
 public class CustomSuperBigFireballEntity extends CustomFireballEntity {
-    public final Vec3d speedV3d;
-    private Vec3d ownerEntityPos;
+    public final Vec3 speedV3d;
+    private Vec3 ownerEntityPos;
     private float lastOwnerHealth;
     private float frozenYaw;
     private float frozenPitch;
     public boolean SbBfbp;
     public boolean fuckOwner = true;
-    public CustomSuperBigFireballEntity(EntityType<? extends CustomSuperBigFireballEntity> entityType, World world, LivingEntity owner, float power, boolean createFire, float damage, Vec3d speedV3d, boolean SbBfbp) {
+    public CustomSuperBigFireballEntity(EntityType<? extends CustomSuperBigFireballEntity> entityType, Level world, LivingEntity owner, float power, boolean createFire, float damage, Vec3 speedV3d, boolean SbBfbp) {
         super(entityType, world, owner, power, createFire, damage);
         this.speedV3d = speedV3d;
         this.lastOwnerHealth = owner.getHealth();
-        this.frozenYaw = owner.getYaw();
-        this.frozenPitch = owner.getPitch();
-        this.ownerEntityPos = owner.getPos();
+        this.frozenYaw = owner.getYRot();
+        this.frozenPitch = owner.getXRot();
+        this.ownerEntityPos = owner.position();
         this.SbBfbp = SbBfbp;
     }
-    public CustomSuperBigFireballEntity(EntityType<? extends CustomSuperBigFireballEntity> entityType, World world) {
+    public CustomSuperBigFireballEntity(EntityType<? extends CustomSuperBigFireballEntity> entityType, Level world) {
         super(entityType, world);
-        this.speedV3d = Vec3d.ZERO;
+        this.speedV3d = Vec3.ZERO;
     }
 
     @Override
-    protected void onEntityHit(EntityHitResult entityHitResult) {
+    protected void onHitEntity(EntityHitResult entityHitResult) {
         // 检查当前世界是否为服务器世界，如果是则执行伤害处理逻辑
-        if (this.getWorld() instanceof ServerWorld serverWorld) {
+        if (this.level() instanceof ServerLevel serverWorld) {
             // 获取被击中的实体
             Entity entity = entityHitResult.getEntity();
             if (entity instanceof LivingEntity living && !EntityUtil.isValidSummonCombatTarget(this, this.getOwner(), living)) {
@@ -48,38 +48,38 @@ public class CustomSuperBigFireballEntity extends CustomFireballEntity {
             // 获取攻击者实体（拥有者）
             //Entity entity2 = this.getOwner();
             // 创建火球伤害源，指定攻击者和拥有者
-            DamageSource damageSource = this.getDamageSources().magic();
+            DamageSource damageSource = this.damageSources().magic();
             // 对目标实体造成伤害
-            entity.damage(serverWorld, damageSource, damage);
+            entity.hurtServer(serverWorld, damageSource, damage);
             // 触发附魔相关的伤害后处理逻辑
-            EnchantmentHelper.onTargetDamaged(serverWorld, entity, damageSource);
+            EnchantmentHelper.doPostAttackEffects(serverWorld, entity, damageSource);
         }
 
     }
     @Override
     public void tick() {
         super.tick();
-        if (this.getWorld().isClient) {
+        if (this.level().isClientSide) {
             return;
         }
         // ---- 1. 动态缩放 ----
         int growTime = 40; // 40 tick 内完成放大
         Entity falseOwner = this.getOwner();
         // ---- 2. 冻结主人 ----
-        if (this.age < growTime) {
+        if (this.tickCount < growTime) {
             if (falseOwner instanceof LivingEntity trueOwner && this.fuckOwner) {
                 if (ownerEntityPos != null) {
-                    trueOwner.setVelocity(Vec3d.ZERO); // 禁止移动
-                    trueOwner.setYaw(frozenYaw);       // 锁定朝向
-                    trueOwner.setPitch(frozenPitch);
-                    trueOwner.setPos(ownerEntityPos.x, ownerEntityPos.y, ownerEntityPos.z);
-                    if (trueOwner.isPlayer())
-                        trueOwner.teleportTo(new TeleportTarget((ServerWorld) this.getWorld(), ownerEntityPos, Vec3d.ZERO, trueOwner.getYaw(), trueOwner.getPitch(), TeleportTarget.NO_OP));
-                    trueOwner.velocityModified = true; // 强制客户端同步
+                    trueOwner.setDeltaMovement(Vec3.ZERO); // 禁止移动
+                    trueOwner.setYRot(frozenYaw);       // 锁定朝向
+                    trueOwner.setXRot(frozenPitch);
+                    trueOwner.setPosRaw(ownerEntityPos.x, ownerEntityPos.y, ownerEntityPos.z);
+                    if (trueOwner.isAlwaysTicking())
+                        trueOwner.teleport(new TeleportTransition((ServerLevel) this.level(), ownerEntityPos, Vec3.ZERO, trueOwner.getYRot(), trueOwner.getXRot(), TeleportTransition.DO_NOTHING));
+                    trueOwner.hurtMarked = true; // 强制客户端同步
                 }
             }
-        } else if (this.age == growTime) {
-            this.setVelocity(speedV3d);
+        } else if (this.tickCount == growTime) {
+            this.setDeltaMovement(speedV3d);
         }
 
         // ---- 3. 受伤销毁 ----
@@ -92,29 +92,29 @@ public class CustomSuperBigFireballEntity extends CustomFireballEntity {
         }
     }
     @Override
-    protected void onCollision(HitResult hitResult) {
-        super.onCollision(hitResult);
-        if (!this.getWorld().isClient && this.SbBfbp) {
-            Vec3d pos = hitResult.getPos();
+    protected void onHit(HitResult hitResult) {
+        super.onHit(hitResult);
+        if (!this.level().isClientSide && this.SbBfbp) {
+            Vec3 pos = hitResult.getLocation();
             Entity ownerEntity = this.getOwner();
             if (!(ownerEntity instanceof LivingEntity owner)) {
                 return;
             }
 
             for (int i = 0; i < 10; i++) {
-                Vec3d speedVec = new Vec3d(
+                Vec3 speedVec = new Vec3(
                         this.random.nextGaussian(),
                         this.random.nextGaussian(),
                         this.random.nextGaussian()
-                ).normalize().multiply(3.0); // 3.0 为散射速度（越大越快）
+                ).normalize().scale(3.0); // 3.0 为散射速度（越大越快）
 
-                if (speedVec.lengthSquared() < 0.01) {
-                    speedVec = new Vec3d(0, 1, 0).multiply(3.0);
+                if (speedVec.lengthSqr() < 0.01) {
+                    speedVec = new Vec3(0, 1, 0).scale(3.0);
                 }
 
                 CustomSuperBigFireballEntity fireball = new CustomSuperBigFireballEntity(
                         ModEntities.BIG_CUSTOM_FIREBALL,
-                        this.getWorld(),
+                        this.level(),
                         owner,
                         5.5F,
                         true,
@@ -123,9 +123,9 @@ public class CustomSuperBigFireballEntity extends CustomFireballEntity {
                         false
                 );
                 fireball.fuckOwner = false;
-                Vec3d offsetPos = pos.add(speedVec.normalize().multiply(0.1));
-                fireball.setPosition(offsetPos);
-                this.getWorld().spawnEntity(fireball);
+                Vec3 offsetPos = pos.add(speedVec.normalize().scale(0.1));
+                fireball.setPos(offsetPos);
+                this.level().addFreshEntity(fireball);
             }
         }
     }
