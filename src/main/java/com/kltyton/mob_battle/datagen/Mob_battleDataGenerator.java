@@ -1,0 +1,35 @@
+package com.kltyton.mob_battle.datagen;
+
+import com.kltyton.mob_battle.datagen.client.lang.ModChineseLangProvider;
+import com.kltyton.mob_battle.datagen.client.lang.ModEnglishLangProvider;
+import com.kltyton.mob_battle.datagen.client.model.ModModelGenerator;
+import com.kltyton.mob_battle.datagen.server.loot.ModBlockLootTableGenerator;
+import com.kltyton.mob_battle.datagen.server.loot.ModEntityLootTableGenerator;
+import com.kltyton.mob_battle.datagen.server.recipe.ModRecipeGenerator;
+import com.kltyton.mob_battle.datagen.server.tag.ModBlockTagGenerator;
+import com.kltyton.mob_battle.datagen.server.tag.ModEntityTagGenerator;
+import com.kltyton.mob_battle.datagen.server.tag.ModItemTagGenerator;
+import net.fabricmc.fabric.api.datagen.v1.DataGeneratorEntrypoint;
+import net.fabricmc.fabric.api.datagen.v1.FabricDataGenerator;
+
+public class Mob_battleDataGenerator implements DataGeneratorEntrypoint {
+
+    @Override
+    public void onInitializeDataGenerator(FabricDataGenerator generator) {
+        FabricDataGenerator.Pack pack = generator.createPack();
+
+        pack.addProvider(ModModelGenerator::new);
+
+        pack.addProvider(ModEnglishLangProvider::new);
+        pack.addProvider(ModChineseLangProvider::new);
+
+        pack.addProvider(ModBlockTagGenerator::new);
+        pack.addProvider(ModItemTagGenerator::new);
+        pack.addProvider(ModEntityTagGenerator::new);
+
+        pack.addProvider(ModBlockLootTableGenerator::new);
+        pack.addProvider(ModEntityLootTableGenerator::new);
+        pack.addProvider(ModRecipeGenerator::new);
+    }
+
+}

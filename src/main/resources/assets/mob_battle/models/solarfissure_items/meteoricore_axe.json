@@ -1,0 +1,151 @@
+{
+	"credit": "Made by SirValeron",
+	"texture_size": [128, 128],
+	"textures": {
+		"0": "mob_battle:item/solarfissure_items/meteoricoreaxe_texture",
+		"1": "mob_battle:item/solarfissure_items/meteoricoreaxe_animated_texture",
+		"particle": "mob_battle:item/solarfissure_items/meteoricoreaxe_texture"
+	},
+	"elements": [
+		{
+			"from": [6.75, -13, 6.5],
+			"to": [8.75, 13, 8.5],
+			"rotation": {"angle": -45, "axis": "y", "origin": [7.75, 7.5, 7.5]},
+			"faces": {
+				"north": {"uv": [5.75, 2.625, 5.5, 5.875], "texture": "#0"},
+				"east": {"uv": [5.5, 2.625, 5.75, 5.875], "texture": "#0"},
+				"south": {"uv": [5.75, 2.625, 5.5, 5.875], "texture": "#0"},
+				"west": {"uv": [5.5, 2.625, 5.75, 5.875], "texture": "#0"},
+				"up": {"uv": [5.375, 2.375, 5.125, 2.125], "texture": "#0"},
+				"down": {"uv": [5.375, 2.5, 5.125, 2.75], "texture": "#0"}
+			}
+		},
+		{
+			"from": [6.5, -14.5, 6.5],
+			"to": [9.5, -11.5, 9.5],
+			"rotation": {"angle": -45, "axis": "y", "origin": [8.5, -10.5, 7.5]},
+			"faces": {
+				"north": {"uv": [4.5, 3.75, 4.125, 4.125], "texture": "#0"},
+				"east": {"uv": [4.125, 3.75, 4.5, 4.125], "texture": "#0"},
+				"south": {"uv": [4.125, 2.25, 4.5, 2.625], "texture": "#0"},
+				"west": {"uv": [4.5, 2.25, 4.125, 2.625], "texture": "#0"},
+				"up": {"uv": [4.5, 1.625, 4.125, 1.25], "texture": "#0"},
+				"down": {"uv": [5, 2.25, 4.625, 2.625], "texture": "#0"}
+			}
+		},
+		{
+			"from": [6.5, -10.5, 6.5],
+			"to": [9.5, -9.5, 9.5],
+			"rotation": {"angle": -45, "axis": "y", "origin": [8.5, -8.5, 7.5]},
+			"faces": {
+				"north": {"uv": [5.375, 5.25, 5, 5.375], "texture": "#0"},
+				"east": {"uv": [5, 5.25, 5.375, 5.375], "texture": "#0"},
+				"south": {"uv": [5.125, 5, 5.5, 5.125], "texture": "#0"},
+				"west": {"uv": [5.5, 5, 5.125, 5.125], "texture": "#0"},
+				"up": {"uv": [4.5, 1.625, 4.125, 1.25], "texture": "#0"},
+				"down": {"uv": [4.5, 1.75, 4.125, 2.125], "texture": "#0"}
+			}
+		},
+		{
+			"from": [6.5, 5.5, 6.5],
+			"to": [9.5, 7.5, 9.5],
+			"rotation": {"angle": -45, "axis": "y", "origin": [8.5, 8.5, 7.5]},
+			"faces": {
+				"north": {"uv": [5, 3.75, 4.625, 4], "texture": "#0"},
+				"east": {"uv": [4.625, 3.75, 5, 4], "texture": "#0"},
+				"south": {"uv": [4.125, 4.75, 4.5, 5], "texture": "#0"},
+				"west": {"uv": [5, 4.875, 4.625, 5.125], "texture": "#0"},
+				"up": {"uv": [4.5, 1.625, 4.125, 1.25], "texture": "#0"},
+				"down": {"uv": [4.5, 1.75, 4.125, 2.125], "texture": "#0"}
+			}
+		},
+		{
+			"from": [6.5, 11.5, 6.5],
+			"to": [9.5, 13.5, 9.5],
+			"rotation": {"angle": -45, "axis": "y", "origin": [8.5, 14.5, 7.5]},
+			"faces": {
+				"north": {"uv": [5, 3.75, 4.625, 4], "texture": "#0"},
+				"east": {"uv": [4.625, 3.75, 5, 4], "texture": "#0"},
+				"south": {"uv": [4.125, 4.75, 4.5, 5], "texture": "#0"},
+				"west": {"uv": [4.5, 4.75, 4.125, 5], "texture": "#0"},
+				"up": {"uv": [4.5, 1.625, 4.125, 1.25], "texture": "#0"},
+				"down": {"uv": [4.5, 1.75, 4.125, 2.125], "texture": "#0"}
+			}
+		},
+		{
+			"from": [6.75, 12.75, 6.5],
+			"to": [8.75, 14.75, 8.5],
+			"rotation": {"angle": 45, "axis": "z", "origin": [7.75, 13.75, 7.5]},
+			"faces": {
+				"north": {"uv": [5.125, 3.125, 5.375, 3.375], "texture": "#0"},
+				"east": {"uv": [5.125, 3.5, 5.375, 3.75], "texture": "#0"},
+				"south": {"uv": [5.375, 3.125, 5.125, 3.375], "texture": "#0"},
+				"west": {"uv": [0, 0, 0.25, 0.25], "texture": "#0"},
+				"up": {"uv": [5.375, 4.25, 5.125, 4.5], "texture": "#0"},
+				"down": {"uv": [0, 0, 0.25, 0.25], "texture": "#0"}
+			}
+		},
+		{
+			"from": [-5.75, -1, 7.5],
+			"to": [20.25, 21, 7.5],
+			"rotation": {"angle": 0, "axis": "y", "origin": [6.25, 6, 5.5]},
+			"faces": {
+				"north": {"uv": [4, 4, 10.5, 9.5], "texture": "#1"},
+				"east": {"uv": [0, 0, 0, 2.75], "texture": "#0"},
+				"south": {"uv": [10.5, 4, 4, 9.5], "texture": "#1"},
+				"west": {"uv": [0, 0, 0, 2.75], "texture": "#0"},
+				"up": {"uv": [0, 0, 3.25, 0], "texture": "#0"},
+				"down": {"uv": [0, 0, 3.25, 0], "texture": "#0"}
+			}
+		}
+	],
+	"gui_light": "front",
+	"display": {
+		"thirdperson_righthand": {
+			"rotation": [0, 90, 0],
+			"translation": [0.5, 8.25, 2.25],
+			"scale": [0.9, 0.9, 0.9]
+		},
+		"thirdperson_lefthand": {
+			"rotation": [0, -90, 0],
+			"translation": [-0.5, 8.25, 2.25],
+			"scale": [0.9, 0.9, 0.9]
+		},
+		"firstperson_righthand": {
+			"rotation": [-11.59, 86.5, 7.17],
+			"translation": [2.75, 6.75, 0.75],
+			"scale": [0.6, 0.6, 0.6]
+		},
+		"firstperson_lefthand": {
+			"rotation": [-132.74, -86.35, -135.01],
+			"translation": [1.5, 6.75, 1.25],
+			"scale": [0.6, 0.6, 0.6]
+		},
+		"ground": {
+			"rotation": [22.14, -5.6, 62.97],
+			"translation": [0, 2.5, 2],
+			"scale": [0.3, 0.3, 0.3]
+		},
+		"gui": {
+			"rotation": [180, 0, -135],
+			"translation": [2.25, 1.5, 0],
+			"scale": [0.5, 0.5, 0.5]
+		},
+		"head": {
+			"translation": [0, 27.25, 0]
+		},
+		"fixed": {
+			"rotation": [1.1, -1.06, 45],
+			"translation": [-9.25, 11.75, 0],
+			"scale": [2, 2, 2]
+		}
+	},
+	"groups": [
+		{
+			"name": "meteoricoreaxe",
+			"origin": [8, 8, 8],
+			"color": 0,
+			"children": [0, 1, 2, 3, 4, 5, 6]
+		}
+	]
+}

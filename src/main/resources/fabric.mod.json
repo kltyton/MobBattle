@@ -3,15 +3,15 @@
   "id": "mob_battle",
   "version": "${version}",
   "name": "Mob Battle",
-  "description": "",
+  "description": "A mod",
   "authors": [],
   "contact": {},
-  "license": "LGPL-3.0",
+  "license": "MIT",
   "icon": "assets/mob_battle/icon.png",
   "environment": "*",
   "entrypoints": {
     "fabric-datagen": [
-      "com.kltyton.mob_battle.client.Mob_battleDataGenerator"
+      "com.kltyton.mob_battle.datagen.Mob_battleDataGenerator"
     ],
     "client": [
       "com.kltyton.mob_battle.client.Mob_battleClient"
@@ -25,7 +25,8 @@
   ],
   "depends": {
     "fabricloader": ">=${loader_version}",
-    "fabric-api": "*",
-    "minecraft": "${minecraft_version}"
-  }
+    "minecraft": "${minecraft_version}",
+    "geckolib": ">=5.1.0"
+  },
+  "accessWidener": "kltyton.accesswidener"
 }

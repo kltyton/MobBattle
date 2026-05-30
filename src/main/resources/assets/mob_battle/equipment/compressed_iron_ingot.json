@@ -1,0 +1,14 @@
+{
+  "layers": {
+    "humanoid": [
+      {
+        "texture": "mob_battle:material/armor/compressed_iron_ingot"
+      }
+    ],
+    "humanoid_leggings": [
+      {
+        "texture": "mob_battle:material/armor/compressed_iron_ingot"
+      }
+    ]
+  }
+}

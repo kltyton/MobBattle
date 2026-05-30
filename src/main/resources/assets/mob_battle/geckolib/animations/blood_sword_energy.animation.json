@@ -1,0 +1,17 @@
+{
+	"format_version": "1.8.0",
+	"animations": {
+		"attack": {
+			"animation_length": 0.597,
+			"bones": {
+				"bone": {
+					"position": [0, 0, 0],
+					"scale": {
+						"0.0": [1, 2.7, 1.7],
+						"0.5349": [0, 0, 0]
+					}
+				}
+			}
+		}
+	}
+}

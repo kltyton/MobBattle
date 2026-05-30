@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "mob_battle:block/compressed_iron_block"
+    }
+  }
+}

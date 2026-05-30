@@ -1,0 +1,14 @@
+{
+  "layers": {
+    "humanoid": [
+      {
+        "texture": "mob_battle:material/armor/emerald_diamond_alloy"
+      }
+    ],
+    "humanoid_leggings": [
+      {
+        "texture": "mob_battle:material/armor/emerald_diamond_alloy"
+      }
+    ]
+  }
+}

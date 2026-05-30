@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "group": "fine_knife",
+  "key": {
+    "a": "minecraft:iron_ingot",
+    "b": "minecraft:gold_ingot"
+  },
+  "pattern": [
+    "a",
+    "b"
+  ],
+  "result": {
+    "id": "mob_battle:fine_knife"
+  }
+}

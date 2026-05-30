@@ -1,0 +1,14 @@
+{
+  "layers": {
+    "humanoid": [
+      {
+        "texture": "mob_battle:material/armor/hell_1"
+      }
+    ],
+    "humanoid_leggings": [
+      {
+        "texture": "mob_battle:material/armor/hell_1"
+      }
+    ]
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "mob_battle:block/machine_worktable",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "mob_battle:block/machine_worktable"
+    },
+    "facing=south": {
+      "model": "mob_battle:block/machine_worktable",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "mob_battle:block/machine_worktable",
+      "y": 270
+    }
+  }
+}

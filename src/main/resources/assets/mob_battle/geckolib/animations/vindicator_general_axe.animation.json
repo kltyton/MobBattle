@@ -1,0 +1,21 @@
+{
+	"format_version": "1.8.0",
+	"animations": {
+		"fly": {
+			"loop": true,
+			"animation_length": 1.0417,
+			"bones": {
+				"weapon": {
+					"rotation": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"1.0417": {
+							"vector": [1802.5, 0, 0]
+						}
+					}
+				}
+			}
+		}
+	}
+}

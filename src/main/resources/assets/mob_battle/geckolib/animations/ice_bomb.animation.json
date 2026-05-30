@@ -1,0 +1,32 @@
+{
+	"format_version": "1.8.0",
+	"animations": {
+		"attack": {
+			"loop": true,
+			"animation_length": 0.7083,
+			"bones": {
+				"bone10": {
+					"rotation": {
+						"0.0": {
+							"vector": [-180, 0, 0]
+						},
+						"0.7083": {
+							"vector": [-180, -2453, 0]
+						}
+					},
+					"position": {
+						"0.0": {
+							"vector": [0, 40, 0]
+						},
+						"0.7083": {
+							"vector": [0, 40, 0]
+						}
+					},
+					"scale": {
+						"vector": [2, 4.6, 2]
+					}
+				}
+			}
+		}
+	}
+}

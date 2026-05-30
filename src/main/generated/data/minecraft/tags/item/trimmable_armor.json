@@ -1,0 +1,20 @@
+{
+  "values": [
+    "mob_battle:compressed_iron_helmet",
+    "mob_battle:compressed_iron_chestplate",
+    "mob_battle:compressed_iron_leggings",
+    "mob_battle:compressed_iron_boots",
+    "mob_battle:compressed_gold_helmet",
+    "mob_battle:compressed_gold_chestplate",
+    "mob_battle:compressed_gold_leggings",
+    "mob_battle:compressed_gold_boots",
+    "mob_battle:compressed_diamond_helmet",
+    "mob_battle:compressed_diamond_chestplate",
+    "mob_battle:compressed_diamond_leggings",
+    "mob_battle:compressed_diamond_boots",
+    "mob_battle:compressed_netherite_helmet",
+    "mob_battle:compressed_netherite_chestplate",
+    "mob_battle:compressed_netherite_leggings",
+    "mob_battle:compressed_netherite_boots"
+  ]
+}

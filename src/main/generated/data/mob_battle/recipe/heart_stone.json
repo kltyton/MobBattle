@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "group": "heart_stone",
+  "key": {
+    "a": "minecraft:redstone",
+    "b": "minecraft:cobblestone"
+  },
+  "pattern": [
+    " a ",
+    "aba",
+    " a "
+  ],
+  "result": {
+    "id": "mob_battle:heart_stone"
+  }
+}
