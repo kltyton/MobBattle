@@ -1,6 +1,7 @@
 package com.kltyton.mob_battle.entity.sugarmanscorpion;
 
 import com.kltyton.mob_battle.entity.ModSkillEntityType;
+import com.kltyton.mob_battle.utils.GeoAnimationUtil;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
@@ -51,7 +52,8 @@ public class SugarManScorpion extends Monster implements GeoEntity, ModSkillEnti
 
     public void registerControllers(final AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>("main_controller", 5 ,this::animationController));
-        controllers.add(new AnimationController<>( "attack_controller",animTest -> PlayState.STOP)
+        controllers.add(new AnimationController<>( "attack_controller", GeoAnimationUtil::playTriggeredAnimationOrStop)
+                .receiveTriggeredAnimations()
                 .triggerableAnim("attack", ATTACK_ANIM)
                 .triggerableAnim("attack_2", ATTACK_ANIM_2));
     }

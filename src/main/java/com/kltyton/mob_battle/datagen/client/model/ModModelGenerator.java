@@ -5,7 +5,6 @@ import com.kltyton.mob_battle.block.ModBlocks;
 import com.kltyton.mob_battle.items.ModItems;
 import net.fabricmc.fabric.api.client.datagen.v1.provider.FabricModelProvider;
 import net.fabricmc.fabric.api.datagen.v1.FabricPackOutput;
-import net.minecraft.client.data.models.model.ModelTemplate;
 import net.minecraft.client.data.models.BlockModelGenerators;
 import net.minecraft.client.data.models.ItemModelGenerators;
 import net.minecraft.client.data.models.model.ItemModelUtils;
@@ -46,7 +45,7 @@ public class ModModelGenerator extends FabricModelProvider {
     @Override
     public void generateBlockStateModels(BlockModelGenerators blockStateCollector) {
         blockStateCollector.createNonTemplateModelBlock(ModBlocks.NEST_BLOCK);
-        blockStateCollector.createNonTemplateModelBlock(ModBlocks.MUSHROOM_BLOCK);
+        blockStateCollector.createNonTemplateHorizontalBlock(ModBlocks.MUSHROOM_BLOCK);
         registerCompressedBlock(blockStateCollector, ModBlocks.COMPRESSED_IRON_BLOCK);
         registerCompressedBlock(blockStateCollector, ModBlocks.COMPRESSED_GOLD_BLOCK);
         registerCompressedBlock(blockStateCollector, ModBlocks.COMPRESSED_DIAMOND_BLOCK);
@@ -72,7 +71,7 @@ public class ModModelGenerator extends FabricModelProvider {
     @Override
     public void generateItemModels(ItemModelGenerators itemModelCollector) {
         itemModelCollector.itemModelOutput.accept(ModBlocks.NEST_BLOCK.asItem(), ItemModelUtils.plainModel(Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "block/nest")));
-        itemModelCollector.generateFlatItem(ModBlocks.MUSHROOM_BLOCK.asItem(), ModelTemplates.FLAT_ITEM);
+        itemModelCollector.itemModelOutput.accept(ModBlocks.MUSHROOM_BLOCK.asItem(), ItemModelUtils.plainModel(Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "block/mushroom")));
 
 /*        itemModelCollector.register(ModBlocks.NEST_BLOCK.asItem(),
                 new Model(Optional.of(Identifier.of(Mob_battle.MOD_ID, "block/nest_block")), Optional.empty()));

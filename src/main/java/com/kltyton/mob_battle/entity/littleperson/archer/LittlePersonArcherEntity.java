@@ -4,6 +4,7 @@ import com.kltyton.mob_battle.entity.ModSkillEntityType;
 import com.kltyton.mob_battle.entity.littleperson.LittlePersonEntity;
 import com.kltyton.mob_battle.entity.littleperson.archer.littlearrow.LittleArrowEntity;
 import com.kltyton.mob_battle.entity.villager.warriorvillager.WarriorVillager;
+import com.kltyton.mob_battle.utils.GeoAnimationUtil;
 
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
@@ -104,7 +105,8 @@ public class LittlePersonArcherEntity extends Monster implements LittlePersonEnt
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         // 主控制器：负责所有常规状态
         controllers.add(new AnimationController<>("main_controller", 5, this::mainController));
-        controllers.add(new AnimationController<>( "attack_controller",animTest -> PlayState.STOP)
+        controllers.add(new AnimationController<>( "attack_controller", GeoAnimationUtil::playTriggeredAnimationOrStop)
+                .receiveTriggeredAnimations()
                 .triggerableAnim("attack", ATTACK_ANIM)
                 .triggerableAnim("skill", SKILL_ANIM)
                 .triggerableAnim("block", BLOCK_ANIM));

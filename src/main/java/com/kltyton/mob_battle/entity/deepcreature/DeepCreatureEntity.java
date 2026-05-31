@@ -1,9 +1,11 @@
 package com.kltyton.mob_battle.entity.deepcreature;
 
+import com.kltyton.mob_battle.Mob_battle;
 import com.kltyton.mob_battle.entity.ModSkillEntityType;
 import com.kltyton.mob_battle.entity.deepcreature.goal.DeepCreatureEntityNavigation;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
 import com.kltyton.mob_battle.utils.EntityUtil;
+import com.kltyton.mob_battle.utils.GeoAnimationUtil;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.core.Holder;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
@@ -161,15 +163,15 @@ public class DeepCreatureEntity extends Monster implements GeoEntity, ModSkillEn
             if ("minecraft:entity.ender_dragon.growl".equals(s.keyframeData().getSound())) {
                 player.playSound(SoundEvents.ENDER_DRAGON_GROWL, 5.0F, 0.85F);
             }
-        }).triggerableAnim("death", DEAD_ANIM));
+        }).receiveTriggeredAnimations().triggerableAnim("death", DEAD_ANIM));
         controllers.add(new AnimationController<>("skill_controller",animTest -> {
-            if (animTest.controller().hasAnimationFinished() && this.hasSkill()) {
+            if (GeoAnimationUtil.consumeFinishedTriggeredAnimation(animTest) && this.hasSkill()) {
                 ClientPlayNetworking.send(new SkillPayload(
                         "stop", this.getId()
                 ));
             }
-            return PlayState.STOP;
-        }).setSoundKeyframeHandler(s -> {
+            return GeoAnimationUtil.playTriggeredAnimationOrStop(animTest);
+        }).receiveTriggeredAnimations().setSoundKeyframeHandler(s -> {
             Player player = ClientUtil.getClientPlayer();
             if ("minecraft:entity.polar_bear.warning".equals(s.keyframeData().getSound())) {
                 player.playSound(SoundEvents.POLAR_BEAR_WARNING, 5.0F, 0.85F);
@@ -332,11 +334,12 @@ public class DeepCreatureEntity extends Monster implements GeoEntity, ModSkillEn
             ClientPlayNetworking.send(new SkillPayload(
                     "stop_ai", this.getId()
             ));
-            if (state.controller().hasAnimationFinished()) {
+            if (GeoAnimationUtil.consumeFinishedTriggeredAnimation(state)) {
                 ClientPlayNetworking.send(new SkillPayload(
                         "kill", this.getId()
                 ));
             }
+            return GeoAnimationUtil.playTriggeredAnimationOrStop(state);
         }
         // 当实体刚生成时播放spawn动画
         if (this.tickCount < 220 && !this.isSpawnAnimEnd()) {
@@ -365,10 +368,25 @@ public class DeepCreatureEntity extends Monster implements GeoEntity, ModSkillEn
     public void tick() {
         super.tick();
         if (!this.level().isClientSide()) {
+            if (this.tickCount % 40 == 0 && (!this.isSpawnAnimEnd() || this.hasSkill() || this.isNoAi())) {
+                Mob_battle.LOGGER.info(
+                        "[MobBattle][DeepState] id={} tick={} spawnEnd={} hasSkill={} noAi={} invulnerable={} cooldown={} stuckCooldown={} target={}",
+                        this.getId(),
+                        this.tickCount,
+                        this.isSpawnAnimEnd(),
+                        this.hasSkill(),
+                        this.isNoAi(),
+                        this.isInvulnerable(),
+                        this.getSkillCooldown(),
+                        this.stuckCooldown,
+                        this.getTarget() == null ? "null" : this.getTarget().getType().toString()
+                );
+            }
             if (getGrabTargetId() != -1 && this.tickCount % 20 == 0) {
                 //抓取攻击
-                if (this.getTarget() != null) {
-                    this.getTarget().hurtServer((ServerLevel) this.level(), this.getTarget().damageSources().indirectMagic(this, this), 60F);
+                LivingEntity target = this.getTarget();
+                if (target != null) {
+                    target.hurtServer((ServerLevel) this.level(), this.damageSources().indirectMagic(this, this), 60F);
                 }
             }
             if (isNoAi()) {
@@ -390,7 +408,7 @@ public class DeepCreatureEntity extends Monster implements GeoEntity, ModSkillEn
                 performCatchSkill();
                 catchCooldown = 600;
             }
-            if (chargeTicksLeft > 0 && canSkill()) {
+            if (chargeTicksLeft > 0) {
                 // 1. 倒计时
                 chargeTicksLeft--;
                 // 2. 保持朝向
@@ -429,7 +447,6 @@ public class DeepCreatureEntity extends Monster implements GeoEntity, ModSkillEn
                 } else {
                     this.performChargeSkill();
                 }
-                this.setHasSkill(true);
                 remoteCooldown = 120;
             }
             if (remoteCooldown > 0) {
@@ -468,7 +485,6 @@ public class DeepCreatureEntity extends Monster implements GeoEntity, ModSkillEn
     @Override
     public boolean doHurtTarget(ServerLevel world, Entity target) {
         if (!this.level().isClientSide() && canSkill()) {
-            setHasSkill(true);
             int index = this.getRandom().nextInt(skills.size());
             skills.get(index).run();
         }
@@ -496,60 +512,80 @@ public class DeepCreatureEntity extends Monster implements GeoEntity, ModSkillEn
             this::performChargeSkill,
             this::performJumpSkill
     );
+    private void logSkillStart(String skill) {
+        Mob_battle.LOGGER.info(
+                "[MobBattle][SkillStart] deep_creature entity={} id={} skill={} noAiBefore={} hasSkillBefore={}",
+                this.getType(),
+                this.getId(),
+                skill,
+                this.isNoAi(),
+                this.hasSkill()
+        );
+    }
     private void performRoarSkill() {
+        logSkillStart("roar");
         setSkillCooldown(20);
         this.setHasSkill(true);
         this.setNoAi(true);
         this.triggerAnim("skill_controller", "roar");
     }
     private void performEarthquakeSkill() {
+        logSkillStart("earthquake");
         setSkillCooldown(20);
         this.setNoAi(true);
         this.setHasSkill(true);
         this.triggerAnim("skill_controller", "earthquake");
     }
     public void performLeftSmashSkill() {
+        logSkillStart("lefts_smash");
         setSkillCooldown(20);
         this.setHasSkill(true);
         this.setNoAi(true);
         this.triggerAnim("skill_controller", "lefts_smash");
     }
     public void performRightSmashSkill() {
+        logSkillStart("rights_smash");
         setSkillCooldown(20);
         this.setHasSkill(true);
         this.setNoAi(true);
         this.triggerAnim("skill_controller", "rights_smash");
     }
     public void performLeftSideStrikeSkill() {
+        logSkillStart("left_side_strike");
         setSkillCooldown(20);
         this.setHasSkill(true);
         this.setNoAi(true);
         this.triggerAnim("skill_controller", "left_side_strike");
     }
     public void performRightSideStrikeSkill() {
+        logSkillStart("right_side_strike");
         setSkillCooldown(20);
         this.setHasSkill(true);
         this.setNoAi(true);
         this.triggerAnim("skill_controller", "right_side_strike");
     }
     public void performSonicBoomSkill() {
+        logSkillStart("sonic_boom");
         setSkillCooldown(20);
         this.setHasSkill(true);
         this.setNoAi(true);
         this.triggerAnim("skill_controller", "sonic_boom");
     }
     public void performChargeSkill() {
+        logSkillStart("charge");
         setSkillCooldown(20);
         this.setHasSkill(true);
         this.setNoAi(true);
         this.triggerAnim("skill_controller", "charge");
     }
     public void performJumpSkill() {
+        logSkillStart("jump");
         setSkillCooldown(20);
         this.setHasSkill(true);
         this.triggerAnim("skill_controller", "jump");
     }
     public void performCatchSkill() {
+        logSkillStart("catch");
         setSkillCooldown(20);
         this.setNoAi(true);
         this.setHasSkill(true);

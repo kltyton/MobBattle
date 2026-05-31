@@ -106,6 +106,7 @@ public class ServerPlayNetwork {
                     MinecraftServer server = context.server();
                     server.execute(() -> {
                         Entity entity = context.player().level().getEntity(payload.entityId());
+                        logSkillPayload(context.player(), payload, entity);
                         switch (entity) {
                             case DeepCreatureEntity deepCreature -> {
                                 switch (payload.skillName()) {
@@ -523,5 +524,27 @@ public class ServerPlayNetwork {
                 CompressArmorSkillManager.handleSkill(player, payload.skill_id());
             });
         });
+    }
+
+    private static void logSkillPayload(ServerPlayer player, SkillPayload payload, Entity entity) {
+        if (entity == null) {
+            Mob_battle.LOGGER.warn(
+                    "[MobBattle][SkillPayload] player={} skill={} entityId={} entity=null",
+                    player.getName().getString(),
+                    payload.skillName(),
+                    payload.entityId()
+            );
+            return;
+        }
+
+        Mob_battle.LOGGER.info(
+                "[MobBattle][SkillPayload] player={} skill={} entity={} id={} class={} noAi={}",
+                player.getName().getString(),
+                payload.skillName(),
+                entity.getType(),
+                entity.getId(),
+                entity.getClass().getName(),
+                entity instanceof net.minecraft.world.entity.Mob mob && mob.isNoAi()
+        );
     }
 }

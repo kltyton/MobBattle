@@ -1,19 +1,15 @@
 package com.kltyton.mob_battle.block.mushroom;
 
 import com.google.common.collect.Maps;
-import com.mojang.serialization.MapCodec;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -22,8 +18,8 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-public class MushroomBlock extends BaseEntityBlock {
-    public static final EnumProperty<Direction> FACING =  BlockStateProperties.HORIZONTAL_FACING;
+public class MushroomBlock extends Block {
+    public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
     private static final Map<Direction, VoxelShape> SHAPES = Maps.newEnumMap(Direction.class);
 
     public static VoxelShape makeShape() {
@@ -86,16 +82,5 @@ public class MushroomBlock extends BaseEntityBlock {
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
         return SHAPES.get(state.getValue(FACING));
-    }
-
-
-    @Override
-    protected MapCodec<? extends BaseEntityBlock> codec()  {
-        return simpleCodec(MushroomBlock::new);
-    }
-
-    @Override
-    public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return new MushroomBlockEntity(pos, state);
     }
 }

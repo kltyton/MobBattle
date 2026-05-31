@@ -5,6 +5,7 @@ import com.kltyton.mob_battle.entity.ModSkillEntityType;
 import com.kltyton.mob_battle.entity.OwnedSummon;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
 import com.kltyton.mob_battle.utils.EntityUtil;
+import com.kltyton.mob_battle.utils.GeoAnimationUtil;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -168,11 +169,12 @@ public class DualBladeWitherSkeletonEntity extends WitherSkeleton implements Geo
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>("main_controller", 5, this::mainController));
         controllers.add(new AnimationController<>("skill_controller", 5, animTest -> {
-            if (animTest.controller().hasAnimationFinished() && this.hasSkill()) {
+            if (GeoAnimationUtil.consumeFinishedTriggeredAnimation(animTest) && this.hasSkill()) {
                 ClientPlayNetworking.send(new SkillPayload("stop", this.getId()));
             }
-            return PlayState.STOP;
+            return GeoAnimationUtil.playTriggeredAnimationOrStop(animTest);
         })
+                .receiveTriggeredAnimations()
                 .triggerableAnim("attack1", ATTACK_1_ANIM)
                 .triggerableAnim("attack2", ATTACK_2_ANIM)
                 .triggerableAnim("attack3", ATTACK_3_ANIM)
@@ -196,7 +198,7 @@ public class DualBladeWitherSkeletonEntity extends WitherSkeleton implements Geo
         if (this.birthTicks > 0) {
             return state.setAndContinue(BIRTH_ANIM);
         }
-        if (this.hasSkill()) {
+        if (this.hasSkill() && !GeoAnimationUtil.hasRecentlyFinishedTriggeredAnimation(this)) {
             return PlayState.CONTINUE;
         }
         if (state.isMoving()) {

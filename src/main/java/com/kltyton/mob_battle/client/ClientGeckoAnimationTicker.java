@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public final class ClientGeckoAnimationTicker {
-    private static final float PARTIAL_TICK = 1.0F;
+    private static final float PARTIAL_TICK = 0.0F;
     private static final double SCAN_RANGE = 192.0D;
     private static final Map<Class<?>, Method> HAS_SKILL_METHODS = new ConcurrentHashMap<>();
 

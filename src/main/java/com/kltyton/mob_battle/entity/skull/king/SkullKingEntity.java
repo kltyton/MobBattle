@@ -8,6 +8,7 @@ import com.kltyton.mob_battle.entity.skull.IModSkullEntity;
 import com.kltyton.mob_battle.entity.witherskeletonking.WitherSkeletonKingEntity;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
 import com.kltyton.mob_battle.utils.EntityUtil;
+import com.kltyton.mob_battle.utils.GeoAnimationUtil;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -261,13 +262,14 @@ public class SkullKingEntity extends WitherSkeleton implements GeoEntity, IModSk
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>("main_controller", 5 ,this::animationController));
         controllers.add(new AnimationController<>("skill_controller",animTest -> {
-            if (animTest.controller().hasAnimationFinished() && this.hasSkill()) {
+            if (GeoAnimationUtil.consumeFinishedTriggeredAnimation(animTest) && this.hasSkill()) {
                 ClientPlayNetworking.send(new SkillPayload(
                         "stop", this.getId()
                 ));
             }
-            return PlayState.STOP;
+            return GeoAnimationUtil.playTriggeredAnimationOrStop(animTest);
         })
+                .receiveTriggeredAnimations()
                 .triggerableAnim("attack", ATTACK_ANIM)
                 .triggerableAnim("super_attack", SUPER_ATTACK_ANIM)
                 .triggerableAnim("summon_skull", SUMMON_SKULL_ANIM)

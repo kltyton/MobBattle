@@ -6,6 +6,7 @@ import com.kltyton.mob_battle.entity.littleperson.militia.LittlePersonMilitiaEnt
 import com.kltyton.mob_battle.entity.littleperson.skillentity.base.BaseSkillLittlePersonEntity;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
 import com.kltyton.mob_battle.utils.EntityUtil;
+import com.kltyton.mob_battle.utils.GeoAnimationUtil;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -104,21 +105,22 @@ public class SexEntity extends BaseSkillLittlePersonEntity {
     @Override
     public PlayState mainController(final AnimationTest<LittlePersonMilitiaEntity> event) {
         if (event.isMoving()) {
-            return this.isAggressive() ? event.setAndContinue(RUN_ANIM) : event.setAndContinue(WALK_ANIM);
+            return event.setAndContinue(WALK_ANIM);
         } else return event.setAndContinue(IDLE_ANIM);
     }
     public AnimationController<?> sexEntitySkillController = new AnimationController<>( "skill_controller", animTest -> {
-        if (animTest.controller().hasAnimationFinished()) {
+        if (GeoAnimationUtil.consumeFinishedTriggeredAnimation(animTest)) {
             if (this.hasSkill()) ClientPlayNetworking.send(new SkillPayload("stop", this.getId()));
-            if (animTest.isCurrentAnimation(DIE_ANIM)) {
+            if (GeoAnimationUtil.isLastFinishedAnimation(animTest, DIE_ANIM)) {
                 this.deathTime = 400;
                 ClientPlayNetworking.send(new SkillPayload(
                         "die", this.getId()
                 ));
             }
         }
-        return PlayState.STOP;
+        return GeoAnimationUtil.playTriggeredAnimationOrStop(animTest);
     })
+            .receiveTriggeredAnimations()
             .triggerableAnim("attack2", ATTACK_ANIM_2)
             .triggerableAnim("attack3", ATTACK_ANIM_3)
             .triggerableAnim("attack4", ATTACK_ANIM_4)

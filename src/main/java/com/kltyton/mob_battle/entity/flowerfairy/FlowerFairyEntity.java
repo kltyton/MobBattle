@@ -24,6 +24,7 @@ import com.geckolib.animation.state.AnimationTest;
 import com.geckolib.animation.object.PlayState;
 import com.geckolib.animation.RawAnimation;
 import com.geckolib.util.GeckoLibUtil;
+import com.kltyton.mob_battle.utils.GeoAnimationUtil;
 
 public class FlowerFairyEntity extends AgeableMob implements GeoEntity {
 
@@ -77,7 +78,9 @@ public class FlowerFairyEntity extends AgeableMob implements GeoEntity {
 
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllerRegistrar) {
-        controllerRegistrar.add(new AnimationController<>("main_controller", 5 ,this::animationController).triggerableAnim("com", COM_ANIM));
+        controllerRegistrar.add(new AnimationController<>("main_controller", 5 ,this::animationController)
+                .receiveTriggeredAnimations()
+                .triggerableAnim("com", COM_ANIM));
     }
     private final AnimatableInstanceCache geoCache = GeckoLibUtil.createInstanceCache(this);
     protected static final RawAnimation IDEA_ANIM = RawAnimation.begin().thenLoop("idle");
@@ -89,6 +92,9 @@ public class FlowerFairyEntity extends AgeableMob implements GeoEntity {
         return geoCache;
     }
     private PlayState animationController(final AnimationTest<FlowerFairyEntity> state) {
+        if (state.isCurrentAnimation(COM_ANIM)) {
+            return GeoAnimationUtil.playTriggeredAnimationOrStop(state);
+        }
         if (state.isMoving()) {
             return state.setAndContinue(WALK_ANIM);
         } else {

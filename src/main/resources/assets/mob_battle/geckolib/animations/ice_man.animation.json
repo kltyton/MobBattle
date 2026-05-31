@@ -51,6 +51,9 @@
 				}
 			}
 		},
+		"run": {
+			"loop": true
+		},
 		"idle": {
 			"loop": true
 		},

@@ -6,6 +6,7 @@ import com.kltyton.mob_battle.entity.OwnedSummon;
 import com.kltyton.mob_battle.entity.littleperson.LittlePersonEntity;
 import com.kltyton.mob_battle.entity.villager.warriorvillager.WarriorVillager;
 import com.kltyton.mob_battle.utils.EntityUtil;
+import com.kltyton.mob_battle.utils.GeoAnimationUtil;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
@@ -170,7 +171,8 @@ public class LittlePersonMilitiaEntity extends Monster implements LittlePersonEn
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         // 主控制器：负责所有常规状态
         controllers.add(new AnimationController<>("main_controller", 5, this::mainController));
-        controllers.add(new AnimationController<>( "attack_controller",animTest -> PlayState.STOP)
+        controllers.add(new AnimationController<>( "attack_controller", GeoAnimationUtil::playTriggeredAnimationOrStop)
+                .receiveTriggeredAnimations()
                 .triggerableAnim("attack", ATTACK_ANIM)
                 .triggerableAnim("attack_1", ATTACK_ANIM_VARIANT_1)
                 .triggerableAnim("attack_2", ATTACK_ANIM_VARIANT_2)

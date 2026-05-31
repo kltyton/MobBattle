@@ -5,6 +5,7 @@ import com.kltyton.mob_battle.entity.ModSkillEntityType;
 import com.kltyton.mob_battle.entity.general.GeneralEntityOnlyOneSkill;
 import com.kltyton.mob_battle.entity.irongolem.VillagerIronGolemEntity;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
+import com.kltyton.mob_battle.utils.GeoAnimationUtil;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -122,13 +123,14 @@ public class CoalSilverfishEntity extends Silverfish implements GeneralEntityOnl
     public void registerControllers(AnimatableManager.ControllerRegistrar controllerRegistrar) {
         controllerRegistrar.add(new AnimationController<>("main_controller", 5 ,this::animationController));
         controllerRegistrar.add(new AnimationController<>( "attack_controller",animTest -> {
-                    if (animTest.controller().hasAnimationFinished() && this.hasSkill()) {
+                    if (GeoAnimationUtil.consumeFinishedTriggeredAnimation(animTest) && this.hasSkill()) {
                         ClientPlayNetworking.send(new SkillPayload(
                                 "stop", this.getId()
                         ));
                     }
-                    return PlayState.STOP;
+                    return GeoAnimationUtil.playTriggeredAnimationOrStop(animTest);
                 })
+                        .receiveTriggeredAnimations()
                         .triggerableAnim("attack", ATTACK_ANIM)
                         .triggerableAnim("attack2", ATTACK_ANIM_2)
                         .setSoundKeyframeHandler(s -> {})

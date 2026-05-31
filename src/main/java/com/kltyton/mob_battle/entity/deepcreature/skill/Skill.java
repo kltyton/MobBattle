@@ -49,14 +49,9 @@ public class Skill {
         }
     }
     public static void runDamage(DeepCreatureEntity entity) {
-        if (entity.getTarget() == null) return;
-        entity.getTarget().hurtServer((ServerLevel) entity.level(), entity.getTarget().damageSources().mobAttack(entity), 5);
-        TaskSchedulerUtil.runLater(15, () -> {
-            entity.getTarget().hurtServer((ServerLevel) entity.level(), entity.getTarget().damageSources().mobAttack(entity), 5);
-        });
-        TaskSchedulerUtil.runLater(25, () -> {
-            entity.getTarget().hurtServer((ServerLevel) entity.level(), entity.getTarget().damageSources().mobAttack(entity), 5);
-        });
+        hurtCurrentTarget(entity, 5.0F);
+        TaskSchedulerUtil.runLater(15, () -> hurtCurrentTarget(entity, 5.0F));
+        TaskSchedulerUtil.runLater(25, () -> hurtCurrentTarget(entity, 5.0F));
     }
     public static void runCatchEnd(DeepCreatureEntity entity) {
         if (entity.getGrabTargetId() == -1) return;
@@ -74,9 +69,10 @@ public class Skill {
     }
     public static void runSmash(DeepCreatureEntity entity) {
         double radius = 8.0D;
-        if (entity.getTarget() == null || entity.distanceTo(entity.getTarget()) > radius) return;
+        LivingEntity target = entity.getTarget();
+        if (target == null || entity.distanceTo(target) > radius) return;
         ServerLevel sw = (ServerLevel) entity.level();
-        entity.getTarget().hurtServer(sw, entity.getTarget().damageSources().mobAttack(entity), 85F);
+        target.hurtServer(sw, entity.damageSources().mobAttack(entity), 85F);
 /*        sw.createExplosion(
                 entity,
                 entity.getDamageSources().mobAttack(entity),
@@ -98,8 +94,15 @@ public class Skill {
         ServerLevel sw = (ServerLevel) entity.level();
         for (LivingEntity player : players) {
             SkillUtils.knockbackPlayer(entity, player, 0.8, 0.2, 0.05);
-            player.hurtServer(sw, player.damageSources().mobAttack(entity), 90F);
+            player.hurtServer(sw, entity.damageSources().mobAttack(entity), 90F);
         }
+    }
+
+    private static void hurtCurrentTarget(DeepCreatureEntity entity, float amount) {
+        if (!(entity.level() instanceof ServerLevel world)) return;
+        LivingEntity target = entity.getTarget();
+        if (target == null || !target.isAlive()) return;
+        target.hurtServer(world, entity.damageSources().mobAttack(entity), amount);
     }
     public static void runSonicBoom(DeepCreatureEntity entity) {
         if (!(entity.level() instanceof ServerLevel world)) return;

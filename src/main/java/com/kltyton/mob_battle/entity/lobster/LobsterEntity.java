@@ -2,6 +2,7 @@ package com.kltyton.mob_battle.entity.lobster;
 
 import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.entity.general.GeneralEntity;
+import com.kltyton.mob_battle.utils.GeoAnimationUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.world.entity.Entity;
@@ -426,7 +427,7 @@ public class LobsterEntity extends Animal implements GeneralEntity<LobsterEntity
 
     @Override
     public PlayState mainController(AnimationTest<?> event) {
-        if (this.hasSkill()) {
+        if (this.hasSkill() && !GeoAnimationUtil.hasRecentlyFinishedTriggeredAnimation(this)) {
             return PlayState.CONTINUE;
         }
 

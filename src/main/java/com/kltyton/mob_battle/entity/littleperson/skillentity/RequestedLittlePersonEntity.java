@@ -1,11 +1,13 @@
 package com.kltyton.mob_battle.entity.littleperson.skillentity;
 
+import com.kltyton.mob_battle.Mob_battle;
 import com.kltyton.mob_battle.effect.ModEffects;
 import com.kltyton.mob_battle.entity.ModEntityAttributes;
 import com.kltyton.mob_battle.entity.littleperson.militia.LittlePersonMilitiaEntity;
 import com.kltyton.mob_battle.entity.littleperson.skillentity.base.BaseSkillLittlePersonEntity;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
 import com.kltyton.mob_battle.utils.EntityUtil;
+import com.kltyton.mob_battle.utils.GeoAnimationUtil;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -47,16 +49,17 @@ public abstract class RequestedLittlePersonEntity extends BaseSkillLittlePersonE
     protected int lifeTicks = -1;
 
     private final AnimationController<?> requestedSkillController = new AnimationController<>("skill_controller", 5, animTest -> {
-        if (animTest.controller().hasAnimationFinished()) {
+        if (GeoAnimationUtil.consumeFinishedTriggeredAnimation(animTest)) {
             if (this.hasSkill()) {
                 ClientPlayNetworking.send(new SkillPayload("stop", this.getId()));
             }
-            if (animTest.isCurrentAnimation(DIE_ANIM)) {
+            if (GeoAnimationUtil.isLastFinishedAnimation(animTest, DIE_ANIM)) {
                 ClientPlayNetworking.send(new SkillPayload("die", this.getId()));
             }
         }
-        return PlayState.STOP;
+        return GeoAnimationUtil.playTriggeredAnimationOrStop(animTest);
     })
+            .receiveTriggeredAnimations()
             .triggerableAnim("attack", ATTACK_ANIM)
             .triggerableAnim("attack2", attackAnimation(2))
             .triggerableAnim("attack3", attackAnimation(3))
@@ -107,6 +110,10 @@ public abstract class RequestedLittlePersonEntity extends BaseSkillLittlePersonE
         clearSkillCooldowns();
     }
 
+    protected RawAnimation aggressiveMovementAnimation() {
+        return WALK_ANIM;
+    }
+
     @Override
     public AnimationController<?> getSkillController() {
         return this.requestedSkillController;
@@ -114,11 +121,11 @@ public abstract class RequestedLittlePersonEntity extends BaseSkillLittlePersonE
 
     @Override
     public PlayState mainController(final AnimationTest<LittlePersonMilitiaEntity> event) {
-        if (this.hasSkill()) {
+        if (this.hasSkill() && !GeoAnimationUtil.hasRecentlyFinishedTriggeredAnimation(this)) {
             return PlayState.CONTINUE;
         }
         if (event.isMoving()) {
-            return this.isAggressive() ? event.setAndContinue(RUN_ANIM) : event.setAndContinue(WALK_ANIM);
+            return event.setAndContinue(this.isAggressive() ? aggressiveMovementAnimation() : WALK_ANIM);
         }
         return event.setAndContinue(IDLE_ANIM);
     }
@@ -193,6 +200,13 @@ public abstract class RequestedLittlePersonEntity extends BaseSkillLittlePersonE
     }
 
     protected void performNormalAttack() {
+        Mob_battle.LOGGER.info(
+                "[MobBattle][SkillStart] requested_normal entity={} id={} class={} noAiBefore={}",
+                this.getType(),
+                this.getId(),
+                this.getClass().getName(),
+                this.isNoAi()
+        );
         this.setHasSkill(true);
         this.setNormalAttackKnockbackAllowed(true);
         this.setNoAi(false);

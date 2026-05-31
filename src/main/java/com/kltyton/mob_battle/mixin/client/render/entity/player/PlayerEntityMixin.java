@@ -8,6 +8,7 @@ import com.kltyton.mob_battle.event.DataTrackersEvent;
 import com.kltyton.mob_battle.network.packet.PlayerSkillUtilPayload;
 import com.kltyton.mob_battle.sounds.ModSounds;
 import com.kltyton.mob_battle.utils.EntityUtil;
+import com.kltyton.mob_battle.utils.GeoAnimationUtil;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -312,20 +313,24 @@ public abstract class PlayerEntityMixin extends LivingEntity implements GeoEntit
     }
     public void gecko$registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>("main_controller", 5 ,this::animationController));
-        controllers.add(new AnimationController<>("jump_controller", state -> PlayState.STOP)
+        controllers.add(new AnimationController<>("jump_controller", GeoAnimationUtil::playTriggeredAnimationOrStop)
+                .receiveTriggeredAnimations()
                 .triggerableAnim("jump", JUMP_ANIM));
-        controllers.add(new AnimationController<>("wave_controller", state -> PlayState.STOP)
+        controllers.add(new AnimationController<>("wave_controller", GeoAnimationUtil::playTriggeredAnimationOrStop)
+                .receiveTriggeredAnimations()
                 .triggerableAnim("wave", WAVE_ANIM));
         controllers.add(new AnimationController<>("attack_controller", animTest -> {
-                    if (animTest.controller().hasAnimationFinished() && animTest.controller().getCurrentRawAnimation() != SCRAPING_ANIM) {
+                    if (animTest.controller().getCurrentRawAnimation() != SCRAPING_ANIM
+                            && GeoAnimationUtil.consumeFinishedTriggeredAnimation(animTest)) {
                         if (this.mobBattle$hasSkill()) {
                             ((IClientPlayerEntityAccessor)this).clientSend("stop");
                             ((IClientPlayerEntityAccessor)this).clientSend("can_move");
                             //((IClientPlayerEntityAccessor)this).setPerson(1);
                         }
                     }
-                    return PlayState.STOP;
+                    return GeoAnimationUtil.playTriggeredAnimationOrStop(animTest);
                 })
+                .receiveTriggeredAnimations()
                 .triggerableAnim("attack", ATTACK_ANIM)
                 .triggerableAnim("attack2", ATTACK_ANIM2)
                 .triggerableAnim("retreat_step", RETREAT_STEP_ANIM)

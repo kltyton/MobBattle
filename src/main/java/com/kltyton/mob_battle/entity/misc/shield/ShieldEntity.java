@@ -1,6 +1,7 @@
 package com.kltyton.mob_battle.entity.misc.shield;
 
 import com.kltyton.mob_battle.Mob_battle;
+import com.kltyton.mob_battle.utils.GeoAnimationUtil;
 import com.geckolib.animatable.GeoEntity;
 import com.geckolib.animatable.instance.AnimatableInstanceCache;
 import com.geckolib.animatable.manager.AnimatableManager;
@@ -209,7 +210,8 @@ public class ShieldEntity extends Entity implements GeoEntity {
     protected static final RawAnimation ONE = RawAnimation.begin().thenPlayAndHold("one");
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-        controllers.add(new AnimationController<>("main_controller", animTest -> PlayState.STOP)
+        controllers.add(new AnimationController<>("main_controller", GeoAnimationUtil::playTriggeredAnimationOrStop)
+                .receiveTriggeredAnimations()
                 .triggerableAnim("one", ONE));
     }
     private final AnimatableInstanceCache geoCache = GeckoLibUtil.createInstanceCache(this);

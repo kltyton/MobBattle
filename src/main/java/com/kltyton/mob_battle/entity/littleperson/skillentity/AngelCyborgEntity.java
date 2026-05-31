@@ -4,6 +4,7 @@ import com.kltyton.mob_battle.effect.ModEffects;
 import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.entity.littleperson.archer.littlearrow.LittleArrowEntity;
 import com.kltyton.mob_battle.utils.TaskSchedulerUtil;
+import com.geckolib.animation.RawAnimation;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerBossEvent;
 import net.minecraft.server.level.ServerLevel;
@@ -39,6 +40,11 @@ public class AngelCyborgEntity extends RequestedLittlePersonEntity {
 
     public static AttributeSupplier.Builder createLittlePersonAttributes() {
         return createRequestedAttributes(12000.0D, 100.0D, 0.5D, 40.0D, 0.0D);
+    }
+
+    @Override
+    protected RawAnimation aggressiveMovementAnimation() {
+        return RUN_ANIM;
     }
 
     @Override

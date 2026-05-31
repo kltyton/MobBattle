@@ -9,6 +9,7 @@ import com.kltyton.mob_battle.entity.accessor.BigBossNavigation;
 import com.kltyton.mob_battle.entity.witherskeletonking.skill.WitherSkeletonKingEntitySkill;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
 import com.kltyton.mob_battle.utils.CombatEffectUtil;
+import com.kltyton.mob_battle.utils.GeoAnimationUtil;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.core.Holder;
 import net.minecraft.world.entity.Entity;
@@ -404,13 +405,14 @@ public class WitherSkeletonKingEntity extends WitherSkeleton implements GeoEntit
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>("main_controller", 5 ,this::animationController));
         controllers.add(new AnimationController<>("skill_controller",animTest -> {
-            if (animTest.controller().hasAnimationFinished() && this.hasSkill()) {
+            if (GeoAnimationUtil.consumeFinishedTriggeredAnimation(animTest) && this.hasSkill()) {
                 ClientPlayNetworking.send(new SkillPayload(
                         "stop", this.getId()
                 ));
             }
-            return PlayState.STOP;
+            return GeoAnimationUtil.playTriggeredAnimationOrStop(animTest);
         })
+                .receiveTriggeredAnimations()
                 .triggerableAnim("attack", ATTACK_ANIM)
                 .triggerableAnim("super_attack", SUPER_ATTACK_ANIM)
                 .triggerableAnim("shot_wither_skull", SHOT_WITHER_SKULL)

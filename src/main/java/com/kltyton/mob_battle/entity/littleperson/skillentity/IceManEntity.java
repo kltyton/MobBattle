@@ -1,7 +1,11 @@
 package com.kltyton.mob_battle.entity.littleperson.skillentity;
 
 import com.kltyton.mob_battle.entity.ModEntities;
+import com.kltyton.mob_battle.entity.littleperson.militia.LittlePersonMilitiaEntity;
+import com.kltyton.mob_battle.utils.GeoAnimationUtil;
 import com.geckolib.animation.RawAnimation;
+import com.geckolib.animation.object.PlayState;
+import com.geckolib.animation.state.AnimationTest;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +23,7 @@ import net.minecraft.world.phys.Vec3;
 
 public class IceManEntity extends RequestedLittlePersonEntity {
     private static final RawAnimation ICE_ATTACK_ANIM_2 = RawAnimation.begin().thenPlay("attack2_1");
+    private static final RawAnimation ICE_RUN_ANIM = RawAnimation.begin().thenLoop("walk");
     private final List<Integer> iceBombIds = new ArrayList<>();
     private boolean clone;
 
@@ -41,6 +46,17 @@ public class IceManEntity extends RequestedLittlePersonEntity {
             return ICE_ATTACK_ANIM_2;
         }
         return super.attackAnimation(attackNumber);
+    }
+
+    @Override
+    public PlayState mainController(AnimationTest<LittlePersonMilitiaEntity> event) {
+        if (this.hasSkill() && !GeoAnimationUtil.hasRecentlyFinishedTriggeredAnimation(this)) {
+            return PlayState.CONTINUE;
+        }
+        if (event.isMoving()) {
+            return event.setAndContinue(this.isAggressive() ? ICE_RUN_ANIM : WALK_ANIM);
+        }
+        return event.setAndContinue(IDLE_ANIM);
     }
 
     @Override

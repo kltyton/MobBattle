@@ -6,6 +6,7 @@ import com.kltyton.mob_battle.entity.general.GeneralEntity;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
 import com.kltyton.mob_battle.utils.CombatEffectUtil;
 import com.kltyton.mob_battle.utils.EntityUtil;
+import com.kltyton.mob_battle.utils.GeoAnimationUtil;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -592,12 +593,13 @@ public class PiglinGeneralEntity extends AbstractPiglin implements GeneralEntity
         controllers.add(new AnimationController<>("main_controller", 5, this::mainController));
 
         controllers.add(new AnimationController<>("skill_controller", 5, animTest -> {
-            if (animTest.controller().hasAnimationFinished() && this.hasSkill()) {
+            if (GeoAnimationUtil.consumeFinishedTriggeredAnimation(animTest) && this.hasSkill()) {
                 ClientPlayNetworking.send(new SkillPayload("stop", this.getId()));
             }
 
-            return PlayState.STOP;
+            return GeoAnimationUtil.playTriggeredAnimationOrStop(animTest);
         })
+                .receiveTriggeredAnimations()
                 .triggerableAnim("attack1_1", NORMAL_ATTACK_ANIM_1)
                 .triggerableAnim("attack1_2", NORMAL_ATTACK_ANIM_2)
                 .triggerableAnim("attack1_3", NORMAL_ATTACK_ANIM_3)
@@ -642,7 +644,7 @@ public class PiglinGeneralEntity extends AbstractPiglin implements GeneralEntity
             return event.setAndContinue(RUN_ANIM);
         }
 
-        if (hasSkill()) {
+        if (hasSkill() && !GeoAnimationUtil.hasRecentlyFinishedTriggeredAnimation(this)) {
             return PlayState.CONTINUE;
         }
 

@@ -3,6 +3,7 @@ package com.kltyton.mob_battle.entity.highbird;
 import com.kltyton.mob_battle.entity.ModSkillEntityType;
 import com.kltyton.mob_battle.entity.highbird.adulthood.HighbirdAdulthoodEntity;
 import com.kltyton.mob_battle.network.packet.HighbirdAttackPayload;
+import com.kltyton.mob_battle.utils.GeoAnimationUtil;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -299,8 +300,9 @@ public abstract class HighbirdBaseEntity extends HighbirdAndEggEntity {
         // 攻击控制器
         controllers.add(
                 new AnimationController<>("attack_controller", state ->
-                    PlayState.STOP
+                    GeoAnimationUtil.playTriggeredAnimationOrStop(state)
                 )
+                        .receiveTriggeredAnimations()
                         .triggerableAnim("attack", ATTACK_ANIM)
                         .setCustomInstructionKeyframeHandler(event -> {
                             // 检查关键帧指令是否匹配
@@ -319,8 +321,9 @@ public abstract class HighbirdBaseEntity extends HighbirdAndEggEntity {
                         isSleeping = true;
                         return PlayState.CONTINUE;
                     }
-                    return PlayState.STOP;
+                    return GeoAnimationUtil.playTriggeredAnimationOrStop(state);
                 })
+                        .receiveTriggeredAnimations()
                         .triggerableAnim("sleep", SLEEP_ANIM)
                         .triggerableAnim("wake", WAKE_ANIM)
         );

@@ -10,6 +10,7 @@ import com.kltyton.mob_battle.entity.irongolem.ModBaseIronGolemEntity;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
 import com.kltyton.mob_battle.utils.CombatEffectUtil;
 import com.kltyton.mob_battle.utils.EntityUtil;
+import com.kltyton.mob_battle.utils.GeoAnimationUtil;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.network.chat.Component;
@@ -388,14 +389,15 @@ public class HulkbusterEntity extends IronGolem implements GeoEntity, ModBaseIro
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>("main_controller", this::animationController));
         controllers.add(new AnimationController<>("skill_controller", animTest -> {
-            if (animTest.controller().hasAnimationFinished() && this.hasSkill()) {
+            if (GeoAnimationUtil.consumeFinishedTriggeredAnimation(animTest) && this.hasSkill()) {
                 ClientPlayNetworking.send(new SkillPayload(
                         "stop", this.getId()
                 ));
                 animTest.renderState().addGeckolibData(HulkbusterEntityRenderer.SYNC_CATCH, false);
             }
-            return PlayState.STOP;
+            return GeoAnimationUtil.playTriggeredAnimationOrStop(animTest);
         })
+                .receiveTriggeredAnimations()
                 .triggerableAnim("attack", ATTACK_ANIM)
                 .triggerableAnim("super_attack", SUPER_ATTACK_ANIM)
                 .triggerableAnim("mini_attack", MINI_ATTACK_ANIM)

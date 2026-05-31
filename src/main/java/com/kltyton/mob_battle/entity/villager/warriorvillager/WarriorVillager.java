@@ -3,6 +3,7 @@ package com.kltyton.mob_battle.entity.villager.warriorvillager;
 import com.kltyton.mob_battle.entity.ModSkillEntityType;
 import com.kltyton.mob_battle.entity.ai.goal.GeneralProtectionVillagerGoal;
 import com.kltyton.mob_battle.entity.irongolem.ModBaseIronGolemEntity;
+import com.kltyton.mob_battle.utils.GeoAnimationUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -126,7 +127,8 @@ public class WarriorVillager extends IronGolem implements GeoEntity, ModBaseIron
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllerRegistrar) {
         controllerRegistrar.add(new AnimationController<>("main_controller", 5 ,this::animationController));
-        controllerRegistrar.add(new AnimationController<>( "attack_controller",animTest -> PlayState.STOP)
+        controllerRegistrar.add(new AnimationController<>( "attack_controller", GeoAnimationUtil::playTriggeredAnimationOrStop)
+                .receiveTriggeredAnimations()
                 .triggerableAnim("attack", ATTACK_ANIM));
     }
     private PlayState animationController(final AnimationTest<WarriorVillager> state) {

@@ -1,7 +1,9 @@
 package com.kltyton.mob_battle.entity.general;
 
+import com.kltyton.mob_battle.Mob_battle;
 import com.kltyton.mob_battle.entity.ModSkillEntityType;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
+import com.kltyton.mob_battle.utils.GeoAnimationUtil;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -117,6 +119,14 @@ public interface GeneralEntity<T extends Mob> extends ModSkillEntityType, GeoEnt
         return !getEntity().level().isClientSide() && !hasSkill() && getSkillCooldown(skill) == 0 && getEntity().getTarget() != null;
     }
     default void performSkill(String skill) {
+        Mob_battle.LOGGER.info(
+                "[MobBattle][SkillStart] general entity={} id={} class={} skill={} noAiBefore={}",
+                getEntity().getType(),
+                getEntity().getId(),
+                getEntity().getClass().getName(),
+                skill,
+                getEntity().isNoAi()
+        );
         this.setHasSkill(true);
         getEntity().setNoAi(true);
         this.setSkillCooldown(skill);
@@ -169,11 +179,12 @@ public interface GeneralEntity<T extends Mob> extends ModSkillEntityType, GeoEnt
     default void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>("main_controller", 5, this::mainController));
         controllers.add(new AnimationController<>( "skill_controller", 5,animTest -> {
-                    if (animTest.controller().hasAnimationFinished()) {
+                    if (GeoAnimationUtil.consumeFinishedTriggeredAnimation(animTest)) {
                         if (this.hasSkill()) ClientPlayNetworking.send(new SkillPayload("stop", getEntity().getId()));
                     }
-                    return PlayState.STOP;
+                    return GeoAnimationUtil.playTriggeredAnimationOrStop(animTest);
                 })
+                        .receiveTriggeredAnimations()
                         .triggerableAnim("attack", ATTACK_ANIM)
                         .triggerableAnim("attack2", ATTACK_ANIM_2)
                         .triggerableAnim("attack3", ATTACK_ANIM_3)
@@ -216,7 +227,7 @@ public interface GeneralEntity<T extends Mob> extends ModSkillEntityType, GeoEnt
         );
     }
     default PlayState mainController(AnimationTest<?> event) {
-        if (this.hasSkill()) {
+        if (this.hasSkill() && !GeoAnimationUtil.hasRecentlyFinishedTriggeredAnimation(getEntity())) {
             return PlayState.CONTINUE;
         }
         return event.isMoving() ? event.setAndContinue(WALK_ANIM) : event.setAndContinue(IDLE_ANIM);

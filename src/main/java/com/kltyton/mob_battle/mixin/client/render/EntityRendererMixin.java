@@ -28,6 +28,7 @@ import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
@@ -61,9 +62,13 @@ public abstract class EntityRendererMixin {
     @Unique
     private static final int TEXT_COLOR = -1; // 白色文本
     @Unique
+    private static final float BAR_PLANE_Z = 0.0F;
+    @Unique
     private static final int DIAMOND_MARKER_MASK = 1;
     @Unique
     private static final int NETHERITE_MARKER_MASK = 2;
+    @Unique
+    private static final int FULL_BRIGHT = LightCoordsUtil.FULL_BRIGHT;
     @Unique
     private static final Identifier PIG_SPIRIT_MARK_TEXTURE = Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "textures/mob_effect/pig_spirit_mark.png");
 
@@ -79,6 +84,7 @@ public abstract class EntityRendererMixin {
             modState.setCompressedArmorMarkerType(marker.mobBattle$getCompressedArmorMarkerType());
             modState.setPigSpiritMarkAmplifier(marker.mobBattle$getPigSpiritMarkAmplifier());
             mobBattle$copyHealthBarState(livingEntity, modState);
+            mobBattle$debugCopiedRenderState(entity, modState);
         } else {
             modState.setCompressedArmorMarkerType(0);
             modState.setPigSpiritMarkAmplifier(-1);
@@ -100,6 +106,37 @@ public abstract class EntityRendererMixin {
         modState.setHealthBarHealth(livingEntity.getHealth());
         modState.setHealthBarMaxHealth(Math.max(1.0F, livingEntity.getMaxHealth()));
     }
+
+    @Unique
+    private static long mobBattle$nextRenderStateDebugLogMs;
+
+    @Unique
+    private static void mobBattle$debugCopiedRenderState(Entity entity, IModEntityRenderState modState) {
+        if (modState.getCompressedArmorMarkerType() == 0
+                && modState.getPigSpiritMarkAmplifier() < 0
+                && !modState.isHealthBarVisible()) {
+            return;
+        }
+
+        long now = System.currentTimeMillis();
+        if (now < mobBattle$nextRenderStateDebugLogMs) {
+            return;
+        }
+
+        mobBattle$nextRenderStateDebugLogMs = now + 2000L;
+        Mob_battle.LOGGER.info(
+                "[MobBattle][RenderState] entity={} id={} class={} markerMask={} pigMark={} healthVisible={} health={}/{}",
+                entity.getType(),
+                entity.getId(),
+                entity.getClass().getName(),
+                modState.getCompressedArmorMarkerType(),
+                modState.getPigSpiritMarkAmplifier(),
+                modState.isHealthBarVisible(),
+                modState.getHealthBarHealth(),
+                modState.getHealthBarMaxHealth()
+        );
+    }
+
     @Inject(method = "extractRenderState", at = @At("RETURN"))
     private void mobBattle$updateLeashVisibility(Entity entity, EntityRenderState state, float tickProgress, CallbackInfo ci) {
         if (state.leashStates == null) return;
@@ -153,10 +190,6 @@ public abstract class EntityRendererMixin {
             matrices.popPose();
         }
     }
-    @Inject(
-            method = "submit",
-            at = @At("TAIL")
-    )
     private void mobBattle$renderMarkerItem(EntityRenderState state, PoseStack matrices, SubmitNodeCollector renderTasks, CameraRenderState cameraState, CallbackInfo ci) {
         mobBattle$renderPigSpiritMark(state, matrices, renderTasks, cameraState);
         LocalPlayer player = Minecraft.getInstance().player;
@@ -176,7 +209,7 @@ public abstract class EntityRendererMixin {
         matrices.mulPose(Axis.YP.rotationDegrees((state.ageInTicks * 8.0F) % 360.0F));
         matrices.scale(0.75F, 0.75F, 0.75F);
         itemModelManager.updateForNonLiving(markerItemRenderState, new ItemStack(markerItem), ItemDisplayContext.GROUND, player);
-        markerItemRenderState.submit(matrices, renderTasks, state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);
+        markerItemRenderState.submit(matrices, renderTasks, FULL_BRIGHT, OverlayTexture.NO_OVERLAY, state.outlineColor);
         matrices.popPose();
     }
     @Unique
@@ -190,7 +223,7 @@ public abstract class EntityRendererMixin {
         matrices.translate(0.0F, state.boundingBoxHeight + 1.15F, 0.0F);
         matrices.mulPose(cameraState.orientation);
         matrices.scale(0.025F, -0.025F, 0.025F);
-        mobBattle$drawPigSpiritMarkIcon(matrices, renderTasks, state.lightCoords, -15.0F, -8.0F, 16.0F, 16.0F);
+        mobBattle$drawPigSpiritMarkIcon(matrices, renderTasks, FULL_BRIGHT, -15.0F, -8.0F, 16.0F, 16.0F);
         renderTasks.submitText(
                 matrices,
                 4.0F,
@@ -198,17 +231,13 @@ public abstract class EntityRendererMixin {
                 Component.literal(String.valueOf(amplifier + 1)).getVisualOrderText(),
                 false,
                 Font.DisplayMode.NORMAL,
+                FULL_BRIGHT,
                 TEXT_COLOR,
                 0,
-                state.lightCoords,
                 state.outlineColor
         );
         matrices.popPose();
     }
-    @Inject(
-            method = "submit",
-            at = @At("TAIL")
-    )
     private void renderHealthBar(EntityRenderState state, PoseStack matrices, SubmitNodeCollector renderTasks, CameraRenderState cameraState, CallbackInfo ci) {
         IModEntityRenderState modState = (IModEntityRenderState) state;
         if (!modState.isHealthBarVisible()) return;
@@ -225,14 +254,24 @@ public abstract class EntityRendererMixin {
 
         float healthRatio = Math.max(0.0F, Math.min(1.0F, health / maxHealth));
         float filledWidth = BAR_WIDTH * healthRatio;
-        drawRectangle(matrices, renderTasks, -BAR_WIDTH / 2, -BAR_HEIGHT / 2, 0.02F, BAR_WIDTH, BAR_HEIGHT, BACKGROUND_COLOR);
-        drawRectangle(matrices, renderTasks, -BAR_WIDTH / 2, -BAR_HEIGHT / 2, 0.01F, filledWidth, BAR_HEIGHT, HEALTH_COLOR);
-        renderHealthText(matrices, renderTasks, state.lightCoords, state.outlineColor, health);
+        float fillStart = BAR_WIDTH / 2.0F - filledWidth;
+        if (filledWidth < BAR_WIDTH) {
+            drawRectangle(matrices, renderTasks, -BAR_WIDTH / 2, -BAR_HEIGHT / 2, BAR_PLANE_Z, BAR_WIDTH - filledWidth, BAR_HEIGHT, BACKGROUND_COLOR);
+        }
+        if (filledWidth > 0.0F) {
+            drawRectangle(matrices, renderTasks, fillStart, -BAR_HEIGHT / 2.0F, BAR_PLANE_Z, filledWidth, BAR_HEIGHT, HEALTH_COLOR);
+        }
         matrices.popPose();
+        renderHealthText(state, matrices, renderTasks, cameraState, health);
     }
     @Unique
-    protected void renderHealthText(PoseStack matrices, SubmitNodeCollector renderTasks, int light, int outlineColor, float health) {
+    protected void renderHealthText(EntityRenderState state, PoseStack matrices, SubmitNodeCollector renderTasks, CameraRenderState cameraState, float health) {
         String healthText = String.format("%.1f", health);
+        matrices.pushPose();
+        matrices.translate(0.0F, state.boundingBoxHeight + 0.65F, 0.0F);
+        matrices.mulPose(cameraState.orientation);
+        matrices.translate(0.0F, 0.0F, BAR_PLANE_Z);
+        matrices.scale(TEXT_SCALE, -TEXT_SCALE, TEXT_SCALE);
         Font textRenderer = this.getFont();
         float x = -textRenderer.width(healthText) / 2.0F;
         renderTasks.submitText(
@@ -242,11 +281,12 @@ public abstract class EntityRendererMixin {
                 Component.literal(healthText).getVisualOrderText(),
                 false,
                 Font.DisplayMode.NORMAL,
+                FULL_BRIGHT,
                 TEXT_COLOR,
                 0,
-                light,
-                outlineColor
+                state.outlineColor
         );
+        matrices.popPose();
     }
 
     @Unique

@@ -5,6 +5,7 @@ import com.kltyton.mob_battle.entity.ModEntityAttributes;
 import com.kltyton.mob_battle.entity.general.GeneralEntity;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
 import com.kltyton.mob_battle.utils.EntityUtil;
+import com.kltyton.mob_battle.utils.GeoAnimationUtil;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -297,11 +298,12 @@ public class Cbot002Entity extends Monster implements GeneralEntity<Cbot002Entit
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>("main_controller", 5, this::mainController));
         controllers.add(new AnimationController<>("skill_controller", 5, animTest -> {
-            if (animTest.controller().hasAnimationFinished() && this.hasSkill()) {
+            if (GeoAnimationUtil.consumeFinishedTriggeredAnimation(animTest) && this.hasSkill()) {
                 ClientPlayNetworking.send(new SkillPayload("stop", this.getId()));
             }
-            return PlayState.STOP;
+            return GeoAnimationUtil.playTriggeredAnimationOrStop(animTest);
         })
+                .receiveTriggeredAnimations()
                 .triggerableAnim("attack2", ATTACK_ANIM_2)
                 .triggerableAnim("attack3", ATTACK_ANIM_3)
                 .triggerableAnim("attack4", ATTACK_ANIM_4)
@@ -323,7 +325,7 @@ public class Cbot002Entity extends Monster implements GeneralEntity<Cbot002Entit
 
     @Override
     public PlayState mainController(AnimationTest<?> state) {
-        if (this.hasSkill()) {
+        if (this.hasSkill() && !GeoAnimationUtil.hasRecentlyFinishedTriggeredAnimation(this)) {
             return PlayState.CONTINUE;
         }
         return state.isMoving() ? state.setAndContinue(WALK_ANIM) : state.setAndContinue(IDLE_ANIM);

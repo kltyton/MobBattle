@@ -5,6 +5,7 @@ import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.Identifier;
@@ -28,7 +29,7 @@ public class DeepCreatureEntityRenderer<R extends LivingEntityRenderState & GeoR
         withRenderLayer(new CustomBoneTextureGeoLayer<>(this, "h_ear", EAR) {
             @Override
             protected RenderType getRenderType(R renderState, Identifier texture) {
-                return net.minecraft.client.renderer.rendertype.RenderTypes.entityCutout(texture);
+                return RenderTypes.entityCutout(texture);
             }
         });
     }

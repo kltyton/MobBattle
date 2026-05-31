@@ -6,6 +6,7 @@ import com.kltyton.mob_battle.entity.general.GeneralEntity;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
 import com.kltyton.mob_battle.sounds.ModSounds;
 import com.kltyton.mob_battle.utils.EntityUtil;
+import com.kltyton.mob_battle.utils.GeoAnimationUtil;
 import com.kltyton.mob_battle.utils.TaskSchedulerUtil;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -209,11 +210,12 @@ public class LongWhipSilverfishEntity extends Silverfish implements GeneralEntit
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>("main_controller", 5, this::mainController));
         controllers.add(new AnimationController<>( "skill_controller", animTest -> {
-                    if (animTest.controller().hasAnimationFinished()) {
+                    if (GeoAnimationUtil.consumeFinishedTriggeredAnimation(animTest)) {
                         if (this.hasSkill()) ClientPlayNetworking.send(new SkillPayload("stop", this.getId()));
                     }
-                    return PlayState.STOP;
+                    return GeoAnimationUtil.playTriggeredAnimationOrStop(animTest);
                 })
+                        .receiveTriggeredAnimations()
                         .triggerableAnim("attack2_1", ATTACK_ANIM_2_1)
                         .triggerableAnim("attack2_2", ATTACK_ANIM_2_2)
                         .triggerableAnim("attack2_3", ATTACK_ANIM_2_3)
@@ -255,7 +257,7 @@ public class LongWhipSilverfishEntity extends Silverfish implements GeneralEntit
     }
     @Override
     public PlayState mainController(AnimationTest<?> event) {
-        if (this.hasSkill()) {
+        if (this.hasSkill() && !GeoAnimationUtil.hasRecentlyFinishedTriggeredAnimation(this)) {
             return PlayState.CONTINUE;
         }
         if (event.isMoving()) {

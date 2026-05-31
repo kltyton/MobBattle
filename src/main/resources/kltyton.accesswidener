@@ -34,5 +34,3 @@ mutable field net/minecraft/world/entity/ai/attributes/RangedAttribute minValue 
 accessible field net/minecraft/world/entity/ai/attributes/RangedAttribute maxValue D
 mutable field net/minecraft/world/entity/ai/attributes/RangedAttribute maxValue D
 accessible field net/minecraft/client/KeyMapping clickCount I
-accessible field net/minecraft/client/sounds/SoundManager soundEngine Lnet/minecraft/client/sounds/SoundEngine;
-accessible field net/minecraft/client/sounds/SoundEngine instanceToChannel Ljava/util/Map;

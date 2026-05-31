@@ -7,6 +7,7 @@ import com.kltyton.mob_battle.entity.littleperson.guard.LittlePersonGuardEntity;
 import com.kltyton.mob_battle.entity.littleperson.king.skill.LittlePersonKingSkill;
 import com.kltyton.mob_battle.entity.littleperson.militia.LittlePersonMilitiaEntity;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
+import com.kltyton.mob_battle.utils.GeoAnimationUtil;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -187,13 +188,14 @@ public class LittlePersonKingEntity extends LittlePersonMilitiaEntity {
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         super.registerControllers(controllers);
         controllers.add(new AnimationController<>( "skill_controller", animTest -> {
-                    if (animTest.controller().hasAnimationFinished() && this.hasSkill()) {
+                    if (GeoAnimationUtil.consumeFinishedTriggeredAnimation(animTest) && this.hasSkill()) {
                         ClientPlayNetworking.send(new SkillPayload(
                                 "stop", this.getId()
                         ));
                     }
-                    return PlayState.STOP;
+                    return GeoAnimationUtil.playTriggeredAnimationOrStop(animTest);
                 })
+                        .receiveTriggeredAnimations()
                         .triggerableAnim("attack2", ATTACK_ANIM_2)
                         .triggerableAnim("attack3", ATTACK_ANIM_3)
                         .setCustomInstructionKeyframeHandler(s -> {

@@ -6,6 +6,7 @@ import com.kltyton.mob_battle.entity.general.GeneralEntityOnlyOneSkill;
 import com.kltyton.mob_battle.entity.littleperson.LittlePersonEntity;
 import com.kltyton.mob_battle.entity.villager.warriorvillager.WarriorVillager;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
+import com.kltyton.mob_battle.utils.GeoAnimationUtil;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -327,13 +328,14 @@ public class LittlePersonSoldierEntity extends Monster implements LittlePersonEn
         controllers.add(new AnimationController<>("main_controller", 5, this::mainController));
 
         controllers.add(new AnimationController<>("attack_controller", animTest -> {
-                    if (animTest.controller().hasAnimationFinished()) {
+                    if (GeoAnimationUtil.consumeFinishedTriggeredAnimation(animTest)) {
                         if (this.hasSkill()) {
                             ClientPlayNetworking.send(new SkillPayload("stop", this.getId()));
                         }
                     }
-                    return PlayState.STOP;
+                    return GeoAnimationUtil.playTriggeredAnimationOrStop(animTest);
                 })
+                        .receiveTriggeredAnimations()
                         .triggerableAnim("attack", ATTACK_ANIM)
                         .setCustomInstructionKeyframeHandler(s -> {
                             if ("runAttack;".equals(s.keyframeData().getInstructions())) {

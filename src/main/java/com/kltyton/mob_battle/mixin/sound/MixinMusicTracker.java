@@ -3,10 +3,9 @@ package com.kltyton.mob_battle.mixin.sound;
 import com.kltyton.mob_battle.sounds.bgm.ClientBgmManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.sounds.SoundInstance;
-import net.minecraft.client.sounds.ChannelAccess;
-import net.minecraft.client.sounds.SoundEngine;
 import net.minecraft.client.sounds.MusicManager;
 import net.minecraft.sounds.Music;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -29,17 +28,8 @@ public abstract class MixinMusicTracker {
 
     @Unique
     private void mob_battle$applyMusicVolume(float volume) {
-        this.currentGain = Math.max(0.0F, Math.min(1.0F, volume));
-        if (this.currentMusic == null) {
-            return;
-        }
-
-        SoundEngine soundEngine = this.minecraft.getSoundManager().soundEngine;
-        ChannelAccess.ChannelHandle handle = soundEngine.instanceToChannel.get(this.currentMusic);
-        if (handle != null) {
-            float directVolume = Mth.clamp(this.currentGain, 0.0F, 1.0F);
-            handle.execute(channel -> channel.setVolume(directVolume));
-        }
+        this.currentGain = Mth.clamp(volume, 0.0F, 1.0F);
+        this.minecraft.getSoundManager().updateCategoryVolume(SoundSource.MUSIC, this.currentGain);
     }
 
     // === 淡入淡出效果逻辑 ===

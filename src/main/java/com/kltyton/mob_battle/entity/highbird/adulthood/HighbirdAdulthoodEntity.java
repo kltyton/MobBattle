@@ -4,6 +4,7 @@ import com.kltyton.mob_battle.entity.highbird.HighbirdBaseEntity;
 import com.kltyton.mob_battle.entity.highbird.goals.*;
 import com.kltyton.mob_battle.entity.highbird.predicate.NonHighbirdPredicate;
 import com.kltyton.mob_battle.network.packet.HighbirdAttackPayload;
+import com.kltyton.mob_battle.utils.GeoAnimationUtil;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.ai.goal.Goal;
@@ -50,7 +51,8 @@ public class HighbirdAdulthoodEntity extends HighbirdBaseEntity {
         super.registerControllers(controllers);
         // 攻击控制器
         controllers.add(
-                new AnimationController<>("anger_controller", state -> PlayState.STOP)
+                new AnimationController<>("anger_controller", GeoAnimationUtil::playTriggeredAnimationOrStop)
+                        .receiveTriggeredAnimations()
                         .triggerableAnim("anger", ANGER_ANIM));
     }
     @Override
