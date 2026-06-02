@@ -6,14 +6,15 @@ import com.kltyton.mob_battle.block.ModBlocks;
 import com.kltyton.mob_battle.client.screen.ModScreenHandlers;
 import com.kltyton.mob_battle.command.ModCommands;
 import com.kltyton.mob_battle.components.ModComponents;
+import com.kltyton.mob_battle.config.MobBattleConfig;
 import com.kltyton.mob_battle.effect.ModEffects;
 import com.kltyton.mob_battle.enchantment.ModEnchantments;
 import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.entity.ModEntityAttributes;
 import com.kltyton.mob_battle.entity.drone.DroneManager;
 import com.kltyton.mob_battle.entity.sensor.ModSensorTypes;
-import com.kltyton.mob_battle.event.ClearItemEvent;
 import com.kltyton.mob_battle.event.ModEvents;
+import com.kltyton.mob_battle.event.SkillAiRecoveryEvent;
 import com.kltyton.mob_battle.items.ModItems;
 import com.kltyton.mob_battle.items.itemgroup.ModItemGroups;
 import com.kltyton.mob_battle.network.ModPackets;
@@ -34,6 +35,7 @@ public class Mob_battle implements ModInitializer {
     public static MinecraftServer SERVER;
     @Override
     public void onInitialize() {
+        MobBattleConfig.init();
         ModTrackedDataHandler.init();
         ModSensorTypes.init();
         ModEntityAttributes.init();
@@ -54,7 +56,8 @@ public class Mob_battle implements ModInitializer {
         ServerBgmManager.init();
         DroneManager.init();
         ModItemGroups.init();
-        ClearItemEvent.init();
+        //ClearItemEvent.init();
+        SkillAiRecoveryEvent.init();
         ModScreenHandlers.init();
     }
 }

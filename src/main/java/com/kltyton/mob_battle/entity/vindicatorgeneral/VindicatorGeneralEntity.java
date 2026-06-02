@@ -1,5 +1,6 @@
 package com.kltyton.mob_battle.entity.vindicatorgeneral;
 
+import com.kltyton.mob_battle.entity.ModEntityAttributes;
 import com.kltyton.mob_battle.entity.ModSkillEntityType;
 import com.kltyton.mob_battle.entity.accessor.BigBossLookControl;
 import com.kltyton.mob_battle.entity.accessor.BigBossMoveControl;
@@ -230,7 +231,9 @@ public class VindicatorGeneralEntity extends Vindicator implements GeoEntity, Mo
             performAttack();
             return true;
         }
-        return true;
+        return target instanceof LivingEntity living
+                && EntityUtil.isValidCombatTarget(this, living)
+                && tryAttackBase(world, living);
     }
     private void tryUseTargetedSkill() {
         if (this.canThrowAxe()) {
@@ -388,9 +391,10 @@ public class VindicatorGeneralEntity extends Vindicator implements GeoEntity, Mo
                 .add(Attributes.KNOCKBACK_RESISTANCE, 1.0D)
                 .add(Attributes.ATTACK_DAMAGE, 80.0D)
                 .add(Attributes.FOLLOW_RANGE, 24.0D)
-                .add(Attributes.ARMOR, 30.0D)
+                .add(Attributes.ARMOR, 20.0D)
                 .add(Attributes.STEP_HEIGHT, 3.0D)
-                .add(Attributes.ARMOR_TOUGHNESS, 20.0D);
+                .add(ModEntityAttributes.DAMAGE_REDUCTION, 0.5D)
+                .add(Attributes.ARMOR_TOUGHNESS, 30.0D);
     }
     protected static final RawAnimation IDEA_ANIM = RawAnimation.begin().thenPlay("walk2idle").thenLoop("idle");
     protected static final RawAnimation WALK_ANIM = RawAnimation.begin().thenPlay("idlk2walk").thenLoop("walk");
@@ -408,7 +412,7 @@ public class VindicatorGeneralEntity extends Vindicator implements GeoEntity, Mo
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>("main_controller", this::animationController));
         controllers.add(new AnimationController<>("skill_controller", animTest -> {
-            if (GeoAnimationUtil.consumeFinishedTriggeredAnimation(animTest) && this.hasSkill()) {
+            if (GeoAnimationUtil.consumeFinishedTriggeredAnimation(animTest)) {
                 if (!this.isWaitingForAxeRecovery()) {
                     ClientPlayNetworking.send(new SkillPayload(
                             "stop", this.getId()

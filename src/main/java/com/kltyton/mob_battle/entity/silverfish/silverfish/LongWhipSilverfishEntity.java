@@ -140,7 +140,17 @@ public class LongWhipSilverfishEntity extends Silverfish implements GeneralEntit
 
     @Override
     public boolean doHurtTarget(ServerLevel world, Entity target) {
-        return doSkill();
+        if (target instanceof LivingEntity living && !EntityUtil.isValidCombatTarget(this, living)) {
+            return false;
+        }
+        for (int i = getSkillCount(); i >= 1; i--) {
+            String skillName = "attack" + (i + 1);
+            if (canSkill(skillName)) {
+                performSkill(skillName);
+                return true;
+            }
+        }
+        return tryBaseAttack(world, target);
     }
     public boolean tryBaseAttack(ServerLevel world, Entity target) {
         float f = (float)this.getAttributeValue(Attributes.ATTACK_DAMAGE);
@@ -211,7 +221,7 @@ public class LongWhipSilverfishEntity extends Silverfish implements GeneralEntit
         controllers.add(new AnimationController<>("main_controller", 5, this::mainController));
         controllers.add(new AnimationController<>( "skill_controller", animTest -> {
                     if (GeoAnimationUtil.consumeFinishedTriggeredAnimation(animTest)) {
-                        if (this.hasSkill()) ClientPlayNetworking.send(new SkillPayload("stop", this.getId()));
+                        ClientPlayNetworking.send(new SkillPayload("stop", this.getId()));
                     }
                     return GeoAnimationUtil.playTriggeredAnimationOrStop(animTest);
                 })

@@ -1,5 +1,6 @@
 package com.kltyton.mob_battle.entity.skull.king;
 
+import com.kltyton.mob_battle.entity.ModEntityAttributes;
 import com.kltyton.mob_battle.entity.ModSkillEntityType;
 import com.kltyton.mob_battle.entity.accessor.BigBossLookControl;
 import com.kltyton.mob_battle.entity.accessor.BigBossMoveControl;
@@ -220,7 +221,7 @@ public class SkullKingEntity extends WitherSkeleton implements GeoEntity, IModSk
             performAttack();
             return true;
         }
-        return true;
+        return target instanceof LivingEntity && tryAttackBase(world, target);
     }
     public void performAttack() {
         setHasSkill(true);
@@ -262,7 +263,7 @@ public class SkullKingEntity extends WitherSkeleton implements GeoEntity, IModSk
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>("main_controller", 5 ,this::animationController));
         controllers.add(new AnimationController<>("skill_controller",animTest -> {
-            if (GeoAnimationUtil.consumeFinishedTriggeredAnimation(animTest) && this.hasSkill()) {
+            if (GeoAnimationUtil.consumeFinishedTriggeredAnimation(animTest)) {
                 ClientPlayNetworking.send(new SkillPayload(
                         "stop", this.getId()
                 ));
@@ -312,6 +313,9 @@ public class SkullKingEntity extends WitherSkeleton implements GeoEntity, IModSk
                 .add(Attributes.MOVEMENT_SPEED, 0.3D)
                 .add(Attributes.ATTACK_DAMAGE, 90.0D)
                 .add(Attributes.FOLLOW_RANGE, 24.0D)
+                .add(Attributes.ARMOR, 20.0D)
+                .add(ModEntityAttributes.DAMAGE_REDUCTION, 0.5D)
+                .add(Attributes.ARMOR_TOUGHNESS, 30.0D)
                 .add(Attributes.STEP_HEIGHT, 3.0);
     }
     public boolean hasSkill() {

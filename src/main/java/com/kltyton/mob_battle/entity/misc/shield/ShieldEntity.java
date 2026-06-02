@@ -116,7 +116,7 @@ public class ShieldEntity extends Entity implements GeoEntity {
             if (isShieldEntityTeammate(entity)) {
                 // 同队：抗性 + 交互距离加成（你的原逻辑保留）
                 if (entity instanceof LivingEntity living) {
-                    living.addEffect(new MobEffectInstance(MobEffects.RESISTANCE, 10, 3, false, false, true));
+                    living.addEffect(new MobEffectInstance(MobEffects.RESISTANCE, 10, 2, false, false, true));
                 }
                 if (entity instanceof Player player) {
                     currentPlayersInShield.add(player.getUUID());

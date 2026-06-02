@@ -159,7 +159,7 @@
 						}
 					],
 					"locators": {
-						"locator": [0, 0, 0]
+						"wither_skeleton_king_locator": [0, 0, 0]
 					}
 				},
 				{

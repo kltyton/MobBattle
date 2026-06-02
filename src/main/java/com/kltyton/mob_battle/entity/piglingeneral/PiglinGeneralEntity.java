@@ -593,7 +593,7 @@ public class PiglinGeneralEntity extends AbstractPiglin implements GeneralEntity
         controllers.add(new AnimationController<>("main_controller", 5, this::mainController));
 
         controllers.add(new AnimationController<>("skill_controller", 5, animTest -> {
-            if (GeoAnimationUtil.consumeFinishedTriggeredAnimation(animTest) && this.hasSkill()) {
+            if (GeoAnimationUtil.consumeFinishedTriggeredAnimation(animTest)) {
                 ClientPlayNetworking.send(new SkillPayload("stop", this.getId()));
             }
 
@@ -704,10 +704,10 @@ public class PiglinGeneralEntity extends AbstractPiglin implements GeneralEntity
                 .add(Attributes.MOVEMENT_SPEED, 0.31D)
                 .add(Attributes.FOLLOW_RANGE, 40.0D)
                 .add(Attributes.ARMOR, 20.0D)
-                .add(Attributes.ARMOR_TOUGHNESS, 12.0D)
+                .add(Attributes.ARMOR_TOUGHNESS, 30.0D)
                 .add(Attributes.ATTACK_DAMAGE, 100.0D)
                 .add(Attributes.KNOCKBACK_RESISTANCE, 0.8D)
-                .add(ModEntityAttributes.DAMAGE_REDUCTION, 0.64D);
+                .add(ModEntityAttributes.DAMAGE_REDUCTION, 0.5D);
     }
 
     private static class PiglinGeneralCombatGoal extends Goal {

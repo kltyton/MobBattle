@@ -153,7 +153,7 @@ public class LittlePersonGiantEntity extends LittlePersonMilitiaEntity {
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         super.registerControllers(controllers);
         controllers.add(new AnimationController<>( "skill_controller",animTest -> {
-            if (GeoAnimationUtil.consumeFinishedTriggeredAnimation(animTest) && this.hasSkill()) {
+            if (GeoAnimationUtil.consumeFinishedTriggeredAnimation(animTest)) {
                 ClientPlayNetworking.send(new SkillPayload(
                         "stop", this.getId()
                 ));

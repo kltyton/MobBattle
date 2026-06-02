@@ -321,6 +321,9 @@ public abstract class HighbirdBaseEntity extends HighbirdAndEggEntity {
                         isSleeping = true;
                         return PlayState.CONTINUE;
                     }
+                    if (state.isCurrentAnimation(WAKE_ANIM)) {
+                        isSleeping = false;
+                    }
                     return GeoAnimationUtil.playTriggeredAnimationOrStop(state);
                 })
                         .receiveTriggeredAnimations()
@@ -330,11 +333,10 @@ public abstract class HighbirdBaseEntity extends HighbirdAndEggEntity {
     }
 
     private PlayState mainController(final AnimationTest<HighbirdBaseEntity> event) {
-        if (!isDay()) return event.setAndContinue(SLEEPING_ANIM);
-        // 处理常规状态
         if (this.isDeadOrDying()) {
             return event.setAndContinue(DEATH_ANIM);
         }
+        if (this.isSleeping) return event.setAndContinue(SLEEPING_ANIM);
         if (event.isMoving()) {
             return event.setAndContinue(WALK_ANIM);
         } else {

@@ -1,6 +1,7 @@
 package com.kltyton.mob_battle.entity.general;
 
 import com.kltyton.mob_battle.Mob_battle;
+import com.kltyton.mob_battle.config.MobBattleConfig;
 import com.kltyton.mob_battle.entity.ModSkillEntityType;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
 import com.kltyton.mob_battle.utils.GeoAnimationUtil;
@@ -119,14 +120,16 @@ public interface GeneralEntity<T extends Mob> extends ModSkillEntityType, GeoEnt
         return !getEntity().level().isClientSide() && !hasSkill() && getSkillCooldown(skill) == 0 && getEntity().getTarget() != null;
     }
     default void performSkill(String skill) {
-        Mob_battle.LOGGER.info(
-                "[MobBattle][SkillStart] general entity={} id={} class={} skill={} noAiBefore={}",
-                getEntity().getType(),
-                getEntity().getId(),
-                getEntity().getClass().getName(),
-                skill,
-                getEntity().isNoAi()
-        );
+        if (MobBattleConfig.isDebugLoggingEnabled()) {
+            Mob_battle.LOGGER.info(
+                    "[MobBattle][SkillStart] general entity={} id={} class={} skill={} noAiBefore={}",
+                    getEntity().getType(),
+                    getEntity().getId(),
+                    getEntity().getClass().getName(),
+                    skill,
+                    getEntity().isNoAi()
+            );
+        }
         this.setHasSkill(true);
         getEntity().setNoAi(true);
         this.setSkillCooldown(skill);
@@ -180,7 +183,7 @@ public interface GeneralEntity<T extends Mob> extends ModSkillEntityType, GeoEnt
         controllers.add(new AnimationController<>("main_controller", 5, this::mainController));
         controllers.add(new AnimationController<>( "skill_controller", 5,animTest -> {
                     if (GeoAnimationUtil.consumeFinishedTriggeredAnimation(animTest)) {
-                        if (this.hasSkill()) ClientPlayNetworking.send(new SkillPayload("stop", getEntity().getId()));
+                        ClientPlayNetworking.send(new SkillPayload("stop", getEntity().getId()));
                     }
                     return GeoAnimationUtil.playTriggeredAnimationOrStop(animTest);
                 })

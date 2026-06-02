@@ -229,7 +229,14 @@ public class XunShengEntity extends Monster implements GeoEntity {
     public void setAttackedEntity(Entity attackedEntity, DamageSource damageSource) {
         this.attackeddamageSource = damageSource;
         this.attackedEntity = attackedEntity;
-        if (!isFixedAbilityOnCooldown()) this.attackedEntityPos = attackedEntity.position();
+        this.attackedEntityPos = attackedEntity == null ? null : attackedEntity.position();
+    }
+    private void clearFixedAbilityState() {
+        this.getEntityData().set(FIXED_ABILITY_COOLDOWN, false);
+        this.getEntityData().set(FIXED_COOLDOWN_TICKS, 0);
+        this.attackedEntity = null;
+        this.attackedEntityPos = null;
+        this.attackeddamageSource = null;
     }
     public void mobKnoc(Entity target, DamageSource damageSource) {
         // 计算当前实体对目标实体造成攻击时的击退力度
@@ -251,19 +258,28 @@ public class XunShengEntity extends Monster implements GeoEntity {
             // 新增：更新固定能力冷却
             if (isFixedAbilityOnCooldown()) {
                 int cooldown = this.getEntityData().get(FIXED_COOLDOWN_TICKS);
+                boolean clearFixedAbility = false;
                 if (this.attackedEntity != null && this.attackedEntity.isAlive()) {
                     if (cooldown > 40) {
-                        attackedEntity.setDeltaMovement(Vec3.ZERO);
-                        attackedEntity.hurtMarked = true;
-                        attackedEntity.setPos(attackedEntityPos);
-                        if (attackedEntity.isAlwaysTicking()) attackedEntity.teleport(new TeleportTransition((ServerLevel) this.level(), attackedEntityPos, Vec3.ZERO, attackedEntity.getYRot(), attackedEntity.getXRot(), TeleportTransition.DO_NOTHING));
+                        if (attackedEntityPos != null) {
+                            attackedEntity.setDeltaMovement(Vec3.ZERO);
+                            attackedEntity.hurtMarked = true;
+                            attackedEntity.setPos(attackedEntityPos);
+                            if (attackedEntity.isAlwaysTicking()) attackedEntity.teleport(new TeleportTransition((ServerLevel) this.level(), attackedEntityPos, Vec3.ZERO, attackedEntity.getYRot(), attackedEntity.getXRot(), TeleportTransition.DO_NOTHING));
+                        } else {
+                            clearFixedAbility = true;
+                        }
                     }
-                    if (cooldown == 39) mobKnoc(attackedEntity, attackeddamageSource);
+                    if (cooldown == 39 && attackeddamageSource != null) mobKnoc(attackedEntity, attackeddamageSource);
+                } else {
+                    clearFixedAbility = true;
                 }
-                if (cooldown > 0) {
+                if (clearFixedAbility) {
+                    clearFixedAbilityState();
+                } else if (cooldown > 0) {
                     this.getEntityData().set(FIXED_COOLDOWN_TICKS, cooldown - 1);
                 } else {
-                    this.getEntityData().set(FIXED_ABILITY_COOLDOWN, false);
+                    clearFixedAbilityState();
                 }
             }
             if (isAttackCooldown()) {

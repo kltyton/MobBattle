@@ -1,6 +1,7 @@
 package com.kltyton.mob_battle.items.tool.piglin;
 
 import com.kltyton.mob_battle.Mob_battle;
+import com.kltyton.mob_battle.config.MobBattleConfig;
 import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.entity.bullet.GoldenTrailProjectile;
 import com.kltyton.mob_battle.items.ModItems;
@@ -112,7 +113,9 @@ public class PiglinCannonItem extends Item {
         boolean failed = getBoolean(stack, HEAVY_FAILED_KEY);
 
         if (!failed && usedTicks >= HEAVY_CHARGE_TICKS) {
-            Mob_battle.LOGGER.info("Heavy blast");
+            if (MobBattleConfig.isDebugLoggingEnabled()) {
+                Mob_battle.LOGGER.info("Heavy blast");
+            }
             fireHeavyBlast(serverWorld, player, stack);
         }
 
@@ -212,14 +215,18 @@ public class PiglinCannonItem extends Item {
         Vec3 start = player.getEyePosition();
         Vec3 dir = player.getViewVector(1.0F).normalize();
         Vec3 end = start.add(dir.scale(50.0D));
-        Mob_battle.LOGGER.info("Heavy blast: " + start + " -> " + end);
+        if (MobBattleConfig.isDebugLoggingEnabled()) {
+            Mob_battle.LOGGER.info("Heavy blast: " + start + " -> " + end);
+        }
 
         spawnHeavyLaserLine(world, start, end);
 
         world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.GENERIC_EXPLODE, SoundSource.PLAYERS, 1.0F, 0.6F);
 
         TaskSchedulerUtil.runLater(20, () -> {
-            Mob_battle.LOGGER.info("Exploding heavy blast: " + start + " -> " + end);
+            if (MobBattleConfig.isDebugLoggingEnabled()) {
+                Mob_battle.LOGGER.info("Exploding heavy blast: " + start + " -> " + end);
+            }
             if (!player.isAlive() || player.level() != world) {
                 return;
             }
@@ -228,7 +235,9 @@ public class PiglinCannonItem extends Item {
     }
 
     private void spawnHeavyLaserLine(ServerLevel world, Vec3 start, Vec3 end) {
-        Mob_battle.LOGGER.info("Spawning heavy laser line: " + start + " -> " + end);
+        if (MobBattleConfig.isDebugLoggingEnabled()) {
+            Mob_battle.LOGGER.info("Spawning heavy laser line: " + start + " -> " + end);
+        }
         Vec3 diff = end.subtract(start);
         int steps = 60;
 
@@ -257,7 +266,9 @@ public class PiglinCannonItem extends Item {
     }
 
     private void explodeHeavyLaser(ServerLevel world, Player player, Vec3 start, Vec3 end) {
-        Mob_battle.LOGGER.info("Exploding heavy laser: " + start + " -> " + end);
+        if (MobBattleConfig.isDebugLoggingEnabled()) {
+            Mob_battle.LOGGER.info("Exploding heavy laser: " + start + " -> " + end);
+        }
         Vec3 diff = end.subtract(start);
         int steps = 30;
         Set<LivingEntity> hitEntities = new HashSet<>();

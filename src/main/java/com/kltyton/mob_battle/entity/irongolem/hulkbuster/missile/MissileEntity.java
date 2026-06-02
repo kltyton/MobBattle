@@ -116,6 +116,7 @@ public class MissileEntity extends CustomFireballEntity {
         subMissile.splits++;
         // 生成实体
         this.level().addFreshEntity(subMissile);
+        subMissile.explodeAndApplyEffects();
     }
     private void explodeAndApplyEffects() {
         Level world = this.level();

@@ -2,6 +2,7 @@ package com.kltyton.mob_battle.mixin.compressarmor;
 
 import com.kltyton.mob_battle.Mob_battle;
 import com.kltyton.mob_battle.accessor.IEffectMarker;
+import com.kltyton.mob_battle.config.MobBattleConfig;
 import com.kltyton.mob_battle.effect.ModEffects;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -48,28 +49,32 @@ public abstract class LivingEntityMarkerMixin implements IEffectMarker {
         int oldMarkerType = this.mobBattle$getCompressedArmorMarkerType();
         if (oldMarkerType != markerType) {
             this.mobBattle$setCompressedArmorMarkerType(markerType);
-            Mob_battle.LOGGER.info(
-                    "[MobBattle][MarkerSync] entity={} id={} class={} markerMask {} -> {}",
-                    entity.getType(),
-                    entity.getId(),
-                    entity.getClass().getName(),
-                    oldMarkerType,
-                    markerType
-            );
+            if (MobBattleConfig.isDebugLoggingEnabled()) {
+                Mob_battle.LOGGER.info(
+                        "[MobBattle][MarkerSync] entity={} id={} class={} markerMask {} -> {}",
+                        entity.getType(),
+                        entity.getId(),
+                        entity.getClass().getName(),
+                        oldMarkerType,
+                        markerType
+                );
+            }
         }
 
         int pigSpiritMarkAmplifier = mobBattle$getPigSpiritMarkAmplifierFromStatusEffect(entity);
         int oldPigSpiritMarkAmplifier = this.mobBattle$getPigSpiritMarkAmplifier();
         if (oldPigSpiritMarkAmplifier != pigSpiritMarkAmplifier) {
             this.mobBattle$setPigSpiritMarkAmplifier(pigSpiritMarkAmplifier);
-            Mob_battle.LOGGER.info(
-                    "[MobBattle][MarkerSync] entity={} id={} class={} pigMark {} -> {}",
-                    entity.getType(),
-                    entity.getId(),
-                    entity.getClass().getName(),
-                    oldPigSpiritMarkAmplifier,
-                    pigSpiritMarkAmplifier
-            );
+            if (MobBattleConfig.isDebugLoggingEnabled()) {
+                Mob_battle.LOGGER.info(
+                        "[MobBattle][MarkerSync] entity={} id={} class={} pigMark {} -> {}",
+                        entity.getType(),
+                        entity.getId(),
+                        entity.getClass().getName(),
+                        oldPigSpiritMarkAmplifier,
+                        pigSpiritMarkAmplifier
+                );
+            }
         }
     }
 

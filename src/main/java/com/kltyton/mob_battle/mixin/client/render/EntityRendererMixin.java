@@ -6,6 +6,7 @@ import com.kltyton.mob_battle.accessor.ILead;
 import com.kltyton.mob_battle.accessor.ILeadRenderData;
 import com.kltyton.mob_battle.accessor.IModEntityRenderState;
 import com.kltyton.mob_battle.client.render.SubmitRenderUtil;
+import com.kltyton.mob_battle.config.MobBattleConfig;
 import com.kltyton.mob_battle.entity.drone.DroneEntity;
 import com.kltyton.mob_battle.items.ModItems;
 import com.kltyton.mob_battle.items.ModMaterial;
@@ -112,6 +113,10 @@ public abstract class EntityRendererMixin {
 
     @Unique
     private static void mobBattle$debugCopiedRenderState(Entity entity, IModEntityRenderState modState) {
+        if (!MobBattleConfig.isDebugLoggingEnabled()) {
+            return;
+        }
+
         if (modState.getCompressedArmorMarkerType() == 0
                 && modState.getPigSpiritMarkAmplifier() < 0
                 && !modState.isHealthBarVisible()) {

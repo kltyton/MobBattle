@@ -51,7 +51,9 @@ public class EnhancedWitherEntity extends WitherBoss implements OwnedSummon {
 
     @Override
     protected void customServerAiStep(ServerLevel world) {
+        this.destroyBlocksTick = 0;
         super.customServerAiStep(world);
+        this.destroyBlocksTick = 0;
         if (this.tickCount % 20 == 0 && this.getHealth() < this.getMaxHealth()) {
             this.heal(2.0F);
         }

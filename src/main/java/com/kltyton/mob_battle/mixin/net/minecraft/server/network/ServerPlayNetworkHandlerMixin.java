@@ -2,7 +2,6 @@ package com.kltyton.mob_battle.mixin.net.minecraft.server.network;
 
 
 import com.kltyton.mob_battle.config.whitelist.MobBattlePermissions;
-import com.kltyton.mob_battle.event.ClearItemEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ServerboundSetCreativeModeSlotPacket;
 import net.minecraft.server.level.ServerPlayer;
@@ -19,16 +18,16 @@ public abstract class ServerPlayNetworkHandlerMixin {
 
     @Shadow
     public ServerPlayer player;
+    // TODO: 添加物品黑名单 暂时没用
 
-    @Inject(method = "handleSetCreativeModeSlot", at = @At("HEAD"), cancellable = true)
+/*    @Inject(method = "handleSetCreativeModeSlot", at = @At("HEAD"), cancellable = true)
     private void mob_battle$blockCreativeProtectedItems(ServerboundSetCreativeModeSlotPacket packet, CallbackInfo ci) {
         if (MobBattlePermissions.canUseProtectedContent(player)) return;
-
-        ItemStack stack = packet.itemStack();
+*//*        ItemStack stack = packet.itemStack();
         if (ClearItemEvent.isModItem(stack)) {
             player.sendOverlayMessage(Component.literal("你没有权限获取该物品。"));
             ci.cancel();
-        }
-    }
+        }*//*
+    }*/
 }
 

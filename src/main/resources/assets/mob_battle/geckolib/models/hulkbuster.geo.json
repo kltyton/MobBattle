@@ -553,6 +553,23 @@
 						{"origin": [-7, 0, 0], "size": [2, 0, 2], "uv": [149, 41]},
 						{"origin": [-8, 0, 1], "size": [2, 0, 2], "uv": [133, 44]}
 					]
+				},
+				{
+					"name": "bone5",
+					"parent": "yan",
+					"pivot": [0.11111, 19.94444, -0.38889]
+				},
+				{
+					"name": "locator_root",
+					"pivot": [0, 0, 0]
+				},
+				{
+					"name": "bone6",
+					"parent": "locator_root",
+					"pivot": [0, 0, 0],
+					"locators": {
+						"hulkbuster_particle_locator": [0, 0, 0]
+					}
 				}
 			]
 		}

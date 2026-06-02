@@ -12,18 +12,12 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
 public final class ClearItemEvent {
-
+    // TODO: 物品黑名单缓存,暂时没用
     // 全局缓存：所有本模组物品的 rawId（最快比对方式）
-    private static final IntOpenHashSet BANNED_ITEM_RAW_IDS = new IntOpenHashSet();
+/*    private static final IntOpenHashSet BANNED_ITEM_RAW_IDS = new IntOpenHashSet();
 
     public static void init() {
         collectBannedItems();
-        ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> clearPlayerInventory(handler.getPlayer()));
-        ServerTickEvents.END_SERVER_TICK.register(server -> {
-            if (server.getTickCount() % 10 == 0) {
-                server.getPlayerList().getPlayers().forEach(ClearItemEvent::clearPlayerInventory);
-            }
-        });
     }
     public static void collectBannedItems() {
         BANNED_ITEM_RAW_IDS.clear();
@@ -43,23 +37,5 @@ public final class ClearItemEvent {
 
     private static boolean isBannedRawId(int rawId) {
         return BANNED_ITEM_RAW_IDS.contains(rawId);
-    }
-
-    public static void clearPlayerInventory(ServerPlayer player) {
-        //if (player.interactionManager.isCreative()) return;
-        if (player.permissions().hasPermission(net.minecraft.server.permissions.Permissions.COMMANDS_GAMEMASTER) || MobBattlePermissions.canUseProtectedContent(player) || player.entityTags().contains("swmg")) {
-            return;
-        }
-        var inv = player.getInventory();
-        for (int i = 0; i < inv.getContainerSize(); i++) {
-            ItemStack stack = inv.getItem(i);
-            if (isBannedItem(stack)) {
-                inv.setItem(i, ItemStack.EMPTY);
-            }
-        }
-        ItemStack cursor = player.containerMenu.getCarried();
-        if (isBannedItem(cursor)) {
-            player.containerMenu.setCarried(ItemStack.EMPTY);
-        }
-    }
+    }*/
 }

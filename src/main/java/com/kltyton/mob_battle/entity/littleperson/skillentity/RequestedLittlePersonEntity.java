@@ -1,6 +1,7 @@
 package com.kltyton.mob_battle.entity.littleperson.skillentity;
 
 import com.kltyton.mob_battle.Mob_battle;
+import com.kltyton.mob_battle.config.MobBattleConfig;
 import com.kltyton.mob_battle.effect.ModEffects;
 import com.kltyton.mob_battle.entity.ModEntityAttributes;
 import com.kltyton.mob_battle.entity.littleperson.militia.LittlePersonMilitiaEntity;
@@ -50,9 +51,7 @@ public abstract class RequestedLittlePersonEntity extends BaseSkillLittlePersonE
 
     private final AnimationController<?> requestedSkillController = new AnimationController<>("skill_controller", 5, animTest -> {
         if (GeoAnimationUtil.consumeFinishedTriggeredAnimation(animTest)) {
-            if (this.hasSkill()) {
-                ClientPlayNetworking.send(new SkillPayload("stop", this.getId()));
-            }
+            ClientPlayNetworking.send(new SkillPayload("stop", this.getId()));
             if (GeoAnimationUtil.isLastFinishedAnimation(animTest, DIE_ANIM)) {
                 ClientPlayNetworking.send(new SkillPayload("die", this.getId()));
             }
@@ -144,7 +143,7 @@ public abstract class RequestedLittlePersonEntity extends BaseSkillLittlePersonE
         if (target != null && isValidSummonTarget(target) && !this.hasSkill() && this.tickCount % 10 == 0) {
             double distance = this.distanceTo(target);
             if (distance <= this.autoSkillRange) {
-                this.doHurtTarget(world, target);
+                this.tryUseSpecialSkill(target);
             }
         }
     }
@@ -173,16 +172,26 @@ public abstract class RequestedLittlePersonEntity extends BaseSkillLittlePersonE
         if (!(target instanceof LivingEntity living) || !isValidSummonTarget(living) || !canSkill()) {
             return false;
         }
+        if (tryUseSpecialSkill(living)) {
+            return true;
+        }
+        if (canUseNormalAttack(living)) {
+            performNormalAttack();
+            return true;
+        }
+        return false;
+    }
+
+    protected boolean tryUseSpecialSkill(LivingEntity living) {
+        if (!isValidSummonTarget(living) || this.hasSkill()) {
+            return false;
+        }
         for (int attack = this.skillCount + 1; attack >= 2; attack--) {
             String skillName = "attack" + attack;
             if (canUseSkill(skillName, living)) {
                 performSkill(skillName);
                 return true;
             }
-        }
-        if (canUseNormalAttack(living)) {
-            performNormalAttack();
-            return true;
         }
         return false;
     }
@@ -196,17 +205,19 @@ public abstract class RequestedLittlePersonEntity extends BaseSkillLittlePersonE
     }
 
     protected boolean canUseNormalAttack(LivingEntity target) {
-        return this.distanceTo(target) <= 3.0D;
+        return !this.hasSkill() && this.distanceTo(target) <= 3.0D;
     }
 
     protected void performNormalAttack() {
-        Mob_battle.LOGGER.info(
-                "[MobBattle][SkillStart] requested_normal entity={} id={} class={} noAiBefore={}",
-                this.getType(),
-                this.getId(),
-                this.getClass().getName(),
-                this.isNoAi()
-        );
+        if (MobBattleConfig.isDebugLoggingEnabled()) {
+            Mob_battle.LOGGER.info(
+                    "[MobBattle][SkillStart] requested_normal entity={} id={} class={} noAiBefore={}",
+                    this.getType(),
+                    this.getId(),
+                    this.getClass().getName(),
+                    this.isNoAi()
+            );
+        }
         this.setHasSkill(true);
         this.setNormalAttackKnockbackAllowed(true);
         this.setNoAi(false);

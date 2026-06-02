@@ -329,9 +329,7 @@ public class LittlePersonSoldierEntity extends Monster implements LittlePersonEn
 
         controllers.add(new AnimationController<>("attack_controller", animTest -> {
                     if (GeoAnimationUtil.consumeFinishedTriggeredAnimation(animTest)) {
-                        if (this.hasSkill()) {
-                            ClientPlayNetworking.send(new SkillPayload("stop", this.getId()));
-                        }
+                        ClientPlayNetworking.send(new SkillPayload("stop", this.getId()));
                     }
                     return GeoAnimationUtil.playTriggeredAnimationOrStop(animTest);
                 })

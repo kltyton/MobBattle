@@ -2,6 +2,7 @@ package com.kltyton.mob_battle.mixin.client.render;
 
 import com.kltyton.mob_battle.Mob_battle;
 import com.kltyton.mob_battle.accessor.IModEntityRenderState;
+import com.kltyton.mob_battle.config.MobBattleConfig;
 import com.kltyton.mob_battle.items.ModItems;
 import com.kltyton.mob_battle.items.ModMaterial;
 import com.kltyton.mob_battle.utils.ArmorUtil;
@@ -123,6 +124,10 @@ public abstract class EntityRenderDispatcherMixin {
 
     @Unique
     private static void mobBattle$debugOverlayState(EntityRenderState state) {
+        if (!MobBattleConfig.isDebugLoggingEnabled()) {
+            return;
+        }
+
         IModEntityRenderState modState = (IModEntityRenderState) state;
         if (modState.getCompressedArmorMarkerType() == 0
                 && modState.getPigSpiritMarkAmplifier() < 0

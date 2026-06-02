@@ -2,6 +2,7 @@ package com.kltyton.mob_battle.entity.witherskeletonking;
 
 import com.kltyton.mob_battle.bossbar.CustomBossBarStyles;
 import com.kltyton.mob_battle.bossbar.CustomBossBarSync;
+import com.kltyton.mob_battle.entity.ModEntityAttributes;
 import com.kltyton.mob_battle.entity.ModSkillEntityType;
 import com.kltyton.mob_battle.entity.accessor.BigBossLookControl;
 import com.kltyton.mob_battle.entity.accessor.BigBossMoveControl;
@@ -308,7 +309,7 @@ public class WitherSkeletonKingEntity extends WitherSkeleton implements GeoEntit
             performAttack();
             return true;
         }
-        return true;
+        return target instanceof LivingEntity && tryAttackBase(world, target);
     }
     public void performAttack() {
         setHasSkill(true);
@@ -405,7 +406,7 @@ public class WitherSkeletonKingEntity extends WitherSkeleton implements GeoEntit
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>("main_controller", 5 ,this::animationController));
         controllers.add(new AnimationController<>("skill_controller",animTest -> {
-            if (GeoAnimationUtil.consumeFinishedTriggeredAnimation(animTest) && this.hasSkill()) {
+            if (GeoAnimationUtil.consumeFinishedTriggeredAnimation(animTest)) {
                 ClientPlayNetworking.send(new SkillPayload(
                         "stop", this.getId()
                 ));
@@ -487,8 +488,9 @@ public class WitherSkeletonKingEntity extends WitherSkeleton implements GeoEntit
                 .add(Attributes.ATTACK_DAMAGE, 100.0D)
                 .add(Attributes.FOLLOW_RANGE, 24.0D)
                 .add(Attributes.STEP_HEIGHT, 3)
-                .add(Attributes.ARMOR, 25.0D)
-                .add(Attributes.ARMOR_TOUGHNESS, 20.0D);
+                .add(Attributes.ARMOR, 20.0D)
+                .add(ModEntityAttributes.DAMAGE_REDUCTION, 0.5D)
+                .add(Attributes.ARMOR_TOUGHNESS, 30.0D);
     }
     boolean isPlaySound = false;
     @Override

@@ -1,6 +1,7 @@
 package com.kltyton.mob_battle.entity.littleperson.skillentity.base;
 
 import com.kltyton.mob_battle.Mob_battle;
+import com.kltyton.mob_battle.config.MobBattleConfig;
 import com.kltyton.mob_battle.entity.ModEntityAttributes;
 import com.kltyton.mob_battle.entity.ModSkillEntityType;
 import com.kltyton.mob_battle.entity.littleperson.LittlePersonEntity;
@@ -110,15 +111,17 @@ public class BaseSkillLittlePersonEntity extends LittlePersonMilitiaEntity imple
         this.normalAttackKnockbackAllowed = normalAttackKnockbackAllowed;
     }
     public void performSkill(String skill, boolean isAfterSkill) {
-        Mob_battle.LOGGER.info(
-                "[MobBattle][SkillStart] little_person entity={} id={} class={} skill={} cooldownAfter={} noAiBefore={}",
-                this.getType(),
-                this.getId(),
-                this.getClass().getName(),
-                skill,
-                isAfterSkill,
-                this.isNoAi()
-        );
+        if (MobBattleConfig.isDebugLoggingEnabled()) {
+            Mob_battle.LOGGER.info(
+                    "[MobBattle][SkillStart] little_person entity={} id={} class={} skill={} cooldownAfter={} noAiBefore={}",
+                    this.getType(),
+                    this.getId(),
+                    this.getClass().getName(),
+                    skill,
+                    isAfterSkill,
+                    this.isNoAi()
+            );
+        }
         setNormalAttackKnockbackAllowed(false);
         this.setHasSkill(true);
         this.setNoAi(true);
@@ -303,7 +306,7 @@ public class BaseSkillLittlePersonEntity extends LittlePersonMilitiaEntity imple
     protected static final RawAnimation DIE_ANIM = RawAnimation.begin().thenPlay("die");
     public AnimationController<?> skillController = new AnimationController<>( "skill_controller", animTest -> {
         if (GeoAnimationUtil.consumeFinishedTriggeredAnimation(animTest)) {
-            if (this.hasSkill()) ClientPlayNetworking.send(new SkillPayload("stop", this.getId()));
+            ClientPlayNetworking.send(new SkillPayload("stop", this.getId()));
             if (GeoAnimationUtil.isLastFinishedAnimation(animTest, DIE_ANIM) && this instanceof IronManEntity) {
                 this.deathTime = 400;
                 ClientPlayNetworking.send(new SkillPayload(

@@ -110,7 +110,7 @@ public class SexEntity extends BaseSkillLittlePersonEntity {
     }
     public AnimationController<?> sexEntitySkillController = new AnimationController<>( "skill_controller", animTest -> {
         if (GeoAnimationUtil.consumeFinishedTriggeredAnimation(animTest)) {
-            if (this.hasSkill()) ClientPlayNetworking.send(new SkillPayload("stop", this.getId()));
+            ClientPlayNetworking.send(new SkillPayload("stop", this.getId()));
             if (GeoAnimationUtil.isLastFinishedAnimation(animTest, DIE_ANIM)) {
                 this.deathTime = 400;
                 ClientPlayNetworking.send(new SkillPayload(

@@ -42,7 +42,7 @@ public class HumanHammerEntity extends BaseSkillLittlePersonEntity {
         if (shieldEntity != null && shieldEntity.isAlive()) {
             this.addEffect(new MobEffectInstance(MobEffects.STRENGTH, 20 * 5, 14));
             shieldEntity.addEffect(new MobEffectInstance(MobEffects.RESISTANCE, 20 * 5, 2));
-            boolean result = shieldEntity.hurtServer(world, source, amount);
+            boolean result = shieldEntity.hurtServer(world, this.damageSources().mobAttack(this), amount);
             return result;
         } else return super.hurtServer(world, source, amount);
     }

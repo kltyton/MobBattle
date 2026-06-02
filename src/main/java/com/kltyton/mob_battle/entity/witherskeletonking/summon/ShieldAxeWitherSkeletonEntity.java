@@ -268,7 +268,7 @@ public class ShieldAxeWitherSkeletonEntity extends WitherSkeleton implements Geo
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>("main_controller", 5, this::mainController));
         controllers.add(new AnimationController<>("skill_controller", 5, animTest -> {
-            if (GeoAnimationUtil.consumeFinishedTriggeredAnimation(animTest) && this.hasSkill()) {
+            if (GeoAnimationUtil.consumeFinishedTriggeredAnimation(animTest)) {
                 ClientPlayNetworking.send(new SkillPayload("stop", this.getId()));
             }
             return GeoAnimationUtil.playTriggeredAnimationOrStop(animTest);

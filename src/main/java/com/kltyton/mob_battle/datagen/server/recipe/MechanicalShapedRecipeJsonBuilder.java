@@ -15,6 +15,8 @@ import net.minecraft.advancements.AdvancementRewards;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.advancements.criterion.RecipeUnlockedTrigger;
 import net.minecraft.core.HolderGetter;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.recipes.RecipeBuilder;
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.RecipeOutput;
@@ -130,7 +132,7 @@ public class MechanicalShapedRecipeJsonBuilder implements RecipeBuilder {
 
     @Override
     public ResourceKey<Recipe<?>> defaultId() {
-        return RecipeBuilder.getDefaultRecipeId(this.output.getDefaultInstance());
+        return ResourceKey.create(Registries.RECIPE, BuiltInRegistries.ITEM.getKey(this.output));
     }
 
 

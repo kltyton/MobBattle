@@ -12,7 +12,7 @@ public class ModAttributer {
     public static void init() {
         overrideAttribute(Attributes.MAX_HEALTH, 0.0, Double.MAX_VALUE);
         overrideAttribute(Attributes.ARMOR, 0.0, Double.MAX_VALUE);
-        overrideAttribute(Attributes.ARMOR_TOUGHNESS, 0.0, Double.MAX_VALUE);
+        overrideAttribute(Attributes.ARMOR_TOUGHNESS, 0.0, 5000.0);
         overrideAttribute(Attributes.ATTACK_DAMAGE, 0.0, Double.MAX_VALUE);
         overrideAttribute(Attributes.ATTACK_KNOCKBACK, 0.0, Double.MAX_VALUE);
     }

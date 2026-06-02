@@ -1,6 +1,7 @@
 package com.kltyton.mob_battle.items.misc;
 
 import com.kltyton.mob_battle.Mob_battle;
+import com.kltyton.mob_battle.config.MobBattleConfig;
 import com.kltyton.mob_battle.components.ModComponents;
 import com.kltyton.mob_battle.items.ModFabricItem;
 import com.kltyton.mob_battle.items.ModItems;
@@ -36,7 +37,9 @@ public class ObsidianLobsterItem extends ShieldItem implements ModFabricItem {
             if (player.getOffhandItem() == stack) {
                 player.setItemInHand(InteractionHand.OFF_HAND, broken);
             } else if (player.getMainHandItem() == stack) {
-                Mob_battle.LOGGER.info("Transformed");
+                if (MobBattleConfig.isDebugLoggingEnabled()) {
+                    Mob_battle.LOGGER.info("Transformed");
+                }
                 player.setItemInHand(InteractionHand.MAIN_HAND, broken);
             } else if (!player.getInventory().add(broken)) {
                 player.drop(broken, false);

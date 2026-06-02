@@ -123,7 +123,7 @@ public class CoalSilverfishEntity extends Silverfish implements GeneralEntityOnl
     public void registerControllers(AnimatableManager.ControllerRegistrar controllerRegistrar) {
         controllerRegistrar.add(new AnimationController<>("main_controller", 5 ,this::animationController));
         controllerRegistrar.add(new AnimationController<>( "attack_controller",animTest -> {
-                    if (GeoAnimationUtil.consumeFinishedTriggeredAnimation(animTest) && this.hasSkill()) {
+                    if (GeoAnimationUtil.consumeFinishedTriggeredAnimation(animTest)) {
                         ClientPlayNetworking.send(new SkillPayload(
                                 "stop", this.getId()
                         ));

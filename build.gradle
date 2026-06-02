@@ -1,5 +1,5 @@
 plugins {
-    id 'net.fabricmc.fabric-loom' version '1.17.0-alpha.12'
+    id 'net.fabricmc.fabric-loom' version '1.17.0-alpha.14'
     id 'maven-publish'
 }
 
@@ -22,6 +22,7 @@ loom {
 }
 
 repositories {
+    mavenLocal()
     // Add repositories to retrieve artifacts from in here.
     // You should only use this when depending on other mods because
     // Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
@@ -62,6 +63,7 @@ dependencies {
     include(implementation "maven.modrinth:xxl-packets:1.0.6-26.1.x-fabric")
     include(implementation "maven.modrinth:packet-fixer:3.3.5")
     include(api("fuzs.forgeconfigapiport:forgeconfigapiport-fabric:26.1.4"))
+    include(implementation "org.mesdag:particlestorm:1.0.0")
     implementation "com.geckolib:geckolib-fabric-${minecraft_version}:${geckolib_version}"
 }
 

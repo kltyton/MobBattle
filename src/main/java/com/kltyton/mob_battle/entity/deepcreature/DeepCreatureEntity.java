@@ -1,6 +1,7 @@
 package com.kltyton.mob_battle.entity.deepcreature;
 
 import com.kltyton.mob_battle.Mob_battle;
+import com.kltyton.mob_battle.config.MobBattleConfig;
 import com.kltyton.mob_battle.entity.ModSkillEntityType;
 import com.kltyton.mob_battle.entity.deepcreature.goal.DeepCreatureEntityNavigation;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
@@ -165,7 +166,7 @@ public class DeepCreatureEntity extends Monster implements GeoEntity, ModSkillEn
             }
         }).receiveTriggeredAnimations().triggerableAnim("death", DEAD_ANIM));
         controllers.add(new AnimationController<>("skill_controller",animTest -> {
-            if (GeoAnimationUtil.consumeFinishedTriggeredAnimation(animTest) && this.hasSkill()) {
+            if (GeoAnimationUtil.consumeFinishedTriggeredAnimation(animTest)) {
                 ClientPlayNetworking.send(new SkillPayload(
                         "stop", this.getId()
                 ));
@@ -368,7 +369,7 @@ public class DeepCreatureEntity extends Monster implements GeoEntity, ModSkillEn
     public void tick() {
         super.tick();
         if (!this.level().isClientSide()) {
-            if (this.tickCount % 40 == 0 && (!this.isSpawnAnimEnd() || this.hasSkill() || this.isNoAi())) {
+            if (MobBattleConfig.isDebugLoggingEnabled() && this.tickCount % 40 == 0 && (!this.isSpawnAnimEnd() || this.hasSkill() || this.isNoAi())) {
                 Mob_battle.LOGGER.info(
                         "[MobBattle][DeepState] id={} tick={} spawnEnd={} hasSkill={} noAi={} invulnerable={} cooldown={} stuckCooldown={} target={}",
                         this.getId(),
@@ -513,14 +514,16 @@ public class DeepCreatureEntity extends Monster implements GeoEntity, ModSkillEn
             this::performJumpSkill
     );
     private void logSkillStart(String skill) {
-        Mob_battle.LOGGER.info(
-                "[MobBattle][SkillStart] deep_creature entity={} id={} skill={} noAiBefore={} hasSkillBefore={}",
-                this.getType(),
-                this.getId(),
-                skill,
-                this.isNoAi(),
-                this.hasSkill()
-        );
+        if (MobBattleConfig.isDebugLoggingEnabled()) {
+            Mob_battle.LOGGER.info(
+                    "[MobBattle][SkillStart] deep_creature entity={} id={} skill={} noAiBefore={} hasSkillBefore={}",
+                    this.getType(),
+                    this.getId(),
+                    skill,
+                    this.isNoAi(),
+                    this.hasSkill()
+            );
+        }
     }
     private void performRoarSkill() {
         logSkillStart("roar");

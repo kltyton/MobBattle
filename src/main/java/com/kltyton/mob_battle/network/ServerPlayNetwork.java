@@ -1,6 +1,7 @@
 package com.kltyton.mob_battle.network;
 
 import com.kltyton.mob_battle.Mob_battle;
+import com.kltyton.mob_battle.config.MobBattleConfig;
 import com.kltyton.mob_battle.config.whitelist.MobBattlePermissions;
 import com.kltyton.mob_battle.effect.ModEffects;
 import com.kltyton.mob_battle.entity.ModEntities;
@@ -59,13 +60,17 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
+
+import java.lang.reflect.Method;
 import java.util.List;
 
 public class ServerPlayNetwork {
     private static final int ZIJIN_SKILL_0_COOLDOWN_TICKS = 12 * 20;
+    private static final int EMERALD_SHIELD_COOLDOWN_TICKS = 35 * 20;
 
     public static void init() {
         // 注册服务器端接收器
@@ -326,6 +331,7 @@ public class ServerPlayNetwork {
                             }
 
                         }
+                        logSkillPayloadResult(context.player(), payload, entity);
                     });
                 }
         );
@@ -421,7 +427,7 @@ public class ServerPlayNetwork {
                     if (player.getCooldowns().isOnCooldown(cooldownItem)) {
                         // 获取剩余冷却进度 (0.0 到 1.0 之间的浮点数)
                         float progress = player.getCooldowns().getCooldownPercent(cooldownItem, 0);
-                        float remainingSeconds = (progress * 1300) / 20.0F;
+                        float remainingSeconds = (progress * EMERALD_SHIELD_COOLDOWN_TICKS) / 20.0F;
                         player.sendOverlayMessage(
                                 Component.literal("护盾冷却中！还需等待 " + String.format("%.1f", remainingSeconds) + " 秒")
                                         .withStyle(ChatFormatting.RED)
@@ -432,7 +438,7 @@ public class ServerPlayNetwork {
                     shield.setPos(player.getX(), player.getY(), player.getZ());
                     shield.setOwner(player);
                     world.addFreshEntity(shield);
-                    player.getCooldowns().addCooldown(cooldownItem, 1300);
+                    player.getCooldowns().addCooldown(cooldownItem, EMERALD_SHIELD_COOLDOWN_TICKS);
                     world.playSound(null, player.getX(), player.getY(), player.getZ(),
                             SoundEvents.ARMOR_EQUIP_DIAMOND, SoundSource.PLAYERS, 1.0F, 1.2F);
                 }
@@ -527,9 +533,22 @@ public class ServerPlayNetwork {
     }
 
     private static void logSkillPayload(ServerPlayer player, SkillPayload payload, Entity entity) {
+        logSkillPayloadState("before", player, payload, entity);
+    }
+
+    private static void logSkillPayloadResult(ServerPlayer player, SkillPayload payload, Entity entity) {
+        logSkillPayloadState("after", player, payload, entity);
+    }
+
+    private static void logSkillPayloadState(String phase, ServerPlayer player, SkillPayload payload, Entity entity) {
+        if (!MobBattleConfig.isDebugLoggingEnabled()) {
+            return;
+        }
+
         if (entity == null) {
             Mob_battle.LOGGER.warn(
-                    "[MobBattle][SkillPayload] player={} skill={} entityId={} entity=null",
+                    "[MobBattle][SkillPayload] phase={} player={} skill={} entityId={} entity=null",
+                    phase,
                     player.getName().getString(),
                     payload.skillName(),
                     payload.entityId()
@@ -538,13 +557,46 @@ public class ServerPlayNetwork {
         }
 
         Mob_battle.LOGGER.info(
-                "[MobBattle][SkillPayload] player={} skill={} entity={} id={} class={} noAi={}",
+                "[MobBattle][SkillPayload] phase={} player={} skill={} entity={} id={} uuid={} class={} tick={} removed={} alive={} noAi={} hasSkill={} waitingAxeRecovery={} target={} pos=({}, {}, {}) delta=({}, {}, {})",
+                phase,
                 player.getName().getString(),
                 payload.skillName(),
                 entity.getType(),
                 entity.getId(),
+                entity.getUUID(),
                 entity.getClass().getName(),
-                entity instanceof net.minecraft.world.entity.Mob mob && mob.isNoAi()
+                entity.tickCount,
+                entity.isRemoved(),
+                entity.isAlive(),
+                entity instanceof Mob mob && mob.isNoAi(),
+                readBooleanMethod(entity, "hasSkill"),
+                readBooleanMethod(entity, "isWaitingForAxeRecovery"),
+                describeTarget(entity),
+                entity.getX(),
+                entity.getY(),
+                entity.getZ(),
+                entity.getDeltaMovement().x,
+                entity.getDeltaMovement().y,
+                entity.getDeltaMovement().z
         );
+    }
+
+    private static String readBooleanMethod(Entity entity, String methodName) {
+        try {
+            Method method = entity.getClass().getMethod(methodName);
+            Object value = method.invoke(entity);
+            return String.valueOf(value);
+        } catch (ReflectiveOperationException | RuntimeException ignored) {
+            return "n/a";
+        }
+    }
+
+    private static String describeTarget(Entity entity) {
+        if (!(entity instanceof Mob mob)) {
+            return "n/a";
+        }
+
+        LivingEntity target = mob.getTarget();
+        return target == null ? "null" : target.getType() + "#" + target.getId();
     }
 }
