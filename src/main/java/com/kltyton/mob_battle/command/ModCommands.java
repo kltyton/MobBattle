@@ -6,10 +6,12 @@ public class ModCommands {
     public static void init() {
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
             TeamFightCommand.register(dispatcher);
+            MadFightCommand.register(dispatcher);
             BgmCommand.register(dispatcher, registryAccess);
             AllianceCommand.register(dispatcher);
             MobBattleDebugCommand.register(dispatcher);
         });
         FriendlyDamageCommand.init();
+        CombatLogSystem.init();
     }
 }

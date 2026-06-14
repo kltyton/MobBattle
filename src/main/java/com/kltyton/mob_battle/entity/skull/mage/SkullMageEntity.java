@@ -179,7 +179,7 @@ public class SkullMageEntity extends Skeleton implements GeoEntity, IModSkullEnt
     protected static final RawAnimation SUMMON_SKULL_ANIM = RawAnimation.begin().thenPlay("summon_skull");
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-        controllers.add(new AnimationController<>("main_controller", 5 ,this::animationController));
+        controllers.add(new AnimationController<>("main_controller", 0,this::animationController));
         controllers.add(new AnimationController<>("skill_controller",animTest -> {
             if (GeoAnimationUtil.consumeFinishedTriggeredAnimation(animTest)) {
                 ClientPlayNetworking.send(new SkillPayload(

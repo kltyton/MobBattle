@@ -4,10 +4,11 @@ import com.kltyton.mob_battle.Mob_battle;
 import com.kltyton.mob_battle.accessor.ILead;
 import com.kltyton.mob_battle.effect.ModEffects;
 import com.kltyton.mob_battle.entity.littleperson.skillentity.base.BaseSkillLittlePersonEntity;
+import com.kltyton.mob_battle.entity.littleperson.skillentity.HumanHammerEntity;
+import com.kltyton.mob_battle.entity.littleperson.skillentity.HumanShieldEntity;
 import com.kltyton.mob_battle.entity.witherskeletonking.skill.WitherSkullKingEntity;
 import com.kltyton.mob_battle.items.ModItems;
 import com.kltyton.mob_battle.items.ModMaterial;
-import com.kltyton.mob_battle.tags.ModTags;
 import com.kltyton.mob_battle.utils.ArmorUtil;
 import com.kltyton.mob_battle.utils.EntityUtil;
 import com.llamalad7.mixinextras.sugar.Local;
@@ -40,6 +41,7 @@ import net.minecraft.world.entity.monster.piglin.AbstractPiglin;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.throwableitemprojectile.Snowball;
 import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrownEgg;
+import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.DeathProtection;
 import net.minecraft.world.level.Level;
@@ -181,6 +183,17 @@ public abstract class LivingEntityMixin extends Entity implements Attackable, Wa
     )
     private float modifyDamageArgument(float damage, @Local(argsOnly = true) DamageSource source) {
         LivingEntity target = (LivingEntity) (Object) this;
+        if (source.getDirectEntity() instanceof Projectile projectile
+                && projectile.getOwner() instanceof LivingEntity projectileOwner) {
+            MobEffectInstance strength = projectileOwner.getEffect(MobEffects.STRENGTH);
+            if (strength != null) {
+                damage += 3.0F * (strength.getAmplifier() + 1);
+            }
+            MobEffectInstance weakness = projectileOwner.getEffect(MobEffects.WEAKNESS);
+            if (weakness != null) {
+                damage = Math.max(0.0F, damage - 4.0F * (weakness.getAmplifier() + 1));
+            }
+        }
         if (!this.mobBattle$handlingExcitementBonus && mobBattle$isDirectMeleeDamage(source)) {
             Entity attacker = source.getEntity();
             if (attacker instanceof LivingEntity livingAttacker) {
@@ -229,6 +242,28 @@ public abstract class LivingEntityMixin extends Entity implements Attackable, Wa
         LivingEntity target = (LivingEntity) (Object) this;
         Entity sourceEntity = source.getDirectEntity();
         Entity attacker = source.getEntity();
+        if (attacker != null && attacker != target
+                && (attacker.isAlliedTo(target) || target.isAlliedTo(attacker))
+                && !(attacker instanceof HumanHammerEntity && target instanceof HumanShieldEntity)) {
+            cir.setReturnValue(false);
+            cir.cancel();
+            return;
+        }
+        if (sourceEntity != null && sourceEntity != target
+                && (sourceEntity.isAlliedTo(target) || target.isAlliedTo(sourceEntity))
+                && !(sourceEntity instanceof HumanHammerEntity && target instanceof HumanShieldEntity)) {
+            cir.setReturnValue(false);
+            cir.cancel();
+            return;
+        }
+        if (sourceEntity instanceof Projectile projectile) {
+            Entity owner = projectile.getOwner();
+            if (owner != null && (owner.isAlliedTo(target) || target.isAlliedTo(owner))) {
+                cir.setReturnValue(false);
+                cir.cancel();
+                return;
+            }
+        }
         if ((sourceEntity != null && EntityUtil.shouldBlockOwnedSummonDamage(sourceEntity, target))
                 || (attacker != null && attacker != sourceEntity && EntityUtil.shouldBlockOwnedSummonDamage(attacker, target))) {
             cir.setReturnValue(false);
@@ -243,9 +278,6 @@ public abstract class LivingEntityMixin extends Entity implements Attackable, Wa
     @Inject(method = "hurtServer", at = @At("RETURN"))
     public void damageReturn(ServerLevel world, DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
         Entity attacker = source.getEntity();
-        if (attacker instanceof LivingEntity livingEntity && attacker.typeHolder().is(ModTags.ATTACK_HEAL_ENTITY) && this.isDeadOrDying()) {
-            livingEntity.heal(5);
-        }
         if (!cir.getReturnValue() || this.mobBattle$handlingExcitementBonus || !mobBattle$isDirectMeleeDamage(source)) {
             return;
         }

@@ -46,8 +46,9 @@ public class HeavenCrippledFeetEntity extends BaseSkillLittlePersonEntity {
     }
     @Override
     public void runSkill_4(BaseSkillLittlePersonEntity entity) {
-        LivingEntity target = EntityUtil.getClosestNearbyEntity(entity, LivingEntity.class, 2, EntityUtil.TeamFilter.EXCLUDE_TEAM);
-        if (target != null && this.level() instanceof ServerLevel serverWorld) {
+        LivingEntity target = this.getTarget();
+        if (target != null && target.isAlive() && !this.isAlliedTo(target) && this.level() instanceof ServerLevel serverWorld) {
+            target.invulnerableTime = 0;
             target.hurtServer(serverWorld, this.damageSources().mobAttack(entity), 150);
         }
     }

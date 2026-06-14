@@ -296,7 +296,7 @@ public class Cbot002Entity extends Monster implements GeneralEntity<Cbot002Entit
 
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-        controllers.add(new AnimationController<>("main_controller", 5, this::mainController));
+        controllers.add(new AnimationController<>("main_controller", 0, this::mainController));
         controllers.add(new AnimationController<>("skill_controller", 5, animTest -> {
             if (GeoAnimationUtil.consumeFinishedTriggeredAnimation(animTest)) {
                 ClientPlayNetworking.send(new SkillPayload("stop", this.getId()));
@@ -338,10 +338,12 @@ public class Cbot002Entity extends Monster implements GeneralEntity<Cbot002Entit
 
     public static AttributeSupplier.Builder createAttributes() {
         return Monster.createMonsterAttributes()
-                .add(Attributes.MAX_HEALTH, 1200.0D)
+                .add(Attributes.MAX_HEALTH, 800.0D)
                 .add(Attributes.MOVEMENT_SPEED, 0.28D)
                 .add(Attributes.FOLLOW_RANGE, 40.0D)
                 .add(Attributes.STEP_HEIGHT, 2.0D)
-                .add(ModEntityAttributes.DAMAGE_REDUCTION, 0.60D);
+                .add(Attributes.KNOCKBACK_RESISTANCE, 0.8D)
+                .add(Attributes.ATTACK_KNOCKBACK, 0.0D)
+                .add(ModEntityAttributes.DAMAGE_REDUCTION, 0.40D);
     }
 }

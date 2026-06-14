@@ -3,6 +3,7 @@ package com.kltyton.mob_battle.entity.highbird;
 import com.kltyton.mob_battle.entity.ModSkillEntityType;
 import com.kltyton.mob_battle.entity.highbird.adulthood.HighbirdAdulthoodEntity;
 import com.kltyton.mob_battle.network.packet.HighbirdAttackPayload;
+import com.kltyton.mob_battle.utils.DeathAnimationUtil;
 import com.kltyton.mob_battle.utils.GeoAnimationUtil;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.world.entity.Entity;
@@ -56,7 +57,11 @@ public abstract class HighbirdBaseEntity extends HighbirdAndEggEntity {
     protected static final RawAnimation WAKE_ANIM   = RawAnimation.begin().thenPlay("wake");
     protected static final RawAnimation SLEEPING_ANIM = RawAnimation.begin().thenLoop("sleeping");
 
+    private static final int WAKE_AI_RESTORE_TICKS = 24;
+
     private final AnimatableInstanceCache geoCache = GeckoLibUtil.createInstanceCache(this);
+    private DeathAnimationUtil.FrozenPose deathFrozenPose;
+    private int wakeAiRestoreTicks;
     public boolean isSleeping = false;
     public boolean forcedWakeUp = false;
     public boolean farstAttack = false;
@@ -101,6 +106,16 @@ public abstract class HighbirdBaseEntity extends HighbirdAndEggEntity {
     @Override
     public void tick() {
         super.tick();
+
+        if (!this.level().isClientSide()) {
+            if (this.isDeadOrDying()) {
+                this.deathFrozenPose = DeathAnimationUtil.captureIfNeeded(this, this.deathFrozenPose);
+                DeathAnimationUtil.freeze(this, this.deathFrozenPose);
+                return;
+            }
+
+            tickWakeAiRestore();
+        }
 
         if (!this.level().isClientSide() && !(this instanceof HighbirdAdulthoodEntity)) {
             // ===== 饥饿值处理逻辑 =====
@@ -261,8 +276,40 @@ public abstract class HighbirdBaseEntity extends HighbirdAndEggEntity {
         if (isSleeping) {
             this.isSleeping = false;
             this.triggerAnim("sleep_controller", "wake");
+            scheduleWakeAiRestore();
+        }
+    }
+
+    protected void scheduleWakeAiRestore() {
+        this.wakeAiRestoreTicks = WAKE_AI_RESTORE_TICKS;
+        this.getNavigation().stop();
+        this.setDeltaMovement(0.0D, this.getDeltaMovement().y, 0.0D);
+        this.hurtMarked = true;
+        this.setNoAi(true);
+    }
+
+    private void tickWakeAiRestore() {
+        if (this.wakeAiRestoreTicks > 0) {
+            this.wakeAiRestoreTicks--;
+            this.getNavigation().stop();
+            this.setDeltaMovement(0.0D, this.getDeltaMovement().y, 0.0D);
+            this.hurtMarked = true;
+
+            if (this.wakeAiRestoreTicks == 0 && canRestoreAiAfterWake()) {
+                this.setNoAi(false);
+            }
+            return;
+        }
+
+        if (!this.isSleeping && this.isNoAi() && canRestoreAiAfterWake()) {
             this.setNoAi(false);
         }
+    }
+
+    protected boolean canRestoreAiAfterWake() {
+        return !this.isSleeping
+                && !this.isDeadOrDying()
+                && (!this.isTame() || this.hunger > 0);
     }
 
     // ===== 新增：喂食交互逻辑 =====
@@ -296,7 +343,7 @@ public abstract class HighbirdBaseEntity extends HighbirdAndEggEntity {
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         // 主控制器：负责所有常规状态
-        controllers.add(new AnimationController<>("main_controller", 5, this::mainController));
+        controllers.add(new AnimationController<>("main_controller", 0, this::mainController));
         // 攻击控制器
         controllers.add(
                 new AnimationController<>("attack_controller", state ->
@@ -316,16 +363,7 @@ public abstract class HighbirdBaseEntity extends HighbirdAndEggEntity {
                             }
                         }));
         controllers.add(
-                new AnimationController<>("sleep_controller", state -> {
-                    if (state.isCurrentAnimation(SLEEP_ANIM)) {
-                        isSleeping = true;
-                        return PlayState.CONTINUE;
-                    }
-                    if (state.isCurrentAnimation(WAKE_ANIM)) {
-                        isSleeping = false;
-                    }
-                    return GeoAnimationUtil.playTriggeredAnimationOrStop(state);
-                })
+                new AnimationController<>("sleep_controller", GeoAnimationUtil::playTriggeredAnimationOrStop)
                         .receiveTriggeredAnimations()
                         .triggerableAnim("sleep", SLEEP_ANIM)
                         .triggerableAnim("wake", WAKE_ANIM)

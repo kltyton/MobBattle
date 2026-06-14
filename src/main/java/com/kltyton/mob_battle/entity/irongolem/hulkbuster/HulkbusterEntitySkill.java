@@ -98,18 +98,7 @@ public class HulkbusterEntitySkill {
         if (!(hulkbusterEntity.level() instanceof ServerLevel world)) {
             return;
         }
-        Vec3 center = hulkbusterEntity.position();
         world.levelEvent(LevelEvent.PARTICLES_SMASH_ATTACK, hulkbusterEntity.getOnPos(), 750);
-        for (int radius = 1; radius <= 3; radius++) {
-            for (int i = 0; i < 48; i++) {
-                double angle = Math.PI * 2.0D * i / 48.0D;
-                world.sendParticles(ParticleTypes.SONIC_BOOM,
-                        center.x + Math.cos(angle) * radius,
-                        center.y + 0.25D,
-                        center.z + Math.sin(angle) * radius,
-                        1, 0.0D, 0.0D, 0.0D, 0.0D);
-            }
-        }
         AABB damageBox = hulkbusterEntity.getBoundingBox().inflate(3.0D);
         for (LivingEntity target : world.getEntitiesOfClass(LivingEntity.class, damageBox,
                 living -> EntityUtil.isValidCombatTarget(hulkbusterEntity, living)

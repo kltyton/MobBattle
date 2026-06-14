@@ -2971,7 +2971,7 @@
 					"locator": "hulkbuster_particle_locator"
 				},
 				"0.625": {
-					"effect": "mob_battle:particle2",
+					"effect": "mob_battle:particle7",
 					"locator": "hulkbuster_particle_locator"
 				}
 			},

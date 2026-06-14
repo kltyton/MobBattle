@@ -109,7 +109,7 @@ public class LittlePersonCivilianEntity extends Villager implements LittlePerson
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         // 主控制器：负责所有常规状态
-        controllers.add(new AnimationController<>("main_controller", 5, this::mainController));
+        controllers.add(new AnimationController<>("main_controller", 0, this::mainController));
     }
 
     protected static final RawAnimation IDLE_ANIM = RawAnimation.begin().thenLoop("idle");

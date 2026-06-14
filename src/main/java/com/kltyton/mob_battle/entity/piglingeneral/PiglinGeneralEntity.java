@@ -5,6 +5,7 @@ import com.kltyton.mob_battle.entity.ModEntityAttributes;
 import com.kltyton.mob_battle.entity.general.GeneralEntity;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
 import com.kltyton.mob_battle.utils.CombatEffectUtil;
+import com.kltyton.mob_battle.utils.DeathAnimationUtil;
 import com.kltyton.mob_battle.utils.EntityUtil;
 import com.kltyton.mob_battle.utils.GeoAnimationUtil;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -66,6 +67,8 @@ public class PiglinGeneralEntity extends AbstractPiglin implements GeneralEntity
     private static final int ATTACK2_MARK_DURATION = 15 * 20;
     private static final int ATTACK4_DURATION = 50 * 20;
     private static final int ATTACK5_MARK_DURATION = 5 * 20;
+    private static final int STRONG_MARK_LAYERS = 8;
+    private static final int STRONG_MARK_DURATION = 10 * 20;
 
     private static final RawAnimation RUN_ANIM = RawAnimation.begin().thenLoop("run");
     private static final RawAnimation NORMAL_ATTACK_ANIM_1 = RawAnimation.begin().thenPlay("attack1_1");
@@ -81,7 +84,10 @@ public class PiglinGeneralEntity extends AbstractPiglin implements GeneralEntity
     @Nullable
     private Vec3 swordEnergyPos;
 
+    private DeathAnimationUtil.FrozenPose deathFrozenPose;
+
     private int swordEnergyPosAge = -1000;
+    private int pendingAttack7FollowUpTicks = -1;
 
     public PiglinGeneralEntity(EntityType<? extends AbstractPiglin> entityType, Level world) {
         super(entityType, world);
@@ -133,6 +139,7 @@ public class PiglinGeneralEntity extends AbstractPiglin implements GeneralEntity
 
         if (!this.level().isClientSide()) {
             tickRush();
+            tickAttack7FollowUp();
 
             if (!hasSkill()) {
                 decrementCooldownIfPositive(SKILL_COOLDOWN_6);
@@ -155,6 +162,7 @@ public class PiglinGeneralEntity extends AbstractPiglin implements GeneralEntity
     }
 
     private void startDeathAnimation() {
+        this.deathFrozenPose = DeathAnimationUtil.capture(this);
         this.setHealth(1.0F);
         this.setNoAi(true);
         this.setHasSkill(true);
@@ -164,11 +172,12 @@ public class PiglinGeneralEntity extends AbstractPiglin implements GeneralEntity
     }
 
     private void tickDeathAnimation() {
+        this.setHealth(1.0F);
+        DeathAnimationUtil.freeze(this, this.deathFrozenPose);
         int ticks = getDeathAnimationTicks();
 
         if (ticks > 0) {
             setDeathAnimationTicks(ticks - 1);
-            this.setHealth(1.0F);
             return;
         }
 
@@ -373,7 +382,7 @@ public class PiglinGeneralEntity extends AbstractPiglin implements GeneralEntity
             if (living == this || living.isAlliedTo(this)) {
                 living.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, ATTACK4_DURATION, 4), this);
             } else {
-                CombatEffectUtil.addPigSpiritMark(living, this, 10, ATTACK4_DURATION);
+                CombatEffectUtil.addPigSpiritMark(living, this, STRONG_MARK_LAYERS, STRONG_MARK_DURATION);
             }
         }
     }
@@ -400,18 +409,40 @@ public class PiglinGeneralEntity extends AbstractPiglin implements GeneralEntity
         }
 
         for (LivingEntity target : EntityUtil.getEntitiesInCone(this, LivingEntity.class, 5.0D, 85.0F, EntityUtil.TeamFilter.EXCLUDE_TEAM)) {
-            markedDamage(world, target, 300.0F, 0, 0);
+            markedDamage(world, target, 300.0F, STRONG_MARK_LAYERS, STRONG_MARK_DURATION);
         }
     }
 
     @Override
     public void runSkill_7(PiglinGeneralEntity entity) {
-        areaDamage((ServerLevel) level(), 5.5D, 220.0F, 0, 0, false);
+        areaDamage((ServerLevel) level(), 5.5D, 220.0F, STRONG_MARK_LAYERS, STRONG_MARK_DURATION, false);
+        scheduleAttack7FollowUp();
     }
 
     @Override
     public void runSkill_7_1(PiglinGeneralEntity entity) {
-        areaDamage((ServerLevel) level(), 5.5D, 300.0F, 0, 0, false);
+        this.pendingAttack7FollowUpTicks = -1;
+        areaDamage((ServerLevel) level(), 5.5D, 300.0F, STRONG_MARK_LAYERS, STRONG_MARK_DURATION, false);
+    }
+
+    private void scheduleAttack7FollowUp() {
+        if (!this.level().isClientSide()) {
+            this.pendingAttack7FollowUpTicks = 8;
+        }
+    }
+
+    private void tickAttack7FollowUp() {
+        if (this.pendingAttack7FollowUpTicks < 0) {
+            return;
+        }
+        if (!hasSkill() || isPlayingDeathAnimation()) {
+            this.pendingAttack7FollowUpTicks = -1;
+            return;
+        }
+        if (--this.pendingAttack7FollowUpTicks <= 0) {
+            this.pendingAttack7FollowUpTicks = -1;
+            runSkill_7_1(this);
+        }
     }
 
     private void areaDamage(ServerLevel world, double radius, float damage, int markLayers, int markDurationTicks, boolean armorPiercing) {
@@ -590,7 +621,7 @@ public class PiglinGeneralEntity extends AbstractPiglin implements GeneralEntity
 
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-        controllers.add(new AnimationController<>("main_controller", 5, this::mainController));
+        controllers.add(new AnimationController<>("main_controller", 0, this::mainController));
 
         controllers.add(new AnimationController<>("skill_controller", 5, animTest -> {
             if (GeoAnimationUtil.consumeFinishedTriggeredAnimation(animTest)) {
@@ -610,6 +641,7 @@ public class PiglinGeneralEntity extends AbstractPiglin implements GeneralEntity
                 .triggerableAnim("attack6", ATTACK_ANIM_6)
                 .triggerableAnim("attack7", ATTACK_ANIM_7)
                 .triggerableAnim("death", DEATH_ANIM)
+                .setParticleKeyframeHandler(s -> {})
                 .setCustomInstructionKeyframeHandler(s -> {
                     String instruction = s.keyframeData().getInstructions().replaceAll("\\s+", "");
 
@@ -706,7 +738,9 @@ public class PiglinGeneralEntity extends AbstractPiglin implements GeneralEntity
                 .add(Attributes.ARMOR, 20.0D)
                 .add(Attributes.ARMOR_TOUGHNESS, 30.0D)
                 .add(Attributes.ATTACK_DAMAGE, 100.0D)
-                .add(Attributes.KNOCKBACK_RESISTANCE, 0.8D)
+                .add(Attributes.KNOCKBACK_RESISTANCE, 1.0D)
+                .add(Attributes.MAX_ABSORPTION, 80.0D)
+                .add(Attributes.STEP_HEIGHT, 3.0D)
                 .add(ModEntityAttributes.DAMAGE_REDUCTION, 0.5D);
     }
 

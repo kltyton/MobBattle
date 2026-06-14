@@ -46,8 +46,11 @@ public class SuperEvokerEntity extends Evoker implements ModEvokerOwner {
     @Override
     protected void registerGoals() {
         super.registerGoals();
-        // 移除原有的目标，添加我们自定义的加强版
-        // 优先级越高，数字越小
+        this.goalSelector.removeAllGoals(goal -> {
+            String className = goal.getClass().getName();
+            return className.endsWith("Evoker$EvokerSummonSpellGoal")
+                    || className.endsWith("Evoker$EvokerAttackSpellGoal");
+        });
         this.goalSelector.addGoal(4, new SuperSummonVexGoal());
         this.goalSelector.addGoal(5, new SuperConjureFangsGoal());
     }
@@ -119,59 +122,26 @@ public class SuperEvokerEntity extends Evoker implements ModEvokerOwner {
 
     // --- 加强版：尖牙法术 ---
     class SuperConjureFangsGoal extends SpellcasterIllager.SpellcasterUseSpellGoal {
-        private final TargetingConditions convertibleSheepPredicate = TargetingConditions.forNonCombat()
-                .range(16.0)
-                .selector((sheep, world) -> ((Sheep)sheep).getColor() == DyeColor.BLUE);
         @Override
         public boolean canUse() {
-            if (SuperEvokerEntity.this.getTarget() != null) {
-                return false;
-            } else if (SuperEvokerEntity.this.isCastingSpell()) {
-                return false;
-            } else if (SuperEvokerEntity.this.tickCount < this.nextAttackTickCount) {
-                return false;
-            } else {
-                ServerLevel serverWorld = getServerLevel(SuperEvokerEntity.this.level());
-                if (!serverWorld.getGameRules().get(GameRules.MOB_GRIEFING)) {
-                    return false;
-                } else {
-                    List<Sheep> list = serverWorld.getNearbyEntities(
-                            Sheep.class, this.convertibleSheepPredicate, SuperEvokerEntity.this, SuperEvokerEntity.this.getBoundingBox().inflate(16.0, 4.0, 16.0)
-                    );
-                    if (list.isEmpty()) {
-                        return false;
-                    } else {
-                        SuperEvokerEntity.this.setWololoTarget((Sheep)list.get(SuperEvokerEntity.this.random.nextInt(list.size())));
-                        return true;
-                    }
-                }
-            }
-        }
-        @Override
-        public boolean canContinueToUse() {
-            return SuperEvokerEntity.this.getWololoTarget() != null && this.attackWarmupDelay > 0;
-        }
-        @Override
-        public void stop() {
-            super.stop();
-            SuperEvokerEntity.this.setWololoTarget(null);
+            return SuperEvokerEntity.this.getTarget() != null && super.canUse();
         }
         @Override
         protected int getCastWarmupTime() {
-            return 40;
+            return 20;
         }
         @Override
-        protected int getCastingTime() { return 20; }
+        protected int getCastingTime() { return 40; }
         @Override
-        protected int getCastingInterval() { return 40; } // 极快施法
+        protected int getCastingInterval() { return 100; }
         @Override
         protected SoundEvent getSpellPrepareSound() {
-            return SoundEvents.EVOKER_PREPARE_WOLOLO;
+            return SoundEvents.EVOKER_PREPARE_ATTACK;
         }
 
         @Override
         protected SpellcasterIllager.IllagerSpell getSpell() {
-            return SpellcasterIllager.IllagerSpell.WOLOLO;
+            return SpellcasterIllager.IllagerSpell.FANGS;
         }
 
         @Override
@@ -183,31 +153,40 @@ public class SuperEvokerEntity extends Evoker implements ModEvokerOwner {
             double e = Math.max(target.getY(), SuperEvokerEntity.this.getY()) + 1.0;
             float angle = (float) Mth.atan2(target.getZ() - SuperEvokerEntity.this.getZ(), target.getX() - SuperEvokerEntity.this.getX());
 
-            // 逻辑选择阵型
-            int pattern = SuperEvokerEntity.this.random.nextInt(4);
-            if (pattern == 0) {
-                // 阵型1：十字星阵 (Cross Pattern)
-                for (int i = -8; i <= 8; i++) {
-                    createEnhancedFang(SuperEvokerEntity.this.getX() + i, SuperEvokerEntity.this.getZ(), d, e, 0, i + 5);
-                    createEnhancedFang(SuperEvokerEntity.this.getX(), SuperEvokerEntity.this.getZ() + i, d, e, 1.57f, i + 5);
-                }
-            } else if (pattern == 1) {
-                // 阵型2：环形扩散 (Circular Expand)
-                for (int ring = 1; ring <= 3; ring++) {
-                    for (int i = 0; i < 8 * ring; i++) {
-                        float f = (float) (i * Math.PI * 2.0 / (8 * ring));
-                        createEnhancedFang(target.getX() + Mth.cos(f) * ring, target.getZ() + Mth.sin(f) * ring, d, e, f, ring * 3);
-                    }
-                }
-            } else {
-                for (int i = 0; i < 48; i++) {
-                    double distance = 1.25 * (i + 1);
-                    int warmup = i;
+            createDoubleRing(d, e, angle);
+            createTripleLine(d, e, angle);
+        }
+
+        private void createDoubleRing(double minY, double maxY, float angleTowardsTarget) {
+            for (int i = 0; i < 5; i++) {
+                float angle = angleTowardsTarget + i * Mth.PI * 0.4F;
+                createEnhancedFang(
+                        SuperEvokerEntity.this.getX() + Mth.cos(angle) * 1.5D,
+                        SuperEvokerEntity.this.getZ() + Mth.sin(angle) * 1.5D,
+                        minY, maxY, angle, 0);
+            }
+            for (int i = 0; i < 8; i++) {
+                float angle = angleTowardsTarget + i * Mth.PI * 2.0F / 8.0F + 1.2566371F;
+                createEnhancedFang(
+                        SuperEvokerEntity.this.getX() + Mth.cos(angle) * 2.5D,
+                        SuperEvokerEntity.this.getZ() + Mth.sin(angle) * 2.5D,
+                        minY, maxY, angle, 3);
+            }
+        }
+
+        private void createTripleLine(double minY, double maxY, float angle) {
+            double forwardX = Mth.cos(angle);
+            double forwardZ = Mth.sin(angle);
+            double sideX = -forwardZ;
+            double sideZ = forwardX;
+
+            for (double sideOffset : new double[]{-1.5D, 0.0D, 1.5D}) {
+                for (int i = 0; i < 20; i++) {
+                    double reach = 1.25D * (i + 1);
                     createEnhancedFang(
-                            SuperEvokerEntity.this.getX() + Mth.cos(angle) * distance,
-                            SuperEvokerEntity.this.getZ() + Mth.sin(angle) * distance,
-                            d, e, angle, warmup
-                    );
+                            SuperEvokerEntity.this.getX() + forwardX * reach + sideX * sideOffset,
+                            SuperEvokerEntity.this.getZ() + forwardZ * reach + sideZ * sideOffset,
+                            minY, maxY, angle, i);
                 }
             }
         }

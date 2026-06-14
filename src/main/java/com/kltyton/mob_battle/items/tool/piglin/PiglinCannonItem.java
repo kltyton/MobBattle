@@ -153,7 +153,7 @@ public class PiglinCannonItem extends Item {
         }
 
         int counter = getInt(stack, FAST_COUNTER_KEY);
-        boolean strengthen = (counter >= 9);
+        boolean strengthen = (counter >= 5);
         counter = strengthen ? 0 : counter + 1;
         setInt(stack, FAST_COUNTER_KEY, counter);
 

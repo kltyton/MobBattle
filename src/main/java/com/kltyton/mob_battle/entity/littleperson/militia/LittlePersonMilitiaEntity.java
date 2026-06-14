@@ -170,7 +170,7 @@ public class LittlePersonMilitiaEntity extends Monster implements LittlePersonEn
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         // 主控制器：负责所有常规状态
-        controllers.add(new AnimationController<>("main_controller", 5, this::mainController));
+        controllers.add(new AnimationController<>("main_controller", 0, this::mainController));
         controllers.add(new AnimationController<>( "attack_controller", GeoAnimationUtil::playTriggeredAnimationOrStop)
                 .receiveTriggeredAnimations()
                 .triggerableAnim("attack", ATTACK_ANIM)

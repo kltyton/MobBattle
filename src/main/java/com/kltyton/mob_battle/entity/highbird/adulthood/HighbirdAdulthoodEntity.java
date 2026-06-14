@@ -120,7 +120,7 @@ public class HighbirdAdulthoodEntity extends HighbirdBaseEntity {
         if (isSleeping) {
             this.isSleeping = false;
             this.triggerAnim("sleep_controller", "wake");
-            this.setNoAi(false);
+            scheduleWakeAiRestore();
 
             // 移除移动到巢穴的目标
             this.goalSelector.removeGoal(moveToNestGoal);

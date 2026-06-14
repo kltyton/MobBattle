@@ -3,13 +3,14 @@ package com.kltyton.mob_battle.entity.enhancedwither;
 import com.kltyton.mob_battle.entity.OwnedSummon;
 import com.kltyton.mob_battle.utils.EntityUtil;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.boss.wither.WitherBoss;
-import net.minecraft.world.entity.projectile.hurtingprojectile.WitherSkull;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
@@ -64,12 +65,24 @@ public class EnhancedWitherEntity extends WitherBoss implements OwnedSummon {
         }
         if (this.tickCount % 30 == 0 && target != null && target.isAlive()) {
             Vec3 velocity = target.getEyePosition().subtract(this.getEyePosition()).normalize().scale(1.5D);
-            WitherSkull skull = new WitherSkull(world, this, velocity);
+            EnhancedWitherSkullEntity skull = new EnhancedWitherSkullEntity(world, this, velocity);
             skull.setPos(this.getX(), this.getEyeY(), this.getZ());
             skull.setDangerous(this.random.nextFloat() < 0.25F);
             world.addFreshEntity(skull);
             this.playSound(SoundEvents.WITHER_SHOOT, 1.0F, 1.0F);
         }
+    }
+
+    @Override
+    public void startSeenByPlayer(ServerPlayer player) {
+    }
+
+    @Override
+    public void stopSeenByPlayer(ServerPlayer player) {
+    }
+
+    @Override
+    protected void dropCustomDeathLoot(ServerLevel world, DamageSource source, boolean killedByPlayer) {
     }
 
     public static AttributeSupplier.Builder createEnhancedWitherAttributes() {

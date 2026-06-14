@@ -15,11 +15,12 @@ import net.minecraft.world.level.Level;
 
 public class PoisonousSlashEntity extends BaseSkillLittlePersonEntity {
     public PoisonousSlashEntity(EntityType<? extends Monster> entityType, Level world) {
-        super(entityType, world, 4);
+        super(entityType, world, 5);
         COOL_DOWN_TIME_1 = 8 * 20;
         COOL_DOWN_TIME_2 = 25 * 20;
         COOL_DOWN_TIME_3 = 5 * 20;
         COOL_DOWN_TIME_4 = 15 * 20;
+        COOL_DOWN_TIME_5 = 20 * 20;
         init();
     }
     public static AttributeSupplier.Builder createLittlePersonAttributes() {
@@ -79,6 +80,13 @@ public class PoisonousSlashEntity extends BaseSkillLittlePersonEntity {
     public void runSkill_5(BaseSkillLittlePersonEntity entity) {
         for (LivingEntity livingEntity : EntityUtil.getNearbyEntity(entity, LivingEntity.class, Object.class, 3, false, EntityUtil.TeamFilter.EXCLUDE_TEAM)) {
             livingEntity.hurtServer((ServerLevel) entity.level(), entity.damageSources().mobAttack(entity), 80);
+        }
+    }
+    @Override
+    public void runSkill_6(BaseSkillLittlePersonEntity entity) {
+        LivingEntity target = entity.getTarget();
+        if (target != null && EntityUtil.isValidSummonCombatTarget(entity, entity.getSummonOwner(), target)) {
+            target.hurtServer((ServerLevel) entity.level(), entity.damageSources().mobAttack(entity), 120);
         }
     }
 }

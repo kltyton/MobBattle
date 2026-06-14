@@ -18,6 +18,8 @@ public class ModEnglishLangProvider extends FabricLanguageProvider {
 
     @Override
     public void generateTranslations(HolderLookup.Provider registryLookup, TranslationBuilder translationBuilder) {
+        translationBuilder.add("gamerule.mob_battle.combat_log_system", "Combat Log System");
+        translationBuilder.add("itemGroup.mob_battle.off", "Mob Battle obsolete");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.ECREDCULTIST_BOOTS), "Ecredcultist Boots");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.ECREDCULTIST_CHESTPLATE), "Ecredcultist Chestplate");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.ECREDCULTIST_HELMET), "Ecredcultist Helmet");
@@ -45,6 +47,13 @@ public class ModEnglishLangProvider extends FabricLanguageProvider {
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.SILENCE_PHANTOM_SPAWN_EGG), "Silence Phantom Spawn Egg");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModEntities.COAL_SILVERFISH), "Coal Silverfish");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.COAL_SILVERFISH_SPAWN_EGG), "Coal Silverfish Spawn Egg");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.PIGLIN_BRUTE_SPEAR_USE_SPAWN_EGG), "Spear-Using Piglin Brute Spawn Egg");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.PIGLIN_BRUTE_SPEAR_MELEE_SPAWN_EGG), "Melee Spear Piglin Brute Spawn Egg");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.BOW_ZOMBIE_SPAWN_EGG), "Bow Zombie Spawn Egg");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModEntities.PIGLIN_BRUTE_SPEAR_MOD), "Spear Piglin Brute (Mod)");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.PIGLIN_BRUTE_SPEAR_MOD_SPAWN_EGG), "Spear Piglin Brute (Mod) Spawn Egg");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModEntities.BOW_ZOMBIE_MOD), "Bow Zombie (Mod)");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.BOW_ZOMBIE_MOD_SPAWN_EGG), "Bow Zombie (Mod) Spawn Egg");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModEntities.LIRUI_SILVERFISH), "Lirui Silverfish");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.SPAWN_EGG_ITEMS.get("ruili_silverfish")), "Lirui Silverfish Spawn Egg");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModEntities.DRILL_SILVERFISH), "Drill Silverfish");
@@ -109,6 +118,8 @@ public class ModEnglishLangProvider extends FabricLanguageProvider {
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.SPAWN_EGG_ITEMS.get("ice_man")), "Ice Man Spawn Egg");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModEntities.WITHER_SKELETON_DOG), "Wither Skeleton Dog");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.SPAWN_EGG_ITEMS.get("wither_skeleton_dog")), "Wither Skeleton Dog Spawn Egg");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModEntities.NEW_SNOW_GOLEM), "New Snow Golem");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.SPAWN_EGG_ITEMS.get("new_snow_golem")), "New Snow Golem Spawn Egg");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModEntities.LASER), "Laser");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModEntities.BLOOD_SWORD_ENERGY), "Blood Sword Energy");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModEntities.ICE_SWORD_ENERGY), "Ice Sword Energy");

@@ -218,7 +218,7 @@ public class ArcherVillager extends SnowGolem implements NeutralMob, GeoEntity {
     protected static final RawAnimation ATTACK_ANIM = RawAnimation.begin().thenPlay("attack");
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllerRegistrar) {
-        controllerRegistrar.add(new AnimationController<>("main_controller", 5 ,this::animationController));
+        controllerRegistrar.add(new AnimationController<>("main_controller", 0,this::animationController));
         controllerRegistrar.add(new AnimationController<>( "attack_controller", GeoAnimationUtil::playTriggeredAnimationOrStop)
                 .receiveTriggeredAnimations()
                 .triggerableAnim("attack", ATTACK_ANIM));

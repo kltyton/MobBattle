@@ -7,6 +7,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.BossEvent;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
@@ -24,7 +25,8 @@ public class LivingGhostEntity extends RequestedLittlePersonEntity {
     }
 
     public static AttributeSupplier.Builder createLittlePersonAttributes() {
-        return createRequestedAttributes(20000.0D, 125.0D, 0.6D, 40.0D, 0.0D);
+        return createRequestedAttributes(20000.0D, 125.0D, 0.6D, 40.0D, 0.0D)
+                .add(Attributes.KNOCKBACK_RESISTANCE, 0.8D);
     }
 
     @Override

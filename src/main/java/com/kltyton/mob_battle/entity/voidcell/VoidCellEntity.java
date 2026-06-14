@@ -26,7 +26,7 @@ public class VoidCellEntity extends PathfinderMob implements GeoEntity {
     protected static final RawAnimation IDEA_ANIM = RawAnimation.begin().thenLoop("idle");
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllerRegistrar) {
-        controllerRegistrar.add(new AnimationController<>("main_controller", 5 ,state -> state.setAndContinue(IDEA_ANIM)));
+        controllerRegistrar.add(new AnimationController<>("main_controller", 0,state -> state.setAndContinue(IDEA_ANIM)));
     }
     @Override
     public AnimatableInstanceCache getAnimatableInstanceCache() {

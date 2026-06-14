@@ -87,7 +87,7 @@ public class XunShengEntity extends Monster implements GeoEntity {
 
         // 添加一个名为 "Flying" 的动画控制器
         // 动画控制器负责决定何时播放特定的动画
-        controllers.add(new AnimationController<>("main_controller", 5 ,this::animationController));
+        controllers.add(new AnimationController<>("main_controller", 0,this::animationController));
         controllers.add(new AnimationController<>( "attack_controller", GeoAnimationUtil::playTriggeredAnimationOrStop)
                 .receiveTriggeredAnimations()
                 .triggerableAnim("attack", ATTACK_ANIM));

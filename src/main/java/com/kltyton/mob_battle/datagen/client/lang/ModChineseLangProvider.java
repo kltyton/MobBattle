@@ -20,8 +20,10 @@ public class ModChineseLangProvider extends FabricLanguageProvider {
         translationBuilder.add("message.mob_battle.gold_bullet_mode", "金套弹种：%s");
         translationBuilder.add("message.mob_battle.missing_projectile_item", "缺少发射物品：%s");
         translationBuilder.add("message.mob_battle.armor_skill_cooling_down", "套装技能冷却中，还需等待 %s 秒");
+        translationBuilder.add("gamerule.mob_battle.combat_log_system", "战斗日志系统");
         translationBuilder.add("tag.item.mob_battle.enchantable.armor", "怪物大乱斗可附魔盔甲");
         translationBuilder.add("tag.item.mob_battle.iron_gold_repairable", "铁金装备修复材料");
+        translationBuilder.add("itemGroup.mob_battle.off", "Mob Battle 废案");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.ECREDCULTIST_BOOTS), "拜火教徒靴子");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.ECREDCULTIST_CHESTPLATE), "拜火教徒胸甲");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.ECREDCULTIST_HELMET), "拜火教徒头盔");
@@ -48,6 +50,13 @@ public class ModChineseLangProvider extends FabricLanguageProvider {
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.SILENCE_PHANTOM_SPAWN_EGG), "潜声幻翼刷怪蛋");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModEntities.COAL_SILVERFISH), "煤蠹虫");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.COAL_SILVERFISH_SPAWN_EGG), "煤蠹虫刷怪蛋");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.PIGLIN_BRUTE_SPEAR_USE_SPAWN_EGG), "持矛冲锋猪灵蛮兵刷怪蛋");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.PIGLIN_BRUTE_SPEAR_MELEE_SPAWN_EGG), "持矛近战猪灵蛮兵刷怪蛋");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.BOW_ZOMBIE_SPAWN_EGG), "弓箭僵尸刷怪蛋");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModEntities.PIGLIN_BRUTE_SPEAR_MOD), "长矛猪灵蛮兵(mod版)");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.PIGLIN_BRUTE_SPEAR_MOD_SPAWN_EGG), "长矛猪灵蛮兵(mod版)刷怪蛋");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModEntities.BOW_ZOMBIE_MOD), "弓箭僵尸(mod版)");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.BOW_ZOMBIE_MOD_SPAWN_EGG), "弓箭僵尸(mod版)刷怪蛋");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModEntities.LIRUI_SILVERFISH), "利锐虫");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.SPAWN_EGG_ITEMS.get("ruili_silverfish")), "利锐虫刷怪蛋");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModEntities.DRILL_SILVERFISH), "钻虫");
@@ -220,6 +229,8 @@ public class ModChineseLangProvider extends FabricLanguageProvider {
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.SPAWN_EGG_ITEMS.get("ice_man")), "冰人刷怪蛋");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModEntities.WITHER_SKELETON_DOG), "凋零骷髅狗");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.SPAWN_EGG_ITEMS.get("wither_skeleton_dog")), "凋零骷髅狗刷怪蛋");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModEntities.NEW_SNOW_GOLEM), "新雪傀儡");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.SPAWN_EGG_ITEMS.get("new_snow_golem")), "新雪傀儡刷怪蛋");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModEntities.LASER), "激光");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModEntities.BLOOD_SWORD_ENERGY), "血剑气");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModEntities.ICE_SWORD_ENERGY), "冰剑气");

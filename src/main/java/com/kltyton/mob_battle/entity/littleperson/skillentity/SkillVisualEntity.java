@@ -92,7 +92,7 @@ public class SkillVisualEntity extends Entity implements GeoEntity {
 
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-        controllers.add(new AnimationController<>("main_controller", 5, state -> {
+        controllers.add(new AnimationController<>("main_controller", 0, state -> {
             int variant = this.entityData.get(VARIANT);
             if (variant == 1) {
                 return state.setAndContinue(ATTACK_1_ANIM);

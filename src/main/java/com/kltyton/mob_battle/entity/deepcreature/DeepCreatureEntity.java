@@ -5,6 +5,7 @@ import com.kltyton.mob_battle.config.MobBattleConfig;
 import com.kltyton.mob_battle.entity.ModSkillEntityType;
 import com.kltyton.mob_battle.entity.deepcreature.goal.DeepCreatureEntityNavigation;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
+import com.kltyton.mob_battle.utils.DeathAnimationUtil;
 import com.kltyton.mob_battle.utils.EntityUtil;
 import com.kltyton.mob_battle.utils.GeoAnimationUtil;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -71,6 +72,7 @@ public class DeepCreatureEntity extends Monster implements GeoEntity, ModSkillEn
     public static final EntityDataAccessor<Boolean> HAS_SKILL = SynchedEntityData.defineId(DeepCreatureEntity.class, EntityDataSerializers.BOOLEAN);
     public static final EntityDataAccessor<Integer> SKILL_COOLDOWN = SynchedEntityData.defineId(DeepCreatureEntity.class, EntityDataSerializers.INT);
     public static final EntityDataAccessor<Integer> GRAB_TARGET_ID = SynchedEntityData.defineId(DeepCreatureEntity.class, EntityDataSerializers.INT);
+    private DeathAnimationUtil.FrozenPose deathFrozenPose;
     @Override
     public boolean canBeAffected(MobEffectInstance effect) {
         Holder<MobEffect> effectType = effect.getEffect();
@@ -155,7 +157,7 @@ public class DeepCreatureEntity extends Monster implements GeoEntity, ModSkillEn
         this.bossBar.removePlayer(player);
     }
     public void registerControllers(final AnimatableManager.ControllerRegistrar controllers) {
-        controllers.add(new AnimationController<>("main_controller", 5 ,this::animationController)
+        controllers.add(new AnimationController<>("main_controller", 0,this::animationController)
                 .setSoundKeyframeHandler(s -> {
             Player player = ClientUtil.getClientPlayer();
             if ("minecraft:entity.polar_bear.warning".equals(s.keyframeData().getSound())) {
@@ -317,9 +319,13 @@ public class DeepCreatureEntity extends Monster implements GeoEntity, ModSkillEn
             this.bossBar.setName(Objects.requireNonNull(this.getDisplayName()).copy().append(" | " + (int)this.getHealth() + "/" + (int)this.getMaxHealth()));
         }
         if (health <= 0.0F) {
+            boolean firstDeathFrame = this.deathFrozenPose == null;
+            this.deathFrozenPose = DeathAnimationUtil.captureIfNeeded(this, this.deathFrozenPose);
             super.setHealth(0.1F);
             this.setNoAi(true);
-            this.triggerAnim("main_controller", "death");
+            if (firstDeathFrame) {
+                this.triggerAnim("main_controller", "death");
+            }
         } else {
             super.setHealth(health);
         }
@@ -369,6 +375,11 @@ public class DeepCreatureEntity extends Monster implements GeoEntity, ModSkillEn
     public void tick() {
         super.tick();
         if (!this.level().isClientSide()) {
+            if (this.deathFrozenPose != null) {
+                DeathAnimationUtil.freeze(this, this.deathFrozenPose);
+                return;
+            }
+
             if (MobBattleConfig.isDebugLoggingEnabled() && this.tickCount % 40 == 0 && (!this.isSpawnAnimEnd() || this.hasSkill() || this.isNoAi())) {
                 Mob_battle.LOGGER.info(
                         "[MobBattle][DeepState] id={} tick={} spawnEnd={} hasSkill={} noAi={} invulnerable={} cooldown={} stuckCooldown={} target={}",

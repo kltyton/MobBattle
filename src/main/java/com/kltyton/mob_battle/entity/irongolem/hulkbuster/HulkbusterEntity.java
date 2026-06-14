@@ -10,6 +10,7 @@ import com.kltyton.mob_battle.entity.accessor.BigBossNavigation;
 import com.kltyton.mob_battle.entity.irongolem.ModBaseIronGolemEntity;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
 import com.kltyton.mob_battle.utils.CombatEffectUtil;
+import com.kltyton.mob_battle.utils.DeathAnimationUtil;
 import com.kltyton.mob_battle.utils.EntityUtil;
 import com.kltyton.mob_battle.utils.GeoAnimationUtil;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -91,6 +92,7 @@ public class HulkbusterEntity extends IronGolem implements GeoEntity, ModBaseIro
     private final Set<Integer> punchHitEntities = new HashSet<>();
     private boolean punching;
     private int deathAnimationTicks;
+    private DeathAnimationUtil.FrozenPose deathFrozenPose;
     @Override
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
         super.defineSynchedData(builder);
@@ -511,6 +513,7 @@ public class HulkbusterEntity extends IronGolem implements GeoEntity, ModBaseIro
     }
 
     private void startDeathAnimation() {
+        this.deathFrozenPose = DeathAnimationUtil.capture(this);
         this.setHealth(1.0F);
         this.setNoAi(true);
         this.setHasSkill(true);
@@ -520,6 +523,7 @@ public class HulkbusterEntity extends IronGolem implements GeoEntity, ModBaseIro
 
     private void tickDeathAnimation() {
         this.setHealth(1.0F);
+        DeathAnimationUtil.freeze(this, this.deathFrozenPose);
         this.deathAnimationTicks--;
         if (this.deathAnimationTicks <= 0) {
             this.remove(Entity.RemovalReason.KILLED);

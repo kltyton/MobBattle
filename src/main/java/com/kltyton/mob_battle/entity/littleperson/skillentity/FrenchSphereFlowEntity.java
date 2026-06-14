@@ -11,6 +11,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -40,7 +41,30 @@ public class FrenchSphereFlowEntity extends BaseSkillLittlePersonEntity {
     }
     @Override
     public void attackAdditional(LivingEntity target) {
-        target.hurtServer((ServerLevel) this.level(), this.damageSources().indirectMagic(this, this), 25);
+    }
+    @Override
+    public boolean doHurtTarget(ServerLevel world, Entity target) {
+        if (!(target instanceof LivingEntity living) || !isValidSummonTarget(living)) {
+            return false;
+        }
+
+        if (!canSkill()) {
+            return false;
+        }
+        for (int i = this.skillCount; i >= 1; i--) {
+            String skillName = "attack" + (i + 1);
+            if (canSkill(skillName)) {
+                performSkill(skillName);
+                return true;
+            }
+        }
+
+        if (this.attackVariants != null) {
+            this.triggerAnim("skill_controller", this.attackVariants[this.random.nextInt(this.attackVariants.length)]);
+        } else {
+            this.triggerAnim("attack_controller", "attack");
+        }
+        return living.hurtServer(world, this.damageSources().indirectMagic(this, this), 10.0F);
     }
     @Override
     public void tick() {
@@ -104,9 +128,11 @@ public class FrenchSphereFlowEntity extends BaseSkillLittlePersonEntity {
 
             LivingEntity target = entity.getTarget();
             if (target != null && target.isAlive()) {
+                target.invulnerableTime = 0;
                 target.hurtServer(world, entity.damageSources().explosion(entity, entity), 200);
                 target.invulnerableTime = 0;
                 target.hurtServer(world, entity.damageSources().indirectMagic(entity, entity), 70);
+                target.invulnerableTime = 20;
             }
         });
     }

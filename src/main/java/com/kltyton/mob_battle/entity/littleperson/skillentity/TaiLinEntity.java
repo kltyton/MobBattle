@@ -51,7 +51,7 @@ public class TaiLinEntity extends BaseSkillLittlePersonEntity {
     public void runSkill_3(BaseSkillLittlePersonEntity entity) {
         if (entity.getTarget() != null) {
             entity.getTarget().hurtServer((ServerLevel) entity.level(), entity.damageSources().mobAttack(entity), 180);
-            if (entity.getTarget() instanceof Player player) player.addEffect(new MobEffectInstance(ModEffects.STUN_ENTRY, 40, 0));
+            if (entity.getTarget() instanceof LivingEntity living) living.addEffect(new MobEffectInstance(ModEffects.STUN_ENTRY, 40, 0));
         }
     }
     @Override

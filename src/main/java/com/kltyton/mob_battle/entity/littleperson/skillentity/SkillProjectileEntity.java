@@ -172,7 +172,7 @@ public class SkillProjectileEntity extends Projectile implements GeoEntity {
 
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-        controllers.add(new AnimationController<>("main_controller", 5, state -> state.setAndContinue(ATTACK_ANIM)));
+        controllers.add(new AnimationController<>("main_controller", 0, state -> state.setAndContinue(ATTACK_ANIM)));
     }
 
     @Override

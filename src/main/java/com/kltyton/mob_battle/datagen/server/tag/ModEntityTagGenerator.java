@@ -24,10 +24,6 @@ public class ModEntityTagGenerator extends FabricTagsProvider.EntityTypeTagsProv
                 .add(ModEntities.SILENCE_PHANTOM)
                 .add(ModEntities.YOUNG_MIN)
                 .add(ModEntities.HIDDEN_EYE);
-        valueLookupBuilder(ModTags.ATTACK_HEAL_ENTITY)
-                .add(ModEntities.WITHER_SKELETON_KING)
-                .add(ModEntities.VINDICATOR_GENERAL)
-                .add(ModEntities.HULKBUSTER);
         valueLookupBuilder(EntityTypeTags.UNDEAD).add(
                 ModEntities.WITHER_SKELETON_KING,
                 ModEntities.SKULL_KING,
@@ -36,8 +32,13 @@ public class ModEntityTagGenerator extends FabricTagsProvider.EntityTypeTagsProv
                 ModEntities.SKULL_WARRIOR,
                 ModEntities.WITHER_SKELETON_DOG,
                 ModEntities.DUAL_BLADE_WITHER_SKELETON,
-                ModEntities.SHIELD_AXE_WITHER_SKELETON
+                ModEntities.SHIELD_AXE_WITHER_SKELETON,
+                ModEntities.BOW_ZOMBIE_MOD
         );
+        valueLookupBuilder(EntityTypeTags.ZOMBIES)
+                .add(ModEntities.BOW_ZOMBIE_MOD);
+        valueLookupBuilder(EntityTypeTags.BURN_IN_DAYLIGHT)
+                .add(ModEntities.BOW_ZOMBIE_MOD);
         valueLookupBuilder(EntityTypeTags.CAN_BREATHE_UNDER_WATER)
                 .add(ModEntities.MAGMA_LOBSTER)
                 .add(ModEntities.LOBSTER);

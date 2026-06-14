@@ -232,7 +232,7 @@ public class WitherSkeletonKingEntitySkill {
     }
 
     public static void runEnhanceWitherCallSkill(WitherSkeletonKingEntity king) {
-        if (!(king.level() instanceof ServerLevel world)) {
+        if (!(king.level() instanceof ServerLevel world) || king.hasLivingEliteSummons()) {
             return;
         }
         spawnKingSummon(king, ModEntities.ENHANCED_WITHER.create(world, EntitySpawnReason.MOB_SUMMONED), world, 0);
@@ -244,8 +244,9 @@ public class WitherSkeletonKingEntitySkill {
         if (!(king.level() instanceof ServerLevel world)) {
             return;
         }
-        spawnKingSummon(king, ModEntities.WITHER_SKELETON_DOG.create(world, EntitySpawnReason.MOB_SUMMONED), world, 0, 2);
-        spawnKingSummon(king, ModEntities.WITHER_SKELETON_DOG.create(world, EntitySpawnReason.MOB_SUMMONED), world, 1, 2);
+        for (int i = 0; i < 5; i++) {
+            spawnKingSummon(king, ModEntities.WITHER_SKELETON_DOG.create(world, EntitySpawnReason.MOB_SUMMONED), world, i, 5);
+        }
     }
 
     private static void spawnKingSummon(WitherSkeletonKingEntity king, Entity summon, ServerLevel world, int index) {

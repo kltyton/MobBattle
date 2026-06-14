@@ -19,6 +19,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 public class SnowmanIceBlockEntity extends Projectile {
     private static final int MAX_AGE = 20;
@@ -79,7 +80,10 @@ public class SnowmanIceBlockEntity extends Projectile {
         for (LivingEntity target : world.getEntitiesOfClass(LivingEntity.class, box,
                 target -> EntityUtil.isValidSummonCombatTarget(this, owner, target))) {
             Entity attacker = owner == null ? this : owner;
+            Vec3 motionBeforeHit = target.getDeltaMovement();
             target.hurtServer(world, this.damageSources().explosion(this, attacker), 50.0F);
+            Vec3 knockback = target.getDeltaMovement().subtract(motionBeforeHit);
+            target.setDeltaMovement(motionBeforeHit.add(knockback.scale(0.35D)));
             target.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 5 * 20, 1), attacker);
             if (attacker instanceof LivingEntity livingAttacker) {
                 target.addEffect(new MobEffectInstance(ModEffects.ARMOR_PIERCING_ENTRY, 5 * 20, 1), livingAttacker);

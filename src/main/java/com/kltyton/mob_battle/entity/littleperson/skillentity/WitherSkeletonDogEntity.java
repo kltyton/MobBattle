@@ -120,7 +120,7 @@ public class WitherSkeletonDogEntity extends WitherSkeleton implements GeneralEn
 
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-        controllers.add(new AnimationController<>("main_controller", 5, this::mainController));
+        controllers.add(new AnimationController<>("main_controller", 0, this::mainController));
         controllers.add(new AnimationController<>("skill_controller", 5, animTest -> {
             if (GeoAnimationUtil.consumeFinishedTriggeredAnimation(animTest)) {
                 ClientPlayNetworking.send(new SkillPayload("stop", this.getId()));
@@ -199,6 +199,7 @@ public class WitherSkeletonDogEntity extends WitherSkeleton implements GeneralEn
                 .add(Attributes.MAX_HEALTH, 1500.0D)
                 .add(Attributes.FOLLOW_RANGE, 60.0D)
                 .add(Attributes.MOVEMENT_SPEED, 0.3D)
+                .add(Attributes.SCALE, 1.1D)
                 .add(Attributes.ATTACK_DAMAGE, 80.0D)
                 .add(ModEntityAttributes.DAMAGE_REDUCTION, 0.30D);
     }

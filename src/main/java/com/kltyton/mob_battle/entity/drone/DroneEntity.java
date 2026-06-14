@@ -200,7 +200,7 @@ public abstract class DroneEntity extends TamableAnimal implements RangedAttackM
     private final AnimatableInstanceCache geoCache = GeckoLibUtil.createInstanceCache(this);
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-        controllers.add(new AnimationController<>("main_controller", 5, this::animationController));
+        controllers.add(new AnimationController<>("main_controller", 0, this::animationController));
         controllers.add(new AnimationController<>( "attack_controller", GeoAnimationUtil::playTriggeredAnimationOrStop)
                 .receiveTriggeredAnimations()
                 .triggerableAnim("attack", ATTACK_ANIM));

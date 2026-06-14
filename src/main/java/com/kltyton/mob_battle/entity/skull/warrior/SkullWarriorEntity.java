@@ -175,7 +175,7 @@ public class SkullWarriorEntity extends WitherSkeleton implements GeoEntity, IMo
     protected static final RawAnimation ATTACK_ANIM = RawAnimation.begin().thenPlay("attack");
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-        controllers.add(new AnimationController<>("main_controller", 5 ,this::animationController));
+        controllers.add(new AnimationController<>("main_controller", 0,this::animationController));
         controllers.add(new AnimationController<>("skill_controller",animTest -> {
             if (GeoAnimationUtil.consumeFinishedTriggeredAnimation(animTest)) {
                 ClientPlayNetworking.send(new SkillPayload(

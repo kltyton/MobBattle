@@ -297,11 +297,13 @@ public class IronManBulletEntity extends Projectile {
             return;
         }
         LivingEntity attacker = owner instanceof LivingEntity ? (LivingEntity) owner : null;
-        DamageSource indirectMagicSrc = this.damageSources().indirectMagic(this, attacker);
-        boolean damaged = victim.hurtOrSimulate(indirectMagicSrc, 15.0F);
+        DamageSource bulletSource = attacker == null
+                ? this.damageSources().thrown(this, this)
+                : this.damageSources().mobProjectile(this, attacker);
+        boolean damaged = victim.hurtOrSimulate(bulletSource, 90.0F);
         if (damaged) {
             if (this.level() instanceof ServerLevel sw)
-                EnchantmentHelper.doPostAttackEffects(sw, victim, indirectMagicSrc);
+                EnchantmentHelper.doPostAttackEffects(sw, victim, bulletSource);
             if (victim instanceof LivingEntity lv) {
                 lv.addEffect(
                         new MobEffectInstance(MobEffects.WEAKNESS,  5 * 20, 7),

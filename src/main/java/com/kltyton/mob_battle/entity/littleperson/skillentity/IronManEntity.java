@@ -70,14 +70,20 @@ public class IronManEntity extends BaseSkillLittlePersonEntity {
             Direction.Axis mainAxis = Math.abs(lookDir.x) > Math.abs(lookDir.z) ?
                     Direction.Axis.X : Direction.Axis.Z;
 
-            IronManBulletEntity bullet = new IronManBulletEntity(
-                    world,
-                    entity,
-                    entity.getTarget(),
-                    mainAxis
-            );
-            bullet.setPos(entity.getX(), entity.getEyeY(), entity.getZ());
-            world.addFreshEntity(bullet);
+            for (int i = 0; i < 6; i++) {
+                IronManBulletEntity bullet = new IronManBulletEntity(
+                        world,
+                        entity,
+                        entity.getTarget(),
+                        mainAxis
+                );
+                bullet.setPos(
+                        entity.getX() + (entity.getRandom().nextDouble() - 0.5D) * 2.0D,
+                        entity.getEyeY() + (entity.getRandom().nextDouble() - 0.5D) * 2.0D,
+                        entity.getZ() + (entity.getRandom().nextDouble() - 0.5D) * 2.0D
+                );
+                world.addFreshEntity(bullet);
+            }
             entity.playSound(SoundEvents.SNOW_GOLEM_SHOOT, 1.0F, 0.4F / (entity.getRandom().nextFloat() * 0.4F + 0.8F));
         }
     }

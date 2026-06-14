@@ -71,7 +71,8 @@ public abstract class PersistentProjectileEntityMixin extends Projectile{
             ci.cancel();
             return;
         }
-        if (owner != null && target instanceof LivingEntity living && EntityUtil.shouldBlockOwnedSummonDamage(owner, living)) {
+        if (owner != null && target instanceof LivingEntity living
+                && (owner.isAlliedTo(living) || living.isAlliedTo(owner) || EntityUtil.shouldBlockOwnedSummonDamage(owner, living))) {
             ci.cancel();
             return;
         }
@@ -99,7 +100,8 @@ public abstract class PersistentProjectileEntityMixin extends Projectile{
             cir.setReturnValue(false);
             return;
         }
-        if (owner != null && entity instanceof LivingEntity living && EntityUtil.shouldBlockOwnedSummonDamage(owner, living)) {
+        if (owner != null && entity instanceof LivingEntity living
+                && (owner.isAlliedTo(living) || living.isAlliedTo(owner) || EntityUtil.shouldBlockOwnedSummonDamage(owner, living))) {
             cir.setReturnValue(false);
             return;
         }

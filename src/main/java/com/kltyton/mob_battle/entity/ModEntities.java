@@ -52,6 +52,7 @@ import com.kltyton.mob_battle.entity.skull.archer.SkullArcherEntity;
 import com.kltyton.mob_battle.entity.skull.king.SkullKingEntity;
 import com.kltyton.mob_battle.entity.skull.mage.SkullMageEntity;
 import com.kltyton.mob_battle.entity.skull.warrior.SkullWarriorEntity;
+import com.kltyton.mob_battle.entity.snowgolem.NewSnowGolemEntity;
 import com.kltyton.mob_battle.entity.sugarmanscorpion.SugarManScorpion;
 import com.kltyton.mob_battle.entity.villager.archervillager.ArcherVillager;
 import com.kltyton.mob_battle.entity.villager.militia.MilitiaArcherVillager;
@@ -78,6 +79,9 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.SpawnPlacementTypes;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.animal.golem.SnowGolem;
+import net.minecraft.world.entity.monster.piglin.PiglinBrute;
+import net.minecraft.world.entity.monster.zombie.Zombie;
 import net.minecraft.world.entity.npc.villager.Villager;
 import net.minecraft.world.level.levelgen.Heightmap;
 import java.util.HashMap;
@@ -122,6 +126,8 @@ public class ModEntities {
     public static final ResourceKey<EntityType<?>> cbot002 = ResourceKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID,"cbot002"));
     public static final ResourceKey<EntityType<?>> cbot_snowball = ResourceKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID,"cbot_snowball"));
     public static final ResourceKey<EntityType<?>> piglin_general = ResourceKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID,"piglin_general"));
+    public static final ResourceKey<EntityType<?>> bow_zombie_mod = ResourceKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID,"bow_zombie_mod"));
+    public static final ResourceKey<EntityType<?>> piglin_brute_spear_mod = ResourceKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID,"piglin_brute_spear_mod"));
     public static final ResourceKey<EntityType<?>> wither_skeleton_dog = ResourceKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID,"wither_skeleton_dog"));
     public static final ResourceKey<EntityType<?>> laser = ResourceKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID,"laser"));
     public static final ResourceKey<EntityType<?>> blood_sword_energy = ResourceKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID,"blood_sword_energy"));
@@ -452,6 +458,30 @@ public class ModEntities {
                     .passengerAttachments(0.2375F)
                     .clientTrackingRange(8)
                     .build(coal_silverfish);
+    public static final EntityType<Zombie> BOW_ZOMBIE_MOD =
+            FabricEntityType.Builder.<Zombie>createMob(Zombie::new, MobCategory.MONSTER,
+                            (mob) -> mob.defaultAttributes(Zombie::createAttributes)
+                                    .spawnPlacement(SpawnPlacementTypes.ON_GROUND,
+                                            Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (type, world, reason, pos, random) -> false))
+                    .sized(0.6F, 1.95F)
+                    .eyeHeight(1.74F)
+                    .passengerAttachments(2.0125F)
+                    .ridingOffset(-0.7F)
+                    .clientTrackingRange(8)
+                    .notInPeaceful()
+                    .build(bow_zombie_mod);
+    public static final EntityType<PiglinBrute> PIGLIN_BRUTE_SPEAR_MOD =
+            FabricEntityType.Builder.<PiglinBrute>createMob(PiglinBrute::new, MobCategory.MONSTER,
+                            (mob) -> mob.defaultAttributes(PiglinBrute::createAttributes)
+                                    .spawnPlacement(SpawnPlacementTypes.ON_GROUND,
+                                            Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (type, world, reason, pos, random) -> false))
+                    .sized(0.6F, 1.95F)
+                    .eyeHeight(1.79F)
+                    .passengerAttachments(2.0125F)
+                    .ridingOffset(-0.7F)
+                    .clientTrackingRange(8)
+                    .notInPeaceful()
+                    .build(piglin_brute_spear_mod);
     public static final EntityType<EnhancedWitherEntity> ENHANCED_WITHER =
             FabricEntityType.Builder.createMob(EnhancedWitherEntity::new, MobCategory.MONSTER,
                             (mob) -> mob.defaultAttributes(EnhancedWitherEntity::createEnhancedWitherAttributes)
@@ -513,6 +543,18 @@ public class ModEntities {
                     .fireImmune(),
             true,
             true
+    );
+    public static final EntityType<NewSnowGolemEntity> NEW_SNOW_GOLEM = createEntityType(
+            "new_snow_golem",
+            FabricEntityType.Builder.createMob(NewSnowGolemEntity::new, MobCategory.MISC,
+                            (mob) -> mob.defaultAttributes(SnowGolem::createAttributes)
+                                    .spawnPlacement(SpawnPlacementTypes.ON_GROUND,
+                                            Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (type, world, reason, pos, random) -> false))
+                    .sized(0.7F, 1.9F)
+                    .eyeHeight(1.7F)
+                    .clientTrackingRange(10),
+            true,
+            false
     );
     public static final EntityType<LiruiSilverfishEntity> LIRUI_SILVERFISH = createEntityType(
             "ruili_silverfish",
@@ -1137,6 +1179,8 @@ public class ModEntities {
         Registry.register(BuiltInRegistries.ENTITY_TYPE, hulkbuster, HULKBUSTER);
         Registry.register(BuiltInRegistries.ENTITY_TYPE, missile, MISSILE);
         Registry.register(BuiltInRegistries.ENTITY_TYPE, coal_silverfish, COAL_SILVERFISH);
+        Registry.register(BuiltInRegistries.ENTITY_TYPE, bow_zombie_mod, BOW_ZOMBIE_MOD);
+        Registry.register(BuiltInRegistries.ENTITY_TYPE, piglin_brute_spear_mod, PIGLIN_BRUTE_SPEAR_MOD);
         Registry.register(BuiltInRegistries.ENTITY_TYPE, silence_phantom, SILENCE_PHANTOM);
         Registry.register(BuiltInRegistries.ENTITY_TYPE, enhanced_wither, ENHANCED_WITHER);
         Registry.register(BuiltInRegistries.ENTITY_TYPE, cbot002, CBOT002);

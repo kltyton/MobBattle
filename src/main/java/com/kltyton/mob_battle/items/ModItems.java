@@ -1,10 +1,12 @@
 package com.kltyton.mob_battle.items;
 
 import com.kltyton.mob_battle.Mob_battle;
+import com.kltyton.mob_battle.accessor.IPiglinBruteSpearMode;
 import com.kltyton.mob_battle.components.ModComponents;
 import com.kltyton.mob_battle.components.ModConsumableComponents;
 import com.kltyton.mob_battle.effect.ModEffects;
 import com.kltyton.mob_battle.entity.ModEntities;
+import com.kltyton.mob_battle.entity.ai.ZombieBowData;
 import com.kltyton.mob_battle.items.armor.ModBaseArmorItem;
 import com.kltyton.mob_battle.items.food.MagmaLobsterItemMod;
 import com.kltyton.mob_battle.items.food.ThousandBlossomedImmortalFruit;
@@ -29,6 +31,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.Identifier;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.Unit;
@@ -46,6 +49,7 @@ import net.minecraft.world.item.component.BlocksAttacks;
 import net.minecraft.world.item.component.ChargedProjectiles;
 import net.minecraft.world.item.component.DeathProtection;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
+import net.minecraft.world.item.component.TypedEntityData;
 import net.minecraft.world.item.equipment.ArmorMaterial;
 import net.minecraft.world.item.equipment.ArmorType;
 import java.util.HashMap;
@@ -139,6 +143,11 @@ public class ModItems {
     public static SpawnEggItem HULKBUSTER_SPAWN_EGG;
     public static SpawnEggItem SILENCE_PHANTOM_SPAWN_EGG;
     public static SpawnEggItem COAL_SILVERFISH_SPAWN_EGG;
+    public static SpawnEggItem PIGLIN_BRUTE_SPEAR_USE_SPAWN_EGG;
+    public static SpawnEggItem PIGLIN_BRUTE_SPEAR_MELEE_SPAWN_EGG;
+    public static SpawnEggItem BOW_ZOMBIE_SPAWN_EGG;
+    public static SpawnEggItem PIGLIN_BRUTE_SPEAR_MOD_SPAWN_EGG;
+    public static SpawnEggItem BOW_ZOMBIE_MOD_SPAWN_EGG;
 
     public static IncubationEggItem INCUBATION_EGG;
 
@@ -701,6 +710,23 @@ public class ModItems {
         HULKBUSTER_SPAWN_EGG = registerSpawnEggItem(ModEntities.HULKBUSTER, "hulkbuster_spawn_egg");
         SILENCE_PHANTOM_SPAWN_EGG = registerSpawnEggItem(ModEntities.SILENCE_PHANTOM, "silence_phantom_spawn_egg");
         COAL_SILVERFISH_SPAWN_EGG = registerSpawnEggItem(ModEntities.COAL_SILVERFISH, "coal_silverfish_spawn_egg");
+        PIGLIN_BRUTE_SPEAR_USE_SPAWN_EGG = registerPiglinBruteSpearSpawnEgg(
+                "piglin_brute_spear_use_spawn_egg",
+                true
+        );
+        PIGLIN_BRUTE_SPEAR_MELEE_SPAWN_EGG = registerPiglinBruteSpearSpawnEgg(
+                "piglin_brute_spear_melee_spawn_egg",
+                false
+        );
+        BOW_ZOMBIE_SPAWN_EGG = registerBowZombieSpawnEgg();
+        PIGLIN_BRUTE_SPEAR_MOD_SPAWN_EGG = registerSpawnEggItem(
+                ModEntities.PIGLIN_BRUTE_SPEAR_MOD,
+                "piglin_brute_spear_mod_spawn_egg"
+        );
+        BOW_ZOMBIE_MOD_SPAWN_EGG = registerSpawnEggItem(
+                ModEntities.BOW_ZOMBIE_MOD,
+                "bow_zombie_mod_spawn_egg"
+        );
 
         INCUBATION_EGG = Registry.register(BuiltInRegistries.ITEM,
                 Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "incubation_egg"),
@@ -888,6 +914,44 @@ public class ModItems {
     }
     public static SpawnEggItem registerSpawnEggItem(EntityType<? extends Mob> entityType, String id) {
         SpawnEggItem item = registerItem(id, new SpawnEggItem(registryBaseItemSettings(id).spawnEgg(entityType)), false, false);
+        SPAWN_EGG_ITEMS.put(id, item);
+        return item;
+    }
+
+    private static SpawnEggItem registerPiglinBruteSpearSpawnEgg(String id, boolean useSpearAsItem) {
+        CompoundTag entityData = new CompoundTag();
+        entityData.putBoolean(IPiglinBruteSpearMode.FORCE_GOLDEN_SPEAR_KEY, true);
+        if (useSpearAsItem) {
+            entityData.putInt(IPiglinBruteSpearMode.SPEAR_ATTACK_MODE_KEY, IPiglinBruteSpearMode.SPEAR_MODE_USE);
+        }
+        SpawnEggItem item = registerItem(
+                id,
+                new SpawnEggItem(
+                        registryBaseItemSettings(id)
+                                .spawnEgg(EntityType.PIGLIN_BRUTE)
+                                .component(DataComponents.ENTITY_DATA, TypedEntityData.of(EntityType.PIGLIN_BRUTE, entityData))
+                ),
+                false,
+                false
+        );
+        SPAWN_EGG_ITEMS.put(id, item);
+        return item;
+    }
+
+    private static SpawnEggItem registerBowZombieSpawnEgg() {
+        String id = "bow_zombie_spawn_egg";
+        CompoundTag entityData = new CompoundTag();
+        entityData.putBoolean(ZombieBowData.FORCE_BOW_KEY, true);
+        SpawnEggItem item = registerItem(
+                id,
+                new SpawnEggItem(
+                        registryBaseItemSettings(id)
+                                .spawnEgg(EntityType.ZOMBIE)
+                                .component(DataComponents.ENTITY_DATA, TypedEntityData.of(EntityType.ZOMBIE, entityData))
+                ),
+                false,
+                false
+        );
         SPAWN_EGG_ITEMS.put(id, item);
         return item;
     }

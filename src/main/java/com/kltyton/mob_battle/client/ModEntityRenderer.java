@@ -1,6 +1,7 @@
 package com.kltyton.mob_battle.client;
 
 import com.kltyton.mob_battle.entity.ModEntities;
+import com.kltyton.mob_battle.client.render.ModPiglinBruteRenderer;
 import com.kltyton.mob_battle.entity.blueirongolem.BlueIronGolemEntityRenderer;
 import com.kltyton.mob_battle.entity.bullet.BulletEntityRenderer;
 import com.kltyton.mob_battle.entity.bullet.GoldenBulletEntityRenderer;
@@ -63,7 +64,9 @@ import com.kltyton.mob_battle.entity.xunsheng.XunShengEntityRenderer;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.minecraft.client.renderer.entity.EvokerRenderer;
 import net.minecraft.client.renderer.entity.NoopRenderer;
+import net.minecraft.client.renderer.entity.SnowGolemRenderer;
 import net.minecraft.client.renderer.entity.WitherBossRenderer;
+import net.minecraft.client.renderer.entity.ZombieRenderer;
 import net.minecraft.world.entity.EntityType;
 
 public class ModEntityRenderer {
@@ -122,9 +125,12 @@ public class ModEntityRenderer {
         EntityRendererRegistry.register(ModEntities.GOLDEN_BULLET, GoldenBulletEntityRenderer::new);
         EntityRendererRegistry.register(ModEntities.SNOWMAN_ICE_BLOCK, SnowmanIceBlockRenderer::new);
         EntityRendererRegistry.register(ModEntities.CBOT_SNOWBALL, CbotSnowballRenderer::new);
+        EntityRendererRegistry.register(ModEntities.NEW_SNOW_GOLEM, SnowGolemRenderer::new);
         EntityRendererRegistry.register(ModEntities.PIGLIN_GENERAL, PiglinGeneralEntityRenderer::new);
         EntityRendererRegistry.register(ModEntities.MODIFIED_DRAGON_BREATH_CLOUD, NoopRenderer::new);
         EntityRendererRegistry.register(ModEntities.COAL_SILVERFISH, ctx -> new GeneralEntityRenderer<>(ctx, "coal_silverfish", false));
+        EntityRendererRegistry.register(ModEntities.BOW_ZOMBIE_MOD, ZombieRenderer::new);
+        EntityRendererRegistry.register(ModEntities.PIGLIN_BRUTE_SPEAR_MOD, ModPiglinBruteRenderer::new);
         EntityRendererRegistry.register(ModEntities.SILENCE_PHANTOM, ctx -> new GeneralEntityRenderer<>(ctx, "silence_phantom", false));
         EntityRendererRegistry.register(ModEntities.SHIELD, ctx -> new GeneralEntityRenderer<>(ctx, "shield_force_field", false, GeneralEntityModel.RenderTypes.TRANSLUCENT));
         EntityRendererRegistry.register(ModEntities.SUPER_EVOKER, EvokerRenderer::new);

@@ -1,6 +1,9 @@
 package com.kltyton.mob_battle.mixin.initgoals;
 
 import com.kltyton.mob_battle.accessor.IPiglinEntity;
+import com.kltyton.mob_battle.accessor.IPiglinBruteSpearMode;
+import com.kltyton.mob_battle.entity.ModEntities;
+import com.kltyton.mob_battle.entity.ai.PiglinBruteSpearUseGoal;
 import net.minecraft.world.item.BowItem;
 import net.minecraft.world.item.CrossbowItem;
 import net.minecraft.world.item.ItemStack;
@@ -30,7 +33,10 @@ import net.minecraft.world.item.CrossbowItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.ProjectileWeaponItem;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
@@ -42,15 +48,31 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Implements({
         @Interface(iface = CrossbowAttackMob.class, prefix = "crossbowuser$"),
 })
-public abstract class PiglinBruteEntityMixin extends AbstractPiglin implements CrossbowAttackMob, RangedAttackMob {
+public abstract class PiglinBruteEntityMixin extends AbstractPiglin implements CrossbowAttackMob, RangedAttackMob, IPiglinBruteSpearMode {
 
     protected PiglinBruteEntityMixin(EntityType<? extends AbstractPiglin> entityType, Level world) {
         super(entityType, world);
     }
 
+    @Inject(method = "<init>", at = @At("TAIL"))
+    private void mob_battle$addSpearUseGoal(EntityType<? extends PiglinBrute> entityType, Level world, CallbackInfo ci) {
+        this.goalSelector.addGoal(
+                1,
+                new PiglinBruteSpearUseGoal((PiglinBrute) (Object) this, 1.0D, 1.0D, 10.0F, 2.0F)
+        );
+        if (entityType == ModEntities.PIGLIN_BRUTE_SPEAR_MOD) {
+            this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.GOLDEN_SPEAR));
+            this.mobBattle$setSpearAttackMode(SPEAR_MODE_USE);
+        }
+    }
+
     @Unique
     private static final EntityDataAccessor<Boolean> CHARGING =
             SynchedEntityData.defineId(PiglinBrute.class, EntityDataSerializers.BOOLEAN);
+
+    @Unique
+    private static final EntityDataAccessor<Integer> SPEAR_ATTACK_MODE =
+            SynchedEntityData.defineId(PiglinBrute.class, EntityDataSerializers.INT);
 
     @Unique
     private int mob_battle$bowCooldown = 0;
@@ -71,10 +93,16 @@ public abstract class PiglinBruteEntityMixin extends AbstractPiglin implements C
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
         super.defineSynchedData(builder);
         builder.define(CHARGING, false);
+        builder.define(SPEAR_ATTACK_MODE, SPEAR_MODE_NONE);
     }
 
     public boolean canFireProjectileWeapon(ProjectileWeaponItem weapon) {
-        return weapon == Items.CROSSBOW || weapon instanceof BowItem;
+        return false;
+    }
+
+    @Override
+    public boolean canUseNonMeleeWeapon(ItemStack item) {
+        return item.has(DataComponents.KINETIC_WEAPON) && this.mobBattle$usesSpearAsItem();
     }
 
     @Unique
@@ -146,18 +174,21 @@ public abstract class PiglinBruteEntityMixin extends AbstractPiglin implements C
      */
     @Overwrite
     public void populateDefaultEquipmentSlots(RandomSource random, DifficultyInstance localDifficulty) {
-        if (random.nextFloat() < 0.34F) {
-            this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.GOLDEN_AXE));
-        } else if (random.nextFloat() < 0.67F) {
-            this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.CROSSBOW));
-        } else {
-            this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.BOW));
+        if (this.getType() == ModEntities.PIGLIN_BRUTE_SPEAR_MOD) {
+            this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.GOLDEN_SPEAR));
+            this.mobBattle$setSpearAttackMode(SPEAR_MODE_USE);
+            return;
         }
+
+        this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.GOLDEN_AXE));
+        this.mobBattle$setSpearAttackMode(SPEAR_MODE_NONE);
     }
 
     @Inject(method = "getArmPose", at = @At("HEAD"), cancellable = true)
     private void mob_battle$getActivity(CallbackInfoReturnable<PiglinArmPose> cir) {
-        if (this.isAggressive() && this.isHoldingMeleeWeapon()) {
+        if (this.getMainHandItem().has(DataComponents.KINETIC_WEAPON)) {
+            cir.setReturnValue(PiglinArmPose.DEFAULT);
+        } else if (this.isAggressive() && this.isHoldingMeleeWeapon()) {
             cir.setReturnValue(PiglinArmPose.ATTACKING_WITH_MELEE_WEAPON);
         } else if (this.entityData.get(CHARGING)) {
             cir.setReturnValue(PiglinArmPose.CROSSBOW_CHARGE);
@@ -171,6 +202,15 @@ public abstract class PiglinBruteEntityMixin extends AbstractPiglin implements C
     @Inject(method = "customServerAiStep", at = @At("TAIL"))
     private void mob_battle$bowTick(ServerLevel world, CallbackInfo ci) {
         if (!this.isAlive()) return;
+        LivingEntity rememberedTarget = ((IPiglinEntity) this).getTargetEntity();
+        if (rememberedTarget != null && rememberedTarget.isAlive() && !rememberedTarget.isRemoved()
+                && !this.isAlliedTo(rememberedTarget) && this.canAttack(rememberedTarget)) {
+            if (this.getTarget() != rememberedTarget) {
+                this.setTarget(rememberedTarget);
+            }
+        } else if (this.getTarget() != null) {
+            this.setTarget(null);
+        }
         if (!this.mob_battle$isHoldingBow()) return;
 
         LivingEntity target = this.mob_battle$getBowTarget();
@@ -247,7 +287,7 @@ public abstract class PiglinBruteEntityMixin extends AbstractPiglin implements C
 
     @Unique
     private boolean mob_battle$isHoldingBow() {
-        return this.getMainHandItem().getItem() instanceof BowItem || this.getOffhandItem().getItem() instanceof BowItem;
+        return false;
     }
 
     @Unique
@@ -268,5 +308,37 @@ public abstract class PiglinBruteEntityMixin extends AbstractPiglin implements C
         }
 
         return target;
+    }
+
+    @Override
+    protected void addAdditionalSaveData(ValueOutput output) {
+        super.addAdditionalSaveData(output);
+        output.putInt(SPEAR_ATTACK_MODE_KEY, this.mobBattle$getSpearAttackMode());
+    }
+
+    @Override
+    protected void readAdditionalSaveData(ValueInput input) {
+        super.readAdditionalSaveData(input);
+        int mode = input.getIntOr(SPEAR_ATTACK_MODE_KEY, SPEAR_MODE_NONE);
+        if (this.getType() == ModEntities.PIGLIN_BRUTE_SPEAR_MOD) {
+            mode = SPEAR_MODE_USE;
+        } else if (mode != SPEAR_MODE_USE) {
+            mode = SPEAR_MODE_NONE;
+        }
+        this.mobBattle$setSpearAttackMode(mode);
+        if ((mode == SPEAR_MODE_USE || input.getBooleanOr(FORCE_GOLDEN_SPEAR_KEY, false))
+                && !this.getMainHandItem().is(Items.GOLDEN_SPEAR)) {
+            this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.GOLDEN_SPEAR));
+        }
+    }
+
+    @Override
+    public int mobBattle$getSpearAttackMode() {
+        return this.entityData.get(SPEAR_ATTACK_MODE);
+    }
+
+    @Override
+    public void mobBattle$setSpearAttackMode(int mode) {
+        this.entityData.set(SPEAR_ATTACK_MODE, mode);
     }
 }

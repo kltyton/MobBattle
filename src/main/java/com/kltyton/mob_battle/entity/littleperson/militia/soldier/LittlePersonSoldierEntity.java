@@ -104,10 +104,10 @@ public class LittlePersonSoldierEntity extends Monster implements LittlePersonEn
 
     public static AttributeSupplier.Builder createLittlePersonMilitiaAttributes() {
         return LittlePersonEntity.createLittlePersonAttributes()
-                .add(Attributes.MAX_HEALTH, 300.0)
+                .add(Attributes.MAX_HEALTH, 25.0)
                 .add(Attributes.FOLLOW_RANGE, 40.0)
                 .add(Attributes.MOVEMENT_SPEED, 0.25)
-                .add(Attributes.ATTACK_DAMAGE, 30.0)
+                .add(Attributes.ATTACK_DAMAGE, 3.0)
                 .add(ModEntityAttributes.DAMAGE_REDUCTION, 0.2);
     }
 
@@ -325,7 +325,7 @@ public class LittlePersonSoldierEntity extends Monster implements LittlePersonEn
 
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-        controllers.add(new AnimationController<>("main_controller", 5, this::mainController));
+        controllers.add(new AnimationController<>("main_controller", 0, this::mainController));
 
         controllers.add(new AnimationController<>("attack_controller", animTest -> {
                     if (GeoAnimationUtil.consumeFinishedTriggeredAnimation(animTest)) {

@@ -3,6 +3,7 @@ package com.kltyton.mob_battle.network;
 import com.kltyton.mob_battle.Mob_battle;
 import com.kltyton.mob_battle.config.MobBattleConfig;
 import com.kltyton.mob_battle.config.whitelist.MobBattlePermissions;
+import com.kltyton.mob_battle.command.CombatLogSystem;
 import com.kltyton.mob_battle.effect.ModEffects;
 import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.entity.deepcreature.DeepCreatureEntity;
@@ -79,8 +80,10 @@ public class ServerPlayNetwork {
                     MinecraftServer server = context.server();
                     server.execute(() -> {
                         Entity attacker = context.player().level().getEntity(payload.attackerId());
-                        if (attacker instanceof HighbirdBaseEntity highbird && highbird.level() instanceof ServerLevel serverWorld)
+                        if (attacker instanceof HighbirdBaseEntity highbird && highbird.level() instanceof ServerLevel serverWorld) {
+                            CombatLogSystem.logSkill(highbird, "highbird_attack");
                             highbird.performAttack(serverWorld, highbird.getTarget());
+                        }
                     });
                 }
         );
@@ -111,6 +114,9 @@ public class ServerPlayNetwork {
                     MinecraftServer server = context.server();
                     server.execute(() -> {
                         Entity entity = context.player().level().getEntity(payload.entityId());
+                        if (entity != null) {
+                            CombatLogSystem.logAction(entity, "触发技能事件 " + payload.skillName());
+                        }
                         logSkillPayload(context.player(), payload, entity);
                         switch (entity) {
                             case DeepCreatureEntity deepCreature -> {
@@ -340,6 +346,7 @@ public class ServerPlayNetwork {
                     MinecraftServer server = context.server();
                     ServerPlayer player = context.player();
                     server.execute(() -> {
+                        CombatLogSystem.logSkill(player, payload.skillName());
                         switch (payload.skillName()) {
                             case "attack" -> PlayerEntitySkill.runAttackSkill(player);
 
@@ -397,6 +404,7 @@ public class ServerPlayNetwork {
             ServerPlayer player = context.player();
             context.server().execute(() -> {
                 int type = payload.mode();
+                CombatLogSystem.logAction(player, "切换无人机模式 " + type);
                 if (!ArmorUtil.hasFullArmor(player, ModMaterial.IRON_GOLD_INSTANCE)) {
                     return;
                 }
@@ -527,6 +535,7 @@ public class ServerPlayNetwork {
         ServerPlayNetworking.registerGlobalReceiver(CompressArmorSkillPayload.ID, (payload, context) -> {
             ServerPlayer player = context.player();
             context.server().execute(() -> {
+                CombatLogSystem.logAction(player, "使用压缩护甲技能 " + payload.skill_id());
                 CompressArmorSkillManager.handleSkill(player, payload.skill_id());
             });
         });

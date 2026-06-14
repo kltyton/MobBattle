@@ -218,7 +218,7 @@ public class LongWhipSilverfishEntity extends Silverfish implements GeneralEntit
     protected static final RawAnimation NO_ANIM = RawAnimation.begin().thenPlay("no");
     private final AnimatableInstanceCache geoCache = GeckoLibUtil.createInstanceCache(this);
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-        controllers.add(new AnimationController<>("main_controller", 5, this::mainController));
+        controllers.add(new AnimationController<>("main_controller", 0, this::mainController));
         controllers.add(new AnimationController<>( "skill_controller", animTest -> {
                     if (GeoAnimationUtil.consumeFinishedTriggeredAnimation(animTest)) {
                         ClientPlayNetworking.send(new SkillPayload("stop", this.getId()));

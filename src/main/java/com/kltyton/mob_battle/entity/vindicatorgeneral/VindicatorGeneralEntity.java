@@ -9,6 +9,7 @@ import com.kltyton.mob_battle.bossbar.CustomBossBarStyles;
 import com.kltyton.mob_battle.bossbar.CustomBossBarSync;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
 import com.kltyton.mob_battle.utils.CombatEffectUtil;
+import com.kltyton.mob_battle.utils.DeathAnimationUtil;
 import com.kltyton.mob_battle.utils.EnchantmentUtil;
 import com.kltyton.mob_battle.utils.EntityUtil;
 import com.kltyton.mob_battle.utils.GeoAnimationUtil;
@@ -69,6 +70,7 @@ public class VindicatorGeneralEntity extends Vindicator implements GeoEntity, Mo
     private boolean waitingForAxeRecovery;
     private int axeRecoveryTimeout;
     private int deathAnimationTicks;
+    private DeathAnimationUtil.FrozenPose deathFrozenPose;
     @Override
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
         super.defineSynchedData(builder);
@@ -510,6 +512,7 @@ public class VindicatorGeneralEntity extends Vindicator implements GeoEntity, Mo
     }
 
     private void startDeathAnimation() {
+        this.deathFrozenPose = DeathAnimationUtil.capture(this);
         this.setHealth(1.0F);
         this.setNoAi(true);
         this.setHasSkill(true);
@@ -521,6 +524,7 @@ public class VindicatorGeneralEntity extends Vindicator implements GeoEntity, Mo
 
     private void tickDeathAnimation() {
         this.setHealth(1.0F);
+        DeathAnimationUtil.freeze(this, this.deathFrozenPose);
         this.deathAnimationTicks--;
         if (this.deathAnimationTicks <= 0) {
             this.remove(Entity.RemovalReason.KILLED);

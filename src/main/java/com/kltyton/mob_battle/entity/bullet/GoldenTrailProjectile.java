@@ -199,7 +199,7 @@ public class GoldenTrailProjectile extends TrueDamageProjectile {
     public void applyStrengthenBulletEffect(ServerLevel world, LivingEntity target) {
         if (this.isStrengthen()) {
             Entity owner = this.getOwner();
-            CombatEffectUtil.addPigSpiritMark(target, owner instanceof LivingEntity living ? living : target, 1);
+            CombatEffectUtil.addPigSpiritMark(target, owner instanceof LivingEntity living ? living : target, 5);
             target.hurtServer(world, target.damageSources().magic(), 10.0F);
         }
     }

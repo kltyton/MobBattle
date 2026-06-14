@@ -7,6 +7,7 @@ import com.kltyton.mob_battle.items.ModItems;
 import com.kltyton.mob_battle.items.ModMaterial;
 import com.kltyton.mob_battle.items.misc.BaseItems;
 import net.fabricmc.fabric.api.creativetab.v1.FabricCreativeModeTab;
+import net.fabricmc.fabric.api.creativetab.v1.CreativeModeTabEvents;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -16,8 +17,10 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.SpawnEggItem;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.Enchantments;
@@ -27,6 +30,8 @@ import net.minecraft.world.level.ItemLike;
 public class ModItemGroups {
     public static final ResourceKey<CreativeModeTab> MOB_BATTLE_GROUP_KEY =
             ResourceKey.create(Registries.CREATIVE_MODE_TAB, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "main"));
+    public static final ResourceKey<CreativeModeTab> MOB_BATTLE_OFF_GROUP_KEY =
+            ResourceKey.create(Registries.CREATIVE_MODE_TAB, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "off"));
 
     public static final CreativeModeTab MOB_BATTLE_GROUP = FabricCreativeModeTab.builder()
             .icon(() -> new ItemStack(ModItems.BIG_FIREBALL_SCROLL))
@@ -44,9 +49,32 @@ public class ModItemGroups {
                 addBlocks(entries);
             })
             .build();
+    public static final CreativeModeTab MOB_BATTLE_OFF_GROUP = FabricCreativeModeTab.builder()
+            .icon(() -> new ItemStack(ModItems.INCUBATION_EGG))
+            .title(Component.translatable("itemGroup.mob_battle.off"))
+            .displayItems((context, entries) -> {
+                entries.accept(ModItems.PIGLIN_BRUTE_SPEAR_USE_SPAWN_EGG);
+                entries.accept(ModItems.PIGLIN_BRUTE_SPEAR_MELEE_SPAWN_EGG);
+                entries.accept(ModItems.BOW_ZOMBIE_SPAWN_EGG);
+            })
+            .build();
 
     public static void init() {
         Registry.register(BuiltInRegistries.CREATIVE_MODE_TAB, MOB_BATTLE_GROUP_KEY, MOB_BATTLE_GROUP);
+        Registry.register(BuiltInRegistries.CREATIVE_MODE_TAB, MOB_BATTLE_OFF_GROUP_KEY, MOB_BATTLE_OFF_GROUP);
+        CreativeModeTabEvents.modifyOutputEvent(CreativeModeTabs.SPAWN_EGGS).register(entries -> {
+            entries.insertAfter(
+                        Items.PIGLIN_BRUTE_SPAWN_EGG,
+                        ModItems.PIGLIN_BRUTE_SPEAR_MOD_SPAWN_EGG,
+                        ModItems.PIGLIN_BRUTE_SPEAR_USE_SPAWN_EGG,
+                        ModItems.PIGLIN_BRUTE_SPEAR_MELEE_SPAWN_EGG
+            );
+            entries.insertAfter(
+                    Items.ZOMBIE_SPAWN_EGG,
+                    ModItems.BOW_ZOMBIE_MOD_SPAWN_EGG,
+                    ModItems.BOW_ZOMBIE_SPAWN_EGG
+            );
+        });
     }
 
     private static void addToolsAndScrolls(CreativeModeTab.Output entries) {
@@ -137,6 +165,8 @@ public class ModItemGroups {
                 spawnEgg("sex_entity"),
                 spawnEgg("cbot002"),
                 spawnEgg("piglin_general"),
+                ModItems.PIGLIN_BRUTE_SPEAR_MOD_SPAWN_EGG,
+                ModItems.BOW_ZOMBIE_MOD_SPAWN_EGG,
                 spawnEgg("angel_cyborg"),
                 spawnEgg("living_ghost"),
                 spawnEgg("scattered_demon"),

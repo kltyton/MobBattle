@@ -9,6 +9,7 @@ import com.kltyton.mob_battle.entity.littleperson.militia.LittlePersonMilitiaEnt
 import com.kltyton.mob_battle.entity.littleperson.skillentity.IronManEntity;
 import com.kltyton.mob_battle.entity.littleperson.skillentity.KeyframedLittlePersonEntity;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
+import com.kltyton.mob_battle.utils.DeathAnimationUtil;
 import com.kltyton.mob_battle.utils.GeoAnimationUtil;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -40,6 +41,7 @@ public class BaseSkillLittlePersonEntity extends LittlePersonMilitiaEntity imple
     public int COOL_DOWN_TIME_8 = -1;
     public int COOL_DOWN_TIME_9 = -1;
     public int COOL_DOWN_TIME_10 = -1;
+    private DeathAnimationUtil.FrozenPose deathFrozenPose;
     private boolean normalAttackKnockbackAllowed;
 
     public static final EntityDataAccessor<Boolean> HAS_SKILL = SynchedEntityData.defineId(BaseSkillLittlePersonEntity.class, EntityDataSerializers.BOOLEAN);
@@ -262,8 +264,14 @@ public class BaseSkillLittlePersonEntity extends LittlePersonMilitiaEntity imple
         if (!this.level().isClientSide()) {
             this.setAggressive(this.getTarget() != null);
             if (this.isDeadOrDying()) {
+                if (this.deathFrozenPose == null) {
+                    this.deathFrozenPose = DeathAnimationUtil.capture(this);
+                    this.setHasSkill(true);
+                    this.triggerAnim("skill_controller", "die");
+                }
+                DeathAnimationUtil.freeze(this, this.deathFrozenPose);
                 this.setNoAi(true);
-                this.triggerAnim("skill_controller", "die");
+                return;
             }
             if (!hasSkill()) {
                 this.setNoAi(false);

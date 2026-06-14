@@ -1,5 +1,6 @@
 package com.kltyton.mob_battle.mixin.damage;
 
+import com.kltyton.mob_battle.entity.littleperson.skillentity.ironmanbullet.IronManBulletEntity;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.CombatRules;
@@ -30,6 +31,9 @@ public class DamageUtilMixin {
             i = Mth.clamp(EnchantmentHelper.modifyArmorEffectiveness(serverWorld, itemStack, armorWearer, damageSource, h), 0.0F, 1.0F);
         } else {
             i = h;
+        }
+        if (damageSource.getDirectEntity() instanceof IronManBulletEntity) {
+            i = Math.max(0.0F, i - 0.15F);
         }
 
         float j = 1.0F - i;

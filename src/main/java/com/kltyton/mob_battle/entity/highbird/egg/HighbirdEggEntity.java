@@ -211,7 +211,7 @@ public class HighbirdEggEntity extends HighbirdAndEggEntity implements HighbirdS
     // ========== 动画控制器 ==========
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-        controllers.add(new AnimationController<>("main_controller", 5, this::mainController));
+        controllers.add(new AnimationController<>("main_controller", 0, this::mainController));
     }
 
     private PlayState mainController(final AnimationTest<HighbirdBaseEntity> event) {

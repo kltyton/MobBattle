@@ -66,6 +66,7 @@ public class CbotSnowballEntity extends Projectile {
         AABB box = this.getBoundingBox().inflate(0.35D);
         for (LivingEntity target : ((ServerLevel) this.level()).getEntitiesOfClass(LivingEntity.class, box,
                 living -> EntityUtil.isValidSummonCombatTarget(this, owner, living))) {
+            Vec3 motionBeforeHit = target.getDeltaMovement();
             if (this.physicalDamage > 0.0F) {
                 target.invulnerableTime = 0;
                 if (owner instanceof LivingEntity livingOwner) {
@@ -78,6 +79,8 @@ public class CbotSnowballEntity extends Projectile {
                 target.invulnerableTime = 0;
                 target.hurtServer((ServerLevel) this.level(), this.damageSources().indirectMagic(this, owner == null ? this : owner), this.magicDamage);
             }
+            Vec3 knockback = target.getDeltaMovement().subtract(motionBeforeHit);
+            target.setDeltaMovement(motionBeforeHit.add(knockback.scale(0.35D)));
             this.discard();
             return;
         }

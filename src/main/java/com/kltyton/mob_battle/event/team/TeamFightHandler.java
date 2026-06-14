@@ -9,6 +9,7 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.monster.warden.Warden;
 import net.minecraft.world.scores.PlayerTeam;
 import java.util.List;
+import java.util.Set;
 
 public class TeamFightHandler {
     private static final int TARGET_UPDATE_INTERVAL = 20; // 每20 tick（1秒）更新一次
@@ -49,9 +50,9 @@ public class TeamFightHandler {
                             TeamFightManager.stopTeamFight(team);
                         } else {
                             // 添加寻找目标的逻辑（如果需要）
-                            PlayerTeam targetTeam = TeamFightManager.getOpponent(team);
-                            if (targetTeam != null) {
-                                findAndSetTarget(mob, targetTeam);
+                            Set<PlayerTeam> targetTeams = TeamFightManager.getOpponents(team);
+                            if (!targetTeams.isEmpty()) {
+                                findAndSetTarget(mob, targetTeams);
                             }
                         }
                     }
@@ -62,15 +63,14 @@ public class TeamFightHandler {
         });
     }
 
-    private static void findAndSetTarget(LivingEntity mob, PlayerTeam targetTeam) {
+    private static void findAndSetTarget(LivingEntity mob, Set<PlayerTeam> targetTeams) {
         Mob_battle.LOGGER.debug("开始为 {} 寻找目标", mob.getName());
         try {
-            if (!TeamFightManager.isInFight(targetTeam)) return;
-
             List<LivingEntity> candidates = mob.level().getEntitiesOfClass(
                     LivingEntity.class,
                     mob.getBoundingBox().inflate(30),
-                    e -> !e.isAlliedTo(mob) &&
+                    e -> targetTeams.contains(e.getTeam()) &&
+                            !e.isAlliedTo(mob) &&
                             !e.hasInfiniteMaterials() &&
                             !e.isSpectator() &&
                             e.isAlive() &&

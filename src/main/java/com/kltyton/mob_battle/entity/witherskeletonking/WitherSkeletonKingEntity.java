@@ -8,8 +8,11 @@ import com.kltyton.mob_battle.entity.accessor.BigBossLookControl;
 import com.kltyton.mob_battle.entity.accessor.BigBossMoveControl;
 import com.kltyton.mob_battle.entity.accessor.BigBossNavigation;
 import com.kltyton.mob_battle.entity.witherskeletonking.skill.WitherSkeletonKingEntitySkill;
+import com.kltyton.mob_battle.entity.witherskeletonking.summon.DualBladeWitherSkeletonEntity;
+import com.kltyton.mob_battle.entity.witherskeletonking.summon.ShieldAxeWitherSkeletonEntity;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
 import com.kltyton.mob_battle.utils.CombatEffectUtil;
+import com.kltyton.mob_battle.utils.DeathAnimationUtil;
 import com.kltyton.mob_battle.utils.GeoAnimationUtil;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.core.Holder;
@@ -89,6 +92,7 @@ public class WitherSkeletonKingEntity extends WitherSkeleton implements GeoEntit
     public static final EntityDataAccessor<Integer> THORN_COOLDOWN = SynchedEntityData.defineId(WitherSkeletonKingEntity.class, EntityDataSerializers.INT);
     public static final EntityDataAccessor<Integer> ENHANCE_WITHER_CALL_COOLDOWN = SynchedEntityData.defineId(WitherSkeletonKingEntity.class, EntityDataSerializers.INT);
     private int deathAnimationTicks;
+    private DeathAnimationUtil.FrozenPose deathFrozenPose;
     private boolean summonDogsAfterSuperShot;
     @Override
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
@@ -285,7 +289,6 @@ public class WitherSkeletonKingEntity extends WitherSkeleton implements GeoEntit
         } else {
             if (target instanceof LivingEntity livingEntity) {
                 livingEntity.addEffect(new MobEffectInstance(MobEffects.WITHER, 5 * 20, 4), this);
-                if (livingEntity.isDeadOrDying()) this.heal(5.0F);
                 if (!(target instanceof Player)) {
                     livingEntity.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 100, 1), this);
                 }
@@ -385,7 +388,20 @@ public class WitherSkeletonKingEntity extends WitherSkeleton implements GeoEntit
         return canSkill() && getThornCooldown() == 0 && distance > 4.0D && distance <= 20.0D;
     }
     public boolean canEnhanceWitherCall() {
-        return canSkill() && getEnhanceWitherCallCooldown() == 0;
+        return canSkill() && getEnhanceWitherCallCooldown() == 0 && !hasLivingEliteSummons();
+    }
+    public boolean hasLivingEliteSummons() {
+        if (!(this.level() instanceof ServerLevel world)) {
+            return false;
+        }
+        for (Entity entity : world.getAllEntities()) {
+            if (entity.isAlive()
+                    && ((entity instanceof DualBladeWitherSkeletonEntity dualBlade && dualBlade.getSummonOwner() == this)
+                    || (entity instanceof ShieldAxeWitherSkeletonEntity shieldAxe && shieldAxe.getSummonOwner() == this))) {
+                return true;
+            }
+        }
+        return false;
     }
     public boolean canSkill() {
         if (!ModSkillEntityType.canSkill(this)) return false;
@@ -404,7 +420,7 @@ public class WitherSkeletonKingEntity extends WitherSkeleton implements GeoEntit
 
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-        controllers.add(new AnimationController<>("main_controller", 5 ,this::animationController));
+        controllers.add(new AnimationController<>("main_controller", 0,this::animationController));
         controllers.add(new AnimationController<>("skill_controller",animTest -> {
             if (GeoAnimationUtil.consumeFinishedTriggeredAnimation(animTest)) {
                 ClientPlayNetworking.send(new SkillPayload(
@@ -502,11 +518,6 @@ public class WitherSkeletonKingEntity extends WitherSkeleton implements GeoEntit
                     -1,
                     0,
                     true, true, true));
-            this.addEffect(new MobEffectInstance(
-                    MobEffects.RESISTANCE,
-                    -1,
-                    0,
-                    true, true, true));
         }
         if (!this.level().isClientSide() && this.getHealth() == this.getMaxHealth() * 0.35 && !isPlaySound) {
             this.level().playSound(this, this.getX(), this.getY(), this.getZ(), SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.HOSTILE, 3.0F, 1.0F);
@@ -592,6 +603,7 @@ public class WitherSkeletonKingEntity extends WitherSkeleton implements GeoEntit
     }
 
     private void startDeathAnimation() {
+        this.deathFrozenPose = DeathAnimationUtil.capture(this);
         this.setHealth(1.0F);
         this.setNoAi(true);
         this.setHasSkill(true);
@@ -602,6 +614,7 @@ public class WitherSkeletonKingEntity extends WitherSkeleton implements GeoEntit
 
     private void tickDeathAnimation() {
         this.setHealth(1.0F);
+        DeathAnimationUtil.freeze(this, this.deathFrozenPose);
         this.deathAnimationTicks--;
         if (this.deathAnimationTicks <= 0) {
             this.remove(Entity.RemovalReason.KILLED);

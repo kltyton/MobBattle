@@ -64,8 +64,6 @@ public class WitherSkullKingEntity extends WitherSkull {
                 if (bl) {
                     if (var8.isAlive()) {
                         EnchantmentHelper.doPostAttackEffects(serverWorld, var8, damageSource);
-                    } else {
-                        livingEntity.heal(5.0F);
                     }
                 }
             } else {

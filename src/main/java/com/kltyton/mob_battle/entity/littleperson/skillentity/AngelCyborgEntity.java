@@ -16,6 +16,7 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -39,7 +40,8 @@ public class AngelCyborgEntity extends RequestedLittlePersonEntity {
     }
 
     public static AttributeSupplier.Builder createLittlePersonAttributes() {
-        return createRequestedAttributes(12000.0D, 100.0D, 0.5D, 40.0D, 0.0D);
+        return createRequestedAttributes(12000.0D, 100.0D, 0.5D, 40.0D, 0.0D)
+                .add(Attributes.KNOCKBACK_RESISTANCE, 0.5D);
     }
 
     @Override

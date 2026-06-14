@@ -112,12 +112,21 @@ public class ModModelGenerator extends FabricModelProvider {
         for (SpawnEggItem item : ModItems.SPAWN_EGG_ITEMS.values()) {
             String itemName = BuiltInRegistries.ITEM.getKey(item).getPath();
             Identifier textureId;
-            Path texturePath = this.output.getModContainer().findPath("assets/" + Mob_battle.MOD_ID + "/textures/item/dan/" + itemName + ".png")
-                    .orElse(null);
-            if (texturePath != null && Files.exists(texturePath)) {
-                textureId = Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "item/dan/" + itemName);
+            if (item == ModItems.PIGLIN_BRUTE_SPEAR_USE_SPAWN_EGG
+                    || item == ModItems.PIGLIN_BRUTE_SPEAR_MELEE_SPAWN_EGG
+                    || item == ModItems.PIGLIN_BRUTE_SPEAR_MOD_SPAWN_EGG) {
+                textureId = Identifier.withDefaultNamespace("item/piglin_brute_spawn_egg");
+            } else if (item == ModItems.BOW_ZOMBIE_SPAWN_EGG
+                    || item == ModItems.BOW_ZOMBIE_MOD_SPAWN_EGG) {
+                textureId = Identifier.withDefaultNamespace("item/zombie_spawn_egg");
             } else {
-                textureId = Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "item/dan/dan");
+                Path texturePath = this.output.getModContainer().findPath("assets/" + Mob_battle.MOD_ID + "/textures/item/dan/" + itemName + ".png")
+                        .orElse(null);
+                if (texturePath != null && Files.exists(texturePath)) {
+                    textureId = Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "item/dan/" + itemName);
+                } else {
+                    textureId = Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "item/dan/dan");
+                }
             }
             // 使用模板生成模型，并注入选定的纹理
             itemModelCollector.itemModelOutput.accept(

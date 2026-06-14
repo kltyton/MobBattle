@@ -180,7 +180,7 @@ public interface GeneralEntity<T extends Mob> extends ModSkillEntityType, GeoEnt
     RawAnimation ATTACK_ANIM_6 = RawAnimation.begin().thenPlay("attack6");
     RawAnimation ATTACK_ANIM_7 = RawAnimation.begin().thenPlay("attack7");
     default void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-        controllers.add(new AnimationController<>("main_controller", 5, this::mainController));
+        controllers.add(new AnimationController<>("main_controller", 0, this::mainController));
         controllers.add(new AnimationController<>( "skill_controller", 5,animTest -> {
                     if (GeoAnimationUtil.consumeFinishedTriggeredAnimation(animTest)) {
                         ClientPlayNetworking.send(new SkillPayload("stop", getEntity().getId()));

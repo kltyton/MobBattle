@@ -176,7 +176,7 @@ public class VillagerIronGolemEntity extends IronGolem implements GeoEntity, Mod
     }
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllerRegistrar) {
-        controllerRegistrar.add(new AnimationController<>("main_controller", 5 ,this::animationController));
+        controllerRegistrar.add(new AnimationController<>("main_controller", 0,this::animationController));
         controllerRegistrar.add(new AnimationController<>( "attack_controller",animTest -> {
                     if (GeoAnimationUtil.consumeFinishedTriggeredAnimation(animTest)) {
                         ClientPlayNetworking.send(new SkillPayload(

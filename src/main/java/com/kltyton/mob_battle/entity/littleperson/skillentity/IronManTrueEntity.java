@@ -112,7 +112,7 @@ public class IronManTrueEntity extends BaseSkillLittlePersonEntity {
     @Override
     public void runSkill_5(BaseSkillLittlePersonEntity entity) {
         Level world = entity.level();
-        int skullCount = 3;
+        int skullCount = 12;
         RandomSource random = world.getRandom();
         for (int i = 0; i < skullCount; i++) {
             double xOffset = (random.nextDouble() - 0.5) * 8.0;
