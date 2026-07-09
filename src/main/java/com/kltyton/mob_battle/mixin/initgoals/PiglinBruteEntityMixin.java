@@ -4,10 +4,7 @@ import com.kltyton.mob_battle.accessor.IPiglinEntity;
 import com.kltyton.mob_battle.accessor.IPiglinBruteSpearMode;
 import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.entity.ai.PiglinBruteSpearUseGoal;
-import net.minecraft.world.item.BowItem;
-import net.minecraft.world.item.CrossbowItem;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
+import com.kltyton.mob_battle.entity.ai.PiglinBruteWeaponData;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -97,12 +94,14 @@ public abstract class PiglinBruteEntityMixin extends AbstractPiglin implements C
     }
 
     public boolean canFireProjectileWeapon(ProjectileWeaponItem weapon) {
-        return false;
+        return weapon == Items.CROSSBOW || weapon instanceof BowItem;
     }
 
     @Override
     public boolean canUseNonMeleeWeapon(ItemStack item) {
-        return item.has(DataComponents.KINETIC_WEAPON) && this.mobBattle$usesSpearAsItem();
+        return item.is(Items.CROSSBOW)
+                || item.getItem() instanceof BowItem
+                || (item.has(DataComponents.KINETIC_WEAPON) && this.mobBattle$usesSpearAsItem());
     }
 
     @Unique
@@ -180,7 +179,13 @@ public abstract class PiglinBruteEntityMixin extends AbstractPiglin implements C
             return;
         }
 
-        this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.GOLDEN_AXE));
+        if (random.nextFloat() < 0.34F) {
+            this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.GOLDEN_AXE));
+        } else if (random.nextFloat() < 0.67F) {
+            this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.CROSSBOW));
+        } else {
+            this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.BOW));
+        }
         this.mobBattle$setSpearAttackMode(SPEAR_MODE_NONE);
     }
 
@@ -287,7 +292,8 @@ public abstract class PiglinBruteEntityMixin extends AbstractPiglin implements C
 
     @Unique
     private boolean mob_battle$isHoldingBow() {
-        return false;
+        return this.getMainHandItem().getItem() instanceof BowItem
+                || this.getOffhandItem().getItem() instanceof BowItem;
     }
 
     @Unique
@@ -319,10 +325,24 @@ public abstract class PiglinBruteEntityMixin extends AbstractPiglin implements C
     @Override
     protected void readAdditionalSaveData(ValueInput input) {
         super.readAdditionalSaveData(input);
-        int mode = input.getIntOr(SPEAR_ATTACK_MODE_KEY, SPEAR_MODE_NONE);
         if (this.getType() == ModEntities.PIGLIN_BRUTE_SPEAR_MOD) {
-            mode = SPEAR_MODE_USE;
-        } else if (mode != SPEAR_MODE_USE) {
+            this.mobBattle$setSpearAttackMode(SPEAR_MODE_USE);
+            this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.GOLDEN_SPEAR));
+            return;
+        }
+        if (input.getBooleanOr(PiglinBruteWeaponData.FORCE_BOW_KEY, false)) {
+            this.mobBattle$setSpearAttackMode(SPEAR_MODE_NONE);
+            this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.BOW));
+            return;
+        }
+        if (input.getBooleanOr(PiglinBruteWeaponData.FORCE_CROSSBOW_KEY, false)) {
+            this.mobBattle$setSpearAttackMode(SPEAR_MODE_NONE);
+            this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.CROSSBOW));
+            return;
+        }
+
+        int mode = input.getIntOr(SPEAR_ATTACK_MODE_KEY, SPEAR_MODE_NONE);
+        if (mode != SPEAR_MODE_USE) {
             mode = SPEAR_MODE_NONE;
         }
         this.mobBattle$setSpearAttackMode(mode);

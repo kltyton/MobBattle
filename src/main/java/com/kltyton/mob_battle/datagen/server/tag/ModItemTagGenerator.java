@@ -28,18 +28,32 @@ public class ModItemTagGenerator extends FabricTagsProvider.ItemTagsProvider {
                 ModItems.IRON_GOLD_SWORD,
                 ModItems.METEORICORE_SWORD,
                 ModItems.ZIJIN_SWORD,
+                ModItems.POISON_KNIFE,
+                ModItems.BLOOD_KNIFE,
+                ModItems.IRON_MAN_MISSILE_LAUNCHER,
+                ModItems.COMPRESSED_COPPER_SWORD,
                 ModItems.COMPRESSED_IRON_SWORD,
                 ModItems.COMPRESSED_GOLD_SWORD,
                 ModItems.COMPRESSED_DIAMOND_SWORD,
                 ModItems.COMPRESSED_NETHERITE_SWORD
         );
+        valueLookupBuilder(ItemTags.PICKAXES).add(ModItems.LITTLE_PERSON_TOOL);
+        valueLookupBuilder(ItemTags.AXES).add(ModItems.LITTLE_PERSON_TOOL);
         valueLookupBuilder(ItemTags.SHARP_WEAPON_ENCHANTABLE).add(
+                ModItems.COMPRESSED_COPPER_SWORD,
                 ModItems.COMPRESSED_IRON_SWORD,
                 ModItems.COMPRESSED_GOLD_SWORD,
                 ModItems.COMPRESSED_DIAMOND_SWORD,
-                ModItems.COMPRESSED_NETHERITE_SWORD
+                ModItems.COMPRESSED_NETHERITE_SWORD,
+                ModItems.POISON_KNIFE,
+                ModItems.BLOOD_KNIFE,
+                ModItems.IRON_MAN_MISSILE_LAUNCHER
         );
         valueLookupBuilder(ItemTags.TRIMMABLE_ARMOR).add(
+                ModItems.COMPRESSED_COPPER_HELMET,
+                ModItems.COMPRESSED_COPPER_CHESTPLATE,
+                ModItems.COMPRESSED_COPPER_LEGGINGS,
+                ModItems.COMPRESSED_COPPER_BOOTS,
                 ModItems.COMPRESSED_IRON_HELMET,
                 ModItems.COMPRESSED_IRON_CHESTPLATE,
                 ModItems.COMPRESSED_IRON_LEGGINGS,
@@ -58,24 +72,28 @@ public class ModItemTagGenerator extends FabricTagsProvider.ItemTagsProvider {
                 ModItems.COMPRESSED_NETHERITE_BOOTS
         );
         valueLookupBuilder(ENCHANTABLE_HEAD_ARMOR).add(
+                ModItems.COMPRESSED_COPPER_HELMET,
                 ModItems.COMPRESSED_IRON_HELMET,
                 ModItems.COMPRESSED_GOLD_HELMET,
                 ModItems.COMPRESSED_DIAMOND_HELMET,
                 ModItems.COMPRESSED_NETHERITE_HELMET
         );
         valueLookupBuilder(ENCHANTABLE_CHEST_ARMOR).add(
+                ModItems.COMPRESSED_COPPER_CHESTPLATE,
                 ModItems.COMPRESSED_IRON_CHESTPLATE,
                 ModItems.COMPRESSED_GOLD_CHESTPLATE,
                 ModItems.COMPRESSED_DIAMOND_CHESTPLATE,
                 ModItems.COMPRESSED_NETHERITE_CHESTPLATE
         );
         valueLookupBuilder(ENCHANTABLE_LEG_ARMOR).add(
+                ModItems.COMPRESSED_COPPER_LEGGINGS,
                 ModItems.COMPRESSED_IRON_LEGGINGS,
                 ModItems.COMPRESSED_GOLD_LEGGINGS,
                 ModItems.COMPRESSED_DIAMOND_LEGGINGS,
                 ModItems.COMPRESSED_NETHERITE_LEGGINGS
         );
         valueLookupBuilder(ENCHANTABLE_FOOT_ARMOR).add(
+                ModItems.COMPRESSED_COPPER_BOOTS,
                 ModItems.COMPRESSED_IRON_BOOTS,
                 ModItems.COMPRESSED_GOLD_BOOTS,
                 ModItems.COMPRESSED_DIAMOND_BOOTS,

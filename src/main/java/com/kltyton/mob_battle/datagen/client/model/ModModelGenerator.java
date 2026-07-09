@@ -86,23 +86,50 @@ public class ModModelGenerator extends FabricModelProvider {
 
         itemModelCollector.generateFlatItem(ModItems.EMERALD_DIAMOND_SWORD, ModelTemplates.FLAT_HANDHELD_ITEM);
         itemModelCollector.generateFlatItem(ModItems.ZIJIN_SWORD, ModelTemplates.FLAT_HANDHELD_ITEM);
+        itemModelCollector.generateFlatItem(ModItems.COMPRESSED_COPPER_SWORD, ModelTemplates.FLAT_HANDHELD_ITEM);
         itemModelCollector.generateFlatItem(ModItems.COMPRESSED_IRON_SWORD, ModelTemplates.FLAT_HANDHELD_ITEM);
         itemModelCollector.generateFlatItem(ModItems.COMPRESSED_GOLD_SWORD, ModelTemplates.FLAT_HANDHELD_ITEM);
         itemModelCollector.generateFlatItem(ModItems.COMPRESSED_DIAMOND_SWORD, ModelTemplates.FLAT_HANDHELD_ITEM);
         itemModelCollector.generateFlatItem(ModItems.COMPRESSED_NETHERITE_SWORD, ModelTemplates.FLAT_HANDHELD_ITEM);
+        generateFlatItemWithTexture(itemModelCollector, ModItems.COMPRESSED_COPPER_HELMET, Identifier.withDefaultNamespace("item/copper_helmet"));
+        generateFlatItemWithTexture(itemModelCollector, ModItems.COMPRESSED_COPPER_CHESTPLATE, Identifier.withDefaultNamespace("item/copper_chestplate"));
+        generateFlatItemWithTexture(itemModelCollector, ModItems.COMPRESSED_COPPER_LEGGINGS, Identifier.withDefaultNamespace("item/copper_leggings"));
+        generateFlatItemWithTexture(itemModelCollector, ModItems.COMPRESSED_COPPER_BOOTS, Identifier.withDefaultNamespace("item/copper_boots"));
 
         itemModelCollector.generateFlatItem(ModItems.CARDIOTONIC_INJECTION, STICK_TEMPLATE);
+        registerExistingItemModel(itemModelCollector, ModItems.POISON_KNIFE, "poison_knife");
+        registerExistingItemModel(itemModelCollector, ModItems.BLOOD_KNIFE, "blood_knife");
+        registerExistingItemModel(itemModelCollector, ModItems.IRON_MAN_MISSILE_LAUNCHER, "iron_man_missile_launcher");
+        registerExistingItemModel(itemModelCollector, ModItems.LITTLE_PERSON_TOOL, "little_person_tool");
+        registerExistingItemModel(itemModelCollector, ModItems.LITTLE_PERSON_SCEPTER, "little_person_scepter");
 
         itemModelCollector.createFlatItemModel(ModItems.ICE_BOW, ModelTemplates.BOW);
         itemModelCollector.generateBow(ModItems.ICE_BOW);
 
         for (Item item : ModItems.GENERATED_ITEMS.values()) {
-            if (item == ModItems.PURIFICATION_SCROLL) {
+            if (isCompressedCopperArmor(item)) {
+                continue;
+            } else if (item == ModItems.PURIFICATION_SCROLL) {
                 generateFlatItemWithTexture(itemModelCollector, item,
                         Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "item/slowness_scroll"));
             } else if (item == ModItems.PIGLIN_CANNON) {
                 generateFlatItemWithTexture(itemModelCollector, item,
                         Identifier.withDefaultNamespace("item/crossbow_standby"));
+            } else if (item == ModItems.WOODEN_WHISTLE) {
+                generateFlatItemWithTexture(itemModelCollector, item,
+                        Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "item/wooden_whistle"));
+            } else if (item == ModItems.BIG_BACKPACK) {
+                generateFlatItemWithTexture(itemModelCollector, item,
+                        Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "item/big_backpack"));
+            } else if (item == ModItems.ENDER_PURPLE_PEARL) {
+                generateFlatItemWithTexture(itemModelCollector, item,
+                        Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "item/ender_purple_pearl"));
+            } else if (item == ModItems.ICE_SWORD) {
+                generateFlatItemWithTexture(itemModelCollector, item, Identifier.withDefaultNamespace("item/iron_sword"));
+            } else if (item == ModItems.FIRE_SWORD) {
+                generateFlatItemWithTexture(itemModelCollector, item, Identifier.withDefaultNamespace("item/golden_sword"));
+            } else if (item == ModItems.CHASING_WIND_SWORD) {
+                generateFlatItemWithTexture(itemModelCollector, item, Identifier.withDefaultNamespace("item/diamond_sword"));
             } else {
                 itemModelCollector.generateFlatItem(item, ModelTemplates.FLAT_ITEM);
             }
@@ -114,7 +141,9 @@ public class ModModelGenerator extends FabricModelProvider {
             Identifier textureId;
             if (item == ModItems.PIGLIN_BRUTE_SPEAR_USE_SPAWN_EGG
                     || item == ModItems.PIGLIN_BRUTE_SPEAR_MELEE_SPAWN_EGG
-                    || item == ModItems.PIGLIN_BRUTE_SPEAR_MOD_SPAWN_EGG) {
+                    || item == ModItems.PIGLIN_BRUTE_SPEAR_MOD_SPAWN_EGG
+                    || item == ModItems.PIGLIN_BRUTE_BOW_SPAWN_EGG
+                    || item == ModItems.PIGLIN_BRUTE_CROSSBOW_SPAWN_EGG) {
                 textureId = Identifier.withDefaultNamespace("item/piglin_brute_spawn_egg");
             } else if (item == ModItems.BOW_ZOMBIE_SPAWN_EGG
                     || item == ModItems.BOW_ZOMBIE_MOD_SPAWN_EGG) {
@@ -142,6 +171,13 @@ public class ModModelGenerator extends FabricModelProvider {
         }
     }
 
+    private static boolean isCompressedCopperArmor(Item item) {
+        return item == ModItems.COMPRESSED_COPPER_HELMET
+                || item == ModItems.COMPRESSED_COPPER_CHESTPLATE
+                || item == ModItems.COMPRESSED_COPPER_LEGGINGS
+                || item == ModItems.COMPRESSED_COPPER_BOOTS;
+    }
+
     private static void generateFlatItemWithTexture(ItemModelGenerators itemModelCollector, Item item, Identifier textureId) {
         itemModelCollector.itemModelOutput.accept(
                 item,
@@ -152,6 +188,13 @@ public class ModModelGenerator extends FabricModelProvider {
                                 itemModelCollector.modelOutput
                         )
                 )
+        );
+    }
+
+    private static void registerExistingItemModel(ItemModelGenerators itemModelCollector, Item item, String modelPath) {
+        itemModelCollector.itemModelOutput.accept(
+                item,
+                ItemModelUtils.plainModel(Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "item/" + modelPath))
         );
     }
 }

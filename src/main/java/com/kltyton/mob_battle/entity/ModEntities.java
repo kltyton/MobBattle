@@ -18,6 +18,8 @@ import com.kltyton.mob_battle.entity.evoker.SuperEvokerEntity;
 import com.kltyton.mob_battle.entity.enhancedwither.EnhancedWitherEntity;
 import com.kltyton.mob_battle.entity.firewall.FireWallEntity;
 import com.kltyton.mob_battle.entity.flowerfairy.FlowerFairyEntity;
+import com.kltyton.mob_battle.entity.golem.ChestGolemEntity;
+import com.kltyton.mob_battle.entity.golem.StrongMinEntity;
 import com.kltyton.mob_battle.entity.hiddeneye.HiddenEyeEntity;
 import com.kltyton.mob_battle.entity.highbird.adulthood.HighbirdAdulthoodEntity;
 import com.kltyton.mob_battle.entity.highbird.baby.HighbirdBabyEntity;
@@ -30,12 +32,14 @@ import com.kltyton.mob_battle.entity.littleperson.archer.LittlePersonArcherEntit
 import com.kltyton.mob_battle.entity.littleperson.archer.littlearrow.LittleArrowEntity;
 import com.kltyton.mob_battle.entity.littleperson.archer.soldier.LittlePersonSoldierArcherEntity;
 import com.kltyton.mob_battle.entity.littleperson.civilian.LittlePersonCivilianEntity;
+import com.kltyton.mob_battle.entity.littleperson.civilian.LittlePersonWorkerEntity;
 import com.kltyton.mob_battle.entity.littleperson.giant.LittlePersonGiantEntity;
 import com.kltyton.mob_battle.entity.littleperson.guard.LittlePersonGuardEntity;
 import com.kltyton.mob_battle.entity.littleperson.king.LittlePersonKingEntity;
 import com.kltyton.mob_battle.entity.littleperson.militia.LittlePersonMilitiaEntity;
 import com.kltyton.mob_battle.entity.littleperson.militia.soldier.LittlePersonSoldierEntity;
 import com.kltyton.mob_battle.entity.littleperson.skillentity.*;
+import com.kltyton.mob_battle.entity.littleperson.skillentity.requested.*;
 import com.kltyton.mob_battle.entity.littleperson.skillentity.ironmanbullet.IronManBulletEntity;
 import com.kltyton.mob_battle.entity.lobster.LobsterEntity;
 import com.kltyton.mob_battle.entity.lobster.MagmaLobsterEntity;
@@ -46,13 +50,18 @@ import com.kltyton.mob_battle.entity.piglingeneral.PiglinGeneralEntity;
 import com.kltyton.mob_battle.entity.misc.ModifiedDragonBreathCloud;
 import com.kltyton.mob_battle.entity.misc.PoisonousBeachEntity;
 import com.kltyton.mob_battle.entity.misc.shield.ShieldEntity;
+import com.kltyton.mob_battle.entity.projectile.ElementalSwordProjectileEntity;
+import com.kltyton.mob_battle.entity.projectile.LittleStoneEntity;
 import com.kltyton.mob_battle.entity.silencephantom.SilencePhantomEntity;
 import com.kltyton.mob_battle.entity.silverfish.silverfish.*;
 import com.kltyton.mob_battle.entity.skull.archer.SkullArcherEntity;
 import com.kltyton.mob_battle.entity.skull.king.SkullKingEntity;
+import com.kltyton.mob_battle.entity.skull.mage.NewSkullMageEntity;
 import com.kltyton.mob_battle.entity.skull.mage.SkullMageEntity;
+import com.kltyton.mob_battle.entity.skull.mage.SummonedSkeletonEntity;
 import com.kltyton.mob_battle.entity.skull.warrior.SkullWarriorEntity;
 import com.kltyton.mob_battle.entity.snowgolem.NewSnowGolemEntity;
+import com.kltyton.mob_battle.entity.summon.SummonedVexEntity;
 import com.kltyton.mob_battle.entity.sugarmanscorpion.SugarManScorpion;
 import com.kltyton.mob_battle.entity.villager.archervillager.ArcherVillager;
 import com.kltyton.mob_battle.entity.villager.militia.MilitiaArcherVillager;
@@ -81,6 +90,7 @@ import net.minecraft.world.entity.SpawnPlacementTypes;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.golem.SnowGolem;
 import net.minecraft.world.entity.monster.piglin.PiglinBrute;
+import net.minecraft.world.entity.monster.Vex;
 import net.minecraft.world.entity.monster.zombie.Zombie;
 import net.minecraft.world.entity.npc.villager.Villager;
 import net.minecraft.world.level.levelgen.Heightmap;
@@ -116,6 +126,7 @@ public class ModEntities {
     public static final ResourceKey<EntityType<?>> skull_archer = ResourceKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID,"skull_archer"));
     public static final ResourceKey<EntityType<?>> skull_warrior = ResourceKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID,"skull_warrior"));
     public static final ResourceKey<EntityType<?>> skull_mage = ResourceKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID,"skull_mage"));
+    public static final ResourceKey<EntityType<?>> summoned_skeleton = ResourceKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID,"summoned_skeleton"));
     public static final ResourceKey<EntityType<?>> young_min = ResourceKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID,"young_min"));
     public static final ResourceKey<EntityType<?>> hidden_eye = ResourceKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID,"hidden_eye"));
     public static final ResourceKey<EntityType<?>> silence_phantom = ResourceKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID,"silence_phantom"));
@@ -135,6 +146,7 @@ public class ModEntities {
     public static final ResourceKey<EntityType<?>> ice_bomb = ResourceKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID,"ice_bomb"));
     public static final ResourceKey<EntityType<?>> ice_fangs = ResourceKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID,"ice_fangs"));
     public static final ResourceKey<EntityType<?>> ninja_clone = ResourceKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID,"ninja_clone"));
+    public static final ResourceKey<EntityType<?>> elemental_sword_projectile = ResourceKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID,"elemental_sword_projectile"));
 
     public static final ResourceKey<EntityType<?>> bullet = ResourceKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID,"bullet"));
     public static final ResourceKey<EntityType<?>> wither_skull_bullet = ResourceKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID,"wither_skull_bullet"));
@@ -268,6 +280,14 @@ public class ModEntities {
             .clientTrackingRange(64)
             .fireImmune()
             .build(skull_mage);
+    public static final EntityType<SummonedSkeletonEntity> SUMMONED_SKELETON =
+            FabricEntityType.Builder.createMob(SummonedSkeletonEntity::new, MobCategory.MONSTER,
+                            (mob) -> mob.defaultAttributes(SummonedSkeletonEntity::createSummonedSkeletonAttributes)
+                                    .spawnPlacement(SpawnPlacementTypes.ON_GROUND,
+                                            Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (type, world, reason, pos, random) -> false))
+                    .sized(0.6F, 1.95F)
+                    .clientTrackingRange(64)
+                    .build(summoned_skeleton);
     public static final EntityType<YoungMinEntity> YOUNG_MIN = FabricEntityType.Builder.createMob(YoungMinEntity::new, MobCategory.CREATURE,
                     (mob) -> mob.defaultAttributes(YoungMinEntity::createAttributes)
                             .spawnPlacement(SpawnPlacementTypes.ON_GROUND,
@@ -544,6 +564,17 @@ public class ModEntities {
             true,
             true
     );
+    public static final EntityType<SummonedVexEntity> SUMMONED_VEX = createEntityType(
+            "summoned_vex",
+            FabricEntityType.Builder.createMob(SummonedVexEntity::new, MobCategory.MONSTER,
+                            (mob) -> mob.defaultAttributes(Vex::createAttributes)
+                                    .spawnPlacement(SpawnPlacementTypes.ON_GROUND,
+                                            Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (type, world, reason, pos, random) -> false))
+                    .sized(0.4F, 0.8F)
+                    .clientTrackingRange(8),
+            false,
+            false
+    );
     public static final EntityType<NewSnowGolemEntity> NEW_SNOW_GOLEM = createEntityType(
             "new_snow_golem",
             FabricEntityType.Builder.createMob(NewSnowGolemEntity::new, MobCategory.MISC,
@@ -552,6 +583,30 @@ public class ModEntities {
                                             Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (type, world, reason, pos, random) -> false))
                     .sized(0.7F, 1.9F)
                     .eyeHeight(1.7F)
+                    .clientTrackingRange(10),
+            true,
+            false
+    );
+    public static final EntityType<ChestGolemEntity> CHEST_GOLEM = createEntityType(
+            "chest_golem",
+            FabricEntityType.Builder.createMob(ChestGolemEntity::new, MobCategory.CREATURE,
+                            (mob) -> mob.defaultAttributes(ChestGolemEntity::createAttributes)
+                                    .spawnPlacement(SpawnPlacementTypes.ON_GROUND,
+                                            Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (type, world, reason, pos, random) -> false))
+                    .sized(1.4F, 2.7F)
+                    .eyeHeight(2.3F)
+                    .clientTrackingRange(10),
+            true,
+            false
+    );
+    public static final EntityType<StrongMinEntity> STRONG_MIN = createEntityType(
+            "strong_min",
+            FabricEntityType.Builder.createMob(StrongMinEntity::new, MobCategory.CREATURE,
+                            (mob) -> mob.defaultAttributes(StrongMinEntity::createAttributes)
+                                    .spawnPlacement(SpawnPlacementTypes.ON_GROUND,
+                                            Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (type, world, reason, pos, random) -> false))
+                    .sized(1.4F, 2.7F)
+                    .eyeHeight(2.3F)
                     .clientTrackingRange(10),
             true,
             false
@@ -621,6 +676,19 @@ public class ModEntities {
             true,
             true
     );
+    public static final EntityType<AngrySilverfishEntity> ANGRY_SILVERFISH = createEntityType(
+            "angry_silverfish",
+            FabricEntityType.Builder.createMob(AngrySilverfishEntity::new, MobCategory.MONSTER,
+                            (mob) -> mob.defaultAttributes(AngrySilverfishEntity::createAttributes)
+                                    .spawnPlacement(SpawnPlacementTypes.ON_GROUND,
+                                            Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (type, world, reason, pos, random) -> false))
+                    .sized(0.4F, 0.3F)
+                    .eyeHeight(0.13F)
+                    .passengerAttachments(0.2375F)
+                    .clientTrackingRange(8),
+            true,
+            false
+    );
     public static final EntityType<FlowerFairyEntity> FLOWER_FAIRY = createEntityType(
             "flower_fairy",
             FabricEntityType.Builder.createMob(FlowerFairyEntity::new, MobCategory.CREATURE,
@@ -666,6 +734,17 @@ public class ModEntities {
             .sized(0.6F, 0.9F)
             .clientTrackingRange(40)
             .build(little_person_civilian);
+    public static final EntityType<LittlePersonWorkerEntity> LITTLE_PERSON_WORKER = createEntityType(
+            "little_person_worker",
+            FabricEntityType.Builder.createMob(LittlePersonWorkerEntity::new, MobCategory.MISC,
+                            (mob) -> mob.defaultAttributes(LittlePersonCivilianEntity::createLittlePersonCivilianAttributes)
+                                    .spawnPlacement(SpawnPlacementTypes.ON_GROUND,
+                                            Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,(type, world, reason, pos, random) -> false))
+                    .sized(0.6F, 0.9F)
+                    .clientTrackingRange(40),
+            true,
+            false
+    );
     public static final EntityType<LittlePersonMilitiaEntity> LITTLE_PERSON_MILITIA =
             FabricEntityType.Builder.createMob(LittlePersonMilitiaEntity::new, MobCategory.MISC,
                             (mob) -> mob.defaultAttributes(LittlePersonMilitiaEntity::createLittlePersonMilitiaAttributes)
@@ -706,6 +785,18 @@ public class ModEntities {
                     .sized(0.6F, 0.9F)
                     .clientTrackingRange(40)
                     .build(little_person_king);
+    public static final EntityType<NewSkullMageEntity> NEW_SKULL_MAGE = createEntityType(
+            "new_skull_mage",
+            FabricEntityType.Builder.createMob(
+                            NewSkullMageEntity::new, MobCategory.MISC,
+                            (mob) -> mob.defaultAttributes(NewSkullMageEntity::createNewSkullMageAttributes)
+                                    .spawnPlacement(SpawnPlacementTypes.ON_GROUND,
+                                            Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (type, world, reason, pos, random) -> false))
+                    .sized(0.8F, 1.55F)
+                    .clientTrackingRange(40),
+            true,
+            false
+    );
     public static final EntityType<PoisonousSlashEntity> POISONOUS_SLASH = createLittlePersonEntityType(
             "poisonous_slash",
             FabricEntityType.Builder.createMob(
@@ -938,10 +1029,211 @@ public class ModEntities {
                     .sized(0.6F, 0.9F)
                     .clientTrackingRange(40)
     );
+    public static final EntityType<YemoWenluEntity> YEMO_WENLU = createLittlePersonEntityType(
+            "yemo_wenlu",
+            FabricEntityType.Builder.createMob(
+                            YemoWenluEntity::new, MobCategory.MISC,
+                            (mob) -> mob.defaultAttributes(YemoWenluEntity::createLittlePersonAttributes)
+                                    .spawnPlacement(SpawnPlacementTypes.ON_GROUND,
+                                            Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (type, world, reason, pos, random) -> false))
+                    .sized(0.6F, 0.9F)
+                    .clientTrackingRange(40)
+    );
+    public static final EntityType<RenfuEntity> RENFU = createLittlePersonEntityType(
+            "renfu",
+            FabricEntityType.Builder.createMob(
+                            RenfuEntity::new, MobCategory.MISC,
+                            (mob) -> mob.defaultAttributes(RenfuEntity::createLittlePersonAttributes)
+                                    .spawnPlacement(SpawnPlacementTypes.ON_GROUND,
+                                            Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (type, world, reason, pos, random) -> false))
+                    .sized(0.6F, 0.9F)
+                    .clientTrackingRange(40)
+    );
+    public static final EntityType<ContradictionManEntity> CONTRADICTION_MAN = createLittlePersonEntityType(
+            "contradiction_man",
+            FabricEntityType.Builder.createMob(
+                            ContradictionManEntity::new, MobCategory.MISC,
+                            (mob) -> mob.defaultAttributes(ContradictionManEntity::createLittlePersonAttributes)
+                                    .spawnPlacement(SpawnPlacementTypes.ON_GROUND,
+                                            Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (type, world, reason, pos, random) -> false))
+                    .sized(0.6F, 0.9F)
+                    .clientTrackingRange(40)
+    );
+    public static final EntityType<MaceManEntity> MACE_MAN = createLittlePersonEntityType(
+            "mace_man",
+            FabricEntityType.Builder.createMob(
+                            MaceManEntity::new, MobCategory.MISC,
+                            (mob) -> mob.defaultAttributes(MaceManEntity::createLittlePersonAttributes)
+                                    .spawnPlacement(SpawnPlacementTypes.ON_GROUND,
+                                            Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (type, world, reason, pos, random) -> false))
+                    .sized(0.6F, 0.9F)
+                    .clientTrackingRange(40)
+    );
+    public static final EntityType<LittlePersonBoxerEntity> LITTLE_PERSON_BOXER = createLittlePersonEntityType(
+            "little_person_boxer",
+            FabricEntityType.Builder.createMob(
+                            LittlePersonBoxerEntity::new, MobCategory.MISC,
+                            (mob) -> mob.defaultAttributes(LittlePersonBoxerEntity::createLittlePersonAttributes)
+                                    .spawnPlacement(SpawnPlacementTypes.ON_GROUND,
+                                            Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (type, world, reason, pos, random) -> false))
+                    .sized(0.6F, 0.9F)
+                    .clientTrackingRange(40)
+    );
+    public static final EntityType<LittlePersonCityGuardEntity> LITTLE_PERSON_CITY_GUARD = createLittlePersonEntityType(
+            "little_person_city_guard",
+            FabricEntityType.Builder.createMob(
+                            LittlePersonCityGuardEntity::new, MobCategory.MISC,
+                            (mob) -> mob.defaultAttributes(LittlePersonCityGuardEntity::createLittlePersonAttributes)
+                                    .spawnPlacement(SpawnPlacementTypes.ON_GROUND,
+                                            Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (type, world, reason, pos, random) -> false))
+                    .sized(0.6F, 0.9F)
+                    .clientTrackingRange(40)
+    );
+    public static final EntityType<LittlePersonServantEntity> LITTLE_PERSON_SERVANT = createLittlePersonEntityType(
+            "little_person_servant",
+            FabricEntityType.Builder.createMob(
+                            LittlePersonServantEntity::new, MobCategory.MISC,
+                            (mob) -> mob.defaultAttributes(LittlePersonServantEntity::createLittlePersonAttributes)
+                                    .spawnPlacement(SpawnPlacementTypes.ON_GROUND,
+                                            Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (type, world, reason, pos, random) -> false))
+                    .sized(0.6F, 0.9F)
+                    .clientTrackingRange(40)
+    );
+    public static final EntityType<SevenHarvestLittlePersonEntity> SEVEN_HARVEST_LITTLE_PERSON = createLittlePersonEntityType(
+            "seven_harvest_little_person",
+            FabricEntityType.Builder.createMob(
+                            SevenHarvestLittlePersonEntity::new, MobCategory.MISC,
+                            (mob) -> mob.defaultAttributes(SevenHarvestLittlePersonEntity::createLittlePersonAttributes)
+                                    .spawnPlacement(SpawnPlacementTypes.ON_GROUND,
+                                            Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (type, world, reason, pos, random) -> false))
+                    .sized(0.6F, 0.9F)
+                    .clientTrackingRange(40)
+    );
+    public static final EntityType<KnifeLittlePersonEntity> KNIFE_LITTLE_PERSON = createLittlePersonEntityType(
+            "knife_little_person",
+            FabricEntityType.Builder.createMob(
+                            KnifeLittlePersonEntity::new, MobCategory.MISC,
+                            (mob) -> mob.defaultAttributes(KnifeLittlePersonEntity::createLittlePersonAttributes)
+                                    .spawnPlacement(SpawnPlacementTypes.ON_GROUND,
+                                            Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (type, world, reason, pos, random) -> false))
+                    .sized(0.6F, 0.9F)
+                    .clientTrackingRange(40)
+    );
+    public static final EntityType<Xbot002Entity> XBOT002 = createLittlePersonEntityType(
+            "xbot002",
+            FabricEntityType.Builder.createMob(
+                            Xbot002Entity::new, MobCategory.MISC,
+                            (mob) -> mob.defaultAttributes(Xbot002Entity::createLittlePersonAttributes)
+                    .spawnPlacement(SpawnPlacementTypes.ON_GROUND,
+                                            Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (type, world, reason, pos, random) -> false))
+                    .sized(1.4F, 2.7F)
+                    .clientTrackingRange(40)
+                    .fireImmune()
+    );
+    public static final EntityType<EliteLittlePersonGuardEntity> ELITE_LITTLE_PERSON_GUARD = createLittlePersonEntityType(
+            "elite_little_person_guard",
+            FabricEntityType.Builder.createMob(
+                            EliteLittlePersonGuardEntity::new, MobCategory.MISC,
+                            (mob) -> mob.defaultAttributes(EliteLittlePersonGuardEntity::createLittlePersonAttributes)
+                                    .spawnPlacement(SpawnPlacementTypes.ON_GROUND,
+                                            Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (type, world, reason, pos, random) -> false))
+                    .sized(0.6F, 0.9F)
+                    .clientTrackingRange(40)
+    );
+    public static final EntityType<ThreeCompanionsEntity> THREE_COMPANIONS = createLittlePersonEntityType(
+            "three_companions",
+            FabricEntityType.Builder.createMob(
+                            ThreeCompanionsEntity::new, MobCategory.MISC,
+                            (mob) -> mob.defaultAttributes(ThreeCompanionsEntity::createLittlePersonAttributes)
+                                    .spawnPlacement(SpawnPlacementTypes.ON_GROUND,
+                                            Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (type, world, reason, pos, random) -> false))
+                    .sized(0.6F, 0.9F)
+                    .clientTrackingRange(40)
+    );
+    public static final EntityType<GreenManEntity> GREEN_MAN = createLittlePersonEntityType(
+            "green_man",
+            FabricEntityType.Builder.createMob(
+                            GreenManEntity::new, MobCategory.MISC,
+                            (mob) -> mob.defaultAttributes(GreenManEntity::createLittlePersonAttributes)
+                                    .spawnPlacement(SpawnPlacementTypes.ON_GROUND,
+                                            Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (type, world, reason, pos, random) -> false))
+                    .sized(0.6F, 0.9F)
+                    .clientTrackingRange(40)
+    );
+    public static final EntityType<LittlePersonMedicEntity> LITTLE_PERSON_MEDIC = createLittlePersonEntityType(
+            "little_person_medic",
+            FabricEntityType.Builder.createMob(
+                            LittlePersonMedicEntity::new, MobCategory.MISC,
+                            (mob) -> mob.defaultAttributes(LittlePersonMedicEntity::createLittlePersonAttributes)
+                                    .spawnPlacement(SpawnPlacementTypes.ON_GROUND,
+                                            Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (type, world, reason, pos, random) -> false))
+                    .sized(0.6F, 0.9F)
+                    .clientTrackingRange(40)
+    );
+    public static final EntityType<LittlePersonGeneralEntity> LITTLE_PERSON_GENERAL = createLittlePersonEntityType(
+            "little_person_general",
+            FabricEntityType.Builder.createMob(
+                            LittlePersonGeneralEntity::new, MobCategory.MISC,
+                            (mob) -> mob.defaultAttributes(LittlePersonGeneralEntity::createLittlePersonAttributes)
+                                    .spawnPlacement(SpawnPlacementTypes.ON_GROUND,
+                                            Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (type, world, reason, pos, random) -> false))
+                    .sized(0.6F, 0.9F)
+                    .clientTrackingRange(40)
+    );
+    public static final EntityType<MacroSamuraiEntity> MACRO_SAMURAI = createLittlePersonEntityType(
+            "macro_samurai",
+            FabricEntityType.Builder.createMob(
+                            MacroSamuraiEntity::new, MobCategory.MISC,
+                            (mob) -> mob.defaultAttributes(MacroSamuraiEntity::createLittlePersonAttributes)
+                                    .spawnPlacement(SpawnPlacementTypes.ON_GROUND,
+                                            Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (type, world, reason, pos, random) -> false))
+                    .sized(0.6F, 0.9F)
+                    .clientTrackingRange(40)
+    );
     public static final EntityType<SkillProjectileEntity> LASER = createEntityType(
             "laser",
             EntityType.Builder.<SkillProjectileEntity>of(SkillProjectileEntity::new, MobCategory.MISC)
                     .sized(0.35F, 0.35F)
+                    .clientTrackingRange(64)
+                    .updateInterval(1),
+            false,
+            false
+    );
+    public static final EntityType<SkillProjectileEntity> SEVEN_HARVEST_BULLET = createEntityType(
+            "seven_harvest_bullet",
+            EntityType.Builder.<SkillProjectileEntity>of(SkillProjectileEntity::new, MobCategory.MISC)
+                    .noLootTable()
+                    .sized(0.35F, 0.35F)
+                    .clientTrackingRange(64)
+                    .updateInterval(1),
+            false,
+            false
+    );
+    public static final EntityType<SkillProjectileEntity> SEVEN_HARVEST_EXPLOSIVE_BULLET = createEntityType(
+            "seven_harvest_explosive_bullet",
+            EntityType.Builder.<SkillProjectileEntity>of(SkillProjectileEntity::new, MobCategory.MISC)
+                    .noLootTable()
+                    .sized(0.45F, 0.45F)
+                    .clientTrackingRange(64)
+                    .updateInterval(1),
+            false,
+            false
+    );
+    public static final EntityType<SkillProjectileEntity> KNIFE_PROJECTILE = createEntityType(
+            "knife_projectile",
+            EntityType.Builder.<SkillProjectileEntity>of(SkillProjectileEntity::new, MobCategory.MISC)
+                    .noLootTable()
+                    .sized(0.35F, 0.35F)
+                    .clientTrackingRange(64)
+                    .updateInterval(1),
+            false,
+            false
+    );
+    public static final EntityType<SkillProjectileEntity> SKELETON_HEAD_PROJECTILE = createEntityType(
+            "skeleton_head_projectile",
+            EntityType.Builder.<SkillProjectileEntity>of(SkillProjectileEntity::new, MobCategory.MISC)
+                    .noLootTable()
+                    .sized(0.8F, 0.8F)
                     .clientTrackingRange(64)
                     .updateInterval(1),
             false,
@@ -1110,6 +1402,28 @@ public class ModEntities {
             false,
             false
     );
+    public static final EntityType<LittleStoneEntity> LITTLE_STONE_PROJECTILE = createEntityType(
+            "little_stone_projectile",
+            EntityType.Builder.<LittleStoneEntity>of(LittleStoneEntity::new, MobCategory.MISC)
+                    .noLootTable()
+                    .sized(0.25F, 0.25F)
+                    .eyeHeight(0.13F)
+                    .clientTrackingRange(4)
+                    .updateInterval(20),
+            false,
+            false
+    );
+    public static final EntityType<ElementalSwordProjectileEntity> ELEMENTAL_SWORD_PROJECTILE = createEntityType(
+            "elemental_sword_projectile",
+            EntityType.Builder.<ElementalSwordProjectileEntity>of(ElementalSwordProjectileEntity::new, MobCategory.MISC)
+                    .noLootTable()
+                    .sized(0.35F, 0.35F)
+                    .eyeHeight(0.13F)
+                    .clientTrackingRange(4)
+                    .updateInterval(20),
+            false,
+            false
+    );
     public static final EntityType<LobsterEntity> LOBSTER = createEntityType(
             "lobster_entity",
             FabricEntityType.Builder.createMob(LobsterEntity::new, MobCategory.CREATURE,
@@ -1160,6 +1474,7 @@ public class ModEntities {
         Registry.register(BuiltInRegistries.ENTITY_TYPE, skull_archer, SKULL_ARCHER);
         Registry.register(BuiltInRegistries.ENTITY_TYPE, skull_warrior, SKULL_WARRIOR);
         Registry.register(BuiltInRegistries.ENTITY_TYPE, skull_mage, SKULL_MAGE);
+        Registry.register(BuiltInRegistries.ENTITY_TYPE, summoned_skeleton, SUMMONED_SKELETON);
         Registry.register(BuiltInRegistries.ENTITY_TYPE, young_min, YOUNG_MIN);
         Registry.register(BuiltInRegistries.ENTITY_TYPE, hidden_eye, HIDDEN_EYE);
         Registry.register(BuiltInRegistries.ENTITY_TYPE, meteorite, METEORITE);

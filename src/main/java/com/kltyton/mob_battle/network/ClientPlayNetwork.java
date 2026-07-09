@@ -1,6 +1,7 @@
 package com.kltyton.mob_battle.network;
 
 import com.kltyton.mob_battle.accessor.ILead;
+import com.kltyton.mob_battle.animation.ModPlayerAnimationClientHandler;
 import com.kltyton.mob_battle.bossbar.CustomBossBarClientState;
 import com.kltyton.mob_battle.config.whitelist.ClientPermissionState;
 import com.kltyton.mob_battle.items.itemgroup.ClientTagManager;
@@ -9,6 +10,7 @@ import com.kltyton.mob_battle.sounds.bgm.ClientBgmManager;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.Avatar;
 import net.minecraft.world.entity.Entity;
 
 public class ClientPlayNetwork {
@@ -86,6 +88,24 @@ public class ClientPlayNetwork {
                     CustomBossBarClientState.set(payload.bossBarUuid(), payload.styleId());
                 } else {
                     CustomBossBarClientState.remove(payload.bossBarUuid());
+                }
+            });
+        });
+        // 收到同步包后，在客户端当前维度中找到目标玩家并操作其动画控制器。
+        ClientPlayNetworking.registerGlobalReceiver(PlayerAnimationPayload.ID, (payload, context) -> {
+            Minecraft client = context.client();
+            client.execute(() -> {
+                if (client.level == null) {
+                    return;
+                }
+
+                Entity entity = client.level.getEntity(payload.avatarEntityId());
+                if (entity instanceof Avatar avatar) {
+                    if (payload.stop()) {
+                        ModPlayerAnimationClientHandler.stop(avatar);
+                    } else {
+                        ModPlayerAnimationClientHandler.play(avatar, payload.animationId());
+                    }
                 }
             });
         });

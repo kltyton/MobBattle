@@ -33,6 +33,8 @@ public class ModMaterial {
             ResourceKey.create(EquipmentAssets.ROOT_ID, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "emerald_diamond_alloy"));
     public static final ResourceKey<EquipmentAsset> ZIJIN_ARMOR_MATERIAL_KEY =
             ResourceKey.create(EquipmentAssets.ROOT_ID, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "zijin"));
+    public static final ResourceKey<EquipmentAsset> COMPRESSED_COPPER_ARMOR_MATERIAL_KEY =
+            EquipmentAssets.COPPER;
     public static final ResourceKey<EquipmentAsset> COMPRESSED_IRON_ARMOR_MATERIAL_KEY =
             ResourceKey.create(EquipmentAssets.ROOT_ID, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "compressed_iron_ingot"));
     public static final ResourceKey<EquipmentAsset> COMPRESSED_GOLD_ARMOR_MATERIAL_KEY =
@@ -162,6 +164,22 @@ public class ModMaterial {
             ItemTags.BEACON_PAYMENT_ITEMS,
             ZIJIN_ARMOR_MATERIAL_KEY
     );
+    public static final ArmorMaterial COMPRESSED_COPPER_ARMOR_INSTANCE = new ArmorMaterial(
+            2500,
+            Map.of(
+                    ArmorType.HELMET, 2,
+                    ArmorType.CHESTPLATE, 6,
+                    ArmorType.LEGGINGS, 5,
+                    ArmorType.BOOTS, 2,
+                    ArmorType.BODY, 0
+            ),
+            15,
+            SoundEvents.ARMOR_EQUIP_IRON,
+            2.0F,
+            0.0F,
+            ItemTags.BEACON_PAYMENT_ITEMS,
+            COMPRESSED_COPPER_ARMOR_MATERIAL_KEY
+    );
     public static final ArmorMaterial COMPRESSED_IRON_ARMOR_INSTANCE = new ArmorMaterial(
             5000,
             Map.of(
@@ -257,6 +275,14 @@ public class ModMaterial {
             8.0F,
             0.0F,
             10,
+            ItemTags.BEACON_PAYMENT_ITEMS
+    );
+    public static final ToolMaterial COMPRESSED_COPPER_TOOL_MATERIAL = new ToolMaterial(
+            BlockTags.INCORRECT_FOR_IRON_TOOL,
+            2500,
+            8.0F,
+            0.0F,
+            15,
             ItemTags.BEACON_PAYMENT_ITEMS
     );
     public static final ToolMaterial COMPRESSED_IRON_TOOL_MATERIAL = new ToolMaterial(
@@ -391,6 +417,11 @@ public class ModMaterial {
                 updated = updated.withModifierAdded(
                         Attributes.ENTITY_INTERACTION_RANGE,
                         new AttributeModifier(Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "range_" + id), 1.0, AttributeModifier.Operation.ADD_VALUE),
+                        slot
+                );
+                updated = updated.withModifierAdded(
+                        Attributes.SWEEPING_DAMAGE_RATIO,
+                        new AttributeModifier(Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "swipe_" + id), 1.0, AttributeModifier.Operation.ADD_VALUE),
                         slot
                 );
                 return updated;

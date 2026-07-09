@@ -8,6 +8,9 @@ import com.kltyton.mob_battle.entity.littleperson.archer.littlearrow.StoneArrowE
 import com.kltyton.mob_battle.entity.littleperson.skillentity.ironmanbullet.IronManBulletEntityModel;
 import com.kltyton.mob_battle.entity.littleperson.skillentity.laser.LaserEntityModel;
 import com.kltyton.mob_battle.entity.littleperson.skillentity.poisonousbullet.PoisonousBulletEntityModel;
+import com.kltyton.mob_battle.entity.littleperson.skillentity.requestedprojectile.KnifeProjectileModel;
+import com.kltyton.mob_battle.entity.littleperson.skillentity.requestedprojectile.SevenHarvestBulletModel;
+import com.kltyton.mob_battle.entity.littleperson.skillentity.requestedprojectile.SkeletonHeadProjectileModel;
 import com.kltyton.mob_battle.entity.littleperson.skillentity.spearbullet.SpearBulletEntityModel;
 import net.fabricmc.fabric.api.client.rendering.v1.ModelLayerRegistry;
 import net.minecraft.client.model.geom.ModelLayerLocation;
@@ -24,6 +27,10 @@ public class ModModel {
     public static final ModelLayerLocation GOLDEN_TRAIL_PROJECTILE = new ModelLayerLocation(Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "golden_trail_projectile"), "bb_main");
     public static final ModelLayerLocation LASER = new ModelLayerLocation(Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "laser"), "bb_main");
     public static final ModelLayerLocation SNOWMAN_ICE_BLOCK = new ModelLayerLocation(Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "snowman_ice_block"), "bone7");
+    public static final ModelLayerLocation SEVEN_HARVEST_BULLET = new ModelLayerLocation(Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "seven_harvest_bullet"), "bb_main");
+    public static final ModelLayerLocation SEVEN_HARVEST_EXPLOSIVE_BULLET = new ModelLayerLocation(Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "seven_harvest_explosive_bullet"), "bb_main");
+    public static final ModelLayerLocation KNIFE_PROJECTILE = new ModelLayerLocation(Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "knife_projectile"), "bone11");
+    public static final ModelLayerLocation SKELETON_HEAD_PROJECTILE = new ModelLayerLocation(Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "skeleton_head_projectile"), "head");
 
     public static void init() {
         ModelLayerRegistry.registerModelLayer(LITTLE_ARROW, LittleArrowEntityModel::getTexturedModelData);
@@ -35,5 +42,9 @@ public class ModModel {
         ModelLayerRegistry.registerModelLayer(GOLDEN_TRAIL_PROJECTILE, GoldenTrailProjectileModel::getTexturedModelData);
         ModelLayerRegistry.registerModelLayer(LASER, LaserEntityModel::getTexturedModelData);
         ModelLayerRegistry.registerModelLayer(SNOWMAN_ICE_BLOCK, SnowmanIceBlockModel::getTexturedModelData);
+        ModelLayerRegistry.registerModelLayer(SEVEN_HARVEST_BULLET, SevenHarvestBulletModel::getTexturedModelData);
+        ModelLayerRegistry.registerModelLayer(SEVEN_HARVEST_EXPLOSIVE_BULLET, SevenHarvestBulletModel::getTexturedModelData);
+        ModelLayerRegistry.registerModelLayer(KNIFE_PROJECTILE, KnifeProjectileModel::getTexturedModelData);
+        ModelLayerRegistry.registerModelLayer(SKELETON_HEAD_PROJECTILE, SkeletonHeadProjectileModel::getTexturedModelData);
     }
 }

@@ -2,6 +2,7 @@ package com.kltyton.mob_battle.mixin;
 
 import com.kltyton.mob_battle.entity.irongolem.ModBaseIronGolemEntity;
 import com.kltyton.mob_battle.entity.villager.warriorvillager.WarriorVillager;
+import com.kltyton.mob_battle.utils.EntityUtil;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.Entity;
@@ -33,8 +34,12 @@ public abstract class IronGolemEntityMixin extends AbstractGolem implements Neut
     }
     @Inject(method = "doPush", at = @At("RETURN"))
     protected void pushAway(Entity entity, CallbackInfo ci) {
-        if (this instanceof ModBaseIronGolemEntity && this.getRandom().nextInt(20) == 0 && entity instanceof Enemy) {
-            this.setTarget((LivingEntity)entity);
+        if (this instanceof ModBaseIronGolemEntity
+                && this.getRandom().nextInt(20) == 0
+                && entity instanceof Enemy
+                && entity instanceof LivingEntity living
+                && EntityUtil.isValidCombatTarget(this, living)) {
+            this.setTarget(living);
         }
     }
     @Inject(method = "canAttack", at = @At("RETURN"), cancellable = true)

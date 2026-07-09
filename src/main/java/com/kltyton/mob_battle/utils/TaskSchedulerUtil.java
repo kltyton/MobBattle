@@ -4,7 +4,6 @@ import com.kltyton.mob_battle.Mob_battle;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 public class TaskSchedulerUtil {
@@ -12,18 +11,19 @@ public class TaskSchedulerUtil {
 
     static {
         ServerTickEvents.END_SERVER_TICK.register(server -> {
-            Iterator<ScheduledTask> it = tasks.iterator();
-            while (it.hasNext()) {
-                ScheduledTask task = it.next();
+            List<ScheduledTask> currentTickTasks = new ArrayList<>(tasks);
+            tasks.clear();
+            for (ScheduledTask task : currentTickTasks) {
                 task.ticksLeft--;
                 if (task.ticksLeft <= 0) {
                     try {
                         task.runnable.run();
                     } catch (Exception e) {
-                        Mob_battle.LOGGER.error("运行计划任务时出错。");
+                        Mob_battle.LOGGER.error("运行计划任务时出错。", e);
                         throw new RuntimeException(e);
                     }
-                    it.remove();
+                } else {
+                    tasks.add(task);
                 }
             }
         });

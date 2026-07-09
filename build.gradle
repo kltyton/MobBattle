@@ -18,7 +18,7 @@ fabricApi {
 }
 
 loom {
-    accessWidenerPath = file("src/main/resources/kltyton.accesswidener")
+    accessWidenerPath = file("src/main/resources/mob_battle.classtweaker")
 }
 
 repositories {
@@ -52,6 +52,14 @@ repositories {
         }
         filter { includeGroupAndSubgroups('com.geckolib') }
     }
+    maven {
+        name = "RedlanceMinecraft"
+        url = "https://repo.redlance.org/public"
+    }
+    maven { url = "https://maven.bawnorton.com/releases" }
+
+    // Mirror
+    maven { url = "https://maven.enjarai.dev/mirrors" }
 }
 
 dependencies {
@@ -60,10 +68,14 @@ dependencies {
     implementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
     implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-    include(implementation "maven.modrinth:xxl-packets:1.0.6-26.1.x-fabric")
+    include(implementation "maven.modrinth:xxl-packets:1.0.6-26.x.x-fabric")
     include(implementation "maven.modrinth:packet-fixer:3.3.5")
     include(api("fuzs.forgeconfigapiport:forgeconfigapiport-fabric:26.1.4"))
     include(implementation "org.mesdag:particlestorm:1.0.0")
+    include(implementation "com.kltyton:playeranimationlibrarymorerotation-fabric-26.1.2:1.0.2")
+    include(implementation "maven.modrinth:bendable-cuboids:2.0.2")
+    include(implementation "com.zigythebird.playeranim:PlayerAnimationLibFabric:${pal_version}")
+    include(implementation(annotationProcessor("com.github.bawnorton.mixinsquared:mixinsquared-fabric:0.3.7-beta.3")))
     implementation "com.geckolib:geckolib-fabric-${minecraft_version}:${geckolib_version}"
 }
 

@@ -4,6 +4,7 @@ import com.kltyton.mob_battle.entity.ModSkillEntityType;
 import com.kltyton.mob_battle.entity.littleperson.LittlePersonEntity;
 import com.kltyton.mob_battle.entity.littleperson.archer.littlearrow.LittleArrowEntity;
 import com.kltyton.mob_battle.entity.villager.warriorvillager.WarriorVillager;
+import com.kltyton.mob_battle.utils.EntityUtil;
 import com.kltyton.mob_battle.utils.GeoAnimationUtil;
 
 import net.minecraft.server.level.ServerLevel;
@@ -37,6 +38,7 @@ import com.geckolib.animation.RawAnimation;
 import com.geckolib.util.GeckoLibUtil;
 
 public class LittlePersonArcherEntity extends Monster implements LittlePersonEntity, RangedAttackMob {
+    //这是小人民兵弓箭手
 
     public LittlePersonArcherEntity(EntityType<? extends Monster> entityType, Level world) {
         super(entityType, world);
@@ -47,17 +49,22 @@ public class LittlePersonArcherEntity extends Monster implements LittlePersonEnt
         this.goalSelector.addGoal(7, new WaterAvoidingRandomStrollGoal(this, 1.0)); // 添加远距离游荡目标
         this.goalSelector.addGoal(8, new LookAtPlayerGoal(this, Player.class, 8.0F)); // 添加看向玩家的目标
         this.goalSelector.addGoal(8, new RandomLookAroundGoal(this)); // 添加环顾四周的目标
-        this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, AbstractGolem.class, true)); // 添加攻击傀儡目标
-        this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, WarriorVillager.class, true));
-        this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, true)); // 添加主动攻击玩家目标
-        this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, Mob.class, 5, false, false, (entity, world) -> entity instanceof Enemy && !(entity instanceof LittlePersonEntity)));
+        this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, AbstractGolem.class, 10, true, false, this::canTarget)); // 添加攻击傀儡目标
+        this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, WarriorVillager.class, 10, true, false, this::canTarget));
+        this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, 10, true, false, this::canTarget)); // 添加主动攻击玩家目标
+        this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, Mob.class, 5, false, false,
+                (entity, world) -> entity instanceof Enemy && !(entity instanceof LittlePersonEntity) && canTarget(entity, world)));
+    }
+
+    private boolean canTarget(LivingEntity target, ServerLevel world) {
+        return EntityUtil.isValidCombatTarget(this, target);
     }
     public static AttributeSupplier.Builder createLittlePersonArcherAttributes() {
         return LittlePersonEntity.createLittlePersonAttributes()
-                .add(Attributes.MAX_HEALTH, 10.0)
+                .add(Attributes.MAX_HEALTH, 20.0)
                 .add(Attributes.FOLLOW_RANGE, 40.0)
                 .add(Attributes.MOVEMENT_SPEED, 0.4)
-                .add(Attributes.ATTACK_DAMAGE, 15.0);
+                .add(Attributes.ATTACK_DAMAGE, 3.0);
     }
     @Override
     public void heal() {

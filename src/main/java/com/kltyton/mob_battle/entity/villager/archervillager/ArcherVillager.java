@@ -2,6 +2,7 @@ package com.kltyton.mob_battle.entity.villager.archervillager;
 
 import com.kltyton.mob_battle.entity.ModSkillEntityType;
 import com.kltyton.mob_battle.entity.ai.goal.GeneralProtectionVillagerGoal;
+import com.kltyton.mob_battle.utils.EntityUtil;
 import com.kltyton.mob_battle.utils.GeoAnimationUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -70,7 +71,8 @@ public class ArcherVillager extends SnowGolem implements NeutralMob, GeoEntity {
         this.targetSelector.addGoal(2, new HurtByTargetGoal(this));
         this.targetSelector.addGoal(1, new GeneralProtectionVillagerGoal(this));
         this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, net.minecraft.world.entity.monster.Phantom.class, true));
-        this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, 10, true, false, this::isAngryAt));
+        this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, 10, true, false,
+                (entity, world) -> this.isAngryAt(entity, world) && EntityUtil.isValidCombatTarget(this, entity)));
         this.targetSelector.addGoal(2, new ResetUniversalAngerTargetGoal<>(this, false));
     }
     @Override
@@ -150,6 +152,10 @@ public class ArcherVillager extends SnowGolem implements NeutralMob, GeoEntity {
         return bl;
     }
     private void alertOthers(LivingEntity attacker) {
+        if (!EntityUtil.isValidCombatTarget(this, attacker)) {
+            return;
+        }
+
         // 获取64格范围内所有铁傀儡
         List<SnowGolem> golems = this.level().getEntitiesOfClass(
                 SnowGolem.class,
@@ -159,7 +165,7 @@ public class ArcherVillager extends SnowGolem implements NeutralMob, GeoEntity {
 
         for (SnowGolem golem : golems) {
             // 跳过玩家创建的且攻击者是玩家的铁傀儡
-            if (attacker instanceof AbstractGolem) {
+            if (attacker instanceof AbstractGolem || !EntityUtil.isValidCombatTarget(golem, attacker)) {
                 continue;
             }
 

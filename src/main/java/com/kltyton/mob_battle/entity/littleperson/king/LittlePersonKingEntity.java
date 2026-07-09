@@ -6,6 +6,7 @@ import com.kltyton.mob_battle.entity.littleperson.LittlePersonEntity;
 import com.kltyton.mob_battle.entity.littleperson.guard.LittlePersonGuardEntity;
 import com.kltyton.mob_battle.entity.littleperson.king.skill.LittlePersonKingSkill;
 import com.kltyton.mob_battle.entity.littleperson.militia.LittlePersonMilitiaEntity;
+import com.kltyton.mob_battle.entity.littleperson.skillentity.requested.EliteLittlePersonGuardEntity;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
 import com.kltyton.mob_battle.utils.GeoAnimationUtil;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -34,6 +35,7 @@ public class LittlePersonKingEntity extends LittlePersonMilitiaEntity {
     public static final EntityDataAccessor<Boolean> HAS_SKILL = SynchedEntityData.defineId(LittlePersonKingEntity.class, EntityDataSerializers.BOOLEAN);
     public static final EntityDataAccessor<Integer> SKILL_COOLDOWN_1 = SynchedEntityData.defineId(LittlePersonKingEntity.class, EntityDataSerializers.INT);
     public static final EntityDataAccessor<Integer> SKILL_COOLDOWN_2 = SynchedEntityData.defineId(LittlePersonKingEntity.class, EntityDataSerializers.INT);
+    public static final EntityDataAccessor<Integer> SKILL_COOLDOWN_3 = SynchedEntityData.defineId(LittlePersonKingEntity.class, EntityDataSerializers.INT);
     public static final EntityDataAccessor<Integer> STAGE = SynchedEntityData.defineId(LittlePersonKingEntity.class, EntityDataSerializers.INT);
     public static final EntityDataAccessor<Boolean> IS_VIOLENT = SynchedEntityData.defineId(LittlePersonKingEntity.class, EntityDataSerializers.BOOLEAN);
     public LittlePersonKingEntity(EntityType<? extends Monster> entityType, Level world) {
@@ -48,6 +50,7 @@ public class LittlePersonKingEntity extends LittlePersonMilitiaEntity {
         builder.define(STAGE, 0);
         builder.define(SKILL_COOLDOWN_1, 160);
         builder.define(SKILL_COOLDOWN_2, 100);
+        builder.define(SKILL_COOLDOWN_3, 60 * 20);
         builder.define(IS_VIOLENT, false);
     }
     @Override
@@ -97,6 +100,7 @@ public class LittlePersonKingEntity extends LittlePersonMilitiaEntity {
         return switch (skill) {
             case "attack2" -> getSkillCooldown1();
             case "attack3" -> getSkillCooldown2();
+            case "attack4" -> getSkillCooldown3();
             default -> 114514;
         };
     }
@@ -116,6 +120,7 @@ public class LittlePersonKingEntity extends LittlePersonMilitiaEntity {
         switch (skill) {
             case "attack2" -> setSkillCooldown1(isViolent() ? 200 : 160);
             case "attack3" -> setSkillCooldown2(100);
+            case "attack4" -> setSkillCooldown3(60 * 20);
         }
     }
     public int getSkillCooldown1() {
@@ -129,6 +134,12 @@ public class LittlePersonKingEntity extends LittlePersonMilitiaEntity {
     }
     public void setSkillCooldown2(int skillCooldown2) {
         this.entityData.set(SKILL_COOLDOWN_2, skillCooldown2);
+    }
+    public int getSkillCooldown3() {
+        return this.entityData.get(SKILL_COOLDOWN_3);
+    }
+    public void setSkillCooldown3(int skillCooldown3) {
+        this.entityData.set(SKILL_COOLDOWN_3, skillCooldown3);
     }
     public boolean isViolent() {
         return this.entityData.get(IS_VIOLENT);
@@ -144,8 +155,8 @@ public class LittlePersonKingEntity extends LittlePersonMilitiaEntity {
         super.tick();
         if (!this.level().isClientSide()) {
             List<LittlePersonGuardEntity> guardEntities = LittlePersonKingSkill.getNearbyLittlePersonGuardEntity(this, 50);
-            // 计算减伤：每有一个守卫 +0.2，最高 0.96
-            double damageReduction = Math.min(0.96, guardEntities.size() * 0.2);
+            List<EliteLittlePersonGuardEntity> eliteGuardEntities = LittlePersonKingSkill.getNearbyEliteLittlePersonGuardEntity(this, 50);
+            double damageReduction = Math.min(0.96, guardEntities.size() * 0.2 + eliteGuardEntities.size() * 0.3);
             AttributeInstance attributeInstance = this.getAttribute(ModEntityAttributes.DAMAGE_REDUCTION);
             if (attributeInstance != null) attributeInstance.setBaseValue(damageReduction);
 
@@ -154,12 +165,17 @@ public class LittlePersonKingEntity extends LittlePersonMilitiaEntity {
                 // 冷却递减
                 decrementCooldownIfPositive(SKILL_COOLDOWN_1);
                 decrementCooldownIfPositive(SKILL_COOLDOWN_2);
+                decrementCooldownIfPositive(SKILL_COOLDOWN_3);
             }
         }
     }
     @Override
     public boolean doHurtTarget(ServerLevel world, Entity target) {
         if (!ModSkillEntityType.canSkill(this)) return false;
+        if (canSkill("attack4")) {
+            performSkill("attack4");
+            return true;
+        }
         if (canSkill("attack2")) {
             performSkill("attack2");
             return true;
@@ -184,6 +200,7 @@ public class LittlePersonKingEntity extends LittlePersonMilitiaEntity {
     }
     protected static final RawAnimation ATTACK_ANIM_2 = RawAnimation.begin().thenPlay("attack2");
     protected static final RawAnimation ATTACK_ANIM_3 = RawAnimation.begin().thenPlay("attack3");
+    protected static final RawAnimation ATTACK_ANIM_4 = RawAnimation.begin().thenPlay("attack4");
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         super.registerControllers(controllers);
@@ -198,17 +215,25 @@ public class LittlePersonKingEntity extends LittlePersonMilitiaEntity {
                         .receiveTriggeredAnimations()
                         .triggerableAnim("attack2", ATTACK_ANIM_2)
                         .triggerableAnim("attack3", ATTACK_ANIM_3)
+                        .triggerableAnim("attack4", ATTACK_ANIM_4)
                         .setCustomInstructionKeyframeHandler(s -> {
-                            if ("attack2".equals(s.keyframeData().getInstructions())) {
+                            String instruction = s.keyframeData().getInstructions().replaceAll("\\s+", "");
+                            if ("attack2".equals(instruction) || "runAttack2;".equals(instruction)) {
                                 this.playSound(SoundEvents.ANVIL_LAND, 1.0F, 1.0F);
                                 ClientPlayNetworking.send(new SkillPayload(
                                         "attack2", this.getId()
                                 ));
                             }
-                            if ("attack3".equals(s.keyframeData().getInstructions())) {
+                            if ("attack3".equals(instruction) || "runAttack3;".equals(instruction)) {
                                 this.playSound(SoundEvents.ANVIL_LAND, 1.0F, 1.0F);
                                 ClientPlayNetworking.send(new SkillPayload(
                                         "attack3", this.getId()
+                                ));
+                            }
+                            if ("attack4".equals(instruction) || "runAttack4;".equals(instruction)) {
+                                this.playSound(SoundEvents.ANVIL_LAND, 1.0F, 1.0F);
+                                ClientPlayNetworking.send(new SkillPayload(
+                                        "attack4", this.getId()
                                 ));
                             }
                         })

@@ -14,16 +14,22 @@ import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.projectile.ProjectileDeflection;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class CustomFireballEntity extends LargeFireball {
     public float damage;
     public float power;
     public boolean isExplosive;
+    private boolean explosionKnockback = true;
+
     public CustomFireballEntity(EntityType<? extends LargeFireball> entityType, Level world) {
         super(entityType, world);
     }
@@ -47,6 +53,10 @@ public class CustomFireballEntity extends LargeFireball {
         this.isExplosive = createFire;
         this.damage = damage;
         this.setNoGravity(true);
+    }
+
+    public void setExplosionKnockback(boolean explosionKnockback) {
+        this.explosionKnockback = explosionKnockback;
     }
 
     @Override
@@ -81,10 +91,45 @@ public class CustomFireballEntity extends LargeFireball {
 
         // 在服务端创建爆炸效果并移除当前实体
         if (!this.level().isClientSide()) {
-            this.level().explode(this, this.getX(), this.getY(), this.getZ(), power, isExplosive, Level.ExplosionInteraction.NONE);
+            Entity owner = this.getOwner();
+            boolean ownerWasInvulnerable = owner != null && owner.isInvulnerable();
+            Map<Entity, Vec3> velocitySnapshots = this.explosionKnockback ? Map.of() : captureExplosionVelocities();
+            if (owner != null) {
+                owner.setInvulnerable(true);
+            }
+            try {
+                this.level().explode(this, this.getX(), this.getY(), this.getZ(), power, isExplosive, Level.ExplosionInteraction.NONE);
+            } finally {
+                if (owner != null) {
+                    owner.setInvulnerable(ownerWasInvulnerable);
+                }
+            }
+            if (!this.explosionKnockback) {
+                restoreExplosionVelocities(velocitySnapshots);
+            }
             this.discard(); // 移除实体
         }
 
+    }
+
+    private Map<Entity, Vec3> captureExplosionVelocities() {
+        double radius = Math.max(1.0D, this.power * 2.0D + 1.0D);
+        AABB box = this.getBoundingBox().inflate(radius);
+        Map<Entity, Vec3> snapshots = new HashMap<>();
+        for (Entity entity : this.level().getEntities(this, box, Entity::isAlive)) {
+            snapshots.put(entity, entity.getDeltaMovement());
+        }
+        return snapshots;
+    }
+
+    private void restoreExplosionVelocities(Map<Entity, Vec3> snapshots) {
+        for (Map.Entry<Entity, Vec3> entry : snapshots.entrySet()) {
+            Entity entity = entry.getKey();
+            if (!entity.isRemoved()) {
+                entity.setDeltaMovement(entry.getValue());
+                entity.hurtMarked = true;
+            }
+        }
     }
 
     @Override

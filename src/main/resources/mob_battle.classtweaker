@@ -1,4 +1,4 @@
-accessWidener v2 official
+classTweaker v2 official
 accessible method net/minecraft/world/entity/projectile/Projectile canHitEntity (Lnet/minecraft/world/entity/Entity;)Z
 accessible method net/minecraft/world/entity/monster/warden/Warden syncClientAngerLevel ()V
 accessible field net/minecraft/world/entity/Entity entityData Lnet/minecraft/network/syncher/SynchedEntityData;
@@ -35,3 +35,4 @@ accessible field net/minecraft/world/entity/ai/attributes/RangedAttribute maxVal
 mutable field net/minecraft/world/entity/ai/attributes/RangedAttribute maxValue D
 accessible field net/minecraft/client/KeyMapping clickCount I
 accessible field net/minecraft/world/entity/boss/wither/WitherBoss destroyBlocksTick I
+accessible field net/minecraft/world/entity/LivingEntity attackStrengthTicker I

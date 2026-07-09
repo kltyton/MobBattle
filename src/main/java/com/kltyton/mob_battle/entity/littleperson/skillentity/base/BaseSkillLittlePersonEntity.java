@@ -348,6 +348,7 @@ public class BaseSkillLittlePersonEntity extends LittlePersonMilitiaEntity imple
             case "runStop;" -> ClientPlayNetworking.send(new SkillPayload("stop", this.getId()));
             case "runStopAi;" -> ClientPlayNetworking.send(new SkillPayload("stop_ai", this.getId()));
             case "runStartAi;" -> ClientPlayNetworking.send(new SkillPayload("start_ai", this.getId()));
+            case "runSpawn;" -> ClientPlayNetworking.send(new SkillPayload("spawn", this.getId()));
             default -> {
                 if (instruction.startsWith("runAttack")) {
                     String attack = instruction.substring("run".length());

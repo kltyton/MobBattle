@@ -441,7 +441,7 @@ public class WitherSkeletonKingEntity extends WitherSkeleton implements GeoEntit
                 .setSoundKeyframeHandler(s -> {})
                 .setCustomInstructionKeyframeHandler(s -> {
                     Player player = ClientUtil.getClientPlayer();
-                    String instruction = s.keyframeData().getInstructions().replaceAll("\\s+", "");
+                    String instruction = s.keyframeData().getInstructions().replaceAll("[\\s;]+", "");
                     if ("canHalo".equals(instruction)) {
                         s.renderState().addGeckolibData(WitherSkeletonKingRenderer.CAN_HALO, true);
                     }
@@ -475,10 +475,10 @@ public class WitherSkeletonKingEntity extends WitherSkeleton implements GeoEntit
                                 "shot_all_wither_skull", this.getId()
                         ));
                     }
-                    if ("runThorn;".equals(instruction)) {
+                    if ("runThorn".equals(instruction)) {
                         ClientPlayNetworking.send(new SkillPayload("thorn", this.getId()));
                     }
-                    if ("runEnhanceWitherCall;".equals(instruction)) {
+                    if ("runEnhanceWitherCall".equals(instruction)) {
                         ClientPlayNetworking.send(new SkillPayload("enhance_wither_call", this.getId()));
                     }
                 }));

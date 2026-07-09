@@ -20,7 +20,7 @@ import net.minecraft.resources.Identifier;
 
 @Environment(EnvType.CLIENT)
 public class LittleArrowEntityRender extends EntityRenderer<LittleArrowEntity, TippableArrowRenderState> {
-    public static final Identifier TEXTURE = Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "textures/entity/projectiles/common_projectile.png");
+    public static final Identifier TEXTURE = Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "textures/entity/projectiles/little_arrow.png");
     public static final Identifier TIPPED_TEXTURE = TEXTURE;
     private final LittleArrowEntityModel model;
 

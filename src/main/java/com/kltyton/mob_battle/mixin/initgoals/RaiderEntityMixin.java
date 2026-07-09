@@ -24,6 +24,9 @@ public abstract class RaiderEntityMixin extends PatrollingMonster {
 
     @Inject(method = "registerGoals", at =@At(value = "HEAD"))
     private void initGoals(CallbackInfo ci) {
+        if ((Object) this instanceof Witch) {
+            return;
+        }
         // 攻击所有活体实体，但排除自己和凋零
         this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(
                 this,

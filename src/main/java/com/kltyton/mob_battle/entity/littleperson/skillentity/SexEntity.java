@@ -244,7 +244,7 @@ public class SexEntity extends BaseSkillLittlePersonEntity {
                 .add(Attributes.ATTACK_DAMAGE, 75.0)
                 .add(Attributes.MOVEMENT_SPEED, 0.55)
                 .add(Attributes.KNOCKBACK_RESISTANCE, 0.5)
-                .add(ModEntityAttributes.DAMAGE_REDUCTION, 0.0);
+                .add(ModEntityAttributes.DAMAGE_REDUCTION, 0.25);
     }
     @Override
     public void runSkill_2(BaseSkillLittlePersonEntity entity) {

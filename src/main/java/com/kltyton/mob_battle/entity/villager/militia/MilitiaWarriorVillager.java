@@ -61,6 +61,9 @@ import java.util.List;
 
 // 杩戞垬鏉戞皯
 public class MilitiaWarriorVillager extends IronGolem implements ModBaseIronGolemEntity {
+    private static final BlockPos NO_HOME_POS = new BlockPos(0, -9999, 0);
+    private static final BlockPos FORCE_CONVERT_POS = new BlockPos(0, 9999, 0);
+    private static final double MAX_HOME_DISTANCE_SQ = 150.0D * 150.0D;
     public static AttributeSupplier.Builder createVillagerAttributes() {
         return Mob.createMobAttributes()
                 .add(Attributes.MOVEMENT_SPEED, 0.5)
@@ -89,19 +92,19 @@ public class MilitiaWarriorVillager extends IronGolem implements ModBaseIronGole
     @Override
     public void load(ValueInput view) {
         super.load(view);
-        setHomePos(view.read("HomePos", BlockPos.CODEC).orElse(new BlockPos(0, -9999, 0)));
+        setHomePos(view.read("HomePos", BlockPos.CODEC).orElse(NO_HOME_POS));
     }
     @Override
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
         super.defineSynchedData(builder);
-        builder.define(HOME_POS, new BlockPos(0, -9999, 0));
+        builder.define(HOME_POS, NO_HOME_POS);
     }
     @Override
     public void tick() {
         super.tick();
         if (!this.level().isClientSide() && this.tickCount % 20 == 0) {
             this.heal(1f);
-            if (getHomePos().equals(new BlockPos(0, 9999, 0))) {
+            if (shouldConvertBackToVillager()) {
                 Villager villager = EntityType.VILLAGER.create(this.level(), EntitySpawnReason.CONVERSION);
                 if (villager != null) {
                     // 1. 鑾峰彇瀹炰綋褰撳墠浣嶇疆鐨勭兢绯绘敞鍐岄」
@@ -120,6 +123,14 @@ public class MilitiaWarriorVillager extends IronGolem implements ModBaseIronGole
                 }
             }
         }
+    }
+
+    private boolean shouldConvertBackToVillager() {
+        BlockPos homePos = getHomePos();
+        if (homePos.equals(FORCE_CONVERT_POS)) {
+            return true;
+        }
+        return !homePos.equals(NO_HOME_POS) && this.blockPosition().distSqr(homePos) > MAX_HOME_DISTANCE_SQ;
     }
     public MilitiaWarriorVillager(EntityType<? extends IronGolem> entityType, Level world) {
         super(entityType, world);
@@ -160,6 +171,10 @@ public class MilitiaWarriorVillager extends IronGolem implements ModBaseIronGole
         return bl;
     }
     private void alertOthers(LivingEntity attacker) {
+        if (!EntityUtil.isValidCombatTarget(this, attacker)) {
+            return;
+        }
+
         List<IronGolem> golems = this.level().getEntitiesOfClass(
                 IronGolem.class,
                 this.getBoundingBox().inflate(ALERT_RANGE),
@@ -167,7 +182,7 @@ public class MilitiaWarriorVillager extends IronGolem implements ModBaseIronGole
         );
 
         for (IronGolem golem : golems) {
-            if (attacker instanceof AbstractGolem) {
+            if (attacker instanceof AbstractGolem || !EntityUtil.isValidCombatTarget(golem, attacker)) {
                 continue;
             }
 
@@ -208,8 +223,10 @@ public class MilitiaWarriorVillager extends IronGolem implements ModBaseIronGole
         this.targetSelector.addGoal(1, new DefendVillageTargetGoal(this));
         this.targetSelector.addGoal(1, new GeneralProtectionVillagerGoal(this));
         this.targetSelector.addGoal(2, new HurtByTargetGoal(this));
-        this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, Player.class, 10, true, false, this::isAngryAt));
-        this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, Mob.class, 5, false, false, (entity, world) -> entity instanceof Enemy));
+        this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, Player.class, 10, true, false,
+                (entity, world) -> this.isAngryAt(entity, world) && EntityUtil.isValidCombatTarget(this, entity)));
+        this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, Mob.class, 5, false, false,
+                (entity, world) -> entity instanceof Enemy && EntityUtil.isValidCombatTarget(this, entity)));
         this.targetSelector.addGoal(4, new ResetUniversalAngerTargetGoal<>(this, false));
     }
     @Override

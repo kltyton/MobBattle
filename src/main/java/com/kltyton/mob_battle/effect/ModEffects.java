@@ -36,6 +36,8 @@ public class ModEffects {
     public static DarknessImmunityFactorEffect DARKNESS_IMMUNITY_FACTOR;
     public static StutterEffect STUTTER;
     public static DecayEffect DECAY;
+    public static LittlePersonGuardianshipEffect LITTLE_PERSON_GUARDIANSHIP;
+    public static CompressedCopperChargedEffect COMPRESSED_COPPER_CHARGED;
 
     public static Holder<MobEffect> STUN_ENTRY;
     public static Holder<MobEffect> INSECT_BITE_ENTRY;
@@ -62,6 +64,8 @@ public class ModEffects {
     public static Holder<MobEffect> DARKNESS_IMMUNITY_FACTOR_ENTRY;
     public static Holder<MobEffect> STUTTER_ENTRY;
     public static Holder<MobEffect> DECAY_ENTRY;
+    public static Holder<MobEffect> LITTLE_PERSON_GUARDIANSHIP_ENTRY;
+    public static Holder<MobEffect> COMPRESSED_COPPER_CHARGED_ENTRY;
 
     public static void init() {
         INSECT_BITE = register("insect_bite", new InsectBiteEffect());
@@ -89,6 +93,8 @@ public class ModEffects {
         DARKNESS_IMMUNITY_FACTOR = register("darkness_immunity_factor", new DarknessImmunityFactorEffect());
         STUTTER = register("stutter", new StutterEffect());
         DECAY = register("decay", new DecayEffect());
+        LITTLE_PERSON_GUARDIANSHIP = register("little_person_guardianship", new LittlePersonGuardianshipEffect());
+        COMPRESSED_COPPER_CHARGED = register("compressed_copper_charged", new CompressedCopperChargedEffect());
 
         INSECT_BITE_ENTRY = getEntry("insect_bite");
         PRO_INSECT_BITE_ENTRY = getEntry("pro_insect_bite");
@@ -115,6 +121,8 @@ public class ModEffects {
         DARKNESS_IMMUNITY_FACTOR_ENTRY = getEntry("darkness_immunity_factor");
         STUTTER_ENTRY = getEntry("stutter");
         DECAY_ENTRY = getEntry("decay");
+        LITTLE_PERSON_GUARDIANSHIP_ENTRY = getEntry("little_person_guardianship");
+        COMPRESSED_COPPER_CHARGED_ENTRY = getEntry("compressed_copper_charged");
     }
 
     private static <T extends MobEffect> T register(String id, T effect) {

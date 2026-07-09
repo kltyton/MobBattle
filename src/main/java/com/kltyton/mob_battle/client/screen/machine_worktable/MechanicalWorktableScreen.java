@@ -30,10 +30,10 @@ public class MechanicalWorktableScreen extends AbstractRecipeBookScreen<Mechanic
     }
 
     @Override
-    public void extractContents(GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
+    public void extractBackground(GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
+        super.extractBackground(context, mouseX, mouseY, deltaTicks);
         int i = this.leftPos;
         int j = (this.height - this.imageHeight) / 2;
         context.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, i, j, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
-        super.extractContents(context, mouseX, mouseY, deltaTicks);
     }
 }

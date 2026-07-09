@@ -18,7 +18,7 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
 
 public class SpearBulletEntityRenderer extends EntityRenderer<LittleArrowEntity, TippableArrowRenderState> {
-    public static final Identifier TEXTURE = Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "textures/entity/projectiles/common_projectile.png");
+    public static final Identifier TEXTURE = Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "textures/entity/projectiles/spear_bullet.png");
     public static final Identifier TIPPED_TEXTURE = TEXTURE;
     private final SpearBulletEntityModel model;
 

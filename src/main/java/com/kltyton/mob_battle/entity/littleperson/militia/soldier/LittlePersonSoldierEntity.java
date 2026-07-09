@@ -5,6 +5,7 @@ import com.kltyton.mob_battle.entity.ModSkillEntityType;
 import com.kltyton.mob_battle.entity.general.GeneralEntityOnlyOneSkill;
 import com.kltyton.mob_battle.entity.littleperson.LittlePersonEntity;
 import com.kltyton.mob_battle.entity.villager.warriorvillager.WarriorVillager;
+import com.kltyton.mob_battle.utils.EntityUtil;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
 import com.kltyton.mob_battle.utils.GeoAnimationUtil;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -50,7 +51,7 @@ import java.util.List;
 import java.util.Optional;
 
 public class LittlePersonSoldierEntity extends Monster implements LittlePersonEntity, GeneralEntityOnlyOneSkill<LittlePersonSoldierEntity> {
-
+    //这是小人士兵战士
     public static final EntityDataAccessor<Boolean> IS_CHARGING =
             SynchedEntityData.defineId(LittlePersonSoldierEntity.class, EntityDataSerializers.BOOLEAN);
     public static final EntityDataAccessor<Boolean> HAS_SKILL =
@@ -95,19 +96,23 @@ public class LittlePersonSoldierEntity extends Monster implements LittlePersonEn
         this.goalSelector.addGoal(8, new LookAtPlayerGoal(this, Player.class, 8.0F));
         this.goalSelector.addGoal(8, new RandomLookAroundGoal(this));
 
-        this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, AbstractGolem.class, true));
-        this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, WarriorVillager.class, true));
-        this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, true));
+        this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, AbstractGolem.class, 10, true, false, this::canTarget));
+        this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, WarriorVillager.class, 10, true, false, this::canTarget));
+        this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, 10, true, false, this::canTarget));
         this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, Mob.class, 5, false, false,
-                (entity, world) -> entity instanceof Enemy && !(entity instanceof LittlePersonEntity)));
+                (entity, world) -> entity instanceof Enemy && !(entity instanceof LittlePersonEntity) && canTarget(entity, world)));
+    }
+
+    private boolean canTarget(LivingEntity target, ServerLevel world) {
+        return EntityUtil.isValidCombatTarget(this, target);
     }
 
     public static AttributeSupplier.Builder createLittlePersonMilitiaAttributes() {
         return LittlePersonEntity.createLittlePersonAttributes()
-                .add(Attributes.MAX_HEALTH, 25.0)
+                .add(Attributes.MAX_HEALTH, 300.0)
                 .add(Attributes.FOLLOW_RANGE, 40.0)
                 .add(Attributes.MOVEMENT_SPEED, 0.25)
-                .add(Attributes.ATTACK_DAMAGE, 3.0)
+                .add(Attributes.ATTACK_DAMAGE, 30.0)
                 .add(ModEntityAttributes.DAMAGE_REDUCTION, 0.2);
     }
 

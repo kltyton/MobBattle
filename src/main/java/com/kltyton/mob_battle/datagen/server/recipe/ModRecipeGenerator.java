@@ -3,6 +3,7 @@ package com.kltyton.mob_battle.datagen.server.recipe;
 import com.kltyton.mob_battle.Mob_battle;
 import com.kltyton.mob_battle.block.ModBlocks;
 import com.kltyton.mob_battle.items.ModItems;
+import com.kltyton.mob_battle.items.misc.BaseItems;
 import net.fabricmc.fabric.api.datagen.v1.FabricPackOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider;
 import net.minecraft.core.HolderLookup;
@@ -12,6 +13,7 @@ import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.data.recipes.RecipeProvider;
 import net.minecraft.data.recipes.SmithingTransformRecipeBuilder;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.CookingBookCategory;
@@ -57,6 +59,33 @@ public class ModRecipeGenerator extends FabricRecipeProvider {
                         .unlockedBy(getHasName(Items.CRAFTING_TABLE), has(Items.CRAFTING_TABLE))
                         .save(output);
 
+                shaped(RecipeCategory.COMBAT, ModItems.ICE_SWORD, 1)
+                        .pattern(" a ")
+                        .pattern(" a ")
+                        .pattern(" b ")
+                        .define('a', BaseItems.ITEMS.get("blue_ice"))
+                        .define('b', Items.STICK)
+                        .group("elemental_sword")
+                        .unlockedBy(getHasName(BaseItems.ITEMS.get("blue_ice")), has(BaseItems.ITEMS.get("blue_ice")))
+                        .save(output);
+
+                shaped(RecipeCategory.COMBAT, ModItems.FIRE_SWORD, 1)
+                        .pattern(" a ")
+                        .pattern(" a ")
+                        .pattern(" b ")
+                        .define('a', BaseItems.ITEMS.get("fire_red"))
+                        .define('b', Items.STICK)
+                        .group("elemental_sword")
+                        .unlockedBy(getHasName(BaseItems.ITEMS.get("fire_red")), has(BaseItems.ITEMS.get("fire_red")))
+                        .save(output);
+
+                shapeless(RecipeCategory.COMBAT, ModItems.CHASING_WIND_SWORD, 1)
+                        .requires(ModItems.ICE_SWORD)
+                        .requires(ModItems.FIRE_SWORD)
+                        .group("elemental_sword")
+                        .unlockedBy(getHasName(ModItems.ICE_SWORD), has(ModItems.ICE_SWORD))
+                        .save(output);
+
                 shaped(RecipeCategory.DECORATIONS, ModBlocks.MACHINE_WORKTABLE_BLOCK, 1)
                         .pattern("aba")
                         .pattern("cdc")
@@ -79,6 +108,83 @@ public class ModRecipeGenerator extends FabricRecipeProvider {
                         .define('b', Items.COBBLESTONE)
                         .group("heart_stone")
                         .unlockedBy(getHasName(Items.CRAFTING_TABLE), has(Items.CRAFTING_TABLE))
+                        .save(output);
+
+                shaped(RecipeCategory.DECORATIONS, ModBlocks.TARGET_BLOCK, 1)
+                        .pattern("aba")
+                        .pattern("a a")
+                        .define('a', ItemTags.WOODEN_FENCES)
+                        .define('b', Items.TARGET)
+                        .group("mob_battle_target")
+                        .unlockedBy(getHasName(Items.TARGET), has(Items.TARGET))
+                        .save(output);
+
+                shaped(RecipeCategory.DECORATIONS, ModBlocks.SCARECROW_BLOCK, 1)
+                        .pattern(" a ")
+                        .pattern("cbc")
+                        .pattern("dcd")
+                        .define('a', Items.CARVED_PUMPKIN)
+                        .define('b', Items.HAY_BLOCK)
+                        .define('c', ItemTags.WOODEN_FENCES)
+                        .define('d', ItemTags.WOODEN_SLABS)
+                        .group("scarecrow")
+                        .unlockedBy(getHasName(Items.HAY_BLOCK), has(Items.HAY_BLOCK))
+                        .save(output);
+
+                shaped(RecipeCategory.TOOLS, ModItems.WOODEN_WHISTLE, 1)
+                        .pattern("aaa")
+                        .pattern(" ba")
+                        .pattern(" aa")
+                        .define('a', ItemTags.PLANKS)
+                        .define('b', ModItems.LITTLE_STONE)
+                        .group("wooden_whistle")
+                        .unlockedBy(getHasName(ModItems.LITTLE_STONE), has(ModItems.LITTLE_STONE))
+                        .save(output);
+
+                shaped(RecipeCategory.MISC, ModItems.NIBI_BAG, 1)
+                        .pattern("aaa")
+                        .pattern("aaa")
+                        .pattern("aaa")
+                        .define('a', ModItems.NIBI)
+                        .group("nibi")
+                        .unlockedBy(getHasName(ModItems.NIBI), has(ModItems.NIBI))
+                        .save(output);
+
+                shapeless(RecipeCategory.MISC, ModItems.NIBI, 9)
+                        .requires(ModItems.NIBI_BAG)
+                        .group("nibi")
+                        .unlockedBy(getHasName(ModItems.NIBI_BAG), has(ModItems.NIBI_BAG))
+                        .save(output, "mob_battle:nibi_from_bag");
+
+                shaped(RecipeCategory.MISC, ModItems.NIBI_BOX, 1)
+                        .pattern("aaa")
+                        .pattern("aba")
+                        .pattern("aaa")
+                        .define('a', ModItems.NIBI_BAG)
+                        .define('b', Items.CHEST)
+                        .group("nibi")
+                        .unlockedBy(getHasName(ModItems.NIBI_BAG), has(ModItems.NIBI_BAG))
+                        .save(output);
+
+                shapeless(RecipeCategory.MISC, ModItems.NIBI_BAG, 8)
+                        .requires(ModItems.NIBI_BOX)
+                        .group("nibi")
+                        .unlockedBy(getHasName(ModItems.NIBI_BOX), has(ModItems.NIBI_BOX))
+                        .save(output, "mob_battle:nibi_bag_from_box");
+
+                shaped(RecipeCategory.BUILDING_BLOCKS, Items.COBBLESTONE, 1)
+                        .pattern("aaa")
+                        .pattern("aaa")
+                        .pattern("aaa")
+                        .define('a', ModItems.LITTLE_STONE)
+                        .group("little_stone")
+                        .unlockedBy(getHasName(ModItems.LITTLE_STONE), has(ModItems.LITTLE_STONE))
+                        .save(output, "mob_battle:cobblestone_from_little_stone");
+
+                shapeless(RecipeCategory.MISC, ModItems.LITTLE_STONE, 9)
+                        .requires(Items.COBBLESTONE)
+                        .group("little_stone")
+                        .unlockedBy(getHasName(Items.COBBLESTONE), has(Items.COBBLESTONE))
                         .save(output);
 
                 shaped(RecipeCategory.TOOLS, ModItems.SMALL_BACKPACK, 1)
@@ -189,9 +295,11 @@ public class ModRecipeGenerator extends FabricRecipeProvider {
                         .unlockedBy(getHasName(ModBlocks.COMPRESSED_NETHERITE_BLOCK), has(ModBlocks.COMPRESSED_NETHERITE_BLOCK))
                         .save(output, "mob_battle:mechanical/compressed_netherite_ingot_from_block");
 
+                offerMechanicalArmorRecipes(itemLookup, output, ModItems.COMPRESSED_COPPER_INGOT, "compressed_copper", ModItems.COMPRESSED_COPPER_HELMET, ModItems.COMPRESSED_COPPER_CHESTPLATE, ModItems.COMPRESSED_COPPER_LEGGINGS, ModItems.COMPRESSED_COPPER_BOOTS);
                 offerMechanicalArmorRecipes(itemLookup, output, ModItems.COMPRESSED_IRON_INGOT, "compressed_iron", ModItems.COMPRESSED_IRON_HELMET, ModItems.COMPRESSED_IRON_CHESTPLATE, ModItems.COMPRESSED_IRON_LEGGINGS, ModItems.COMPRESSED_IRON_BOOTS);
                 offerMechanicalArmorRecipes(itemLookup, output, ModItems.COMPRESSED_GOLD_INGOT, "compressed_gold", ModItems.COMPRESSED_GOLD_HELMET, ModItems.COMPRESSED_GOLD_CHESTPLATE, ModItems.COMPRESSED_GOLD_LEGGINGS, ModItems.COMPRESSED_GOLD_BOOTS);
                 offerMechanicalArmorRecipes(itemLookup, output, ModItems.COMPRESSED_DIAMOND, "compressed_diamond", ModItems.COMPRESSED_DIAMOND_HELMET, ModItems.COMPRESSED_DIAMOND_CHESTPLATE, ModItems.COMPRESSED_DIAMOND_LEGGINGS, ModItems.COMPRESSED_DIAMOND_BOOTS);
+                offerMechanicalSwordRecipe(itemLookup, output, ModItems.COMPRESSED_COPPER_INGOT, ModItems.COMPRESSED_COPPER_SWORD, "compressed_copper");
                 offerMechanicalSwordRecipe(itemLookup, output, ModItems.COMPRESSED_IRON_INGOT, ModItems.COMPRESSED_IRON_SWORD, "compressed_iron");
                 offerMechanicalSwordRecipe(itemLookup, output, ModItems.COMPRESSED_GOLD_INGOT, ModItems.COMPRESSED_GOLD_SWORD, "compressed_gold");
                 offerMechanicalSwordRecipe(itemLookup, output, ModItems.COMPRESSED_DIAMOND, ModItems.COMPRESSED_DIAMOND_SWORD, "compressed_diamond");

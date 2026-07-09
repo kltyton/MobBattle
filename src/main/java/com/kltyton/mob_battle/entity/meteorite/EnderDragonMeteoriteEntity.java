@@ -51,7 +51,7 @@ public class EnderDragonMeteoriteEntity extends MeteoriteEntity implements GeoEn
         Entity owner = this.getOwner();
         java.util.Set<Integer> hitEntities = new java.util.HashSet<>();
 
-        int totalSteps = 800;           // ← 关键：原来400，现在800，扩散慢一倍
+        int totalSteps = 240;           // 更少步数让冲击波扩散更快
         double maxRadius = MAX_SHOCKWAVE_RADIUS;
         double wallHeight = 6.0;        // ← 加高一点，更有冲击波高度
         double thickness = 12.0;        // ← 厚度加大，烟雾更连贯

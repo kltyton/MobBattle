@@ -28,6 +28,8 @@ public class MissileEntity extends CustomFireballEntity {
     // --- 新增字段 ---
     private Vec3 lastSplitPos; // 记录上次分裂的位置
     private boolean canSplit = true; // 标记该实体是否能分裂，防止子弹无限分裂
+    @Nullable
+    private LivingEntity homingTarget;
     public MissileEntity(EntityType<? extends CustomFireballEntity> entityType, Level world) {
         super(entityType, world);
     }
@@ -35,6 +37,11 @@ public class MissileEntity extends CustomFireballEntity {
     public void setCanSplit(boolean canSplit) {
         this.canSplit = canSplit;
     }
+
+    public void setHomingTarget(@Nullable LivingEntity homingTarget) {
+        this.homingTarget = homingTarget;
+    }
+
     public MissileEntity(EntityType<? extends CustomFireballEntity> entityType, Level world, LivingEntity owner, float power, boolean createFire, float damage, float extraDamage) {
         super(entityType, world, owner, power, createFire, damage);
         this.extraDamage = extraDamage;
@@ -62,6 +69,9 @@ public class MissileEntity extends CustomFireballEntity {
     // 在 MissileEntity 类中加入
     @Override
     public void tick() {
+        if (!this.level().isClientSide()) {
+            updateHomingVelocity();
+        }
         super.tick();
         // 仅在服务端处理逻辑
         if (!this.level().isClientSide()) {
@@ -72,6 +82,24 @@ public class MissileEntity extends CustomFireballEntity {
             }
         }
     }
+
+    private void updateHomingVelocity() {
+        if (this.homingTarget == null || !this.homingTarget.isAlive()) {
+            return;
+        }
+        Vec3 targetCenter = this.homingTarget.position().add(0.0D, this.homingTarget.getBbHeight() * 0.5D, 0.0D);
+        Vec3 toTarget = targetCenter.subtract(this.position());
+        if (toTarget.lengthSqr() < 0.01D) {
+            return;
+        }
+        double speed = Math.max(1.25D, this.getDeltaMovement().length());
+        Vec3 desired = toTarget.normalize().scale(speed);
+        Vec3 adjusted = this.getDeltaMovement().scale(0.65D).add(desired.scale(0.35D));
+        if (adjusted.lengthSqr() > 0.01D) {
+            this.setDeltaMovement(adjusted.normalize().scale(speed));
+        }
+    }
+
     @Override
     public void updateRotation() {
         Vec3 vec3d = this.getDeltaMovement();

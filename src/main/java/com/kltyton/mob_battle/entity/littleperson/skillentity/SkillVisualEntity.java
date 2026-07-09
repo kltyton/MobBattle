@@ -33,6 +33,7 @@ public class SkillVisualEntity extends Entity implements GeoEntity {
     private int damageAge = -1;
     private int maxAge = 30;
     private double radius = 1.0D;
+    private boolean continuousCollisionDamage;
 
     public SkillVisualEntity(EntityType<? extends SkillVisualEntity> entityType, Level world) {
         super(entityType, world);
@@ -45,6 +46,12 @@ public class SkillVisualEntity extends Entity implements GeoEntity {
         this.maxAge = maxAge;
         this.radius = radius;
         this.entityData.set(VARIANT, variant);
+        return this;
+    }
+
+    public SkillVisualEntity configureCollisionDamage(LivingEntity owner, float damage, int maxAge, double radius, int variant) {
+        configure(owner, damage, -1, maxAge, radius, variant);
+        this.continuousCollisionDamage = true;
         return this;
     }
 
@@ -73,6 +80,9 @@ public class SkillVisualEntity extends Entity implements GeoEntity {
             if (this.damageAge >= 0 && this.tickCount == this.damageAge) {
                 damageNearby();
             }
+            if (this.continuousCollisionDamage) {
+                damageNearby();
+            }
             if (this.tickCount > this.maxAge) {
                 this.discard();
             }
@@ -86,7 +96,9 @@ public class SkillVisualEntity extends Entity implements GeoEntity {
         AABB box = this.getBoundingBox().inflate(this.radius);
         for (LivingEntity target : world.getEntitiesOfClass(LivingEntity.class, box,
                 living -> EntityUtil.isValidSummonCombatTarget(this, this.owner, living))) {
+            target.invulnerableTime = 0;
             target.hurtServer(world, this.owner.damageSources().mobAttack(this.owner), this.damage);
+            target.invulnerableTime = 0;
         }
     }
 

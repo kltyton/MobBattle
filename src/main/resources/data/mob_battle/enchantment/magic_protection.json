@@ -5,7 +5,6 @@
   },
   "effects": {
   },
-  "exclusive_set": "#minecraft:exclusive_set/armor",
   "slots": ["armor"],
   "supported_items": "#mob_battle:enchantable/armor",
   "primary_items": "minecraft:air",

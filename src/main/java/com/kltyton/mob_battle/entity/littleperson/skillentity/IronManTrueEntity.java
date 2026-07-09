@@ -8,6 +8,8 @@ import java.util.List;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -19,11 +21,13 @@ import net.minecraft.world.phys.Vec3;
 
 public class IronManTrueEntity extends BaseSkillLittlePersonEntity {
     public IronManTrueEntity(EntityType<? extends Monster> entityType, Level world) {
-        super(entityType, world, 4);
+        super(entityType, world, 6);
         COOL_DOWN_TIME_1 = 8 * 20;
         COOL_DOWN_TIME_2 = 15 * 20;
         COOL_DOWN_TIME_3 = 25 * 20;
         COOL_DOWN_TIME_4 = 20 * 20;
+        COOL_DOWN_TIME_5 = 30 * 20;
+        COOL_DOWN_TIME_6 = 20 * 20;
         init();
     }
     public static AttributeSupplier.Builder createLittlePersonAttributes() {
@@ -50,7 +54,7 @@ public class IronManTrueEntity extends BaseSkillLittlePersonEntity {
         Vec3 pos = entity.position();
         Vec3 forward = entity.getViewVector(1.0F);
         Vec3 side = new Vec3(-forward.z, 0.0, forward.x).normalize();
-        double range = 6.0;
+        double range = 8.0;
         List<Entity> targets = world.getEntities(entity, entity.getBoundingBox().inflate(range));
         for (Entity target : targets) {
             if (target instanceof LivingEntity livingTarget && EntityUtil.isValidSummonCombatTarget(entity, entity.getSummonOwner(), livingTarget)) {
@@ -61,7 +65,7 @@ public class IronManTrueEntity extends BaseSkillLittlePersonEntity {
                 // 长度：在前方 0 到 5 格之间
                 // 宽度：中心线左右各 1.5 格（总宽3格）
                 // 高度：高度差在 2 格以内（防止打到正上方太高的东西）
-                if (distanceForward > 0 && distanceForward <= 5.0 &&
+                if (distanceForward > 0 && distanceForward <= 7.0 &&
                         distanceSide <= 0.5 &&
                         Math.abs(relativePos.y) <= 2.0) {
 
@@ -73,7 +77,7 @@ public class IronManTrueEntity extends BaseSkillLittlePersonEntity {
     @Override
     public void runSkill_3(BaseSkillLittlePersonEntity entity) {
         if (entity.getTarget() != null) {
-            List<LivingEntity> targets = EntityUtil.getNearbyEntity(entity,LivingEntity.class, Object.class,4, false, EntityUtil.TeamFilter.EXCLUDE_TEAM);
+            List<LivingEntity> targets = EntityUtil.getNearbyEntity(entity,LivingEntity.class, Object.class,6, false, EntityUtil.TeamFilter.EXCLUDE_TEAM);
             for (LivingEntity livingEntity : targets) {
                 if (!EntityUtil.isValidSummonCombatTarget(entity, entity.getSummonOwner(), livingEntity)) {
                     continue;
@@ -89,7 +93,7 @@ public class IronManTrueEntity extends BaseSkillLittlePersonEntity {
         Vec3 pos = entity.position();
         Vec3 forward = entity.getViewVector(1.0F);
         Vec3 side = new Vec3(-forward.z, 0.0, forward.x).normalize();
-        double range = 16.0;
+        double range = 18.0;
         List<Entity> targets = world.getEntities(entity, entity.getBoundingBox().inflate(range));
         for (Entity target : targets) {
             if (target instanceof LivingEntity livingTarget && EntityUtil.isValidSummonCombatTarget(entity, entity.getSummonOwner(), livingTarget)) {
@@ -100,7 +104,7 @@ public class IronManTrueEntity extends BaseSkillLittlePersonEntity {
                 // 长度：在前方 0 到 5 格之间
                 // 宽度：中心线左右各 1.5 格（总宽3格）
                 // 高度：高度差在 2 格以内（防止打到正上方太高的东西）
-                if (distanceForward > 0 && distanceForward <= 10.0 &&
+                if (distanceForward > 0 && distanceForward <= 12.0 &&
                         distanceSide <= 1.5 &&
                         Math.abs(relativePos.y) <= 2.0) {
 
@@ -135,6 +139,38 @@ public class IronManTrueEntity extends BaseSkillLittlePersonEntity {
             // 把子弹加到世界
             bullet.setPos(entity.getX() + xOffset, entity.getEyeY() + yOffset, entity.getZ() + zOffset);
             world.addFreshEntity(bullet);
+        }
+    }
+
+    @Override
+    public void runSkill_6(BaseSkillLittlePersonEntity entity) {
+        if (!(entity.level() instanceof ServerLevel world)) {
+            return;
+        }
+        for (LivingEntity living : EntityUtil.getNearbyEntity(entity, LivingEntity.class, Object.class, 2.0D, false, EntityUtil.TeamFilter.EXCLUDE_TEAM)) {
+            if (EntityUtil.isValidSummonCombatTarget(entity, entity.getSummonOwner(), living)) {
+                living.hurtServer(world, entity.damageSources().mobAttack(entity), 95.0F);
+            }
+        }
+    }
+
+    @Override
+    public void runSkill_7(BaseSkillLittlePersonEntity entity) {
+        if (!(entity.level() instanceof ServerLevel world)) {
+            return;
+        }
+        Vec3 forward = entity.getViewVector(1.0F);
+        Vec3 side = new Vec3(-forward.z, 0.0D, forward.x).normalize();
+        for (Entity target : world.getEntities(entity, entity.getBoundingBox().inflate(5.0D))) {
+            if (target instanceof LivingEntity living && EntityUtil.isValidSummonCombatTarget(entity, entity.getSummonOwner(), living)) {
+                Vec3 relativePos = target.position().subtract(entity.position());
+                double distanceForward = relativePos.dot(forward);
+                double distanceSide = Math.abs(relativePos.dot(side));
+                if (distanceForward > 0.0D && distanceForward <= 5.0D && distanceSide <= 1.5D && Math.abs(relativePos.y) <= 2.0D) {
+                    living.hurtServer(world, entity.damageSources().mobAttack(entity), 80.0F);
+                    living.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 10 * 20, 1), entity);
+                }
+            }
         }
     }
 

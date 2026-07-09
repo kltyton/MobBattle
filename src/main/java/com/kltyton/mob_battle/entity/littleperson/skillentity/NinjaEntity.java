@@ -84,9 +84,6 @@ public class NinjaEntity extends RequestedLittlePersonEntity {
         }
         if (this.cloneSequenceSpawned < CLONES_PER_VARIANT) {
             spawnClone(world, target, this.cloneSequenceVariant);
-            target.invulnerableTime = 0;
-            target.hurtServer(world, this.damageSources().indirectMagic(this, this), 5.0F);
-            target.invulnerableTime = 0;
             this.cloneSequenceSpawned++;
             if (this.cloneSequenceSpawned >= CLONES_PER_VARIANT) {
                 this.cloneSequenceDelay = CLONE_MAX_AGE + 2;
@@ -118,7 +115,7 @@ public class NinjaEntity extends RequestedLittlePersonEntity {
         float yaw = (float)(Mth.atan2(direction.z, direction.x) * Mth.RAD_TO_DEG) - 90.0F;
         float pitch = (float)(-Mth.atan2(direction.y, Math.sqrt(direction.x * direction.x + direction.z * direction.z)) * Mth.RAD_TO_DEG);
         clone.snapTo(position.x, position.y, position.z, yaw, pitch);
-        clone.configure(this, 0.0F, -1, CLONE_MAX_AGE, 0.0D, variant);
+        clone.configureCollisionDamage(this, 5.0F, CLONE_MAX_AGE, 0.25D, variant);
         world.addFreshEntity(clone);
     }
 

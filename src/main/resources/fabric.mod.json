@@ -28,5 +28,5 @@
     "minecraft": "${minecraft_version}",
     "geckolib": ">=5.1.0"
   },
-  "accessWidener": "kltyton.accesswidener"
+  "accessWidener": "mob_battle.classtweaker"
 }

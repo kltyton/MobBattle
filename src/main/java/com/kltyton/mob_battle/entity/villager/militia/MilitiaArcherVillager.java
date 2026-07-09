@@ -30,6 +30,8 @@ import net.minecraft.world.entity.NeutralMob;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
+import net.minecraft.world.entity.ai.goal.GolemRandomStrollInVillageGoal;
+import net.minecraft.world.entity.ai.goal.MoveBackToVillageGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.ResetUniversalAngerTargetGoal;
@@ -55,6 +57,9 @@ import java.util.List;
 
 // 远程村民
 public class MilitiaArcherVillager extends SnowGolem implements NeutralMob {
+    private static final BlockPos NO_HOME_POS = new BlockPos(0, -9999, 0);
+    private static final BlockPos FORCE_CONVERT_POS = new BlockPos(0, 9999, 0);
+    private static final double MAX_HOME_DISTANCE_SQ = 150.0D * 150.0D;
     public static final EntityDataAccessor<BlockPos> HOME_POS = SynchedEntityData.defineId(MilitiaArcherVillager.class, EntityDataSerializers.BLOCK_POS);
     public BlockPos getHomePos() {
         return this.entityData.get(HOME_POS);
@@ -74,19 +79,19 @@ public class MilitiaArcherVillager extends SnowGolem implements NeutralMob {
     @Override
     public void load(ValueInput view) {
         super.load(view);
-        setHomePos(view.read("HomePos", BlockPos.CODEC).orElse(new BlockPos(0, -9999, 0)));
+        setHomePos(view.read("HomePos", BlockPos.CODEC).orElse(NO_HOME_POS));
     }
     @Override
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
         super.defineSynchedData(builder);
-        builder.define(HOME_POS, new BlockPos(0, -9999, 0));
+        builder.define(HOME_POS, NO_HOME_POS);
     }
     @Override
     public void tick() {
         super.tick();
         if (!this.level().isClientSide() && this.tickCount % 20 == 0) {
             this.heal(1f);
-            if (getHomePos().equals(new BlockPos(0, 9999, 0))) {
+            if (shouldConvertBackToVillager()) {
                 Villager villager = EntityType.VILLAGER.create(this.level(), EntitySpawnReason.CONVERSION);
                 if (villager != null) {
                     // 1. 获取实体当前位置的群系注册项
@@ -105,6 +110,14 @@ public class MilitiaArcherVillager extends SnowGolem implements NeutralMob {
             }
         }
     }
+
+    private boolean shouldConvertBackToVillager() {
+        BlockPos homePos = getHomePos();
+        if (homePos.equals(FORCE_CONVERT_POS)) {
+            return true;
+        }
+        return !homePos.equals(NO_HOME_POS) && this.blockPosition().distSqr(homePos) > MAX_HOME_DISTANCE_SQ;
+    }
     @Nullable
     private EntityReference<LivingEntity> angryAt;
     private long angerEndTime;
@@ -119,9 +132,12 @@ public class MilitiaArcherVillager extends SnowGolem implements NeutralMob {
     protected void registerGoals() {
         super.registerGoals();
         this.goalSelector.addGoal(0, new FloatGoal(this)); // 添加游泳AI
+        this.goalSelector.addGoal(2, new MoveBackToVillageGoal(this, 0.6D, false));
+        this.goalSelector.addGoal(4, new GolemRandomStrollInVillageGoal(this, 0.6D));
         this.targetSelector.addGoal(1, new GeneralProtectionVillagerGoal(this));
         this.targetSelector.addGoal(2, new HurtByTargetGoal(this));
-        this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, 10, true, false, this::isAngryAt));
+        this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, 10, true, false,
+                (entity, world) -> this.isAngryAt(entity, world) && EntityUtil.isValidCombatTarget(this, entity)));
         this.targetSelector.addGoal(2, new ResetUniversalAngerTargetGoal<>(this, false));
     }
 
@@ -196,6 +212,10 @@ public class MilitiaArcherVillager extends SnowGolem implements NeutralMob {
                 .add(Attributes.ATTACK_DAMAGE, 15);
     }
     private void alertOthers(LivingEntity attacker) {
+        if (!EntityUtil.isValidCombatTarget(this, attacker)) {
+            return;
+        }
+
         // 获取64格范围内所有铁傀儡
         List<SnowGolem> golems = this.level().getEntitiesOfClass(
                 SnowGolem.class,
@@ -205,7 +225,7 @@ public class MilitiaArcherVillager extends SnowGolem implements NeutralMob {
 
         for (SnowGolem golem : golems) {
             // 跳过玩家创建的且攻击者是玩家的铁傀儡
-            if (attacker instanceof AbstractGolem) {
+            if (attacker instanceof AbstractGolem || !EntityUtil.isValidCombatTarget(golem, attacker)) {
                 continue;
             }
 

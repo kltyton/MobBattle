@@ -2,6 +2,7 @@ package com.kltyton.mob_battle.mixin;
 
 import com.kltyton.mob_battle.command.FriendlyDamageCommand;
 import com.kltyton.mob_battle.entity.bullet.ITrueDamageProjectile;
+import com.kltyton.mob_battle.entity.littleperson.archer.LittlePersonArcherEntity;
 import com.kltyton.mob_battle.entity.villager.militia.MilitiaArcherVillager;
 import com.kltyton.mob_battle.utils.EntityUtil;
 import net.minecraft.server.level.ServerLevel;
@@ -127,6 +128,13 @@ public abstract class PersistentProjectileEntityMixin extends Projectile{
             cancellable = true
     )
     private void onBlockHitDog(BlockHitResult blockHitResult, CallbackInfo ci) {
+        Entity owner = ((AbstractArrow) (Object) this).getOwner();
+        if (blockHitResult.getType() == BlockHitResult.Type.BLOCK
+                && (owner instanceof LittlePersonArcherEntity || owner instanceof MilitiaArcherVillager)) {
+            this.discard();
+            ci.cancel();
+            return;
+        }
         if (blockHitResult.getType() == BlockHitResult.Type.BLOCK && ((AbstractArrow) (Object) this instanceof ITrueDamageProjectile trueDamageProjectile && trueDamageProjectile.isMage())) {
             this.discard();
             ci.cancel();

@@ -29,6 +29,7 @@ public class BigFireballScrollItem extends FireballScrollItem{
             Vec3 eyePos = user.getEyePosition();
             // 创建自定义火球
             CustomFireballEntity fireball = new CustomFireballEntity(world, user, 2.5F, true, 50.0F);
+            fireball.setExplosionKnockback(false);
             // 设置发射位置（玩家眼睛位置）
             fireball.setPos(eyePos);
 

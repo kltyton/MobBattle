@@ -267,7 +267,7 @@ public class ShieldAxeWitherSkeletonEntity extends WitherSkeleton implements Geo
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>("main_controller", 0, this::mainController));
-        controllers.add(new AnimationController<>("skill_controller", 5, animTest -> {
+        controllers.add(new AnimationController<>("skill_controller", 0, animTest -> {
             if (GeoAnimationUtil.consumeFinishedTriggeredAnimation(animTest)) {
                 ClientPlayNetworking.send(new SkillPayload("stop", this.getId()));
             }
@@ -349,6 +349,6 @@ public class ShieldAxeWitherSkeletonEntity extends WitherSkeleton implements Geo
                 .add(Attributes.ATTACK_DAMAGE, 175.0D)
                 .add(Attributes.ARMOR, 30.0D)
                 .add(Attributes.ARMOR_TOUGHNESS, 20.0D)
-                .add(ModEntityAttributes.DAMAGE_REDUCTION, 0.35D);
+                .add(ModEntityAttributes.DAMAGE_REDUCTION, 0.40D);
     }
 }

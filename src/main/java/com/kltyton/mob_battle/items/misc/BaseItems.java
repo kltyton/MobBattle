@@ -17,9 +17,7 @@ public class BaseItems {
     private static final String[] UNCOMMON_ITEM_IDS = {
             "strong_obsidian",
             "fire_red",
-            "blue_ice",
-            "emerald_diamond",
-            "iron_gold"
+            "blue_ice"
     };
     private static final String[] RARE_ITEM_IDS = {
             "energy",
@@ -29,7 +27,9 @@ public class BaseItems {
             "lj",
             "fire_crystal",
             "ice_crystal",
-            "desert_crystal"
+            "desert_crystal",
+            "emerald_diamond",
+            "iron_gold"
     };
 
     public static void init() {

@@ -29,6 +29,9 @@ public abstract class LivingEntityMixin extends Entity implements Attackable, Wa
     @Shadow
     public abstract boolean hasEffect(Holder<MobEffect> effect);
 
+    @Shadow
+    public abstract net.minecraft.world.effect.MobEffectInstance getEffect(Holder<MobEffect> effect);
+
     @Unique
     private static final EntityDataAccessor<Boolean> TRUE_INVISIBLE = SynchedEntityData.defineId(LivingEntity.class, EntityDataSerializers.BOOLEAN);
 
@@ -95,7 +98,12 @@ public abstract class LivingEntityMixin extends Entity implements Attackable, Wa
     )
     private float modifyDamageArgument(float amount) {
         if (this.getAttributes().hasAttribute(ModEntityAttributes.DAMAGE_REDUCTION)) {
-            return (float) (amount * (1 - this.getAttributeValue(ModEntityAttributes.DAMAGE_REDUCTION)));
+            amount = (float) (amount * (1 - this.getAttributeValue(ModEntityAttributes.DAMAGE_REDUCTION)));
+        }
+        if (this.hasEffect(ModEffects.LITTLE_PERSON_GUARDIANSHIP_ENTRY)) {
+            int amplifier = this.getEffect(ModEffects.LITTLE_PERSON_GUARDIANSHIP_ENTRY).getAmplifier();
+            float reduction = Math.min(0.95F, (amplifier + 1) * 0.05F);
+            amount *= 1.0F - reduction;
         }
         return amount;
     }

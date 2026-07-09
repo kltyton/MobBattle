@@ -1,8 +1,10 @@
 package com.kltyton.mob_battle.items.armor.compressarmor;
 
+import com.kltyton.mob_battle.Mob_battle;
 import com.kltyton.mob_battle.block.ModBlocks;
 import com.kltyton.mob_battle.effect.ModEffects;
 import com.kltyton.mob_battle.entity.bullet.GoldenBulletEntity;
+import com.kltyton.mob_battle.entity.customfireball.CustomFireballEntity;
 import com.kltyton.mob_battle.items.ModItems;
 import com.kltyton.mob_battle.items.ModMaterial;
 import com.kltyton.mob_battle.utils.ArmorUtil;
@@ -12,6 +14,8 @@ import com.mojang.math.Transformation;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
+import org.mesdag.particlestorm.data.molang.MolangExp;
+import org.mesdag.particlestorm.network.EmitterCreationPacketS2C;
 
 import java.util.HashMap;
 import java.util.List;
@@ -19,10 +23,12 @@ import java.util.Map;
 import java.util.UUID;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Holder;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -34,6 +40,7 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Display;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemDisplayContext;
@@ -50,12 +57,24 @@ public class CompressArmorSkillManager {
     private static final String TEXT_GOLD_BULLET_MODE = "message.mob_battle.gold_bullet_mode";
     private static final String TEXT_MISSING_PROJECTILE_ITEM = "message.mob_battle.missing_projectile_item";
     private static final String TEXT_ARMOR_SKILL_COOLING_DOWN = "message.mob_battle.armor_skill_cooling_down";
+    private static final String TEXT_ECREDCULTIST_FIREBALL_AMMO = "message.mob_battle.ecredcultist_fireball_ammo";
+    private static final String TEXT_ECREDCULTIST_FIREBALL_EMPTY = "message.mob_battle.ecredcultist_fireball_empty";
+    private static final String TEXT_COMPRESSED_COPPER_NOT_CHARGED = "message.mob_battle.compressed_copper_not_charged";
+    private static final String TEXT_COMPRESSED_COPPER_NO_TARGET = "message.mob_battle.compressed_copper_no_target";
 
+    private static final int ECREDCULTIST_MAX_FIREBALLS = 64;
+    private static final int ECREDCULTIST_REGEN_TICKS = 3 * 20;
+
+    private static final Vector3f COLOR_COPPER = new Vector3f(0.95F, 0.43F, 0.18F);
     private static final Vector3f COLOR_IRON = new Vector3f(0.92F, 0.96F, 1.0F);
     private static final Vector3f COLOR_GOLD = new Vector3f(1.0F, 0.72F, 0.12F);
     private static final Vector3f COLOR_DIAMOND = new Vector3f(0.05F, 0.72F, 1.0F);
     private static final Vector3f COLOR_NETHERITE = new Vector3f(0.03F, 0.02F, 0.04F);
     private static final Vector3f COLOR_NETHERITE_PURPLE = new Vector3f(0.42F, 0.05F, 0.62F);
+    private static final Identifier COMPRESSED_COPPER_LIGHTNING =
+            Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "compressed_copper_lightning");
+    private static final Identifier COMPRESSED_COPPER_LIGHTNING_BURST =
+            Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "compressed_copper_lightning_burst");
 
     private static final GoldBulletMode[] GOLD_BULLET_MODES = new GoldBulletMode[]{
             new GoldBulletMode(Items.GOLD_NUGGET, 5.0F),
@@ -66,8 +85,23 @@ public class CompressArmorSkillManager {
     };
 
     private static final Map<UUID, Integer> GOLD_MODE_INDEX = new HashMap<>();
+    private static final Map<UUID, Integer> ECREDCULTIST_FIREBALLS = new HashMap<>();
+    private static final Map<UUID, Long> ECREDCULTIST_LAST_REGEN_TICK = new HashMap<>();
+    private static final Map<UUID, Long> ECREDCULTIST_LAST_HUD_TICK = new HashMap<>();
 
     public static void handleSkill(ServerPlayer player, int skillId) {
+        if (ArmorUtil.hasFullArmor(player, ModMaterial.ECREDCULTIST_INSTANCE)) {
+            tickEcredcultistArmor(player);
+            if (skillId == SKILL_C) runEcredcultistFireball(player);
+            return;
+        }
+
+        if (ArmorUtil.hasFullArmor(player, ModMaterial.COMPRESSED_COPPER_ARMOR_INSTANCE)) {
+            if (skillId == SKILL_X) runCopperLightningSkill(player);
+            if (skillId == SKILL_C) runCopperKickSkill(player);
+            return;
+        }
+
         if (ArmorUtil.hasFullArmor(player, ModMaterial.COMPRESSED_IRON_ARMOR_INSTANCE)) {
             if (skillId == SKILL_C) runIronSkill(player);
             return;
@@ -136,6 +170,177 @@ public class CompressArmorSkillManager {
                         ModEffects.NETHERITE_MARK_ENTRY
                 );
             }
+        }
+    }
+
+    public static void tickEcredcultistArmor(ServerPlayer player) {
+        UUID playerId = player.getUUID();
+        long gameTime = player.level().getGameTime();
+        int ammo = ECREDCULTIST_FIREBALLS.computeIfAbsent(playerId, ignored -> ECREDCULTIST_MAX_FIREBALLS);
+        long lastRegen = ECREDCULTIST_LAST_REGEN_TICK.getOrDefault(playerId, gameTime);
+
+        if (ammo >= ECREDCULTIST_MAX_FIREBALLS) {
+            ECREDCULTIST_LAST_REGEN_TICK.put(playerId, gameTime);
+        } else if (gameTime - lastRegen >= ECREDCULTIST_REGEN_TICKS) {
+            ammo++;
+            ECREDCULTIST_FIREBALLS.put(playerId, ammo);
+            ECREDCULTIST_LAST_REGEN_TICK.put(playerId, gameTime);
+        }
+
+        long lastHud = ECREDCULTIST_LAST_HUD_TICK.getOrDefault(playerId, 0L);
+        if (gameTime - lastHud >= 20L) {
+            player.sendOverlayMessage(Component.translatable(TEXT_ECREDCULTIST_FIREBALL_AMMO, ammo).withStyle(ChatFormatting.GOLD));
+            ECREDCULTIST_LAST_HUD_TICK.put(playerId, gameTime);
+        }
+    }
+
+    private static void runEcredcultistFireball(ServerPlayer player) {
+        UUID playerId = player.getUUID();
+        int ammo = ECREDCULTIST_FIREBALLS.computeIfAbsent(playerId, ignored -> ECREDCULTIST_MAX_FIREBALLS);
+        if (ammo <= 0) {
+            player.sendOverlayMessage(Component.translatable(TEXT_ECREDCULTIST_FIREBALL_EMPTY).withStyle(ChatFormatting.RED));
+            return;
+        }
+
+        ECREDCULTIST_FIREBALLS.put(playerId, ammo - 1);
+        player.sendOverlayMessage(Component.translatable(TEXT_ECREDCULTIST_FIREBALL_AMMO, ammo - 1).withStyle(ChatFormatting.GOLD));
+
+        ServerLevel world = player.level();
+        Vec3 eyePos = player.getEyePosition();
+        Vec3 look = player.getViewVector(1.0F).normalize();
+        CustomFireballEntity fireball = new CustomFireballEntity(world, player, 2.5F, true, 150.0F);
+        fireball.setPos(eyePos.add(look.scale(0.8D)));
+        fireball.setDeltaMovement(look.scale(1.8D));
+        world.addFreshEntity(fireball);
+
+        world.sendParticles(ParticleTypes.FLAME, fireball.getX(), fireball.getY(), fireball.getZ(), 45, 0.35, 0.35, 0.35, 0.08);
+        world.sendParticles(ParticleTypes.LAVA, fireball.getX(), fireball.getY(), fireball.getZ(), 10, 0.25, 0.25, 0.25, 0.02);
+        world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.FIRECHARGE_USE, SoundSource.PLAYERS, 1.0F, 0.65F);
+    }
+
+    private static void runCopperLightningSkill(ServerPlayer player) {
+        if (!hasCopperCharge(player)) return;
+
+        ItemStack cooldownItem = new ItemStack(ModItems.COMPRESSED_COPPER_INGOT);
+        if (isCoolingDown(player, cooldownItem, 10)) return;
+
+        LivingEntity target = findTargetInSight(player, 24.0D);
+        if (target == null) {
+            player.sendOverlayMessage(Component.translatable(TEXT_COMPRESSED_COPPER_NO_TARGET).withStyle(ChatFormatting.RED));
+            return;
+        }
+
+        ServerLevel world = player.level();
+        Vec3 impact = target.position();
+        LightningBolt lightning = EntityType.LIGHTNING_BOLT.create(world, EntitySpawnReason.EVENT);
+        if (lightning != null) {
+            lightning.setVisualOnly(true);
+            lightning.setPos(target.getX(), target.getY(), target.getZ());
+            world.addFreshEntity(lightning);
+        }
+
+        target.invulnerableTime = 0;
+        target.hurtServer(world, player.damageSources().lightningBolt(), 5.0F);
+        spawnCopperBurst(world, impact.add(0.0D, target.getBbHeight() * 0.5D, 0.0D), 36, 0.8D);
+
+        TaskSchedulerUtil.runLater(6, () -> {
+            if (player.isRemoved()) {
+                return;
+            }
+            Vec3 center = target.isRemoved() ? impact : target.position();
+            AABB hitBox = new AABB(center, center).inflate(3.0D);
+            for (LivingEntity victim : world.getEntitiesOfClass(LivingEntity.class, hitBox, victim -> EntityUtil.isValidCombatTarget(player, victim))) {
+                victim.invulnerableTime = 0;
+                victim.hurtServer(world, player.damageSources().playerAttack(player), 25.0F);
+                spawnHitSpark(world, victim, COLOR_COPPER, false);
+            }
+            world.sendParticles(ParticleTypes.EXPLOSION, center.x, center.y + 0.5D, center.z, 2, 0.1D, 0.1D, 0.1D, 0.0D);
+            spawnGroundRing(world, center, 3.0D, COLOR_COPPER, 72, 1.0F);
+            world.playSound(null, center.x, center.y, center.z, SoundEvents.GENERIC_EXPLODE.value(), SoundSource.PLAYERS, 0.9F, 1.2F);
+        });
+
+        player.getCooldowns().addCooldown(cooldownItem, 10 * 20);
+    }
+
+    private static void runCopperKickSkill(ServerPlayer player) {
+        if (!hasCopperCharge(player)) return;
+
+        ItemStack cooldownItem = new ItemStack(ModItems.COMPRESSED_COPPER_BOOTS);
+        if (isCoolingDown(player, cooldownItem, 10)) return;
+
+        LivingEntity target = findTargetInSight(player, 18.0D);
+        if (target == null) {
+            player.sendOverlayMessage(Component.translatable(TEXT_COMPRESSED_COPPER_NO_TARGET).withStyle(ChatFormatting.RED));
+            return;
+        }
+
+        ServerLevel world = player.level();
+        Vec3 start = player.position();
+        Vec3 targetPos = target.position();
+        player.setDeltaMovement(0.0D, 1.1D, 0.0D);
+        player.hurtMarked = true;
+        spawnCopperBurst(world, start.add(0.0D, 1.0D, 0.0D), 28, 0.5D);
+        world.playSound(null, start.x, start.y, start.z, SoundEvents.TRIDENT_RIPTIDE_1.value(), SoundSource.PLAYERS, 0.9F, 1.25F);
+
+        TaskSchedulerUtil.runLater(8, () -> {
+            if (player.isRemoved() || !target.isAlive()) {
+                return;
+            }
+
+            Vec3 direction = target.position().subtract(player.position());
+            if (direction.lengthSqr() < 0.01D) {
+                direction = targetPos.subtract(start);
+            }
+            if (direction.lengthSqr() < 0.01D) {
+                direction = player.getViewVector(1.0F);
+            }
+            direction = direction.normalize();
+            Vec3 kickDirection = direction;
+
+            player.teleportTo(target.getX() - kickDirection.x * 1.2D, target.getY() + 2.2D, target.getZ() - kickDirection.z * 1.2D);
+            player.setDeltaMovement(kickDirection.scale(1.35D).add(0.0D, -1.25D, 0.0D));
+            player.hurtMarked = true;
+
+            TaskSchedulerUtil.runLater(4, () -> {
+                if (player.isRemoved() || !target.isAlive()) {
+                    return;
+                }
+                target.invulnerableTime = 0;
+                target.hurtServer(world, player.damageSources().playerAttack(player), 30.0F);
+                target.setDeltaMovement(target.getDeltaMovement().add(kickDirection.scale(0.7D).add(0.0D, 0.45D, 0.0D)));
+                target.hurtMarked = true;
+                Vec3 impactGround = target.position().add(0.0D, 0.05D, 0.0D);
+                spawnCompressedCopperImpactStorm(world, impactGround);
+                spawnCopperBurst(world, target.position().add(0.0D, target.getBbHeight() * 0.5D, 0.0D), 42, 0.65D);
+                world.playSound(null, target.getX(), target.getY(), target.getZ(), SoundEvents.ANVIL_LAND, SoundSource.PLAYERS, 0.75F, 1.45F);
+            });
+        });
+
+        player.getCooldowns().addCooldown(cooldownItem, 10 * 20);
+    }
+
+    private static boolean hasCopperCharge(ServerPlayer player) {
+        if (player.hasEffect(ModEffects.COMPRESSED_COPPER_CHARGED_ENTRY)) {
+            return true;
+        }
+        player.sendOverlayMessage(Component.translatable(TEXT_COMPRESSED_COPPER_NOT_CHARGED).withStyle(ChatFormatting.RED));
+        return false;
+    }
+
+    private static void spawnCopperBurst(ServerLevel world, Vec3 center, int count, double spread) {
+        world.sendParticles(dust(COLOR_COPPER, 1.15F), center.x, center.y, center.z, count, spread, spread, spread, 0.08D);
+        world.sendParticles(ParticleTypes.ELECTRIC_SPARK, center.x, center.y, center.z, Math.max(8, count / 3), spread * 0.7D, spread * 0.7D, spread * 0.7D, 0.1D);
+    }
+
+    private static void spawnCompressedCopperImpactStorm(ServerLevel world, Vec3 center) {
+        spawnParticleStormEmitter(world, center, COMPRESSED_COPPER_LIGHTNING);
+        spawnParticleStormEmitter(world, center, COMPRESSED_COPPER_LIGHTNING_BURST);
+    }
+
+    private static void spawnParticleStormEmitter(ServerLevel world, Vec3 center, Identifier particleId) {
+        Vector3f pos = center.toVector3f();
+        for (ServerPlayer viewer : world.players()) {
+            EmitterCreationPacketS2C.sendToClient(viewer, particleId, new Vector3f(pos), MolangExp.EMPTY, null);
         }
     }
 
@@ -467,6 +672,14 @@ public class CompressArmorSkillManager {
     }
 
     private static LivingEntity findMarkedTargetInSight(ServerPlayer player, double range, Holder<MobEffect> mark) {
+        return findTargetInSight(player, range, target -> target.hasEffect(mark));
+    }
+
+    private static LivingEntity findTargetInSight(ServerPlayer player, double range) {
+        return findTargetInSight(player, range, target -> true);
+    }
+
+    private static LivingEntity findTargetInSight(ServerPlayer player, double range, java.util.function.Predicate<LivingEntity> extraPredicate) {
         Vec3 eye = player.getEyePosition();
         Vec3 look = player.getViewVector(1.0F).normalize();
         AABB box = player.getBoundingBox().expandTowards(look.scale(range)).inflate(2.0);
@@ -474,12 +687,8 @@ public class CompressArmorSkillManager {
         double bestDistance = range + 1.0;
 
         for (LivingEntity target : player.level().getEntitiesOfClass(LivingEntity.class, box, target ->
-                target != player
-                        && target.isAlive()
-                        && !target.isSpectator()
-                        && !(target instanceof net.minecraft.world.entity.player.Player targetPlayer && targetPlayer.isCreative())
-                        && !target.isAlliedTo(player)
-                        && target.hasEffect(mark))) {
+                EntityUtil.isValidCombatTarget(player, target)
+                        && extraPredicate.test(target))) {
             Vec3 toTarget = target.getBoundingBox().getCenter().subtract(eye);
             double alongRay = toTarget.dot(look);
 

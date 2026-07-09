@@ -4,6 +4,7 @@ import com.kltyton.mob_battle.entity.ModSkillEntityType;
 import com.kltyton.mob_battle.entity.player.IClientPlayerEntityAccessor;
 import com.kltyton.mob_battle.entity.player.IPlayerEntityAccessor;
 import com.kltyton.mob_battle.entity.player.IPlayerSkillAccessor;
+import com.kltyton.mob_battle.entity.player.PlayerEntitySkill;
 import com.kltyton.mob_battle.event.DataTrackersEvent;
 import com.kltyton.mob_battle.network.packet.PlayerSkillUtilPayload;
 import com.kltyton.mob_battle.sounds.ModSounds;
@@ -114,6 +115,7 @@ public abstract class PlayerEntityMixin extends LivingEntity implements GeoEntit
     @Unique
     private boolean mobBattle$isValidCollisionTarget(LivingEntity target) {
         return target != null
+                && target.isAlive()
                 && target != this
                 && !target.getUUID().equals(this.getUUID())
                 && !EntityUtil.isCreativeOrSpectator(target);
@@ -236,6 +238,13 @@ public abstract class PlayerEntityMixin extends LivingEntity implements GeoEntit
     @Inject(method = "tick", at = @At("HEAD"))
     public void tick(CallbackInfo ci) {
         if (!this.level().isClientSide()) {
+            if (EntityUtil.isCreativeOrSpectator(this)) {
+                PlayerEntitySkill.clearJumpSkillGravityModifier(this);
+                this.mobBattle$stopCollision();
+                this.grabbedEntity = null;
+                this.mobBattle$setHasSkill(false);
+                this.mobBattle$setCanMove(true);
+            }
             if (!mobBattle$hasSkill()) {
                 this.mobBattle$setAttackCooldown("attack", Math.max(0, this.mobBattle$getAttackCooldown("attack") - 1));
                 this.mobBattle$setAttackCooldown("retreat_step", Math.max(0, this.mobBattle$getAttackCooldown("retreat_step") - 1));
@@ -450,6 +459,7 @@ public abstract class PlayerEntityMixin extends LivingEntity implements GeoEntit
     }
     @Unique
     public boolean mobBattle$canAttack(String animationName) {
+        if (EntityUtil.isCreativeOrSpectator(this)) return false;
         if (!ModSkillEntityType.canSkill(this)) return false;
         return this.mobBattle$getAttackCooldown(animationName) <= 0 && !mobBattle$hasSkill();
     }

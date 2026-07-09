@@ -2,6 +2,7 @@ package com.kltyton.mob_battle.mixin;
 
 import com.kltyton.mob_battle.entity.highbird.HighbirdAndEggEntity;
 import com.kltyton.mob_battle.entity.highbird.egg.HighbirdSBEntity;
+import com.kltyton.mob_battle.event.team.TeamFightManager;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -31,11 +32,22 @@ public abstract class ActiveTargetGoalMixin extends TargetGoal {
 
     @Inject(method = "findTarget", at = @At("TAIL"))
     private void injectHighbirdBabyTarget(CallbackInfo ci) {
+        ServerLevel world = (ServerLevel) mob.level();
+        AABB searchBox = getTargetSearchArea(mob.getAttributeValue(Attributes.FOLLOW_RANGE));
+        List<LivingEntity> forcedTargets = world.getEntitiesOfClass(
+                LivingEntity.class,
+                searchBox,
+                living -> living != mob && living.isAlive() && TeamFightManager.areForcedOpponents(mob, living)
+        );
+        if (!forcedTargets.isEmpty()) {
+            forcedTargets.sort((a, b) -> Double.compare(mob.distanceToSqr(a), mob.distanceToSqr(b)));
+            this.target = forcedTargets.getFirst();
+            return;
+        }
+
         // 如果已经找到目标，则跳过
         if (target != null) return;
 
-        ServerLevel world = (ServerLevel) mob.level();
-        AABB searchBox = getTargetSearchArea(mob.getAttributeValue(Attributes.FOLLOW_RANGE));
         if (!(mob instanceof HighbirdAndEggEntity)) {
             List<HighbirdAndEggEntity> babies = world.getEntitiesOfClass(
                     HighbirdAndEggEntity.class,

@@ -1,5 +1,6 @@
 package com.kltyton.mob_battle.entity.littleperson.guard;
 
+import com.kltyton.mob_battle.effect.ModEffects;
 import com.kltyton.mob_battle.entity.ModEntityAttributes;
 import com.kltyton.mob_battle.entity.ModSkillEntityType;
 import com.kltyton.mob_battle.entity.littleperson.LittlePersonEntity;
@@ -7,6 +8,7 @@ import com.kltyton.mob_battle.entity.littleperson.militia.LittlePersonMilitiaEnt
 import com.kltyton.mob_battle.network.packet.SkillPayload;
 import com.kltyton.mob_battle.utils.GeoAnimationUtil;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -14,6 +16,8 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.monster.Monster;
@@ -24,6 +28,9 @@ import com.geckolib.animation.object.PlayState;
 import com.geckolib.animation.RawAnimation;
 
 public class LittlePersonGuardEntity extends LittlePersonMilitiaEntity {
+    private static final double FOLLOW_OWNER_DISTANCE_SQ = 8.0D * 8.0D;
+    private static final double FOLLOW_OWNER_SPEED = 1.15D;
+
     public LittlePersonGuardEntity(EntityType<? extends Monster> entityType, Level world) {
         super(entityType, world);
         this.setNoAi(false);
@@ -77,9 +84,60 @@ public class LittlePersonGuardEntity extends LittlePersonMilitiaEntity {
                 } else if (currentLife == 0) {
                     this.discard();
                 }
+                updateSummonOwnerBehavior();
             }
         }
     }
+
+    private void updateSummonOwnerBehavior() {
+        LivingEntity owner = getSummonOwner();
+        if (owner == null || !owner.isAlive()) {
+            return;
+        }
+        refreshGuardianship(owner);
+
+        LivingEntity ownerTarget = owner instanceof Mob mob ? mob.getTarget() : owner.getLastHurtMob();
+        if (!trySetOwnerTarget(ownerTarget)) {
+            trySetOwnerTarget(owner.getLastHurtByMob());
+        }
+
+        if (this.getTarget() == null && this.distanceToSqr(owner) > FOLLOW_OWNER_DISTANCE_SQ) {
+            this.getNavigation().moveTo(owner, FOLLOW_OWNER_SPEED);
+        }
+    }
+
+    private void refreshGuardianship(LivingEntity owner) {
+        if (this.getLife() < 0 || this.distanceToSqr(owner) > 12.0D * 12.0D || this.tickCount % 20 != 0) {
+            return;
+        }
+        int nearbyGuards = this.level().getEntitiesOfClass(
+                LittlePersonGuardEntity.class,
+                owner.getBoundingBox().inflate(12.0D),
+                guard -> guard.isAlive()
+                        && guard.getLife() >= 0
+                        && guard.getSummonOwner() == owner
+                        && guard.distanceToSqr(owner) <= 12.0D * 12.0D
+        ).size();
+        if (nearbyGuards > 0) {
+            owner.addEffect(new MobEffectInstance(
+                    ModEffects.LITTLE_PERSON_GUARDIANSHIP_ENTRY,
+                    5 * 20,
+                    Math.min(nearbyGuards, 20) - 1,
+                    false,
+                    true,
+                    true
+            ), this);
+        }
+    }
+
+    private boolean trySetOwnerTarget(LivingEntity target) {
+        if (target != null && isValidSummonTarget(target)) {
+            this.setTarget(target);
+            return true;
+        }
+        return false;
+    }
+
     @Override
     public void knockback(double strength, double x, double z) {
         if (!hasSkill() || !this.isNoAi()) {

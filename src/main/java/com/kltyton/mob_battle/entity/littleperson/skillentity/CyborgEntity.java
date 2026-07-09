@@ -80,7 +80,7 @@ public class CyborgEntity extends BaseSkillLittlePersonEntity {
                 // 创建箭实体
                 LittleArrowEntity arrowEntity = new LittleArrowEntity(ModEntities.POISON_ARROW, world, entity, new ItemStack(Items.ARROW), entity.getMainHandItem().getItem() == Items.BOW ? entity.getMainHandItem() : null);
                 // 设置箭的伤害
-                arrowEntity.setBaseDamage(30);
+                arrowEntity.setBaseDamage(20);
                 arrowEntity.setOwner(entity);
                 arrowEntity.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 40, 1));
                 arrowEntity.shoot(targetX, targetY, targetZ, 1.6F, 0.01F);

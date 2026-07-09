@@ -17,6 +17,8 @@ import com.kltyton.mob_battle.entity.firewall.FireWallEntityRenderer;
 import com.kltyton.mob_battle.entity.general.GeneralEntityModel;
 import com.kltyton.mob_battle.entity.general.GeneralEntityOnlyOneSkill;
 import com.kltyton.mob_battle.entity.general.GeneralEntityRenderer;
+import com.kltyton.mob_battle.entity.golem.ChestGolemRenderer;
+import com.kltyton.mob_battle.entity.golem.StrongMinRenderer;
 import com.kltyton.mob_battle.entity.hiddeneye.HiddenEyeEntityRenderer;
 import com.kltyton.mob_battle.entity.highbird.adulthood.HighbirdAdulthoodEntityRenderer;
 import com.kltyton.mob_battle.entity.highbird.baby.HighbirdBabyEntityRenderer;
@@ -29,6 +31,7 @@ import com.kltyton.mob_battle.entity.littleperson.archer.LittlePersonArcherEntit
 import com.kltyton.mob_battle.entity.littleperson.archer.littlearrow.LittleArrowEntityRender;
 import com.kltyton.mob_battle.entity.littleperson.archer.littlearrow.StoneArrowEntityRender;
 import com.kltyton.mob_battle.entity.littleperson.civilian.LittlePersonCivilianEntityRenderer;
+import com.kltyton.mob_battle.entity.littleperson.civilian.LittlePersonWorkerEntityRenderer;
 import com.kltyton.mob_battle.entity.littleperson.giant.LittlePersonGiantEntityRenderer;
 import com.kltyton.mob_battle.entity.littleperson.guard.LittlePersonGuardEntityRenderer;
 import com.kltyton.mob_battle.entity.littleperson.king.LittlePersonKingEntityRenderer;
@@ -39,6 +42,10 @@ import com.kltyton.mob_battle.entity.littleperson.skillentity.ironmanbullet.Iron
 import com.kltyton.mob_battle.entity.littleperson.skillentity.laser.LaserEntityRenderer;
 import com.kltyton.mob_battle.entity.littleperson.skillentity.LaserManEntityRenderer;
 import com.kltyton.mob_battle.entity.littleperson.skillentity.poisonousbullet.PoisonousBulletEntityRenderer;
+import com.kltyton.mob_battle.entity.littleperson.skillentity.requestedprojectile.KnifeProjectileModel;
+import com.kltyton.mob_battle.entity.littleperson.skillentity.requestedprojectile.SevenHarvestBulletModel;
+import com.kltyton.mob_battle.entity.littleperson.skillentity.requestedprojectile.SkeletonHeadProjectileModel;
+import com.kltyton.mob_battle.entity.littleperson.skillentity.requestedprojectile.TexturedSkillProjectileRenderer;
 import com.kltyton.mob_battle.entity.littleperson.skillentity.spearbullet.SpearBulletEntityRenderer;
 import com.kltyton.mob_battle.entity.lobster.LobsterEntityRenderer;
 import com.kltyton.mob_battle.entity.lobster.MagmaLobsterEntityRenderer;
@@ -49,6 +56,7 @@ import com.kltyton.mob_battle.entity.skull.archer.SkullArcherEntityRenderer;
 import com.kltyton.mob_battle.entity.skull.king.SkullKingEntityRenderer;
 import com.kltyton.mob_battle.entity.skull.mage.SkullMageEntityRenderer;
 import com.kltyton.mob_battle.entity.skull.warrior.SkullWarriorEntityRenderer;
+import com.kltyton.mob_battle.entity.silverfish.silverfish.AngrySilverfishRenderer;
 import com.kltyton.mob_battle.entity.sugarmanscorpion.SugarManScorpionRenderer;
 import com.kltyton.mob_battle.entity.villager.archervillager.ArcherVillagerRenderer;
 import com.kltyton.mob_battle.entity.villager.militia.MilitiaArcherVillagerRenderer;
@@ -61,12 +69,7 @@ import com.kltyton.mob_battle.entity.voidcell.VoidCellEntityRenderer;
 import com.kltyton.mob_battle.entity.witherskeletonking.WitherSkeletonKingRenderer;
 import com.kltyton.mob_battle.entity.witherskeletonking.skill.WitherSkullBulletEntityRenderer;
 import com.kltyton.mob_battle.entity.xunsheng.XunShengEntityRenderer;
-import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
-import net.minecraft.client.renderer.entity.EvokerRenderer;
-import net.minecraft.client.renderer.entity.NoopRenderer;
-import net.minecraft.client.renderer.entity.SnowGolemRenderer;
-import net.minecraft.client.renderer.entity.WitherBossRenderer;
-import net.minecraft.client.renderer.entity.ZombieRenderer;
+import net.minecraft.client.renderer.entity.*;
 import net.minecraft.world.entity.EntityType;
 
 public class ModEntityRenderer {
@@ -76,78 +79,99 @@ public class ModEntityRenderer {
             FeatureRendererContext<LivingEntityRenderState, EntityModel<LivingEntityRenderState>> featureContext = (FeatureRendererContext<LivingEntityRenderState, EntityModel<LivingEntityRenderState>>) entityRenderer;
             registrationHelper.register(new IceChestBlockFeatureRenderer<>(featureContext));
         });*/
-        EntityRendererRegistry.register(ModEntities.MILITIA_WARRIOR_VILLAGER, MilitiaWarriorVillagerRenderer::new);
-        EntityRendererRegistry.register(ModEntities.MILITIA_ARCHER_VILLAGER, MilitiaArcherVillagerRenderer::new);
-        EntityRendererRegistry.register(ModEntities.WARRIOR_VILLAGER, WarriorVillagerRenderer::new);
-        EntityRendererRegistry.register(ModEntities.ARCHER_VILLAGER, ArcherVillagerRenderer::new);
-        EntityRendererRegistry.register(ModEntities.XUN_SHENG, XunShengEntityRenderer::new);
-        EntityRendererRegistry.register(ModEntities.DEEP_CREATURE, DeepCreatureEntityRenderer::new);
-        EntityRendererRegistry.register(ModEntities.WITHER_SKELETON_KING, WitherSkeletonKingRenderer::new);
-        EntityRendererRegistry.register(ModEntities.VINDICATOR_GENERAL, VindicatorGeneralEntityRenderer::new);
-        EntityRendererRegistry.register(ModEntities.VINDICATOR_GENERAL_AXE, VindicatorGeneralAxeRenderer::new);
-        EntityRendererRegistry.register(ModEntities.HULKBUSTER, HulkbusterEntityRenderer::new);
-        EntityRendererRegistry.register(ModEntities.SKULL_KING, SkullKingEntityRenderer::new);
-        EntityRendererRegistry.register(ModEntities.SKULL_ARCHER, SkullArcherEntityRenderer::new);
-        EntityRendererRegistry.register(ModEntities.SKULL_WARRIOR, SkullWarriorEntityRenderer::new);
-        EntityRendererRegistry.register(ModEntities.SKULL_MAGE, SkullMageEntityRenderer::new);
-        EntityRendererRegistry.register(ModEntities.YOUNG_MIN, YoungMinEntityRenderer::new);
-        EntityRendererRegistry.register(ModEntities.HIDDEN_EYE, HiddenEyeEntityRenderer::new);
-        EntityRendererRegistry.register(ModEntities.HIGHBIRD_BABY, HighbirdBabyEntityRenderer::new);
-        EntityRendererRegistry.register(ModEntities.HIGHBIRD_EGG, HighbirdEggEntityRenderer::new);
-        EntityRendererRegistry.register(ModEntities.HIGHBIRD_TEENAGE, HighbirdTeenageEntityRenderer::new);
-        EntityRendererRegistry.register(ModEntities.HIGHBIRD_ADULTHOOD, HighbirdAdulthoodEntityRenderer::new);
-        EntityRendererRegistry.register(ModEntities.BIG_CUSTOM_FIREBALL, CustomSuperBigFireballEntityRenderer::new);
-        EntityRendererRegistry.register(ModEntities.METEORITE, MeteoriteEntityRender::new);
-        EntityRendererRegistry.register(ModEntities.FIRE_WALL, FireWallEntityRenderer::new);
-        EntityRendererRegistry.register(ModEntities.BLUE_IRON_GOLEM, BlueIronGolemEntityRenderer::new);
-        EntityRendererRegistry.register(ModEntities.SUGAR_MAN_SCORPION, SugarManScorpionRenderer::new);
-        EntityRendererRegistry.register(ModEntities.BULLET_ENTITY, BulletEntityRenderer::new);
-        EntityRendererRegistry.register(ModEntities.WITHER_SKULL_BULLET_ENTITY, WitherSkullBulletEntityRenderer::new);
-        EntityRendererRegistry.register(ModEntities.VILLAGER_IRON_GOLEM_ENTITY, VillagerIronGolemEntityRenderer::new);
-        EntityRendererRegistry.register(ModEntities.VILLAGER_KING_ENTITY, VillagerKingEntityRenderer::new);
-        EntityRendererRegistry.register(ModEntities.ATTACK_DRONE, AttackDroneEntityRenderer::new);
-        EntityRendererRegistry.register(ModEntities.TREATMENT_DRONE, TreatmentDroneEntityRenderer::new);
-        EntityRendererRegistry.register(ModEntities.LITTLE_PERSON_CIVILIAN, LittlePersonCivilianEntityRenderer::new);
-        EntityRendererRegistry.register(ModEntities.LITTLE_PERSON_MILITIA, LittlePersonMilitiaEntityRenderer::new);
-        EntityRendererRegistry.register(ModEntities.LITTLE_PERSON_ARCHER, LittlePersonArcherEntityRenderer::new);
-        EntityRendererRegistry.register(ModEntities.LITTLE_PERSON_GIANT, LittlePersonGiantEntityRenderer::new);
-        EntityRendererRegistry.register(ModEntities.LITTLE_ARROW, LittleArrowEntityRender::new);
-        EntityRendererRegistry.register(ModEntities.STONE_ARROW, StoneArrowEntityRender::new);
-        EntityRendererRegistry.register(ModEntities.POISON_ARROW, PoisonousBulletEntityRenderer::new);
-        EntityRendererRegistry.register(ModEntities.SPEAR_BULLET, SpearBulletEntityRenderer::new);
-        EntityRendererRegistry.register(ModEntities.IRON_MAN_BULLET_ENTITY, IronManBulletEntityRenderer::new);
-        EntityRendererRegistry.register(ModEntities.LITTLE_PERSON_GUARD, LittlePersonGuardEntityRenderer::new);
-        EntityRendererRegistry.register(ModEntities.LITTLE_PERSON_KING, LittlePersonKingEntityRenderer::new);
-        EntityRendererRegistry.register(ModEntities.VOID_CELL, VoidCellEntityRenderer::new);
-        EntityRendererRegistry.register(ModEntities.MISSILE, MissileEntityRenderer::new);
-        EntityRendererRegistry.register(ModEntities.ICE_ARROW, IceArrowEntityRenderer::new);
-        EntityRendererRegistry.register(ModEntities.GOLDEN_TRAIL_PROJECTILE, GoldenTrailProjectileRenderer::new);
-        EntityRendererRegistry.register(ModEntities.GOLDEN_BULLET, GoldenBulletEntityRenderer::new);
-        EntityRendererRegistry.register(ModEntities.SNOWMAN_ICE_BLOCK, SnowmanIceBlockRenderer::new);
-        EntityRendererRegistry.register(ModEntities.CBOT_SNOWBALL, CbotSnowballRenderer::new);
-        EntityRendererRegistry.register(ModEntities.NEW_SNOW_GOLEM, SnowGolemRenderer::new);
-        EntityRendererRegistry.register(ModEntities.PIGLIN_GENERAL, PiglinGeneralEntityRenderer::new);
-        EntityRendererRegistry.register(ModEntities.MODIFIED_DRAGON_BREATH_CLOUD, NoopRenderer::new);
-        EntityRendererRegistry.register(ModEntities.COAL_SILVERFISH, ctx -> new GeneralEntityRenderer<>(ctx, "coal_silverfish", false));
-        EntityRendererRegistry.register(ModEntities.BOW_ZOMBIE_MOD, ZombieRenderer::new);
-        EntityRendererRegistry.register(ModEntities.PIGLIN_BRUTE_SPEAR_MOD, ModPiglinBruteRenderer::new);
-        EntityRendererRegistry.register(ModEntities.SILENCE_PHANTOM, ctx -> new GeneralEntityRenderer<>(ctx, "silence_phantom", false));
-        EntityRendererRegistry.register(ModEntities.SHIELD, ctx -> new GeneralEntityRenderer<>(ctx, "shield_force_field", false, GeneralEntityModel.RenderTypes.TRANSLUCENT));
-        EntityRendererRegistry.register(ModEntities.SUPER_EVOKER, EvokerRenderer::new);
-        EntityRendererRegistry.register(ModEntities.LOBSTER, LobsterEntityRenderer::new);
-        EntityRendererRegistry.register(ModEntities.MAGMA_LOBSTER, MagmaLobsterEntityRenderer::new);
-        EntityRendererRegistry.register(ModEntities.ENDER_DRAGON_METEORITE, ctx -> new GeneralEntityRenderer<>(ctx, "ender_dragon_meteorite", false));
-        EntityRendererRegistry.register(ModEntities.MAGMA_LOBBER_BIG_FIREBALL, ctx -> new GeneralEntityRenderer<>(ctx, "magma_lobber_big_fireball", false));
-        EntityRendererRegistry.register(ModEntities.ENHANCED_WITHER, WitherBossRenderer::new);
-        EntityRendererRegistry.register(ModEntities.DUAL_BLADE_WITHER_SKELETON, ctx -> new GeneralEntityRenderer<>(ctx, "dual_blade_wither_skeleton", false));
-        EntityRendererRegistry.register(ModEntities.SHIELD_AXE_WITHER_SKELETON, ctx -> new GeneralEntityRenderer<>(ctx, "shield_axe_wither_skeleton", false));
-        EntityRendererRegistry.register(ModEntities.LASER, LaserEntityRenderer::new);
-        EntityRendererRegistry.register(ModEntities.LASER_MAN, LaserManEntityRenderer::new);
-        EntityRendererRegistry.register(ModEntities.BLOOD_SWORD_ENERGY, ctx -> new GeneralEntityRenderer<>(ctx, "blood_sword_energy", false, GeneralEntityModel.RenderTypes.TRANSLUCENT));
-        EntityRendererRegistry.register(ModEntities.NINJA_CLONE, ctx -> new GeneralEntityRenderer<>(ctx, "ninja_clone", false));
-        EntityRendererRegistry.register(ModEntities.ICE_SWORD_ENERGY, ctx -> new GeneralEntityRenderer<>(ctx, "ice_sword_energy", false, GeneralEntityModel.RenderTypes.TRANSLUCENT));
-        EntityRendererRegistry.register(ModEntities.ICE_BOMB, ctx -> new GeneralEntityRenderer<>(ctx, "ice_bomb", false, GeneralEntityModel.RenderTypes.TRANSLUCENT));
-        EntityRendererRegistry.register(ModEntities.ICE_FANGS, ctx -> new GeneralEntityRenderer<>(ctx, "ice_fangs", false, GeneralEntityModel.RenderTypes.TRANSLUCENT));
+        EntityRenderers.register(ModEntities.MILITIA_WARRIOR_VILLAGER, MilitiaWarriorVillagerRenderer::new);
+        EntityRenderers.register(ModEntities.MILITIA_ARCHER_VILLAGER, MilitiaArcherVillagerRenderer::new);
+        EntityRenderers.register(ModEntities.WARRIOR_VILLAGER, WarriorVillagerRenderer::new);
+        EntityRenderers.register(ModEntities.ARCHER_VILLAGER, ArcherVillagerRenderer::new);
+        EntityRenderers.register(ModEntities.XUN_SHENG, XunShengEntityRenderer::new);
+        EntityRenderers.register(ModEntities.DEEP_CREATURE, DeepCreatureEntityRenderer::new);
+        EntityRenderers.register(ModEntities.WITHER_SKELETON_KING, WitherSkeletonKingRenderer::new);
+        EntityRenderers.register(ModEntities.VINDICATOR_GENERAL, VindicatorGeneralEntityRenderer::new);
+        EntityRenderers.register(ModEntities.VINDICATOR_GENERAL_AXE, VindicatorGeneralAxeRenderer::new);
+        EntityRenderers.register(ModEntities.HULKBUSTER, HulkbusterEntityRenderer::new);
+        EntityRenderers.register(ModEntities.SKULL_KING, SkullKingEntityRenderer::new);
+        EntityRenderers.register(ModEntities.SKULL_ARCHER, SkullArcherEntityRenderer::new);
+        EntityRenderers.register(ModEntities.SKULL_WARRIOR, SkullWarriorEntityRenderer::new);
+        EntityRenderers.register(ModEntities.SKULL_MAGE, SkullMageEntityRenderer::new);
+        EntityRenderers.register(ModEntities.NEW_SKULL_MAGE, ctx -> new BaseSkillLittlePersonEntityRenderer<>(ctx, "new_skull_mage", false));
+        EntityRenderers.register(ModEntities.SUMMONED_SKELETON, SkeletonRenderer::new);
+        EntityRenderers.register(ModEntities.SUMMONED_VEX, VexRenderer::new);
+        EntityRenderers.register(ModEntities.YOUNG_MIN, YoungMinEntityRenderer::new);
+        EntityRenderers.register(ModEntities.HIDDEN_EYE, HiddenEyeEntityRenderer::new);
+        EntityRenderers.register(ModEntities.HIGHBIRD_BABY, HighbirdBabyEntityRenderer::new);
+        EntityRenderers.register(ModEntities.HIGHBIRD_EGG, HighbirdEggEntityRenderer::new);
+        EntityRenderers.register(ModEntities.HIGHBIRD_TEENAGE, HighbirdTeenageEntityRenderer::new);
+        EntityRenderers.register(ModEntities.HIGHBIRD_ADULTHOOD, HighbirdAdulthoodEntityRenderer::new);
+        EntityRenderers.register(ModEntities.BIG_CUSTOM_FIREBALL, CustomSuperBigFireballEntityRenderer::new);
+        EntityRenderers.register(ModEntities.METEORITE, MeteoriteEntityRender::new);
+        EntityRenderers.register(ModEntities.FIRE_WALL, FireWallEntityRenderer::new);
+        EntityRenderers.register(ModEntities.BLUE_IRON_GOLEM, BlueIronGolemEntityRenderer::new);
+        EntityRenderers.register(ModEntities.SUGAR_MAN_SCORPION, SugarManScorpionRenderer::new);
+        EntityRenderers.register(ModEntities.BULLET_ENTITY, BulletEntityRenderer::new);
+        EntityRenderers.register(ModEntities.WITHER_SKULL_BULLET_ENTITY, WitherSkullBulletEntityRenderer::new);
+        EntityRenderers.register(ModEntities.VILLAGER_IRON_GOLEM_ENTITY, VillagerIronGolemEntityRenderer::new);
+        EntityRenderers.register(ModEntities.VILLAGER_KING_ENTITY, VillagerKingEntityRenderer::new);
+        EntityRenderers.register(ModEntities.ATTACK_DRONE, AttackDroneEntityRenderer::new);
+        EntityRenderers.register(ModEntities.TREATMENT_DRONE, TreatmentDroneEntityRenderer::new);
+        EntityRenderers.register(ModEntities.LITTLE_PERSON_CIVILIAN, LittlePersonCivilianEntityRenderer::new);
+        EntityRenderers.register(ModEntities.LITTLE_PERSON_WORKER, LittlePersonWorkerEntityRenderer::new);
+        EntityRenderers.register(ModEntities.LITTLE_PERSON_MILITIA, LittlePersonMilitiaEntityRenderer::new);
+        EntityRenderers.register(ModEntities.LITTLE_PERSON_ARCHER, LittlePersonArcherEntityRenderer::new);
+        EntityRenderers.register(ModEntities.LITTLE_PERSON_GIANT, LittlePersonGiantEntityRenderer::new);
+        EntityRenderers.register(ModEntities.LITTLE_ARROW, LittleArrowEntityRender::new);
+        EntityRenderers.register(ModEntities.STONE_ARROW, StoneArrowEntityRender::new);
+        EntityRenderers.register(ModEntities.POISON_ARROW, PoisonousBulletEntityRenderer::new);
+        EntityRenderers.register(ModEntities.SPEAR_BULLET, SpearBulletEntityRenderer::new);
+        EntityRenderers.register(ModEntities.IRON_MAN_BULLET_ENTITY, IronManBulletEntityRenderer::new);
+        EntityRenderers.register(ModEntities.LITTLE_PERSON_GUARD, LittlePersonGuardEntityRenderer::new);
+        EntityRenderers.register(ModEntities.LITTLE_PERSON_KING, LittlePersonKingEntityRenderer::new);
+        EntityRenderers.register(ModEntities.VOID_CELL, VoidCellEntityRenderer::new);
+        EntityRenderers.register(ModEntities.MISSILE, MissileEntityRenderer::new);
+        EntityRenderers.register(ModEntities.ICE_ARROW, IceArrowEntityRenderer::new);
+        EntityRenderers.register(ModEntities.GOLDEN_TRAIL_PROJECTILE, GoldenTrailProjectileRenderer::new);
+        EntityRenderers.register(ModEntities.GOLDEN_BULLET, GoldenBulletEntityRenderer::new);
+        EntityRenderers.register(ModEntities.LITTLE_STONE_PROJECTILE, ThrownItemRenderer::new);
+        EntityRenderers.register(ModEntities.ELEMENTAL_SWORD_PROJECTILE, ThrownItemRenderer::new);
+        EntityRenderers.register(ModEntities.SNOWMAN_ICE_BLOCK, SnowmanIceBlockRenderer::new);
+        EntityRenderers.register(ModEntities.CBOT_SNOWBALL, CbotSnowballRenderer::new);
+        EntityRenderers.register(ModEntities.NEW_SNOW_GOLEM, SnowGolemRenderer::new);
+        EntityRenderers.register(ModEntities.CHEST_GOLEM, ChestGolemRenderer::new);
+        EntityRenderers.register(ModEntities.STRONG_MIN, StrongMinRenderer::new);
+        EntityRenderers.register(ModEntities.PIGLIN_GENERAL, PiglinGeneralEntityRenderer::new);
+        EntityRenderers.register(ModEntities.MODIFIED_DRAGON_BREATH_CLOUD, NoopRenderer::new);
+        EntityRenderers.register(ModEntities.COAL_SILVERFISH, ctx -> new GeneralEntityRenderer<>(ctx, "coal_silverfish", false));
+        EntityRenderers.register(ModEntities.ANGRY_SILVERFISH, ctx -> new GeneralEntityRenderer<>(ctx, "angry_silverfish", false));
+        EntityRenderers.register(ModEntities.BOW_ZOMBIE_MOD, ZombieRenderer::new);
+        EntityRenderers.register(ModEntities.PIGLIN_BRUTE_SPEAR_MOD, ModPiglinBruteRenderer::new);
+        EntityRenderers.register(ModEntities.SILENCE_PHANTOM, ctx -> new GeneralEntityRenderer<>(ctx, "silence_phantom", false));
+        EntityRenderers.register(ModEntities.SHIELD, ctx -> new GeneralEntityRenderer<>(ctx, "shield_force_field", false, GeneralEntityModel.RenderTypes.TRANSLUCENT));
+        EntityRenderers.register(ModEntities.SUPER_EVOKER, EvokerRenderer::new);
+        EntityRenderers.register(ModEntities.LOBSTER, LobsterEntityRenderer::new);
+        EntityRenderers.register(ModEntities.MAGMA_LOBSTER, MagmaLobsterEntityRenderer::new);
+        EntityRenderers.register(ModEntities.ENDER_DRAGON_METEORITE, ctx -> new GeneralEntityRenderer<>(ctx, "ender_dragon_meteorite", false));
+        EntityRenderers.register(ModEntities.MAGMA_LOBBER_BIG_FIREBALL, ctx -> new GeneralEntityRenderer<>(ctx, "magma_lobber_big_fireball", false));
+        EntityRenderers.register(ModEntities.ENHANCED_WITHER, WitherBossRenderer::new);
+        EntityRenderers.register(ModEntities.DUAL_BLADE_WITHER_SKELETON, ctx -> new GeneralEntityRenderer<>(ctx, "dual_blade_wither_skeleton", false));
+        EntityRenderers.register(ModEntities.SHIELD_AXE_WITHER_SKELETON, ctx -> new GeneralEntityRenderer<>(ctx, "shield_axe_wither_skeleton", false));
+        EntityRenderers.register(ModEntities.LASER, LaserEntityRenderer::new);
+        EntityRenderers.register(ModEntities.SEVEN_HARVEST_BULLET,
+                ctx -> new TexturedSkillProjectileRenderer(ctx, ModModel.SEVEN_HARVEST_BULLET,
+                        TexturedSkillProjectileRenderer.texture("seven_harvest_bullet"), 1.0F, SevenHarvestBulletModel.class));
+        EntityRenderers.register(ModEntities.SEVEN_HARVEST_EXPLOSIVE_BULLET,
+                ctx -> new TexturedSkillProjectileRenderer(ctx, ModModel.SEVEN_HARVEST_EXPLOSIVE_BULLET,
+                        TexturedSkillProjectileRenderer.texture("seven_harvest_explosive_bullet"), 1.0F, SevenHarvestBulletModel.class));
+        EntityRenderers.register(ModEntities.KNIFE_PROJECTILE,
+                ctx -> new TexturedSkillProjectileRenderer(ctx, ModModel.KNIFE_PROJECTILE,
+                        TexturedSkillProjectileRenderer.texture("knife_projectile"), 1.0F, KnifeProjectileModel.class));
+        EntityRenderers.register(ModEntities.SKELETON_HEAD_PROJECTILE,
+                ctx -> new TexturedSkillProjectileRenderer(ctx, ModModel.SKELETON_HEAD_PROJECTILE,
+                        TexturedSkillProjectileRenderer.texture("skeleton_head_projectile"), 1.0F, SkeletonHeadProjectileModel.class));
+        EntityRenderers.register(ModEntities.LASER_MAN, LaserManEntityRenderer::new);
+        EntityRenderers.register(ModEntities.BLOOD_SWORD_ENERGY, ctx -> new GeneralEntityRenderer<>(ctx, "blood_sword_energy", false, GeneralEntityModel.RenderTypes.TRANSLUCENT));
+        EntityRenderers.register(ModEntities.NINJA_CLONE, ctx -> new GeneralEntityRenderer<>(ctx, "ninja_clone", false));
+        EntityRenderers.register(ModEntities.ICE_SWORD_ENERGY, ctx -> new GeneralEntityRenderer<>(ctx, "ice_sword_energy", false, GeneralEntityModel.RenderTypes.TRANSLUCENT));
+        EntityRenderers.register(ModEntities.ICE_BOMB, ctx -> new GeneralEntityRenderer<>(ctx, "ice_bomb", false, GeneralEntityModel.RenderTypes.TRANSLUCENT));
+        EntityRenderers.register(ModEntities.ICE_FANGS, ctx -> new GeneralEntityRenderer<>(ctx, "ice_fangs", false, GeneralEntityModel.RenderTypes.TRANSLUCENT));
 
         ModEntities.LITTLE_PERSON_ENTITIES.forEach((id, entityType) -> {
             if ("laser_man".equals(id)) {
@@ -155,7 +179,7 @@ public class ModEntityRenderer {
             }
             @SuppressWarnings("unchecked")
             EntityType<? extends BaseSkillLittlePersonEntity> mobType = (EntityType<? extends BaseSkillLittlePersonEntity>) entityType;
-            EntityRendererRegistry.register(mobType, ctx -> new BaseSkillLittlePersonEntityRenderer<>(ctx, id, false));
+            EntityRenderers.register(mobType, ctx -> new BaseSkillLittlePersonEntityRenderer<>(ctx, id, false));
         });
         ModEntities.GENERAL_RENDERERS.forEach((id, entityType) -> {
             if ("piglin_general".equals(id)) {
@@ -163,7 +187,7 @@ public class ModEntityRenderer {
             }
             @SuppressWarnings("unchecked")
             EntityType<? extends GeneralEntityOnlyOneSkill<?>> mobType = (EntityType<? extends GeneralEntityOnlyOneSkill<?>>) entityType;
-            EntityRendererRegistry.register(mobType, ctx -> new GeneralEntityRenderer<>(ctx, id, false));
+            EntityRenderers.register(mobType, ctx -> new GeneralEntityRenderer<>(ctx, id, false));
         });
     }
 }

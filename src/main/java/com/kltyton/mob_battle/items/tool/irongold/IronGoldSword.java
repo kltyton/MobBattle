@@ -1,6 +1,8 @@
 package com.kltyton.mob_battle.items.tool.irongold;
 
 import com.kltyton.mob_battle.Mob_battle;
+import com.kltyton.mob_battle.animation.ModPlayerAnimationClientHandler;
+import com.kltyton.mob_battle.animation.ModPlayerAnimationServerHandler;
 import com.kltyton.mob_battle.items.ModFabricItem;
 import com.kltyton.mob_battle.items.ModMaterial;
 import com.kltyton.mob_battle.items.tool.BaseSword;
@@ -8,6 +10,7 @@ import com.kltyton.mob_battle.utils.ArmorUtil;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
@@ -101,6 +104,7 @@ public class IronGoldSword extends BaseSword implements ModFabricItem {
     }
     @Override
     public void onLeftClickStart(Player player, ItemStack stack, boolean isServer) {
+        //if (isServer) ModPlayerAnimationServerHandler.play((ServerPlayer) player, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "poison_knife_animation"));
     }
 
     @Override

@@ -15,12 +15,13 @@ import net.minecraft.world.level.Level;
 
 public class PoisonousSlashEntity extends BaseSkillLittlePersonEntity {
     public PoisonousSlashEntity(EntityType<? extends Monster> entityType, Level world) {
-        super(entityType, world, 5);
+        super(entityType, world, 6);
         COOL_DOWN_TIME_1 = 8 * 20;
         COOL_DOWN_TIME_2 = 25 * 20;
         COOL_DOWN_TIME_3 = 5 * 20;
         COOL_DOWN_TIME_4 = 15 * 20;
         COOL_DOWN_TIME_5 = 20 * 20;
+        COOL_DOWN_TIME_6 = 20 * 20;
         init();
     }
     public static AttributeSupplier.Builder createLittlePersonAttributes() {
@@ -87,6 +88,25 @@ public class PoisonousSlashEntity extends BaseSkillLittlePersonEntity {
         LivingEntity target = entity.getTarget();
         if (target != null && EntityUtil.isValidSummonCombatTarget(entity, entity.getSummonOwner(), target)) {
             target.hurtServer((ServerLevel) entity.level(), entity.damageSources().mobAttack(entity), 120);
+        }
+    }
+
+    @Override
+    public void runSkill_7(BaseSkillLittlePersonEntity entity) {
+        LivingEntity target = entity.getTarget();
+        if (target == null || !(entity.level() instanceof ServerLevel world)
+                || !EntityUtil.isValidSummonCombatTarget(entity, entity.getSummonOwner(), target)) {
+            return;
+        }
+        var direction = target.position().subtract(entity.position()).normalize();
+        entity.setDeltaMovement(direction.x * 1.4D, 0.2D, direction.z * 1.4D);
+        entity.hurtMarked = true;
+        for (LivingEntity living : EntityUtil.getNearbyEntity(entity, LivingEntity.class, Object.class, 2.2D, false, EntityUtil.TeamFilter.EXCLUDE_TEAM)) {
+            if (EntityUtil.isValidSummonCombatTarget(entity, entity.getSummonOwner(), living)) {
+                living.invulnerableTime = 0;
+                living.hurtServer(world, entity.damageSources().mobAttack(entity), 88.0F);
+                living.invulnerableTime = 0;
+            }
         }
     }
 }

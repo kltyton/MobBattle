@@ -435,7 +435,7 @@ public class VindicatorGeneralEntity extends Vindicator implements GeoEntity, Mo
                 .triggerableAnim("death", DEATH_ANIM)
                 .setSoundKeyframeHandler(s -> {})
                 .setCustomInstructionKeyframeHandler(s -> {
-                    String instruction = s.keyframeData().getInstructions().replaceAll("\\s+", "");
+                    String instruction = s.keyframeData().getInstructions().replaceAll("[\\s;]+", "");
                     if ("runAttack".equals(instruction)) {
                         this.playSound(SoundEvents.PLAYER_ATTACK_SWEEP, 1.0F, 1.0F);
                         ClientPlayNetworking.send(new SkillPayload(
@@ -472,16 +472,16 @@ public class VindicatorGeneralEntity extends Vindicator implements GeoEntity, Mo
                                 "max_attack_3", this.getId()
                         ));
                     }
-                    if ("runCollisionKill;".equals(instruction)) {
+                    if ("runCollisionKill".equals(instruction)) {
                         ClientPlayNetworking.send(new SkillPayload("collision_kill", this.getId()));
                     }
-                    if ("runCollisionKill_1;".equals(instruction)) {
+                    if ("runCollisionKill_1".equals(instruction)) {
                         ClientPlayNetworking.send(new SkillPayload("collision_kill_1", this.getId()));
                     }
-                    if ("runSpinChop;".equals(instruction)) {
+                    if ("runSpinChop".equals(instruction)) {
                         ClientPlayNetworking.send(new SkillPayload("spin_chop", this.getId()));
                     }
-                    if ("runThrowAxe;".equals(instruction)) {
+                    if ("runThrowAxe".equals(instruction)) {
                         ClientPlayNetworking.send(new SkillPayload("throw_axe", this.getId()));
                     }
                 }));

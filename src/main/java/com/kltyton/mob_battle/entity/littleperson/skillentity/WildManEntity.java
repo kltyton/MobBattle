@@ -5,6 +5,7 @@ import com.kltyton.mob_battle.entity.littleperson.LittlePersonEntity;
 import com.kltyton.mob_battle.entity.littleperson.archer.littlearrow.LittleArrowEntity;
 import com.kltyton.mob_battle.entity.littleperson.skillentity.base.BaseSkillLittlePersonEntity;
 import com.kltyton.mob_battle.entity.villager.warriorvillager.WarriorVillager;
+import com.kltyton.mob_battle.utils.EntityUtil;
 
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -46,10 +47,16 @@ public class WildManEntity extends BaseSkillLittlePersonEntity implements Ranged
         this.goalSelector.addGoal(7, new WaterAvoidingRandomStrollGoal(this, 1.0)); // 添加远距离游荡目标
         this.goalSelector.addGoal(8, new LookAtPlayerGoal(this, Player.class, 8.0F)); // 添加看向玩家的目标
         this.goalSelector.addGoal(8, new RandomLookAroundGoal(this)); // 添加环顾四周的目标
-        this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, AbstractGolem.class, true)); // 添加攻击傀儡目标
-        this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, WarriorVillager.class, true));
-        this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, true)); // 添加主动攻击玩家目标
-        this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, Mob.class, 5, false, false, (entity, world) -> entity instanceof Enemy && !(entity instanceof LittlePersonEntity)));
+        this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, AbstractGolem.class, 10, true, false,
+                (target, world) -> EntityUtil.isValidCombatTarget(this, target))); // 添加攻击傀儡目标
+        this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, WarriorVillager.class, 10, true, false,
+                (target, world) -> EntityUtil.isValidCombatTarget(this, target)));
+        this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, 10, true, false,
+                (target, world) -> EntityUtil.isValidCombatTarget(this, target))); // 添加主动攻击玩家目标
+        this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, Mob.class, 5, false, false,
+                (entity, world) -> entity instanceof Enemy
+                        && !(entity instanceof LittlePersonEntity)
+                        && EntityUtil.isValidCombatTarget(this, entity)));
     }
     public static AttributeSupplier.Builder createLittlePersonAttributes() {
         return BaseSkillLittlePersonEntity.createAttributes()
@@ -73,7 +80,7 @@ public class WildManEntity extends BaseSkillLittlePersonEntity implements Ranged
     @Override
     public void runSkill_2(BaseSkillLittlePersonEntity entity) {
         if (entity.getTarget() != null) {
-            shootAt(this, entity.getTarget(), 25);
+            shootAt(this, entity.getTarget(), 40);
         }
     }
 

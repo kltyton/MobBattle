@@ -1,6 +1,7 @@
 package com.kltyton.mob_battle.mixin.projectile;
 
 import com.kltyton.mob_battle.utils.EntityUtil;
+import com.kltyton.mob_battle.event.team.TeamFightManager;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.projectile.Projectile;
@@ -16,6 +17,11 @@ public abstract class ProjectileTeamMixin {
         Projectile projectile = (Projectile) (Object) this;
         Entity owner = projectile.getOwner();
         if (owner == null) {
+            return;
+        }
+        if (owner instanceof LivingEntity livingOwner
+                && entity instanceof LivingEntity living
+                && TeamFightManager.areForcedOpponents(livingOwner, living)) {
             return;
         }
         if (entity instanceof LivingEntity living

@@ -2,6 +2,7 @@ package com.kltyton.mob_battle.items.itemgroup;
 
 import com.kltyton.mob_battle.Mob_battle;
 import com.kltyton.mob_battle.block.ModBlocks;
+import com.kltyton.mob_battle.config.MobBattleConfig;
 import com.kltyton.mob_battle.enchantment.ModEnchantments;
 import com.kltyton.mob_battle.items.ModItems;
 import com.kltyton.mob_battle.items.ModMaterial;
@@ -55,6 +56,8 @@ public class ModItemGroups {
             .displayItems((context, entries) -> {
                 entries.accept(ModItems.PIGLIN_BRUTE_SPEAR_USE_SPAWN_EGG);
                 entries.accept(ModItems.PIGLIN_BRUTE_SPEAR_MELEE_SPAWN_EGG);
+                entries.accept(ModItems.PIGLIN_BRUTE_BOW_SPAWN_EGG);
+                entries.accept(ModItems.PIGLIN_BRUTE_CROSSBOW_SPAWN_EGG);
                 entries.accept(ModItems.BOW_ZOMBIE_SPAWN_EGG);
             })
             .build();
@@ -63,16 +66,26 @@ public class ModItemGroups {
         Registry.register(BuiltInRegistries.CREATIVE_MODE_TAB, MOB_BATTLE_GROUP_KEY, MOB_BATTLE_GROUP);
         Registry.register(BuiltInRegistries.CREATIVE_MODE_TAB, MOB_BATTLE_OFF_GROUP_KEY, MOB_BATTLE_OFF_GROUP);
         CreativeModeTabEvents.modifyOutputEvent(CreativeModeTabs.SPAWN_EGGS).register(entries -> {
+            if (!MobBattleConfig.shouldShowModSpawnEggsInVanillaSpawnEggsTab()) {
+                return;
+            }
             entries.insertAfter(
                         Items.PIGLIN_BRUTE_SPAWN_EGG,
                         ModItems.PIGLIN_BRUTE_SPEAR_MOD_SPAWN_EGG,
                         ModItems.PIGLIN_BRUTE_SPEAR_USE_SPAWN_EGG,
-                        ModItems.PIGLIN_BRUTE_SPEAR_MELEE_SPAWN_EGG
+                        ModItems.PIGLIN_BRUTE_SPEAR_MELEE_SPAWN_EGG,
+                        ModItems.PIGLIN_BRUTE_BOW_SPAWN_EGG,
+                        ModItems.PIGLIN_BRUTE_CROSSBOW_SPAWN_EGG
             );
             entries.insertAfter(
                     Items.ZOMBIE_SPAWN_EGG,
                     ModItems.BOW_ZOMBIE_MOD_SPAWN_EGG,
                     ModItems.BOW_ZOMBIE_SPAWN_EGG
+            );
+            entries.insertAfter(
+                    Items.WITHER_SKELETON_SPAWN_EGG,
+                    spawnEgg("dual_blade_wither_skeleton"),
+                    spawnEgg("shield_axe_wither_skeleton")
             );
         });
     }
@@ -90,12 +103,19 @@ public class ModItemGroups {
                 ModItems.SLOWNESS_SCROLL,
                 ModItems.FIRE_WALL_SCROLL,
                 ModItems.PURIFICATION_SCROLL,
+                ModItems.SKULL_MAGE_SCROLL,
+                ModItems.LITTLE_PERSON_SCEPTER,
                 ModItems.WARLOCK_BOOK,
                 ModItems.GRAND_SUMMON_BOOK,
                 ModItems.GUARDIAN_SEAL,
                 ModItems.FILLING_SEAL,
                 ModItems.FINE_KNIFE,
+                ModItems.POISON_KNIFE,
+                ModItems.BLOOD_KNIFE,
+                ModItems.IRON_MAN_MISSILE_LAUNCHER,
+                ModItems.WOODEN_WHISTLE,
                 ModItems.SMALL_BACKPACK,
+                ModItems.BIG_BACKPACK,
                 ModItems.LARGE_BACKPACK,
                 ModItems.HEART_STONE,
                 ModItems.CARDIOTONIC_INJECTION,
@@ -114,6 +134,8 @@ public class ModItemGroups {
                 ModItems.XUN_SHENG_SPAWN_EGG,
                 ModItems.DEEP_CREATURE_SPAWN_EGG,
                 ModItems.WITHER_SKELETON_KING_SPAWN_EGG,
+                spawnEgg("dual_blade_wither_skeleton"),
+                spawnEgg("shield_axe_wither_skeleton"),
                 spawnEgg("enhanced_wither"),
                 ModItems.VINDICATOR_GENERAL_SPAWN_EGG,
                 ModItems.HULKBUSTER_SPAWN_EGG,
@@ -133,6 +155,7 @@ public class ModItemGroups {
                 ModItems.VILLAGER_KING_SPAWN_EGG,
                 ModItems.BLUE_IRON_GOLEM_SPAWN_EGG,
                 ModItems.IRON_GOLEM_SPAWN_EGG,
+                spawnEgg("new_snow_golem"),
                 ModItems.SUGAR_MAN_SCORPION_SPAWN_EGG,
                 ModItems.COAL_SILVERFISH_SPAWN_EGG,
                 spawnEgg("ruili_silverfish"),
@@ -140,8 +163,12 @@ public class ModItemGroups {
                 spawnEgg("poisonous_silverfish"),
                 spawnEgg("load_silverfish"),
                 spawnEgg("long_whip_silverfish"),
+                spawnEgg("angry_silverfish"),
+                spawnEgg("chest_golem"),
+                spawnEgg("strong_min"),
                 spawnEgg("flower_fairy"),
                 ModItems.LITTLE_PERSON_CIVILIAN_SPAWN_EGG,
+                spawnEgg("little_person_worker"),
                 ModItems.LITTLE_PERSON_MILITIA_SPAWN_EGG,
                 ModItems.LITTLE_PERSON_ARCHER_SPAWN_EGG,
                 ModItems.LITTLE_PERSON_GIANT_SPAWN_EGG,
@@ -149,6 +176,7 @@ public class ModItemGroups {
                 ModItems.LITTLE_PERSON_KING_SPAWN_EGG,
                 spawnEgg("little_person_soldier"),
                 spawnEgg("little_person_soldier_archer"),
+                spawnEgg("new_skull_mage"),
                 spawnEgg("poisonous_slash"),
                 spawnEgg("cyborg"),
                 spawnEgg("iron_man"),
@@ -174,6 +202,22 @@ public class ModItemGroups {
                 spawnEgg("laser_man"),
                 spawnEgg("blood_man"),
                 spawnEgg("ice_man"),
+                spawnEgg("yemo_wenlu"),
+                spawnEgg("renfu"),
+                spawnEgg("contradiction_man"),
+                spawnEgg("mace_man"),
+                spawnEgg("little_person_boxer"),
+                spawnEgg("little_person_city_guard"),
+                spawnEgg("little_person_servant"),
+                spawnEgg("seven_harvest_little_person"),
+                spawnEgg("knife_little_person"),
+                spawnEgg("xbot002"),
+                spawnEgg("elite_little_person_guard"),
+                spawnEgg("three_companions"),
+                spawnEgg("green_man"),
+                spawnEgg("little_person_medic"),
+                spawnEgg("little_person_general"),
+                spawnEgg("macro_samurai"),
                 spawnEgg("wither_skeleton_dog")
         );
     }
@@ -216,6 +260,10 @@ public class ModItemGroups {
         );
 
         addEntries(entries,
+                ModItems.COMPRESSED_COPPER_HELMET,
+                ModItems.COMPRESSED_COPPER_CHESTPLATE,
+                ModItems.COMPRESSED_COPPER_LEGGINGS,
+                ModItems.COMPRESSED_COPPER_BOOTS,
                 ModItems.COMPRESSED_IRON_HELMET,
                 ModItems.COMPRESSED_IRON_CHESTPLATE,
                 ModItems.COMPRESSED_IRON_LEGGINGS,
@@ -241,8 +289,9 @@ public class ModItemGroups {
                 ModItems.METEORICORE_BOW,
                 ModItems.METEORICORE_SWORD,
                 createSword(ModItems.IRON_GOLD_SWORD, ModMaterial.IRON_GOLD_TOOL_MATERIAL, "iron_gold_sword"),
-                createSword(ModItems.EMERALD_DIAMOND_SWORD, ModMaterial.IRON_GOLD_TOOL_MATERIAL, "emerald_diamond_sword"),
+                createSword(ModItems.EMERALD_DIAMOND_SWORD, ModMaterial.EMERALD_DIAMOND_ALLOY_TOOL_MATERIAL, "emerald_diamond_sword"),
                 createSword(ModItems.ZIJIN_SWORD, ModMaterial.ZIJIN_ARMOR_TOOL_MATERIAL, "zijin_sword"),
+                ModItems.COMPRESSED_COPPER_SWORD,
                 ModItems.COMPRESSED_IRON_SWORD,
                 ModItems.COMPRESSED_GOLD_SWORD,
                 ModItems.COMPRESSED_DIAMOND_SWORD,
@@ -250,7 +299,13 @@ public class ModItemGroups {
                 ModItems.ICE_BOW,
                 ModItems.VS_SNIPE,
                 ModItems.PIGLIN_CANNON,
+                ModItems.LITTLE_PERSON_TOOL,
                 ModItems.ICE_ARROW_ITEM,
+                ModItems.ENDER_PURPLE_PEARL,
+                ModItems.ICE_SWORD,
+                ModItems.FIRE_SWORD,
+                ModItems.CHASING_WIND_SWORD,
+                ModItems.LITTLE_STONE,
                 ModItems.TRAIN_BULLET
         );
     }
@@ -289,6 +344,9 @@ public class ModItemGroups {
                 ModItems.COMPRESSED_NETHERITE_INGOT,
                 ModItems.COMPRESSED_REDSTONE,
                 ModItems.COMPRESSED_LAPIS_LAZULI,
+                ModItems.NIBI,
+                ModItems.NIBI_BAG,
+                ModItems.NIBI_BOX,
                 ModItems.WIRE,
                 ModItems.ELECTRONIC_COMPONENTS
         );

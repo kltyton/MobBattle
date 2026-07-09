@@ -15,7 +15,9 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -36,9 +38,18 @@ import java.util.List;
 
 public abstract class RequestedLittlePersonEntity extends BaseSkillLittlePersonEntity implements KeyframedLittlePersonEntity {
     protected static final RawAnimation ATTACK_ANIM = RawAnimation.begin().thenPlay("attack");
+    protected static final RawAnimation ATTACK_VARIANT_1_ANIM = RawAnimation.begin().thenPlay("attack_1");
+    protected static final RawAnimation ATTACK_VARIANT_2_ANIM = RawAnimation.begin().thenPlay("attack_2");
+    protected static final RawAnimation ATTACK_VARIANT_3_ANIM = RawAnimation.begin().thenPlay("attack_3");
+    protected static final RawAnimation ATTACK_VARIANT_4_ANIM = RawAnimation.begin().thenPlay("attack_4");
+    protected static final RawAnimation ATTACK_VARIANT_5_ANIM = RawAnimation.begin().thenPlay("attack_5");
     protected static final RawAnimation RUN_ANIM = RawAnimation.begin().thenLoop("run");
     protected static final RawAnimation BLOCK_1_ANIM = RawAnimation.begin().thenPlay("block_1");
-
+    protected static final RawAnimation MISS_ANIM = RawAnimation.begin().thenPlay("miss");
+    protected static final RawAnimation MISS_2_ANIM = RawAnimation.begin().thenPlay("miss2");
+    protected static final RawAnimation MISS_3_ANIM = RawAnimation.begin().thenPlay("miss3");
+    protected static final RawAnimation SPAWN_ANIM = RawAnimation.begin().thenPlay("spawn").thenPlay("spawn2");
+    protected static final RawAnimation SPAWN_2_ANIM = RawAnimation.begin().thenPlay("spawn2");
     protected float healPerSecond;
     protected int blockChance;
     protected float blockDamageCap = -1.0F;
@@ -49,7 +60,7 @@ public abstract class RequestedLittlePersonEntity extends BaseSkillLittlePersonE
     protected double autoSkillRange = 10.0D;
     protected int lifeTicks = -1;
 
-    private final AnimationController<?> requestedSkillController = new AnimationController<>("skill_controller", 5, animTest -> {
+    private final AnimationController<?> requestedSkillController = new AnimationController<>("skill_controller", 0, animTest -> {
         if (GeoAnimationUtil.consumeFinishedTriggeredAnimation(animTest)) {
             ClientPlayNetworking.send(new SkillPayload("stop", this.getId()));
             if (GeoAnimationUtil.isLastFinishedAnimation(animTest, DIE_ANIM)) {
@@ -60,6 +71,16 @@ public abstract class RequestedLittlePersonEntity extends BaseSkillLittlePersonE
     })
             .receiveTriggeredAnimations()
             .triggerableAnim("attack", ATTACK_ANIM)
+            .triggerableAnim("attack_1", ATTACK_VARIANT_1_ANIM)
+            .triggerableAnim("attack_2", ATTACK_VARIANT_2_ANIM)
+            .triggerableAnim("attack_3", ATTACK_VARIANT_3_ANIM)
+            .triggerableAnim("attack_4", ATTACK_VARIANT_4_ANIM)
+            .triggerableAnim("attack_5", ATTACK_VARIANT_5_ANIM)
+            .triggerableAnim("miss", MISS_ANIM)
+            .triggerableAnim("miss2", MISS_2_ANIM)
+            .triggerableAnim("miss3", MISS_3_ANIM)
+            .triggerableAnim("spawn", SPAWN_ANIM)
+            .triggerableAnim("spawn2", SPAWN_2_ANIM)
             .triggerableAnim("attack2", attackAnimation(2))
             .triggerableAnim("attack3", attackAnimation(3))
             .triggerableAnim("attack4", attackAnimation(4))
@@ -221,7 +242,10 @@ public abstract class RequestedLittlePersonEntity extends BaseSkillLittlePersonE
         this.setHasSkill(true);
         this.setNormalAttackKnockbackAllowed(true);
         this.setNoAi(false);
-        this.triggerAnim("skill_controller", "attack");
+        String animation = this.attackVariants == null
+                ? "attack"
+                : this.attackVariants[this.random.nextInt(this.attackVariants.length)];
+        this.triggerAnim("skill_controller", animation);
     }
 
     @Override
@@ -229,6 +253,26 @@ public abstract class RequestedLittlePersonEntity extends BaseSkillLittlePersonE
         switch (skillName) {
             case "attack" -> {
                 runAttack();
+                return true;
+            }
+            case "attack_1" -> {
+                runAttackVariant(1);
+                return true;
+            }
+            case "attack_2" -> {
+                runAttackVariant(2);
+                return true;
+            }
+            case "attack_3" -> {
+                runAttackVariant(3);
+                return true;
+            }
+            case "attack_4" -> {
+                runAttackVariant(4);
+                return true;
+            }
+            case "attack_5" -> {
+                runAttackVariant(5);
                 return true;
             }
             case "stop" -> {
@@ -331,6 +375,10 @@ public abstract class RequestedLittlePersonEntity extends BaseSkillLittlePersonE
 
     protected abstract void runAttack();
 
+    protected void runAttackVariant(int variant) {
+        runAttack();
+    }
+
     protected abstract void runSkill(int attack, int phase);
 
     protected void damageTarget(float physicalDamage, float magicDamage) {
@@ -346,7 +394,7 @@ public abstract class RequestedLittlePersonEntity extends BaseSkillLittlePersonE
         if (amount <= 0.0F || !isValidSummonTarget(target) || !(this.level() instanceof ServerLevel world)) {
             return;
         }
-        target.hurtServer(world, this.damageSources().mobAttack(this), amount);
+        target.hurtServer(world, this.damageSources().mobAttack(this), applyStrengthAndWeakness(amount));
     }
 
     protected void damageMagic(LivingEntity target, float amount) {
@@ -354,6 +402,19 @@ public abstract class RequestedLittlePersonEntity extends BaseSkillLittlePersonE
             return;
         }
         target.hurtServer(world, this.damageSources().indirectMagic(this, this), amount);
+    }
+
+    protected float applyStrengthAndWeakness(float amount) {
+        float adjusted = amount;
+        MobEffectInstance strength = this.getEffect(MobEffects.STRENGTH);
+        if (strength != null) {
+            adjusted += 3.0F * (strength.getAmplifier() + 1);
+        }
+        MobEffectInstance weakness = this.getEffect(MobEffects.WEAKNESS);
+        if (weakness != null) {
+            adjusted -= 4.0F * (weakness.getAmplifier() + 1);
+        }
+        return Math.max(0.0F, adjusted);
     }
 
     protected void areaDamage(double radius, float physicalDamage, float magicDamage) {
@@ -424,6 +485,29 @@ public abstract class RequestedLittlePersonEntity extends BaseSkillLittlePersonE
                 .sorted(Comparator.comparingDouble(this::distanceToSqr))
                 .limit(limit)
                 .toList();
+    }
+
+    protected void shootSkillProjectile(EntityType<SkillProjectileEntity> type, float physicalDamage, float magicDamage, double speed, int maxAge,
+                                        boolean pierceEntities, boolean pierceBlocks, boolean explodeOnHit, double explosionRadius) {
+        if (!(this.level() instanceof ServerLevel world)) {
+            return;
+        }
+        LivingEntity target = this.getTarget();
+        Vec3 direction;
+        if (target != null && isValidSummonTarget(target)) {
+            direction = target.getEyePosition().subtract(this.getEyePosition()).normalize();
+        } else {
+            direction = this.getViewVector(1.0F).normalize();
+        }
+        SkillProjectileEntity projectile = type.create(world, EntitySpawnReason.MOB_SUMMONED);
+        if (projectile == null) {
+            return;
+        }
+        Vec3 start = this.getEyePosition().add(direction.scale(0.8D));
+        projectile.configure(this, start, direction.scale(speed), applyStrengthAndWeakness(physicalDamage), magicDamage,
+                pierceEntities, pierceBlocks, explodeOnHit, maxAge);
+        projectile.setExplosionRadius(explosionRadius);
+        world.addFreshEntity(projectile);
     }
 
     protected void addPiercing(LivingEntity target, int seconds, int amplifier) {

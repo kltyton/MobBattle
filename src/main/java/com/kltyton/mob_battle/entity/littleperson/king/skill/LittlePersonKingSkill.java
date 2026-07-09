@@ -1,8 +1,10 @@
 package com.kltyton.mob_battle.entity.littleperson.king.skill;
 
+import com.kltyton.mob_battle.effect.ModEffects;
 import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.entity.littleperson.guard.LittlePersonGuardEntity;
 import com.kltyton.mob_battle.entity.littleperson.king.LittlePersonKingEntity;
+import com.kltyton.mob_battle.entity.littleperson.skillentity.requested.EliteLittlePersonGuardEntity;
 import com.kltyton.mob_battle.utils.EntityUtil;
 import java.util.List;
 import net.minecraft.core.BlockPos;
@@ -12,6 +14,7 @@ import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.phys.Vec3;
 
 public class LittlePersonKingSkill {
@@ -36,10 +39,30 @@ public class LittlePersonKingSkill {
         List<LivingEntity> target = getNearbyLivingEntities(littlePersonKingEntity, 4.0);
         for (LivingEntity targetEntity : target) {
             targetEntity.hurtServer(serverWorld, targetEntity.damageSources().lightningBolt(), 120.0F);
+            targetEntity.addEffect(new MobEffectInstance(ModEffects.ARMOR_PIERCING_ENTRY, 3 * 20, 1), littlePersonKingEntity);
         }
         serverWorld.sendParticles(ParticleTypes.ELECTRIC_SPARK,
                 lightningPos.x, lightningPos.y + 0.5, lightningPos.z,
                 50, 0.5, 0.5, 0.5, 0.2);
+    }
+    public static void runSkill_4(LittlePersonKingEntity littlePersonKingEntity) {
+        if (littlePersonKingEntity.level().isClientSide()) return;
+        ServerLevel serverWorld = (ServerLevel) littlePersonKingEntity.level();
+        Vec3 spawnCenter = littlePersonKingEntity.position().add(littlePersonKingEntity.getViewVector(1.0F).normalize().scale(2.0D));
+        BlockPos spawnPos = BlockPos.containing(spawnCenter);
+        EliteLittlePersonGuardEntity guard = ModEntities.ELITE_LITTLE_PERSON_GUARD.create(serverWorld, EntitySpawnReason.EVENT);
+        if (guard == null) return;
+        guard.snapTo(spawnCenter.x, spawnCenter.y, spawnCenter.z, littlePersonKingEntity.getYRot(), littlePersonKingEntity.getXRot());
+        guard.finalizeSpawn(serverWorld, serverWorld.getCurrentDifficultyAt(spawnPos), EntitySpawnReason.EVENT, null);
+        guard.setSummonOwner(littlePersonKingEntity);
+        if (littlePersonKingEntity.getTarget() != null) {
+            guard.setTarget(littlePersonKingEntity.getTarget());
+        }
+        guard.setPos(EntityUtil.findSafeSpawnPosition(serverWorld, guard, spawnPos.getCenter()).orElse(spawnPos.getCenter()));
+        serverWorld.addFreshEntity(guard);
+        serverWorld.sendParticles(ParticleTypes.POOF,
+                guard.getX(), guard.getY() + 1.0D, guard.getZ(),
+                40, 0.8D, 0.8D, 0.8D, 0.1D);
     }
     public static void summonLittlePersonGuardEntity(LittlePersonKingEntity littlePersonKingEntity, int count) {
         if (littlePersonKingEntity.level().isClientSide()) return;
@@ -74,7 +97,7 @@ public class LittlePersonKingSkill {
                 entity.getBoundingBox().inflate(radius),
                 p -> p.isAlive() &&
                         entity.distanceTo(p) <= radius &&
-                        p != entity && !p.isAlliedTo(entity)
+                        EntityUtil.isValidSummonCombatTarget(entity, entity, p)
         );
     }
     public static List<LittlePersonGuardEntity> getNearbyLittlePersonGuardEntity(LittlePersonKingEntity entity, double radius) {
@@ -82,6 +105,13 @@ public class LittlePersonKingSkill {
                 LittlePersonGuardEntity.class,
                 entity.getBoundingBox().inflate(radius),
                 p -> p.isAlive() && entity.distanceTo(p) <= radius
+        );
+    }
+    public static List<EliteLittlePersonGuardEntity> getNearbyEliteLittlePersonGuardEntity(LittlePersonKingEntity entity, double radius) {
+        return entity.level().getEntitiesOfClass(
+                EliteLittlePersonGuardEntity.class,
+                entity.getBoundingBox().inflate(radius),
+                p -> p.isAlive() && entity.distanceTo(p) <= radius && p.getSummonOwner() == entity
         );
     }
 }

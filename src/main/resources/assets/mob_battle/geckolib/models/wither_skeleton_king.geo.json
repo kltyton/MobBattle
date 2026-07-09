@@ -3246,6 +3246,17 @@
 					]
 				},
 				{
+					"name": "bone12",
+					"parent": "left_4",
+					"pivot": [-11.31846, 26.14678, -1.70961],
+					"locators": {
+						"wither_king_locator6": {
+							"offset": [-13.16394, 16.90485, -2],
+							"rotation": [0, 0, 12.5]
+						}
+					}
+				},
+				{
 					"name": "pifeng",
 					"parent": "xiongjia",
 					"pivot": [-0.35, 38.61079, -6.67913],
@@ -3738,6 +3749,51 @@
 						{"origin": [-7, 0, 0], "size": [2, 0, 2], "uv": [14, 117]},
 						{"origin": [-8, 0, 1], "size": [2, 0, 2], "uv": [-2, 120]}
 					]
+				},
+				{
+					"name": "wither_king_locator_root",
+					"pivot": [0, 0, 0]
+				},
+				{
+					"name": "bone9",
+					"parent": "wither_king_locator_root",
+					"pivot": [0, 0, 0],
+					"locators": {
+						"wither_king_locator": {
+							"offset": [0, 0, 0],
+							"rotation": [0, 180, 0]
+						},
+						"wither_king_locator4": {
+							"offset": [0, 0, 0],
+							"rotation": [180, 35, 0]
+						}
+					}
+				},
+				{
+					"name": "bone10",
+					"parent": "wither_king_locator_root",
+					"pivot": [0, 0, 0],
+					"locators": {
+						"wither_king_locator2": {
+							"offset": [0, 0, 0],
+							"rotation": [0, 180, 0]
+						}
+					}
+				},
+				{
+					"name": "bone11",
+					"parent": "wither_king_locator_root",
+					"pivot": [0, 0, 0],
+					"locators": {
+						"wither_king_locator3": {
+							"offset": [0, 0, 0],
+							"rotation": [0, 180, 0]
+						},
+						"wither_king_locator5": {
+							"offset": [0, 0, 0],
+							"rotation": [180, 35, 0]
+						}
+					}
 				}
 			]
 		}

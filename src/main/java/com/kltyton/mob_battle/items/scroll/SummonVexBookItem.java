@@ -1,15 +1,15 @@
 package com.kltyton.mob_battle.items.scroll;
 
+import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.entity.ModEntityAttributes;
+import com.kltyton.mob_battle.entity.summon.SummonedVexEntity;
 import com.kltyton.mob_battle.utils.EntityUtil;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.monster.Vex;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -33,7 +33,7 @@ public class SummonVexBookItem extends Item {
         user.playSound(SoundEvents.EVOKER_PREPARE_ATTACK, 1f, 1f);
         if (!world.isClientSide()) {
             for (int i = 0; i < summonCount; i++) {
-                Vex vex = EntityType.VEX.create(world, EntitySpawnReason.MOB_SUMMONED);
+                SummonedVexEntity vex = ModEntities.SUMMONED_VEX.create(world, EntitySpawnReason.MOB_SUMMONED);
                 if (vex != null) {
                     // 鍦ㄧ帺瀹跺懆鍥撮殢鏈轰綅缃敓鎴?
                     double offsetX = -3.0 + world.getRandom().nextDouble() * 6.0;
@@ -46,6 +46,10 @@ public class SummonVexBookItem extends Item {
                         if (reductionInstance != null) {
                             reductionInstance.setBaseValue(this.magicDamage);
                         }
+                    }
+                    vex.setSummonOwner(user);
+                    if (user.getLastHurtMob() != null && EntityUtil.isValidSummonCombatTarget(vex, user, user.getLastHurtMob())) {
+                        vex.setTarget(user.getLastHurtMob());
                     }
                     world.addFreshEntity(vex);
                     EntityUtil.joinSameTeam(vex, user);

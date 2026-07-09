@@ -20,14 +20,36 @@ import net.minecraft.world.phys.Vec3;
 import com.geckolib.animatable.GeoEntity;
 
 public class PlayerEntitySkill {
+    private static final Identifier JUMP_SKILL_GRAVITY_MODIFIER_ID =
+            Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "player_jump_skill_gravity_modifier");
+    private static final AttributeModifier JUMP_SKILL_GRAVITY_MODIFIER =
+            new AttributeModifier(
+                    JUMP_SKILL_GRAVITY_MODIFIER_ID,
+                    1.5,
+                    AttributeModifier.Operation.ADD_MULTIPLIED_BASE
+            );
+
     private static boolean isValidSkillTarget(ServerPlayer player, LivingEntity target) {
-        return target != null && target != player && !target.getUUID().equals(player.getUUID());
+        return target != null
+                && target.isAlive()
+                && target != player
+                && !target.getUUID().equals(player.getUUID())
+                && !EntityUtil.isCreativeOrSpectator(target);
+    }
+
+    public static void clearJumpSkillGravityModifier(LivingEntity entity) {
+        AttributeInstance gravity = entity.getAttribute(Attributes.GRAVITY);
+        if (gravity != null) {
+            gravity.removeModifier(JUMP_SKILL_GRAVITY_MODIFIER_ID);
+        }
     }
 
     public static void canMove(ServerPlayer player) {
+        clearJumpSkillGravityModifier(player);
         player.getEntityData().set(DataTrackersEvent.CAN_MOVE, true);
     }
     public static void stopSkill(ServerPlayer player) {
+        clearJumpSkillGravityModifier(player);
         player.getEntityData().set(DataTrackersEvent.HAS_SKILL, false);
     }
     public static void runAttackSkill(ServerPlayer player) {
@@ -106,12 +128,8 @@ public class PlayerEntitySkill {
         player.push(0, 1.3, 0);
         AttributeInstance gravity = player.getAttribute(Attributes.GRAVITY);
         if (gravity != null) {
-            AttributeModifier gravityModifier = new AttributeModifier(
-                    Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "player_jump_skill_gravity_modifier"),
-                    1.5,
-                    AttributeModifier.Operation.ADD_MULTIPLIED_BASE
-            );
-            gravity.addTransientModifier(gravityModifier);
+            clearJumpSkillGravityModifier(player);
+            gravity.addTransientModifier(JUMP_SKILL_GRAVITY_MODIFIER);
         }
         ((IPlayerSkillAccessor)player).mobBattle$setCanMove(true);
     }
@@ -132,10 +150,7 @@ public class PlayerEntitySkill {
         world.levelEvent(LevelEvent.PARTICLES_SMASH_ATTACK, player.getOnPos(), 750);
         player.setSpawnExtraParticlesOnFall(true);  // 生成额外的坠落粒子
 
-        AttributeInstance gravity = player.getAttribute(Attributes.GRAVITY);
-        if (gravity != null) {
-            gravity.removeModifier(Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "player_jump_skill_gravity_modifier"));
-        }
+        clearJumpSkillGravityModifier(player);
     }
 
 

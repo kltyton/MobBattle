@@ -1,6 +1,7 @@
 package com.kltyton.mob_battle.event.team;
 
 import java.util.*;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.scores.PlayerTeam;
 
 public class TeamFightManager {
@@ -54,6 +55,15 @@ public class TeamFightManager {
     public static Set<PlayerTeam> getOpponents(PlayerTeam team) {
         Set<PlayerTeam> opponents = FIGHTING_TEAMS.get(team);
         return opponents == null ? Set.of() : Set.copyOf(opponents);
+    }
+
+    public static boolean areForcedOpponents(LivingEntity source, LivingEntity target) {
+        if (source == null || target == null || source == target) {
+            return false;
+        }
+        PlayerTeam sourceTeam = source.getTeam();
+        PlayerTeam targetTeam = target.getTeam();
+        return sourceTeam != null && targetTeam != null && getOpponents(sourceTeam).contains(targetTeam);
     }
 
     public static int clearAllFights() {

@@ -2839,7 +2839,7 @@
 						}
 					],
 					"locators": {
-						"locator2": [0, 41, 15]
+						"piglin_locator2": [0, 41, 15]
 					}
 				},
 				{
@@ -2872,7 +2872,7 @@
 					"parent": "locator_root",
 					"pivot": [0, 0, 0],
 					"locators": {
-						"locator": [0, 0, 0]
+						"piglin_locator": [0, 0, 0]
 					}
 				}
 			]

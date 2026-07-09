@@ -26,8 +26,8 @@ public class LittleArrowEntityModel extends EntityModel<ArrowRenderState> {
         modelPartData.addOrReplaceChild(
                 "bb_main",
                 CubeListBuilder.create().texOffs(4, 2)
-                        .addBox(-0.04F, -0.03F, 0.0F, 0.04F, 0.03F, 0.58F, new CubeDeformation(0.0F)),
-                PartPose.offset(0.0F, 24.0F, 0.0F)
+                        .addBox(-0.08F, -0.08F, -0.45F, 0.16F, 0.16F, 0.9F, new CubeDeformation(0.0F)),
+                PartPose.offset(0.0F, 0.0F, 0.0F)
         );
         return LayerDefinition.create(modelData, 16, 16);
     }

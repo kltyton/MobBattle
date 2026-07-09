@@ -10,6 +10,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.attributes.RangedAttribute;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
@@ -20,16 +21,9 @@ public final class AreaGravityFieldManager {
             Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "area_gravity_device_field");
 
     /**
-     * “高重力”的强度。
+     * 无法读取属性最大值时的兜底强度。
      */
-    private static final double HIGH_GRAVITY_AMOUNT = 1.0D;
-
-    private static final AttributeModifier GRAVITY_MODIFIER =
-            new AttributeModifier(
-                    GRAVITY_FIELD_MODIFIER_ID,
-                    HIGH_GRAVITY_AMOUNT,
-                    AttributeModifier.Operation.ADD_MULTIPLIED_BASE
-            );
+    private static final double FALLBACK_HIGH_GRAVITY_AMOUNT = 1.0D;
 
     private static final Map<ServerLevel, List<FieldInstance>> ACTIVE_FIELDS = new ConcurrentHashMap<>();
 
@@ -120,8 +114,23 @@ public final class AreaGravityFieldManager {
         }
 
         if (gravity.getModifier(GRAVITY_FIELD_MODIFIER_ID) == null) {
-            gravity.addPermanentModifier(GRAVITY_MODIFIER);
+            gravity.addTransientModifier(createGravityModifier());
         }
+    }
+
+    private static AttributeModifier createGravityModifier() {
+        return new AttributeModifier(
+                GRAVITY_FIELD_MODIFIER_ID,
+                getGravityMaximumValue(),
+                AttributeModifier.Operation.ADD_VALUE
+        );
+    }
+
+    private static double getGravityMaximumValue() {
+        if (Attributes.GRAVITY.value() instanceof RangedAttribute rangedAttribute) {
+            return rangedAttribute.maxValue;
+        }
+        return FALLBACK_HIGH_GRAVITY_AMOUNT;
     }
 
     private static void removeHighGravity(LivingEntity entity) {

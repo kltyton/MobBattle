@@ -85,5 +85,10 @@ public class ModPackets {
                 CustomBossBarPayload.ID,
                 CustomBossBarPayload.CODEC
         );
+        // 注册服务器向客户端发送的玩家动画同步包。
+        PayloadTypeRegistry.clientboundPlay().register(
+                PlayerAnimationPayload.ID,
+                PlayerAnimationPayload.CODEC
+        );
     }
 }

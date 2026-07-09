@@ -1,4 +1,4 @@
-{
+﻿{
 	"format_version": "1.8.0",
 	"animations": {
 		"idle": {
@@ -6715,12 +6715,12 @@
 			},
 			"particle_effects": {
 				"0.5": {
-					"effect": "mob_battle:particle5",
-					"locator": "locator2"
+					"effect": "mob_battle:piglin_energy_sparks",
+					"locator": "piglin_locator2"
 				},
 				"0.5417": {
-					"effect": "mob_battle:particle6",
-					"locator": "locator2"
+					"effect": "mob_battle:piglin_bomb_trail",
+					"locator": "piglin_locator2"
 				}
 			},
 			"timeline": {
@@ -8298,12 +8298,12 @@
 			},
 			"particle_effects": {
 				"0.5417": {
-					"effect": "mob_battle:particle2",
-					"locator": "locator"
+					"effect": "mob_battle:combat_flash_burst",
+					"locator": "piglin_locator"
 				},
 				"0.5833": {
-					"effect": "mob_battle:particle4",
-					"locator": "locator"
+					"effect": "mob_battle:piglin_attack_sparks",
+					"locator": "piglin_locator"
 				}
 			},
 			"timeline": {
@@ -8850,12 +8850,12 @@
 			},
 			"particle_effects": {
 				"1.375": {
-					"effect": "mob_battle:particle5",
-					"locator": "locator2"
+					"effect": "mob_battle:piglin_energy_sparks",
+					"locator": "piglin_locator2"
 				},
 				"1.4167": {
-					"effect": "mob_battle:particle6",
-					"locator": "locator2"
+					"effect": "mob_battle:piglin_bomb_trail",
+					"locator": "piglin_locator2"
 				}
 			},
 			"timeline": {
@@ -9598,12 +9598,12 @@
 			},
 			"particle_effects": {
 				"0.375": {
-					"effect": "mob_battle:particle5",
-					"locator": "locator2"
+					"effect": "mob_battle:piglin_energy_sparks",
+					"locator": "piglin_locator2"
 				},
 				"0.4167": {
-					"effect": "mob_battle:particle6",
-					"locator": "locator2"
+					"effect": "mob_battle:piglin_bomb_trail",
+					"locator": "piglin_locator2"
 				}
 			},
 			"timeline": {

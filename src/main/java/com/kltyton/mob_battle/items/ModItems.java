@@ -6,12 +6,14 @@ import com.kltyton.mob_battle.components.ModComponents;
 import com.kltyton.mob_battle.components.ModConsumableComponents;
 import com.kltyton.mob_battle.effect.ModEffects;
 import com.kltyton.mob_battle.entity.ModEntities;
+import com.kltyton.mob_battle.entity.ai.PiglinBruteWeaponData;
 import com.kltyton.mob_battle.entity.ai.ZombieBowData;
 import com.kltyton.mob_battle.items.armor.ModBaseArmorItem;
 import com.kltyton.mob_battle.items.food.MagmaLobsterItemMod;
 import com.kltyton.mob_battle.items.food.ThousandBlossomedImmortalFruit;
 import com.kltyton.mob_battle.items.misc.*;
 import com.kltyton.mob_battle.items.tool.BaseSword;
+import com.kltyton.mob_battle.items.tool.LittlePersonToolItem;
 import com.kltyton.mob_battle.items.scroll.*;
 import com.kltyton.mob_battle.items.tool.BaseAxe;
 import com.kltyton.mob_battle.items.tool.MasterScepterItem;
@@ -23,7 +25,12 @@ import com.kltyton.mob_battle.items.tool.meteorite.MeteoriteSword;
 import com.kltyton.mob_battle.items.tool.piglin.PiglinCannonItem;
 import com.kltyton.mob_battle.items.tool.snipe.VsSnipe;
 import com.kltyton.mob_battle.items.tool.sword.CompressedMarkedSword;
+import com.kltyton.mob_battle.items.tool.sword.BloodKnifeItem;
+import com.kltyton.mob_battle.items.tool.sword.ChasingWindSwordItem;
+import com.kltyton.mob_battle.items.tool.sword.ElementalSwordItem;
 import com.kltyton.mob_battle.items.tool.sword.FineKnifeItem;
+import com.kltyton.mob_battle.items.tool.sword.IronManMissileLauncherItem;
+import com.kltyton.mob_battle.items.tool.sword.PoisonKnifeItem;
 import com.kltyton.mob_battle.items.tool.sword.zijin.ZiJinSword;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponents;
@@ -42,6 +49,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.SpawnEggItem;
 import net.minecraft.world.item.ToolMaterial;
@@ -75,14 +83,30 @@ public class ModItems {
     public static SlownessScrollItem SLOWNESS_SCROLL;
     public static FireWallScrollItem FIRE_WALL_SCROLL;
     public static PurificationScrollItem PURIFICATION_SCROLL;
+    public static SkullMageScrollItem SKULL_MAGE_SCROLL;
     public static SummonVexBookItem WARLOCK_BOOK;
     public static SummonVexBookItem GRAND_SUMMON_BOOK;
     public static GuardianSealItem GUARDIAN_SEAL;
     public static GuardianSealItem FILLING_SEAL;
     public static FineKnifeItem FINE_KNIFE;
+    public static PoisonKnifeItem POISON_KNIFE;
+    public static BloodKnifeItem BLOOD_KNIFE;
+    public static IronManMissileLauncherItem IRON_MAN_MISSILE_LAUNCHER;
     public static BackpackItem SMALL_BACKPACK;
+    public static BackpackItem BIG_BACKPACK;
     public static BackpackItem LARGE_BACKPACK;
     public static Item ICE_ARROW_ITEM;
+    public static Item ENDER_PURPLE_PEARL;
+    public static ElementalSwordItem ICE_SWORD;
+    public static ElementalSwordItem FIRE_SWORD;
+    public static ChasingWindSwordItem CHASING_WIND_SWORD;
+    public static LittleStoneItem LITTLE_STONE;
+    public static WoodenWhistleItem WOODEN_WHISTLE;
+    public static Item LITTLE_PERSON_TOOL;
+    public static LittlePersonScepterItem LITTLE_PERSON_SCEPTER;
+    public static Item NIBI;
+    public static Item NIBI_BAG;
+    public static Item NIBI_BOX;
 
     public static HeartStoneItem HEART_STONE;
     public static ThousandBlossomedImmortalFruit THOUSAND_BLOSSOMED_IMMORTAL_FRUIT;
@@ -145,6 +169,8 @@ public class ModItems {
     public static SpawnEggItem COAL_SILVERFISH_SPAWN_EGG;
     public static SpawnEggItem PIGLIN_BRUTE_SPEAR_USE_SPAWN_EGG;
     public static SpawnEggItem PIGLIN_BRUTE_SPEAR_MELEE_SPAWN_EGG;
+    public static SpawnEggItem PIGLIN_BRUTE_BOW_SPAWN_EGG;
+    public static SpawnEggItem PIGLIN_BRUTE_CROSSBOW_SPAWN_EGG;
     public static SpawnEggItem BOW_ZOMBIE_SPAWN_EGG;
     public static SpawnEggItem PIGLIN_BRUTE_SPEAR_MOD_SPAWN_EGG;
     public static SpawnEggItem BOW_ZOMBIE_MOD_SPAWN_EGG;
@@ -179,6 +205,10 @@ public class ModItems {
     public static Item ZIJIN_CHESTPLATE;
     public static Item ZIJIN_LEGGINGS;
     public static Item ZIJIN_BOOTS;
+    public static Item COMPRESSED_COPPER_HELMET;
+    public static Item COMPRESSED_COPPER_CHESTPLATE;
+    public static Item COMPRESSED_COPPER_LEGGINGS;
+    public static Item COMPRESSED_COPPER_BOOTS;
     public static Item COMPRESSED_IRON_HELMET;
     public static Item COMPRESSED_IRON_CHESTPLATE;
     public static Item COMPRESSED_IRON_LEGGINGS;
@@ -202,6 +232,7 @@ public class ModItems {
     public static Item IRON_GOLD_SWORD;
     public static Item EMERALD_DIAMOND_SWORD;
     public static Item ZIJIN_SWORD;
+    public static Item COMPRESSED_COPPER_SWORD;
     public static Item COMPRESSED_IRON_SWORD;
     public static Item COMPRESSED_GOLD_SWORD;
     public static Item COMPRESSED_DIAMOND_SWORD;
@@ -262,6 +293,10 @@ public class ModItems {
                 new PurificationScrollItem(registryBaseItemSettings("purification_scroll")
                         .useCooldown(75))
         );
+        SKULL_MAGE_SCROLL = registerItem("skull_mage_scroll",
+                new SkullMageScrollItem(registryBaseItemSettings("skull_mage_scroll")
+                        .useCooldown(20))
+        );
         //.useRemainder(THOUSAND_BLOSSOMED_IMMORTAL_FRUIT)
         THOUSAND_BLOSSOMED_IMMORTAL_FRUIT = Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "thousand_blossomed_immortal_fruit"),
                 new ThousandBlossomedImmortalFruit(new Item.Properties().food(new FoodProperties.Builder().nutrition(4).saturationModifier(0.3F).alwaysEdible().build()).useCooldown(60)
@@ -284,8 +319,8 @@ public class ModItems {
         LOBSTER = registerItem("lobster",
                 registryBaseItemSettings("lobster").food(
                         new FoodProperties.Builder()
-                                .nutrition(2)
-                                .saturationModifier(4.0F)
+                                .nutrition(8)
+                                .saturationModifier(0.8F)
                                 .alwaysEdible()
                                 .build(),
                         ModConsumableComponents.LOBSTER
@@ -298,8 +333,8 @@ public class ModItems {
                 new MagmaLobsterItemMod(
                         registryBaseItemSettings("magma_lobster").food(
                                 new FoodProperties.Builder()
-                                        .nutrition(3)
-                                        .saturationModifier(4.0F)
+                                        .nutrition(10)
+                                        .saturationModifier(0.6F)
                                         .alwaysEdible()
                                         .build(),
                                 ModConsumableComponents.MAGMA_LOBSTER
@@ -314,6 +349,11 @@ public class ModItems {
                         registryBaseItemSettings("obsidian_lobster")
                                 .stacksTo(1)
                                 .durability(1500)
+                                .food(new FoodProperties.Builder()
+                                        .nutrition(10)
+                                        .saturationModifier(0.6F)
+                                        .alwaysEdible()
+                                        .build())
                                 .component(DataComponents.BLOCKS_ATTACKS,
                                         new BlocksAttacks(
                                                 0.25F,
@@ -334,8 +374,8 @@ public class ModItems {
         BURST_OBSIDIAN_LOBSTER = registerItem("burst_obsidian_lobster",
                 registryBaseItemSettings("burst_obsidian_lobster").food(
                         new FoodProperties.Builder()
-                                .nutrition(6)
-                                .saturationModifier(8.0F)
+                                .nutrition(10)
+                                .saturationModifier(0.6F)
                                 .alwaysEdible()
                                 .build(),
                         ModConsumableComponents.BURST_OBSIDIAN_LOBSTER
@@ -480,6 +520,7 @@ public class ModItems {
         );
         IRON_GOLD_HELMET = Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "iron_gold_helmet"),
                 new Item(new Item.Properties().humanoidArmor(ModMaterial.IRON_GOLD_INSTANCE, ArmorType.HELMET)
+                                .rarity(Rarity.EPIC)
                                 .durability(512).stacksTo(1).component(DataComponents.UNBREAKABLE, Unit.INSTANCE)
                                 .setId(ResourceKey.create(
                                         Registries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "iron_gold_helmet")
@@ -488,6 +529,7 @@ public class ModItems {
         );
         IRON_GOLD_CHESTPLATE = Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "iron_gold_chestplate"),
                 new Item(new Item.Properties().humanoidArmor(ModMaterial.IRON_GOLD_INSTANCE, ArmorType.CHESTPLATE)
+                                .rarity(Rarity.EPIC)
                                 .durability(512).stacksTo(1).component(DataComponents.UNBREAKABLE, Unit.INSTANCE)
                                 .setId(ResourceKey.create(
                                         Registries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "iron_gold_chestplate")
@@ -496,6 +538,7 @@ public class ModItems {
         );
         IRON_GOLD_LEGGINGS = Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "iron_gold_leggings"),
                 new Item(new Item.Properties().humanoidArmor(ModMaterial.IRON_GOLD_INSTANCE, ArmorType.LEGGINGS)
+                                .rarity(Rarity.EPIC)
                                 .durability(512).stacksTo(1).component(DataComponents.UNBREAKABLE, Unit.INSTANCE)
                                 .setId(ResourceKey.create(
                                         Registries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "iron_gold_leggings")
@@ -504,6 +547,7 @@ public class ModItems {
         );
         IRON_GOLD_BOOTS = Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "iron_gold_boots"),
                 new Item(new Item.Properties().humanoidArmor(ModMaterial.IRON_GOLD_INSTANCE, ArmorType.BOOTS)
+                                .rarity(Rarity.EPIC)
                                 .durability(512).stacksTo(1).component(DataComponents.UNBREAKABLE, Unit.INSTANCE)
                                 .setId(ResourceKey.create(
                                         Registries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "iron_gold_boots")
@@ -513,6 +557,7 @@ public class ModItems {
         // 翠钻合金套
         EMERALD_DIAMOND_HELMET = Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "emerald_diamond_helmet"),
                 new Item(new Item.Properties()
+                        .rarity(Rarity.EPIC)
                         .humanoidArmor(ModMaterial.EMERALD_DIAMOND_ALLOY_INSTANCE, ArmorType.HELMET)
                         .component(DataComponents.UNBREAKABLE, Unit.INSTANCE)
                         .stacksTo(1)
@@ -522,6 +567,7 @@ public class ModItems {
 
         EMERALD_DIAMOND_CHESTPLATE = Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "emerald_diamond_chestplate"),
                 new Item(new Item.Properties()
+                        .rarity(Rarity.EPIC)
                         .humanoidArmor(ModMaterial.EMERALD_DIAMOND_ALLOY_INSTANCE, ArmorType.CHESTPLATE)
                         .component(DataComponents.UNBREAKABLE, Unit.INSTANCE)
                         .stacksTo(1)
@@ -531,6 +577,7 @@ public class ModItems {
 
         EMERALD_DIAMOND_LEGGINGS = Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "emerald_diamond_leggings"),
                 new Item(new Item.Properties()
+                        .rarity(Rarity.EPIC)
                         .humanoidArmor(ModMaterial.EMERALD_DIAMOND_ALLOY_INSTANCE, ArmorType.LEGGINGS)
                         .component(DataComponents.UNBREAKABLE, Unit.INSTANCE)
                         .stacksTo(1)
@@ -540,6 +587,7 @@ public class ModItems {
 
         EMERALD_DIAMOND_BOOTS = Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "emerald_diamond_boots"),
                 new Item(new Item.Properties()
+                        .rarity(Rarity.EPIC)
                         .humanoidArmor(ModMaterial.EMERALD_DIAMOND_ALLOY_INSTANCE, ArmorType.BOOTS)
                         .component(DataComponents.UNBREAKABLE, Unit.INSTANCE)
                         .stacksTo(1)
@@ -550,6 +598,7 @@ public class ModItems {
         ZIJIN_HELMET = registerItem(
                 "zijin_helmet",
                 registryBaseItemSettings("zijin_helmet")
+                        .rarity(Rarity.EPIC)
                         .humanoidArmor(ModMaterial.ZIJIN_ARMOR_INSTANCE, ArmorType.HELMET)
                         .component(DataComponents.UNBREAKABLE, Unit.INSTANCE)
                         .stacksTo(1)
@@ -558,6 +607,7 @@ public class ModItems {
         ZIJIN_CHESTPLATE = registerItem(
                 "zijin_chestplate",
                 registryBaseItemSettings("zijin_chestplate")
+                        .rarity(Rarity.EPIC)
                         .humanoidArmor(ModMaterial.ZIJIN_ARMOR_INSTANCE, ArmorType.CHESTPLATE)
                         .component(DataComponents.UNBREAKABLE, Unit.INSTANCE)
                         .stacksTo(1)
@@ -566,6 +616,7 @@ public class ModItems {
         ZIJIN_LEGGINGS = registerItem(
                 "zijin_leggings",
                 registryBaseItemSettings("zijin_leggings")
+                        .rarity(Rarity.EPIC)
                         .humanoidArmor(ModMaterial.ZIJIN_ARMOR_INSTANCE, ArmorType.LEGGINGS)
                         .component(DataComponents.UNBREAKABLE, Unit.INSTANCE)
                         .stacksTo(1)
@@ -573,12 +624,18 @@ public class ModItems {
 
         ZIJIN_BOOTS = registerItem("zijin_boots",
                 registryBaseItemSettings("zijin_boots")
+                        .rarity(Rarity.EPIC)
                         .humanoidArmor(ModMaterial.ZIJIN_ARMOR_INSTANCE, ArmorType.BOOTS)
                         .component(DataComponents.UNBREAKABLE, Unit.INSTANCE)
                         .stacksTo(1)
         );
 
         // 注册工具和武器
+        COMPRESSED_COPPER_HELMET = registerCompressedArmor("compressed_copper_helmet", ModMaterial.COMPRESSED_COPPER_ARMOR_INSTANCE, ArmorType.HELMET, 2500, 5.0, 0.0);
+        COMPRESSED_COPPER_CHESTPLATE = registerCompressedArmor("compressed_copper_chestplate", ModMaterial.COMPRESSED_COPPER_ARMOR_INSTANCE, ArmorType.CHESTPLATE, 2500, 5.0, 0.0);
+        COMPRESSED_COPPER_LEGGINGS = registerCompressedArmor("compressed_copper_leggings", ModMaterial.COMPRESSED_COPPER_ARMOR_INSTANCE, ArmorType.LEGGINGS, 2500, 5.0, 0.0);
+        COMPRESSED_COPPER_BOOTS = registerCompressedArmor("compressed_copper_boots", ModMaterial.COMPRESSED_COPPER_ARMOR_INSTANCE, ArmorType.BOOTS, 2500, 5.0, 0.0);
+
         COMPRESSED_IRON_HELMET = registerCompressedArmor("compressed_iron_helmet", ModMaterial.COMPRESSED_IRON_ARMOR_INSTANCE, ArmorType.HELMET, 5000, 6.0, 0.0);
         COMPRESSED_IRON_CHESTPLATE = registerCompressedArmor("compressed_iron_chestplate", ModMaterial.COMPRESSED_IRON_ARMOR_INSTANCE, ArmorType.CHESTPLATE, 5000, 6.0, 0.0);
         COMPRESSED_IRON_LEGGINGS = registerCompressedArmor("compressed_iron_leggings", ModMaterial.COMPRESSED_IRON_ARMOR_INSTANCE, ArmorType.LEGGINGS, 5000, 6.0, 0.0);
@@ -625,6 +682,7 @@ public class ModItems {
         IRON_GOLD_SWORD = Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "iron_gold_sword"),
                 new IronGoldSword(new Item.Properties()
                         .sword(ModMaterial.IRON_GOLD_TOOL_MATERIAL, 84f, 1024)
+                        .rarity(Rarity.EPIC)
                         .stacksTo(1)
                         .component(DataComponents.DEATH_PROTECTION, DeathProtection.TOTEM_OF_UNDYING)
                         .setId(ResourceKey.create(
@@ -635,7 +693,8 @@ public class ModItems {
 
         EMERALD_DIAMOND_SWORD = registerItem("emerald_diamond_sword",
                 registryBaseItemSettings("emerald_diamond_sword")
-                        .sword(ModMaterial.EMERALD_DIAMOND_ALLOY_TOOL_MATERIAL, 119, -2f)
+                        .rarity(Rarity.EPIC)
+                        .sword(ModMaterial.EMERALD_DIAMOND_ALLOY_TOOL_MATERIAL, 149.0F, -2.4F)
                         .stacksTo(1)
                         .component(DataComponents.UNBREAKABLE, Unit.INSTANCE),
                 false
@@ -644,13 +703,35 @@ public class ModItems {
         ZIJIN_SWORD = registerItem("zijin_sword",
                 new ZiJinSword(
                         registryBaseItemSettings("zijin_sword")
-                        .sword(ModMaterial.ZIJIN_ARMOR_TOOL_MATERIAL, 84, 0f)
-                        .stacksTo(1)
-                        .component(DataComponents.UNBREAKABLE, Unit.INSTANCE)
+                                .rarity(Rarity.EPIC)
+                                .sword(ModMaterial.ZIJIN_ARMOR_TOOL_MATERIAL, 84, 0f)
+                                .attributes(ItemAttributeModifiers.builder()
+                                        .add(
+                                                Attributes.ATTACK_DAMAGE,
+                                                new AttributeModifier(Item.BASE_ATTACK_DAMAGE_ID, 84.0 + ModMaterial.ZIJIN_ARMOR_TOOL_MATERIAL.attackDamageBonus(), AttributeModifier.Operation.ADD_VALUE),
+                                                EquipmentSlotGroup.MAINHAND
+                                        )
+                                        .add(
+                                                Attributes.ATTACK_SPEED,
+                                                new AttributeModifier(Item.BASE_ATTACK_SPEED_ID, 0.0, AttributeModifier.Operation.ADD_VALUE),
+                                                EquipmentSlotGroup.MAINHAND
+                                        )
+                                        .add(
+                                                Attributes.SWEEPING_DAMAGE_RATIO,
+                                                new AttributeModifier(Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "sweeping_zijin_sword"), 1.0, AttributeModifier.Operation.ADD_VALUE),
+                                                EquipmentSlotGroup.MAINHAND
+                                        )
+                                        .build())
+                                .stacksTo(1)
+                                .component(DataComponents.UNBREAKABLE, Unit.INSTANCE)
                 ),
                 false
         );
 
+        COMPRESSED_COPPER_SWORD = registerCompressedSword(
+                "compressed_copper_sword",
+                new BaseSword(compressedSwordSettings("compressed_copper_sword", ModMaterial.COMPRESSED_COPPER_TOOL_MATERIAL, 15.0F, -2.2F))
+        );
         COMPRESSED_IRON_SWORD = registerCompressedSword(
                 "compressed_iron_sword",
                 new BaseSword(compressedSwordSettings("compressed_iron_sword", ModMaterial.COMPRESSED_IRON_TOOL_MATERIAL, 25.0F, -2.2F))
@@ -718,6 +799,14 @@ public class ModItems {
                 "piglin_brute_spear_melee_spawn_egg",
                 false
         );
+        PIGLIN_BRUTE_BOW_SPAWN_EGG = registerPiglinBruteWeaponSpawnEgg(
+                "piglin_brute_bow_spawn_egg",
+                PiglinBruteWeaponData.FORCE_BOW_KEY
+        );
+        PIGLIN_BRUTE_CROSSBOW_SPAWN_EGG = registerPiglinBruteWeaponSpawnEgg(
+                "piglin_brute_crossbow_spawn_egg",
+                PiglinBruteWeaponData.FORCE_CROSSBOW_KEY
+        );
         BOW_ZOMBIE_SPAWN_EGG = registerBowZombieSpawnEgg();
         PIGLIN_BRUTE_SPEAR_MOD_SPAWN_EGG = registerSpawnEggItem(
                 ModEntities.PIGLIN_BRUTE_SPEAR_MOD,
@@ -777,11 +866,63 @@ public class ModItems {
                 false
         );
 
+        POISON_KNIFE = registerItem("poison_knife", new PoisonKnifeItem(
+                        registryBaseItemSettings("poison_knife")
+                                .durability(2000)
+                                .sword(ToolMaterial.IRON, 48.0F, -2.4F)
+                                .stacksTo(1)),
+                true,
+                false
+        );
+
+        BLOOD_KNIFE = registerItem("blood_knife", new BloodKnifeItem(
+                        registryBaseItemSettings("blood_knife")
+                                .durability(3000)
+                                .sword(ToolMaterial.IRON, 48.0F, -2.4F)
+                                .stacksTo(1)),
+                true,
+                false
+        );
+
+        IRON_MAN_MISSILE_LAUNCHER = registerItem("iron_man_missile_launcher",
+                new IronManMissileLauncherItem(
+                        registryBaseItemSettings("iron_man_missile_launcher")
+                                .durability(10)
+                                .sword(ToolMaterial.IRON, 4.0F, -2.4F)
+                                .attributes(ItemAttributeModifiers.builder()
+                                        .add(
+                                                Attributes.ATTACK_DAMAGE,
+                                                new AttributeModifier(Item.BASE_ATTACK_DAMAGE_ID, 4.0F + ToolMaterial.IRON.attackDamageBonus(), AttributeModifier.Operation.ADD_VALUE),
+                                                EquipmentSlotGroup.MAINHAND
+                                        )
+                                        .add(
+                                                Attributes.ATTACK_SPEED,
+                                                new AttributeModifier(Item.BASE_ATTACK_SPEED_ID, -2.4F, AttributeModifier.Operation.ADD_VALUE),
+                                                EquipmentSlotGroup.MAINHAND
+                                        )
+                                        .add(
+                                                Attributes.ENTITY_INTERACTION_RANGE,
+                                                new AttributeModifier(Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "iron_man_missile_launcher_entity_range"), 20.0D, AttributeModifier.Operation.ADD_VALUE),
+                                                EquipmentSlotGroup.MAINHAND
+                                        )
+                                        .build())
+                                .stacksTo(1)),
+                true,
+                false
+        );
+
         SMALL_BACKPACK = registerItem("small_backpack", new BackpackItem(
                 registryBaseItemSettings("small_backpack")
                         .rarity(Rarity.UNCOMMON)
                         .stacksTo(1),
                 false)
+        );
+
+        BIG_BACKPACK = registerItem("big_backpack", new BackpackItem(
+                registryBaseItemSettings("big_backpack")
+                        .rarity(Rarity.UNCOMMON)
+                        .stacksTo(1),
+                9)
         );
 
         LARGE_BACKPACK = registerItem("large_backpack", new BackpackItem(
@@ -798,6 +939,49 @@ public class ModItems {
         );
 
         ICE_ARROW_ITEM = registerItem("ice_arrow_item", registryBaseItemSettings("ice_arrow_item").stacksTo(64));
+        ENDER_PURPLE_PEARL = registerItem("ender_purple_pearl",
+                new EnderPurplePearlItem(registryBaseItemSettings("ender_purple_pearl").stacksTo(20)));
+        ICE_SWORD = registerItem("ice_sword",
+                new ElementalSwordItem(registryBaseItemSettings("ice_sword")
+                        .durability(230)
+                        .sword(ToolMaterial.IRON, 3.0F, -2.4F)
+                        .stacksTo(1),
+                        com.kltyton.mob_battle.entity.projectile.ElementalSwordProjectileEntity.ICE_SWORD,
+                        Items.SNOWBALL,
+                        1,
+                        0));
+        FIRE_SWORD = registerItem("fire_sword",
+                new ElementalSwordItem(registryBaseItemSettings("fire_sword")
+                        .durability(210)
+                        .sword(ToolMaterial.IRON, 3.0F, -2.4F)
+                        .stacksTo(1),
+                        com.kltyton.mob_battle.entity.projectile.ElementalSwordProjectileEntity.FIRE_SWORD,
+                        Items.FIRE_CHARGE,
+                        1,
+                        0));
+        CHASING_WIND_SWORD = registerItem("chasing_wind_sword",
+                new ChasingWindSwordItem(registryBaseItemSettings("chasing_wind_sword")
+                        .durability(1600)
+                        .sword(ToolMaterial.IRON, 33.0F, -2.4F)
+                        .stacksTo(1)));
+        LITTLE_STONE = registerItem("little_stone", new LittleStoneItem(registryBaseItemSettings("little_stone").stacksTo(64)));
+        WOODEN_WHISTLE = registerItem("wooden_whistle", new WoodenWhistleItem(registryBaseItemSettings("wooden_whistle").durability(10).stacksTo(1)));
+        LITTLE_PERSON_TOOL = registerItem("little_person_tool",
+                new LittlePersonToolItem(LittlePersonToolItem.applyAxePickaxeProperties(
+                        registryBaseItemSettings("little_person_tool")
+                                .durability(50))
+                        .stacksTo(1)),
+                true,
+                false
+        );
+        LITTLE_PERSON_SCEPTER = registerItem("little_person_scepter",
+                new LittlePersonScepterItem(registryBaseItemSettings("little_person_scepter").durability(100).stacksTo(1)),
+                true,
+                false
+        );
+        NIBI = registerItem("nibi");
+        NIBI_BAG = registerItem("nibi_bag");
+        NIBI_BOX = registerItem("nibi_box", registryBaseItemSettings("nibi_box").craftRemainder(Items.CHEST));
         TRAIN_BULLET = registerItem("train_bullet", registryBaseItemSettings("train_bullet").stacksTo(64));
         AREA_GRAVITY_DEVICE_ITEM = registerItem("area_gravity_device_item", new AreaGravityDeviceItem(
                 registryBaseItemSettings("area_gravity_device_item")
@@ -837,6 +1021,13 @@ public class ModItems {
                         new AttributeModifier(Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "health_" + id), maxHealth, AttributeModifier.Operation.ADD_VALUE),
                         slot
                 );
+        if (material == ModMaterial.COMPRESSED_COPPER_ARMOR_INSTANCE) {
+            attributes = attributes.withModifierAdded(
+                    Attributes.ENTITY_INTERACTION_RANGE,
+                    new AttributeModifier(Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "range_" + id), 0.1, AttributeModifier.Operation.ADD_VALUE),
+                    slot
+            );
+        }
         if (extraToughness > 0.0) {
             attributes = attributes.withModifierAdded(
                     Attributes.ARMOR_TOUGHNESS,
@@ -948,6 +1139,23 @@ public class ModItems {
                         registryBaseItemSettings(id)
                                 .spawnEgg(EntityType.ZOMBIE)
                                 .component(DataComponents.ENTITY_DATA, TypedEntityData.of(EntityType.ZOMBIE, entityData))
+                ),
+                false,
+                false
+        );
+        SPAWN_EGG_ITEMS.put(id, item);
+        return item;
+    }
+
+    private static SpawnEggItem registerPiglinBruteWeaponSpawnEgg(String id, String forceWeaponKey) {
+        CompoundTag entityData = new CompoundTag();
+        entityData.putBoolean(forceWeaponKey, true);
+        SpawnEggItem item = registerItem(
+                id,
+                new SpawnEggItem(
+                        registryBaseItemSettings(id)
+                                .spawnEgg(EntityType.PIGLIN_BRUTE)
+                                .component(DataComponents.ENTITY_DATA, TypedEntityData.of(EntityType.PIGLIN_BRUTE, entityData))
                 ),
                 false,
                 false

@@ -121,7 +121,7 @@ public class WitherSkeletonDogEntity extends WitherSkeleton implements GeneralEn
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>("main_controller", 0, this::mainController));
-        controllers.add(new AnimationController<>("skill_controller", 5, animTest -> {
+        controllers.add(new AnimationController<>("skill_controller", 0, animTest -> {
             if (GeoAnimationUtil.consumeFinishedTriggeredAnimation(animTest)) {
                 ClientPlayNetworking.send(new SkillPayload("stop", this.getId()));
             }

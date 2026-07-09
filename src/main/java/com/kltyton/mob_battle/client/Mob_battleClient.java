@@ -3,6 +3,7 @@ package com.kltyton.mob_battle.client;
 import com.kltyton.mob_battle.block.ModBlocksClient;
 import com.kltyton.mob_battle.client.keybinding.ModKeyBinding;
 import com.kltyton.mob_battle.client.screen.ModScreen;
+import com.kltyton.mob_battle.config.MobBattleClientConfig;
 import com.kltyton.mob_battle.event.ModClientEvents;
 import com.kltyton.mob_battle.network.ClientPlayNetwork;
 import com.kltyton.mob_battle.sounds.bgm.boss.dragon.DragonBgmHandler;
@@ -12,6 +13,7 @@ public class Mob_battleClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
+        MobBattleClientConfig.init();
         ClientPlayNetwork.init();
         ModClientEvents.clientInit();
         ModModel.init();
@@ -22,5 +24,6 @@ public class Mob_battleClient implements ClientModInitializer {
         ModScreen.init();
         DragonBgmHandler.init();
         ClientGeckoAnimationTicker.init();
+        ModPlayerAnimationControllers.init();
     }
 }

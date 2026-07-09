@@ -6,6 +6,7 @@ import com.kltyton.mob_battle.effect.ModEffects;
 import com.kltyton.mob_battle.entity.littleperson.skillentity.base.BaseSkillLittlePersonEntity;
 import com.kltyton.mob_battle.entity.littleperson.skillentity.HumanHammerEntity;
 import com.kltyton.mob_battle.entity.littleperson.skillentity.HumanShieldEntity;
+import com.kltyton.mob_battle.entity.projectile.LittleStoneEntity;
 import com.kltyton.mob_battle.entity.witherskeletonking.skill.WitherSkullKingEntity;
 import com.kltyton.mob_battle.items.ModItems;
 import com.kltyton.mob_battle.items.ModMaterial;
@@ -234,7 +235,11 @@ public abstract class LivingEntityMixin extends Entity implements Attackable, Wa
 
     @Unique
     private boolean mobBattle$isNonPlayerEntityDamageSource(Entity entity) {
-        return entity != null && !(entity instanceof Player) && !(entity instanceof Snowball) && !(entity instanceof ThrownEgg);
+        return entity != null
+                && !(entity instanceof Player)
+                && !(entity instanceof Snowball)
+                && !(entity instanceof ThrownEgg)
+                && !(entity instanceof LittleStoneEntity);
     }
 
     @Inject(method = "hurtServer", at = @At("HEAD"), cancellable = true)
@@ -362,6 +367,20 @@ public abstract class LivingEntityMixin extends Entity implements Attackable, Wa
             }
         }
     }
+
+    @ModifyArg(
+            method = "getDamageAfterArmorAbsorb",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/world/damagesource/CombatRules;getDamageAfterAbsorb(Lnet/minecraft/world/entity/LivingEntity;FLnet/minecraft/world/damagesource/DamageSource;FF)F"),
+            index = 3
+    )
+    private float reduceArmorValue(float armor) {
+        MobEffectInstance effect = ((LivingEntity) (Object) this).getEffect(ModEffects.ARMOR_PIERCING_ENTRY);
+        if (effect == null) {
+            return armor;
+        }
+        return Math.max(0.0F, armor - (effect.getAmplifier() + 1));
+    }
+
     @ModifyArg(
             method = "getDamageAfterMagicAbsorb",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/world/damagesource/CombatRules;getDamageAfterMagicAbsorb(FF)F"),

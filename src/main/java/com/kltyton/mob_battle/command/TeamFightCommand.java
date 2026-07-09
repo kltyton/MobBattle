@@ -6,6 +6,7 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.TeamArgument;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.permissions.Permissions;
 import net.minecraft.world.scores.PlayerTeam;
 
 import static net.minecraft.commands.Commands.argument;
@@ -14,6 +15,7 @@ import static net.minecraft.commands.Commands.literal;
 public class TeamFightCommand {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(literal("teamFight")
+                .requires(TeamFightCommand::isGameMaster)
                 .then(argument("team1", TeamArgument.team())
                         .then(argument("team2", TeamArgument.team())
                                 .executes(context -> {
@@ -35,6 +37,7 @@ public class TeamFightCommand {
                                 }))));
         // 新增停止指令
         dispatcher.register(literal("stopTeamFight")
+                .requires(TeamFightCommand::isGameMaster)
                 .then(argument("team", TeamArgument.team())
                         .executes(context -> {
                             CommandSourceStack source = context.getSource();
@@ -58,6 +61,7 @@ public class TeamFightCommand {
 
         // 停止所有战斗
         dispatcher.register(literal("stopAllTeamFights")
+                .requires(TeamFightCommand::isGameMaster)
                 .executes(context -> {
                     int count = TeamFightManager.clearAllFights();
                     context.getSource().sendSuccess(() ->
@@ -68,6 +72,7 @@ public class TeamFightCommand {
                 }));
         // 查询指令
         dispatcher.register(literal("listTeamFights")
+                .requires(TeamFightCommand::isGameMaster)
                 .executes(context -> {
                     String fights = TeamFightManager.getActiveFights();
                     context.getSource().sendSuccess(() ->
@@ -77,5 +82,9 @@ public class TeamFightCommand {
                     return 1;
                 }));
 
+    }
+
+    private static boolean isGameMaster(CommandSourceStack source) {
+        return source.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER);
     }
 }

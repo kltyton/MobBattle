@@ -27,7 +27,7 @@ public class FireWallEntity extends Entity {
     private int life = 120;
     private double originX, originY, originZ;
     private float yaw;
-    private float damage = 30.0F;
+    private float damage = 20.0F;
 
     /* ---------------------------------------------------------- */
     public float getDamage() { return damage; }

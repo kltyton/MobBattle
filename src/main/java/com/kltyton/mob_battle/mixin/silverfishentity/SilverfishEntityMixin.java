@@ -32,11 +32,11 @@ public abstract class SilverfishEntityMixin extends Monster {
     }
     @Redirect(method = "registerGoals", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/ai/goal/GoalSelector;addGoal(ILnet/minecraft/world/entity/ai/goal/Goal;)V", ordinal = 5))
     public void initGoals(GoalSelector instance, int priority, Goal goal) {
-        instance.addGoal(priority,  new HurtByTargetGoal(this, Creeper.class, Witch.class).setAlertOthers(Creeper.class, Witch.class));
+        instance.addGoal(priority, new HurtByTargetGoal(this, Witch.class).setAlertOthers(Witch.class));
     }
     @Redirect(method = "registerGoals", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/ai/goal/GoalSelector;addGoal(ILnet/minecraft/world/entity/ai/goal/Goal;)V", ordinal = 6))
     public void initGoals2(GoalSelector instance, int priority, Goal goal) {
-        instance.addGoal(priority, new NearestAttackableTargetGoal<>(this, LivingEntity.class, 10, true, false, (entity, world) -> !(entity instanceof Witch) && !(entity instanceof Creeper) && !(entity instanceof Silverfish)));
+        instance.addGoal(priority, new NearestAttackableTargetGoal<>(this, LivingEntity.class, 10, true, false, (entity, world) -> !(entity instanceof Witch) && !(entity instanceof Silverfish)));
     }
     /**
      * @author kltyton

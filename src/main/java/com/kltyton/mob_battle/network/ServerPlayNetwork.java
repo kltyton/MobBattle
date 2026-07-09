@@ -46,6 +46,9 @@ import com.kltyton.mob_battle.event.masterscepter.MasterScepterManager;
 import com.kltyton.mob_battle.items.ModItems;
 import com.kltyton.mob_battle.items.ModMaterial;
 import com.kltyton.mob_battle.items.armor.compressarmor.CompressArmorSkillManager;
+import com.kltyton.mob_battle.items.tool.sword.BloodKnifeItem;
+import com.kltyton.mob_battle.items.tool.sword.ChasingWindSwordItem;
+import com.kltyton.mob_battle.items.tool.sword.PoisonKnifeItem;
 import com.kltyton.mob_battle.items.tool.piglin.PiglinCannonModeUtil;
 import com.kltyton.mob_battle.network.packet.*;
 import com.kltyton.mob_battle.utils.*;
@@ -203,6 +206,7 @@ public class ServerPlayNetwork {
                                 switch (payload.skillName()) {
                                     case "attack2" -> LittlePersonKingSkill.runSkill_2(littlePersonKing);
                                     case "attack3" -> LittlePersonKingSkill.runSkill_3(littlePersonKing);
+                                    case "attack4" -> LittlePersonKingSkill.runSkill_4(littlePersonKing);
                                     case "stop_ai" -> littlePersonKing.setNoAi(true);
                                     case "start_ai" -> littlePersonKing.setNoAi(false);
                                     case "stop" -> {
@@ -378,6 +382,11 @@ public class ServerPlayNetwork {
 
                             case "retreat_step" -> PlayerEntitySkill.runRetreatStepRunSkill(player);
 
+                            case "knife_run_attack" -> {
+                                PoisonKnifeItem.releasePendingSkill(player);
+                                BloodKnifeItem.releasePendingSkill(player);
+                            }
+
                             case "stop" -> PlayerEntitySkill.stopSkill(player);
                             case "can_move" -> PlayerEntitySkill.canMove(player);
                         }
@@ -387,7 +396,7 @@ public class ServerPlayNetwork {
         ServerPlayNetworking.registerGlobalReceiver(LeftClickPacket.ID,
                 (payload, context) -> {
                     ServerPlayer player = context.player();
-                    LeftClickUtil.leftClick(player, payload.pressing(), false);
+                    LeftClickUtil.leftClick(player, payload.pressing(), true);
                 }
         );
         ServerPlayNetworking.registerGlobalReceiver(EnchantmentPayload.ID,
@@ -524,7 +533,12 @@ public class ServerPlayNetwork {
             ServerPlayer player = context.player();
             ServerLevel world = player.level();
             context.server().execute(() -> {
-                if (player.getMainHandItem().is(ModItems.PIGLIN_CANNON)) {
+                if (player.getMainHandItem().is(ModItems.CHASING_WIND_SWORD)) {
+                    ChasingWindSwordItem.Mode mode = ChasingWindSwordItem.toggleMode(player.getMainHandItem());
+                    if (!world.isClientSide()) {
+                        player.sendOverlayMessage(ChasingWindSwordItem.modeMessage(mode));
+                    }
+                } else if (player.getMainHandItem().is(ModItems.PIGLIN_CANNON)) {
                     PiglinCannonModeUtil.Mode mode = PiglinCannonModeUtil.toggleMode(player.getMainHandItem());
                     if (!world.isClientSide()) {
                         player.sendOverlayMessage(Component.literal(mode == PiglinCannonModeUtil.Mode.FAST_FIRE ? "切换为速射形态" : "切换为重击模式"));

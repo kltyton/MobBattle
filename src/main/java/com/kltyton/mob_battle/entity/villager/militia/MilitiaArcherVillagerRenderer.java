@@ -2,6 +2,7 @@ package com.kltyton.mob_battle.entity.villager.militia;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.client.model.npc.BabyVillagerModel;
 import net.minecraft.client.model.npc.VillagerModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.AgeableMobRenderer;
@@ -27,24 +28,36 @@ public class MilitiaArcherVillagerRenderer extends AgeableMobRenderer<MilitiaArc
         super(
                 context,
                 new VillagerModel(context.bakeLayer(ModelLayers.VILLAGER)),
-                new VillagerModel(context.bakeLayer(ModelLayers.VILLAGER_BABY)),
+                new BabyVillagerModel(context.bakeLayer(ModelLayers.VILLAGER_BABY)),
                 0.5F
         );
+        this.addLayer(new CustomHeadLayer<>(this, context.getModelSet(), context.getPlayerSkinRenderCache(), HEAD_TRANSFORMATION));
+        this.addLayer(new VillagerProfessionLayer<>(
+                this,
+                context.getResourceManager(),
+                "villager",
+                new VillagerModel(context.bakeLayer(ModelLayers.VILLAGER_NO_HAT)),
+                new BabyVillagerModel(context.bakeLayer(ModelLayers.VILLAGER_BABY_NO_HAT))
+        ));
         this.addLayer(new CrossedArmsItemLayer<>(this));
     }
 
+    @Override
     public Identifier getTextureLocation(VillagerRenderState villagerEntityRenderState) {
         return TEXTURE;
     }
 
+    @Override
     protected float getShadowRadius(VillagerRenderState villagerEntityRenderState) {
         float f = super.getShadowRadius(villagerEntityRenderState);
         return villagerEntityRenderState.isBaby ? f * 0.5F : f;
     }
 
+    @Override
     public VillagerRenderState createRenderState() {
         return new VillagerRenderState();
     }
+
     @Override
     public void extractRenderState(MilitiaArcherVillager villagerEntity, VillagerRenderState villagerEntityRenderState, float f) {
         super.extractRenderState(villagerEntity, villagerEntityRenderState, f);

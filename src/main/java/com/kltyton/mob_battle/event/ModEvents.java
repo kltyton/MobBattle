@@ -2,6 +2,7 @@ package com.kltyton.mob_battle.event;
 
 import com.kltyton.mob_battle.event.effect.EffectEventHandler;
 import com.kltyton.mob_battle.event.flowerfairy.FlowerFairyEntityEvent;
+import com.kltyton.mob_battle.event.golem.ChestGolemBuildEvent;
 import com.kltyton.mob_battle.event.item.AreaGravityDeviceItemEvent;
 import com.kltyton.mob_battle.event.item.GuardianSealItemEvent;
 import com.kltyton.mob_battle.event.player.DeathPenaltyEvents;
@@ -18,6 +19,7 @@ public class ModEvents {
         PlayerAttackEvent.init();
         SelfDestructEffectEvent.init();
         FlowerFairyEntityEvent.init();
+        ChestGolemBuildEvent.init();
         GuardianSealItemEvent.init();
         AreaGravityDeviceItemEvent.init();
         DeathPenaltyEvents.init();

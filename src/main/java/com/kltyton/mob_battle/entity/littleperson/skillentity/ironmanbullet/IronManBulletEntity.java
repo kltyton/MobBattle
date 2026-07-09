@@ -180,6 +180,11 @@ public class IronManBulletEntity extends Projectile {
         this.stepCount = 10 + this.random.nextInt(5) * 10;
     }
 
+    public void retarget(Entity target, @Nullable Direction.Axis axis) {
+        this.target = EntityReference.of(target);
+        this.changeTargetDirection(axis, target);
+    }
+
     @Override
     public void checkDespawn() {
         if (this.level().getDifficulty() == Difficulty.PEACEFUL) {

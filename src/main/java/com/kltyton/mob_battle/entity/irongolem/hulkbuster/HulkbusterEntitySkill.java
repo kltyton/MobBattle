@@ -66,14 +66,6 @@ public class HulkbusterEntitySkill {
                     float attackDamage = 350.0f;
                     hulkbusterEntity.tryAttackBaseDamage((ServerLevel) world, entity, attackDamage);
                 });
-        world.getEntities(hulkbusterEntity, damageBox).stream()
-                .filter(e -> e instanceof LivingEntity)
-                .map(e -> (LivingEntity) e)
-                .filter(e -> e.isAlive() && !EntityUtil.isCreativeOrSpectator(e))
-                .filter(e -> e.isAlliedTo(hulkbusterEntity))
-                .forEach(ally -> {
-                    ally.heal(50.0f);
-                });
     }
     public static void runMaxAttackSkill(HulkbusterEntity hulkbusterEntity) {
         Level world = hulkbusterEntity.level();

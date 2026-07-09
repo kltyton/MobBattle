@@ -81,10 +81,10 @@ public class LittlePersonMilitiaEntity extends Monster implements LittlePersonEn
     }
     public static AttributeSupplier.Builder createLittlePersonMilitiaAttributes() {
         return LittlePersonEntity.createLittlePersonAttributes()
-                .add(Attributes.MAX_HEALTH, 10.0)
+                .add(Attributes.MAX_HEALTH, 25.0)
                 .add(Attributes.FOLLOW_RANGE, 40.0)
                 .add(Attributes.MOVEMENT_SPEED, 0.5)
-                .add(Attributes.ATTACK_DAMAGE, 10.0)
+                .add(Attributes.ATTACK_DAMAGE, 3.0)
                 .add(ModEntityAttributes.DAMAGE_REDUCTION, 0);
     }
 

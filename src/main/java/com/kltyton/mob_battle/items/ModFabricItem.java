@@ -3,6 +3,7 @@ package com.kltyton.mob_battle.items;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -25,4 +26,6 @@ public interface ModFabricItem {
 
     default void onSuccessfulCriticalHit(Player player, Entity target, ItemStack stack) {}
     default void onSuccessfulSweepHit(Player player, Entity target, ItemStack stack) {}
+
+    default void addStatusEffect(LivingEntity target, LivingEntity attacker) {}
 }

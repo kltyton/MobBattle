@@ -39,6 +39,7 @@ public class SkillProjectileEntity extends Projectile implements GeoEntity {
     private boolean explodeOnHit;
     private int maxAge = 40;
     private double explosionRadius = 3.0D;
+    private float ownerHealOnHit;
 
     public SkillProjectileEntity(EntityType<? extends SkillProjectileEntity> entityType, Level world) {
         super(entityType, world);
@@ -74,6 +75,10 @@ public class SkillProjectileEntity extends Projectile implements GeoEntity {
 
     public void setExplosionRadius(double explosionRadius) {
         this.explosionRadius = explosionRadius;
+    }
+
+    public void setOwnerHealOnHit(float ownerHealOnHit) {
+        this.ownerHealOnHit = ownerHealOnHit;
     }
 
     @Override
@@ -151,6 +156,9 @@ public class SkillProjectileEntity extends Projectile implements GeoEntity {
         if (this.magicDamage > 0.0F) {
             target.hurtServer(world, this.damageSources().indirectMagic(this, owner == null ? this : owner), this.magicDamage);
         }
+        if (this.ownerHealOnHit > 0.0F && owner instanceof LivingEntity livingOwner && livingOwner.isAlive()) {
+            livingOwner.heal(this.ownerHealOnHit);
+        }
     }
 
     private void explode() {
@@ -161,7 +169,7 @@ public class SkillProjectileEntity extends Projectile implements GeoEntity {
         Entity owner = this.getOwner();
         world.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, net.minecraft.world.level.block.Blocks.ICE.defaultBlockState()),
                 this.getX(), this.getY(), this.getZ(), 35, 0.8D, 0.6D, 0.8D, 0.12D);
-        world.playSound(null, this.blockPosition(), SoundEvents.GLASS_BREAK, this.getSoundSource(), 1.1F, 0.8F);
+        world.playSound(null, this.blockPosition(), SoundEvents.GENERIC_EXPLODE.value(), this.getSoundSource(), 1.2F, 0.9F);
         AABB box = this.getBoundingBox().inflate(this.explosionRadius);
         for (LivingEntity target : world.getEntitiesOfClass(LivingEntity.class, box,
                 living -> EntityUtil.isValidSummonCombatTarget(this, owner, living))) {

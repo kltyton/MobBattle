@@ -1,6 +1,7 @@
 package com.kltyton.mob_battle.utils;
 
 import com.kltyton.mob_battle.entity.OwnedSummon;
+import com.kltyton.mob_battle.event.team.TeamFightManager;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -28,11 +29,17 @@ public class EntityUtil {
     }
 
     public static boolean isValidCombatTarget(LivingEntity source, LivingEntity target) {
-        return target != null
-                && target != source
-                && target.isAlive()
-                && !isCreativeOrSpectator(target)
-                && !target.isAlliedTo(source);
+        if (target == null || target == source || !target.isAlive() || isCreativeOrSpectator(target)) {
+            return false;
+        }
+        if (TeamFightManager.areForcedOpponents(source, target)) {
+            return true;
+        }
+        Entity targetOwner = getKnownOwner(target);
+        if (targetOwner instanceof Player && isLittlePersonFamily(source)) {
+            return false;
+        }
+        return !target.isAlliedTo(source);
     }
 
     @Nullable
@@ -91,10 +98,16 @@ public class EntityUtil {
     }
 
     public static boolean isValidSummonCombatTarget(Entity summon, @Nullable Entity owner, LivingEntity target) {
-        return target != null
-                && target.isAlive()
-                && !isCreativeOrSpectator(target)
-                && !isFriendlyToSummon(summon, owner, target);
+        if (target == null || !target.isAlive() || isCreativeOrSpectator(target)) {
+            return false;
+        }
+        if (summon instanceof LivingEntity livingSummon && TeamFightManager.areForcedOpponents(livingSummon, target)) {
+            return true;
+        }
+        if (owner instanceof LivingEntity livingOwner && TeamFightManager.areForcedOpponents(livingOwner, target)) {
+            return true;
+        }
+        return !isFriendlyToSummon(summon, owner, target);
     }
 
     public static boolean shouldBlockOwnedSummonDamage(Entity damagingEntity, LivingEntity target) {
@@ -112,6 +125,11 @@ public class EntityUtil {
 
     private static boolean isSameOrTeammate(Entity target, Entity owner) {
         return target == owner || target.isAlliedTo(owner) || owner.isAlliedTo(target);
+    }
+
+    private static boolean isLittlePersonFamily(Entity entity) {
+        String className = entity.getClass().getName();
+        return className.contains(".entity.littleperson.") && !className.endsWith(".Xbot002Entity");
     }
 
     /**

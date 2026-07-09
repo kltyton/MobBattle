@@ -5,9 +5,6 @@ import org.spongepowered.asm.mixin.Implements;
 import org.spongepowered.asm.mixin.Interface;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.Objects;
 import net.minecraft.world.entity.EntityType;
@@ -26,12 +23,6 @@ public abstract class ArrowEntityMixin extends AbstractArrow {
         super(entityType, world);
     }
 
-    @Inject(method = "tick", at = @At("HEAD"))
-    public void tick(CallbackInfo ci) {
-        if (!this.level().isClientSide()) {
-            this.tickDespawn();
-        }
-    }
     public void kltyton$setTrueDamage(boolean fixed_damage, Boolean isMage) {
         TrueDamage = fixed_damage;
         this.isMage = Objects.requireNonNullElse(isMage, false);

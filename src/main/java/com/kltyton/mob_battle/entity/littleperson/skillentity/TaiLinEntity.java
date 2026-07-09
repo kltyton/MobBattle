@@ -19,11 +19,12 @@ import org.jetbrains.annotations.NotNull;
 
 public class TaiLinEntity extends BaseSkillLittlePersonEntity {
     public TaiLinEntity(EntityType<? extends Monster> entityType, Level world) {
-        super(entityType, world, 4);
+        super(entityType, world, 5);
         COOL_DOWN_TIME_1 = 8 * 20;
         COOL_DOWN_TIME_2 = 20 * 20;
         COOL_DOWN_TIME_3 = 15 * 20;
         COOL_DOWN_TIME_4 = 10 * 20;
+        COOL_DOWN_TIME_5 = 10 * 20;
         init();
     }
     public static AttributeSupplier.Builder createLittlePersonAttributes() {
@@ -78,6 +79,15 @@ public class TaiLinEntity extends BaseSkillLittlePersonEntity {
     public void runSkill_5(BaseSkillLittlePersonEntity entity) {
         for (LivingEntity livingEntity : EntityUtil.getNearbyEntity(entity, LivingEntity.class, Object.class, 5, false, EntityUtil.TeamFilter.EXCLUDE_TEAM)) {
             livingEntity.hurtServer((ServerLevel) entity.level(), entity.damageSources().mobAttack(entity), 80);
+        }
+    }
+
+    @Override
+    public void runSkill_6(BaseSkillLittlePersonEntity entity) {
+        LivingEntity target = entity.getTarget();
+        if (target != null && entity.level() instanceof ServerLevel world && EntityUtil.isValidSummonCombatTarget(entity, entity.getSummonOwner(), target)) {
+            target.hurtServer(world, entity.damageSources().mobAttack(entity), 100.0F);
+            target.addEffect(new MobEffectInstance(ModEffects.STUN_ENTRY, 20, 0), entity);
         }
     }
 }

@@ -18,16 +18,17 @@ import com.geckolib.animation.object.PlayState;
 import com.geckolib.animation.RawAnimation;
 
 public class LittlePersonSoldierArcherEntity extends LittlePersonArcherEntity {
+    //这是小人士兵弓箭手
     protected static final RawAnimation MOVE_ANIM = RawAnimation.begin().thenPlayAndHold("move");
     public LittlePersonSoldierArcherEntity(EntityType<? extends Monster> entityType, Level world) {
         super(entityType, world);
     }
     public static AttributeSupplier.Builder createLittlePersonAttributes() {
         return LittlePersonEntity.createLittlePersonAttributes()
-                .add(Attributes.MAX_HEALTH, 20.0)
+                .add(Attributes.MAX_HEALTH, 300.0)
                 .add(Attributes.FOLLOW_RANGE, 40.0)
                 .add(Attributes.MOVEMENT_SPEED, 0.4)
-                .add(Attributes.ATTACK_DAMAGE, 3.0);
+                .add(Attributes.ATTACK_DAMAGE, 35.0);
     }
     @Override
     public void heal() {

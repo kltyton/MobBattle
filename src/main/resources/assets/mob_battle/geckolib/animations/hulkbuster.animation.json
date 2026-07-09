@@ -1,4 +1,4 @@
-{
+﻿{
 	"format_version": "1.8.0",
 	"animations": {
 		"walk": {
@@ -1474,11 +1474,11 @@
 			},
 			"particle_effects": {
 				"0.8333": {
-					"effect": "mob_battle:particle1",
+					"effect": "mob_battle:hulkbuster_bomb_ring",
 					"locator": "hulkbuster_particle_locator"
 				},
 				"0.9583": {
-					"effect": "mob_battle:particle2",
+					"effect": "mob_battle:combat_flash_burst",
 					"locator": "hulkbuster_particle_locator"
 				}
 			},
@@ -2967,11 +2967,11 @@
 			},
 			"particle_effects": {
 				"0.5833": {
-					"effect": "mob_battle:particle3",
+					"effect": "mob_battle:hulkbuster_bomb_disc",
 					"locator": "hulkbuster_particle_locator"
 				},
 				"0.625": {
-					"effect": "mob_battle:particle7",
+					"effect": "mob_battle:hulkbuster_white_flash",
 					"locator": "hulkbuster_particle_locator"
 				}
 			},

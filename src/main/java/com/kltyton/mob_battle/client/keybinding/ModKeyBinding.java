@@ -163,6 +163,14 @@ public class ModKeyBinding {
             if (client.player == null) {
                 return;
             }
+            if (client.player.getMainHandItem().is(ModItems.PIGLIN_CANNON)
+                    || client.player.getMainHandItem().is(ModItems.CHASING_WIND_SWORD)) {
+                while (keyPiglinCannonItemMode.consumeClick()) {
+                    client.execute(() ->
+                            ClientPlayNetworking.send(new PiglinCannonModePayload())
+                    );
+                }
+            }
             if (((IPlayerEntityAccessor) client.player).isUsingGeckoLib()) {
                 while (keyPlayerRetreatStepRun.consumeClick()) {
                     if (((IPlayerSkillAccessor)client.player).mobBattle$canAttack("retreat_step")) {

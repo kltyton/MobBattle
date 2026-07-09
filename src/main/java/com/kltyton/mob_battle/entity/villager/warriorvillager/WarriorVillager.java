@@ -3,6 +3,7 @@ package com.kltyton.mob_battle.entity.villager.warriorvillager;
 import com.kltyton.mob_battle.entity.ModSkillEntityType;
 import com.kltyton.mob_battle.entity.ai.goal.GeneralProtectionVillagerGoal;
 import com.kltyton.mob_battle.entity.irongolem.ModBaseIronGolemEntity;
+import com.kltyton.mob_battle.utils.EntityUtil;
 import com.kltyton.mob_battle.utils.GeoAnimationUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
@@ -82,6 +83,10 @@ public class WarriorVillager extends IronGolem implements GeoEntity, ModBaseIron
     }
 
     private void alertOthers(LivingEntity attacker) {
+        if (!EntityUtil.isValidCombatTarget(this, attacker)) {
+            return;
+        }
+
         // 获取64格范围内所有铁傀儡
         List<IronGolem> golems = this.level().getEntitiesOfClass(
                 IronGolem.class,
@@ -91,7 +96,7 @@ public class WarriorVillager extends IronGolem implements GeoEntity, ModBaseIron
 
         for (IronGolem golem : golems) {
             // 跳过玩家创建的且攻击者是玩家的铁傀儡
-            if (attacker instanceof AbstractGolem) {
+            if (attacker instanceof AbstractGolem || !EntityUtil.isValidCombatTarget(golem, attacker)) {
                 continue;
             }
 
