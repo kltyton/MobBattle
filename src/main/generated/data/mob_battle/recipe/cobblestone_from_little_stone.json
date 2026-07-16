@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "group": "little_stone",
+  "key": {
+    "a": "mob_battle:little_stone"
+  },
+  "pattern": [
+    "aaa",
+    "aaa",
+    "aaa"
+  ],
+  "result": {
+    "id": "minecraft:cobblestone"
+  }
+}

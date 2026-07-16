@@ -1,0 +1,16 @@
+{
+  "type": "mob_battle:mechanical_crafting_shaped",
+  "category": "equipment",
+  "group": "mechanical_compressed_diamond_armor",
+  "key": {
+    "x": "mob_battle:compressed_diamond"
+  },
+  "pattern": [
+    "xxx",
+    "x x",
+    "x x"
+  ],
+  "result": {
+    "id": "mob_battle:compressed_diamond_leggings"
+  }
+}

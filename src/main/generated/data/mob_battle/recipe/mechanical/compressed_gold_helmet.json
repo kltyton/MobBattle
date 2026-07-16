@@ -1,0 +1,15 @@
+{
+  "type": "mob_battle:mechanical_crafting_shaped",
+  "category": "equipment",
+  "group": "mechanical_compressed_gold_armor",
+  "key": {
+    "x": "mob_battle:compressed_gold_ingot"
+  },
+  "pattern": [
+    "xxx",
+    "x x"
+  ],
+  "result": {
+    "id": "mob_battle:compressed_gold_helmet"
+  }
+}

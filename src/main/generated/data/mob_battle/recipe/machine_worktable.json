@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "group": "machine_worktable",
+  "key": {
+    "a": "mob_battle:wire",
+    "b": "mob_battle:compressed_copper_ingot",
+    "c": "mob_battle:compressed_redstone",
+    "d": "mob_battle:compressed_iron_ingot",
+    "e": "mob_battle:electronic_components",
+    "f": "minecraft:crafting_table"
+  },
+  "pattern": [
+    "aba",
+    "cdc",
+    "efe"
+  ],
+  "result": {
+    "id": "mob_battle:machine_worktable"
+  }
+}

@@ -19,7 +19,7 @@ import com.geckolib.animation.RawAnimation;
 
 public class LittlePersonSoldierArcherEntity extends LittlePersonArcherEntity {
     //这是小人士兵弓箭手
-    protected static final RawAnimation MOVE_ANIM = RawAnimation.begin().thenPlayAndHold("move");
+    protected static final RawAnimation MOVE_ANIM = RawAnimation.begin().thenLoop("move");
     public LittlePersonSoldierArcherEntity(EntityType<? extends Monster> entityType, Level world) {
         super(entityType, world);
     }

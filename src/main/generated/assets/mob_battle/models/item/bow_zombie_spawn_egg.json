@@ -1,0 +1,6 @@
+{
+  "parent": "mob_battle:item/dan",
+  "textures": {
+    "layer0": "minecraft:item/zombie_spawn_egg"
+  }
+}

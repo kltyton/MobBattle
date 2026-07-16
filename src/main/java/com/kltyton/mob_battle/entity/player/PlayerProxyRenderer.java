@@ -1,5 +1,8 @@
 package com.kltyton.mob_battle.entity.player;
 
+import com.kltyton.mob_battle.effect.ModEffects;
+import com.kltyton.mob_battle.items.ModMaterial;
+import com.kltyton.mob_battle.utils.ArmorUtil;
 import com.geckolib.animatable.GeoAnimatable;
 import com.geckolib.renderer.base.GeoRenderState;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -44,11 +47,18 @@ public class PlayerProxyRenderer<T extends Player & GeoAnimatable, R extends Ava
         super.extractRenderState(entity, renderState, partialTick);
         if (entity instanceof AbstractClientPlayer player && renderState instanceof AvatarRenderState avatarRenderState) {
             boolean usingGeckoLib = ((IPlayerEntityAccessor) player).isUsingGeckoLib();
-            ((IPlayerStateAccessor) avatarRenderState).setUseGeckoLib(usingGeckoLib);
+            IPlayerStateAccessor playerState = (IPlayerStateAccessor) avatarRenderState;
+            playerState.setUseGeckoLib(usingGeckoLib);
+            playerState.setCompressedCopperPower(hasCompressedCopperPower(player));
             if (usingGeckoLib) {
                 this.playerRenderer.extractRenderState((T) player, (R) avatarRenderState, partialTick);
             }
         }
+    }
+
+    private static boolean hasCompressedCopperPower(AbstractClientPlayer player) {
+        return player.hasEffect(ModEffects.COMPRESSED_COPPER_CHARGED_ENTRY)
+                && ArmorUtil.hasFullArmor(player, ModMaterial.COMPRESSED_COPPER_ARMOR_INSTANCE);
     }
 
     @Override

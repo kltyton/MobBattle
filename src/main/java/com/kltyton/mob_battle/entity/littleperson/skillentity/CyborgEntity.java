@@ -56,9 +56,10 @@ public class CyborgEntity extends BaseSkillLittlePersonEntity {
     }
     @Override
     public void runSkill_2(BaseSkillLittlePersonEntity entity) {
-        if (entity.getTarget() != null) {
-            entity.getTarget().hurtServer((ServerLevel) entity.level(), entity.damageSources().mobAttack(entity), 65);
-            copyCyborgEntity(entity.getTarget());
+        LivingEntity target = entity.getTarget();
+        if (target != null) {
+            target.hurtServer((ServerLevel) entity.level(), entity.damageSources().mobAttack(entity), 65);
+            copyCyborgEntity(target);
         }
     }
     @Override
@@ -68,13 +69,14 @@ public class CyborgEntity extends BaseSkillLittlePersonEntity {
     }
     @Override
     public void runSkill_3(BaseSkillLittlePersonEntity entity) {
-        if (entity.getTarget() != null) {
-            double targetX = entity.getTarget().getX() - entity.getX();
-            double targetY = entity.getTarget().getEyeY() - entity.getEyeY(); // 更精确的高度计算
-            double targetZ = entity.getTarget().getZ() - entity.getZ();
+        LivingEntity target = entity.getTarget();
+        if (target != null) {
+            double targetX = target.getX() - entity.getX();
+            double targetY = target.getEyeY() - entity.getEyeY(); // 更精确的高度计算
+            double targetZ = target.getZ() - entity.getZ();
             double distance = Math.sqrt(targetX * targetX + targetZ * targetZ);
             // 预测目标移动（提高准确性）
-            targetY += entity.getTarget().getDeltaMovement().y() * distance * 0.25; // 重力补偿
+            targetY += target.getDeltaMovement().y() * distance * 0.25; // 重力补偿
             Level world = entity.level();
             if (world instanceof ServerLevel serverWorld) {
                 // 创建箭实体
@@ -90,18 +92,22 @@ public class CyborgEntity extends BaseSkillLittlePersonEntity {
             }
             // 播放攻击音效
             entity.playSound(SoundEvents.SNOW_GOLEM_SHOOT, 1.0F, 0.4F / (entity.getRandom().nextFloat() * 0.4F + 0.8F));
-            copyCyborgEntity(entity.getTarget());
+            copyCyborgEntity(target);
         }
     }
     @Override
     public void runSkill_4(BaseSkillLittlePersonEntity entity) {
-        if (entity.getTarget() != null) {
-            entity.getTarget().hurtServer((ServerLevel) entity.level(), entity.damageSources().mobAttack(entity), 130);
-            entity.getTarget().hurtServer((ServerLevel) entity.level(), entity.damageSources().indirectMagic(entity, entity), 15);
-            copyCyborgEntity(entity.getTarget());
+        LivingEntity target = entity.getTarget();
+        if (target != null) {
+            target.hurtServer((ServerLevel) entity.level(), entity.damageSources().mobAttack(entity), 130);
+            target.hurtServer((ServerLevel) entity.level(), entity.damageSources().indirectMagic(entity, entity), 15);
+            copyCyborgEntity(target);
         }
     }
     public void copyCyborgEntity(LivingEntity livingEntity) {
+        if (livingEntity == null) {
+            return;
+        }
         if (livingEntity.isDeadOrDying()) {
             if (this.level() instanceof ServerLevel serverWorld) {
                 CyborgEntity cyborg = ModEntities.CYBORG.create(this.level(), EntitySpawnReason.CONVERSION);

@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_little_stone": {
+      "conditions": {
+        "items": [
+          {
+            "items": "mob_battle:little_stone"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "mob_battle:cobblestone_from_little_stone"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_little_stone"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "mob_battle:cobblestone_from_little_stone"
+    ]
+  }
+}

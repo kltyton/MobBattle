@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "group": "nibi",
+  "key": {
+    "a": "mob_battle:nibi_bag",
+    "b": "minecraft:chest"
+  },
+  "pattern": [
+    "aaa",
+    "aba",
+    "aaa"
+  ],
+  "result": {
+    "id": "mob_battle:nibi_box"
+  }
+}

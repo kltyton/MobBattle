@@ -1,0 +1,16 @@
+{
+  "type": "mob_battle:mechanical_crafting_shaped",
+  "category": "building",
+  "group": "mechanical_compressed_blocks",
+  "key": {
+    "g": "mob_battle:compressed_gold_ingot"
+  },
+  "pattern": [
+    "ggg",
+    "ggg",
+    "ggg"
+  ],
+  "result": {
+    "id": "mob_battle:compressed_gold_block"
+  }
+}

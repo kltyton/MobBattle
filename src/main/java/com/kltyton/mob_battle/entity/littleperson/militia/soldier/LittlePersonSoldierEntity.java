@@ -67,7 +67,7 @@ public class LittlePersonSoldierEntity extends Monster implements LittlePersonEn
 
     private final AnimatableInstanceCache geoCache = GeckoLibUtil.createInstanceCache(this);
     protected static final RawAnimation IDLE_ANIM = RawAnimation.begin().thenPlayAndHold("idle");
-    protected static final RawAnimation WALK_ANIM = RawAnimation.begin().thenPlayAndHold("walk");
+    protected static final RawAnimation WALK_ANIM = RawAnimation.begin().thenLoop("walk");
     protected static final RawAnimation ATTACK_ANIM = RawAnimation.begin().thenPlay("attack");
 
     public LittlePersonSoldierEntity(EntityType<? extends Monster> entityType, Level world) {

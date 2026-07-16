@@ -54,7 +54,6 @@ public class HighbirdTeenageEntity extends HighbirdBaseEntity {
         super.tick();
         if (!this.level().isClientSide()) {
             if (this.isTame()) {
-                if (attackOwner) performAttack((ServerLevel) this.level(), this.getOwner());
                 if (growthValue >= MAX_INCUBATION_TIME) levelUp();
             } else {
                 if (growthValue >= MAX_INCUBATION_TIME_WILD) levelUp();
@@ -71,6 +70,7 @@ public class HighbirdTeenageEntity extends HighbirdBaseEntity {
         if (this.level() instanceof ServerLevel serverWorld) {
             HighbirdAdulthoodEntity highbird = ModEntities.HIGHBIRD_ADULTHOOD.create(serverWorld, EntitySpawnReason.CONVERSION);
             if (highbird != null) {
+                copyOwnershipTo(highbird);
                 highbird.setPos(this.position());
                 serverWorld.addFreshEntity(highbird);
                 this.discard();

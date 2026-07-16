@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:smithing_transform",
+  "addition": "mob_battle:compressed_netherite_ingot",
+  "base": "mob_battle:compressed_diamond_boots",
+  "result": {
+    "id": "mob_battle:compressed_netherite_boots"
+  },
+  "template": "minecraft:netherite_upgrade_smithing_template"
+}

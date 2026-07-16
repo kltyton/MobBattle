@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "group": "mob_battle_target",
+  "key": {
+    "a": "#minecraft:wooden_fences",
+    "b": "minecraft:target"
+  },
+  "pattern": [
+    "aba",
+    "a a"
+  ],
+  "result": {
+    "id": "mob_battle:target"
+  }
+}

@@ -2536,7 +2536,6 @@
 			}
 		},
 		"new7": {
-			"loop": "hold_on_last_frame",
 			"animation_length": 1.4167,
 			"bones": {
 				"bone6": {
@@ -3063,10 +3062,6 @@
 			},
 			"particle_effects": {
 				"0.7917": {
-					"effect": "mob_battle:vindicator_flash_wave",
-					"locator": "locator"
-				},
-				"0.7918": {
 					"effect": "mob_battle:wither_sword_slash",
 					"locator": "locator"
 				}
@@ -3076,7 +3071,6 @@
 			}
 		},
 		"new8": {
-			"loop": "hold_on_last_frame",
 			"animation_length": 2.3333,
 			"bones": {
 				"bone6": {

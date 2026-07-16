@@ -33,8 +33,9 @@ public class HeavenCrippledFeetEntity extends BaseSkillLittlePersonEntity {
     }
     @Override
     public void runSkill_2(BaseSkillLittlePersonEntity entity) {
-        if (this.getTarget() != null && this.getTarget().isAlive() && this.level() instanceof ServerLevel serverWorld) {
-            this.getTarget().hurtServer(serverWorld, this.damageSources().mobAttack(entity), 50);
+        LivingEntity target = this.getTarget();
+        if (target != null && target.isAlive() && this.level() instanceof ServerLevel serverWorld) {
+            target.hurtServer(serverWorld, this.damageSources().mobAttack(entity), 50);
         }
     }
     @Override

@@ -1,0 +1,15 @@
+{
+  "type": "mob_battle:mechanical_crafting_shaped",
+  "category": "misc",
+  "group": "mechanical_compressed_block_unpacking",
+  "key": {
+    "b": "mob_battle:compressed_gold_block"
+  },
+  "pattern": [
+    "b"
+  ],
+  "result": {
+    "count": 9,
+    "id": "mob_battle:compressed_gold_ingot"
+  }
+}

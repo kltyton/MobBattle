@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "group": "elemental_sword",
+  "key": {
+    "a": "mob_battle:blue_ice",
+    "b": "minecraft:stick"
+  },
+  "pattern": [
+    " a ",
+    " a ",
+    " b "
+  ],
+  "result": {
+    "id": "mob_battle:ice_sword"
+  }
+}

@@ -86,7 +86,8 @@ public class ModModelGenerator extends FabricModelProvider {
 
         itemModelCollector.generateFlatItem(ModItems.EMERALD_DIAMOND_SWORD, ModelTemplates.FLAT_HANDHELD_ITEM);
         itemModelCollector.generateFlatItem(ModItems.ZIJIN_SWORD, ModelTemplates.FLAT_HANDHELD_ITEM);
-        itemModelCollector.generateFlatItem(ModItems.COMPRESSED_COPPER_SWORD, ModelTemplates.FLAT_HANDHELD_ITEM);
+        generateItemWithTexture(itemModelCollector, ModItems.COMPRESSED_COPPER_SWORD,
+                Identifier.withDefaultNamespace("item/copper_sword"), ModelTemplates.FLAT_HANDHELD_ITEM);
         itemModelCollector.generateFlatItem(ModItems.COMPRESSED_IRON_SWORD, ModelTemplates.FLAT_HANDHELD_ITEM);
         itemModelCollector.generateFlatItem(ModItems.COMPRESSED_GOLD_SWORD, ModelTemplates.FLAT_HANDHELD_ITEM);
         itemModelCollector.generateFlatItem(ModItems.COMPRESSED_DIAMOND_SWORD, ModelTemplates.FLAT_HANDHELD_ITEM);
@@ -125,11 +126,14 @@ public class ModModelGenerator extends FabricModelProvider {
                 generateFlatItemWithTexture(itemModelCollector, item,
                         Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "item/ender_purple_pearl"));
             } else if (item == ModItems.ICE_SWORD) {
-                generateFlatItemWithTexture(itemModelCollector, item, Identifier.withDefaultNamespace("item/iron_sword"));
+                generateItemWithTexture(itemModelCollector, item,
+                        Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "item/ice_sword"), ModelTemplates.FLAT_HANDHELD_ITEM);
             } else if (item == ModItems.FIRE_SWORD) {
-                generateFlatItemWithTexture(itemModelCollector, item, Identifier.withDefaultNamespace("item/golden_sword"));
+                generateItemWithTexture(itemModelCollector, item,
+                        Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "item/fire_sword"), ModelTemplates.FLAT_HANDHELD_ITEM);
             } else if (item == ModItems.CHASING_WIND_SWORD) {
-                generateFlatItemWithTexture(itemModelCollector, item, Identifier.withDefaultNamespace("item/diamond_sword"));
+                generateItemWithTexture(itemModelCollector, item,
+                        Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "item/chasing_wind_sword"), ModelTemplates.FLAT_HANDHELD_ITEM);
             } else {
                 itemModelCollector.generateFlatItem(item, ModelTemplates.FLAT_ITEM);
             }
@@ -179,10 +183,14 @@ public class ModModelGenerator extends FabricModelProvider {
     }
 
     private static void generateFlatItemWithTexture(ItemModelGenerators itemModelCollector, Item item, Identifier textureId) {
+        generateItemWithTexture(itemModelCollector, item, textureId, ModelTemplates.FLAT_ITEM);
+    }
+
+    private static void generateItemWithTexture(ItemModelGenerators itemModelCollector, Item item, Identifier textureId, ModelTemplate template) {
         itemModelCollector.itemModelOutput.accept(
                 item,
                 ItemModelUtils.plainModel(
-                        ModelTemplates.FLAT_ITEM.create(
+                        template.create(
                                 ModelLocationUtils.getModelLocation(item),
                                 TextureMapping.layer0(new Material(textureId)),
                                 itemModelCollector.modelOutput

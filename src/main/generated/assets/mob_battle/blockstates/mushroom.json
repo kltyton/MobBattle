@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "mob_battle:block/mushroom",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "mob_battle:block/mushroom"
+    },
+    "facing=south": {
+      "model": "mob_battle:block/mushroom",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "mob_battle:block/mushroom",
+      "y": 270
+    }
+  }
+}

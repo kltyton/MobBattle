@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "mob_battle:compressed_lapis_lazuli"
+  ],
+  "result": {
+    "count": 9,
+    "id": "minecraft:lapis_block"
+  }
+}

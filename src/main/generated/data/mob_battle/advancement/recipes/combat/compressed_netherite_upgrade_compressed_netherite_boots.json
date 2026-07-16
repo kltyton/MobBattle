@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_compressed_netherite_ingot": {
+      "conditions": {
+        "items": [
+          {
+            "items": "mob_battle:compressed_netherite_ingot"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "mob_battle:compressed_netherite_upgrade_compressed_netherite_boots"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_compressed_netherite_ingot"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "mob_battle:compressed_netherite_upgrade_compressed_netherite_boots"
+    ]
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "mob_battle:compressed_copper_ingot"
+  ],
+  "result": {
+    "count": 9,
+    "id": "minecraft:copper_block"
+  }
+}

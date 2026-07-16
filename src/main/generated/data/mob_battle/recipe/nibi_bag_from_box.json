@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "group": "nibi",
+  "ingredients": [
+    "mob_battle:nibi_box"
+  ],
+  "result": {
+    "count": 8,
+    "id": "mob_battle:nibi_bag"
+  }
+}

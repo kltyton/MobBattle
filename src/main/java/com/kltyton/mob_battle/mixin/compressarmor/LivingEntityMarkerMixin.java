@@ -4,11 +4,15 @@ import com.kltyton.mob_battle.Mob_battle;
 import com.kltyton.mob_battle.accessor.IEffectMarker;
 import com.kltyton.mob_battle.config.MobBattleConfig;
 import com.kltyton.mob_battle.effect.ModEffects;
+import com.kltyton.mob_battle.items.ModMaterial;
+import com.kltyton.mob_battle.utils.ArmorUtil;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -44,6 +48,8 @@ public abstract class LivingEntityMarkerMixin implements IEffectMarker {
         if (entity.level().isClientSide()) {
             return;
         }
+
+        mobBattle$removeInvalidCompressedCopperCharge(entity);
 
         int markerType = mobBattle$getMarkerTypeFromStatusEffect(entity);
         int oldMarkerType = this.mobBattle$getCompressedArmorMarkerType();
@@ -121,5 +127,20 @@ public abstract class LivingEntityMarkerMixin implements IEffectMarker {
     private static int mobBattle$getPigSpiritMarkAmplifierFromStatusEffect(LivingEntity entity) {
         MobEffectInstance pigSpiritMark = entity.getEffect(ModEffects.PIG_SPIRIT_MARK_ENTRY);
         return pigSpiritMark == null ? -1 : pigSpiritMark.getAmplifier();
+    }
+
+    @Unique
+    private static void mobBattle$removeInvalidCompressedCopperCharge(LivingEntity entity) {
+        if (!entity.hasEffect(ModEffects.COMPRESSED_COPPER_CHARGED_ENTRY)
+                || ArmorUtil.hasFullArmor(entity, ModMaterial.COMPRESSED_COPPER_ARMOR_INSTANCE)) {
+            return;
+        }
+
+        entity.removeEffect(ModEffects.COMPRESSED_COPPER_CHARGED_ENTRY);
+        AttributeInstance maxAbsorptionAttribute = entity.getAttribute(Attributes.MAX_ABSORPTION);
+        float maxAbsorption = maxAbsorptionAttribute == null ? 0.0F : (float) maxAbsorptionAttribute.getValue();
+        if (entity.getAbsorptionAmount() > maxAbsorption) {
+            entity.setAbsorptionAmount(maxAbsorption);
+        }
     }
 }

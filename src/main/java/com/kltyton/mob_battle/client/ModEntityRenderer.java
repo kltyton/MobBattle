@@ -57,6 +57,7 @@ import com.kltyton.mob_battle.entity.skull.king.SkullKingEntityRenderer;
 import com.kltyton.mob_battle.entity.skull.mage.SkullMageEntityRenderer;
 import com.kltyton.mob_battle.entity.skull.warrior.SkullWarriorEntityRenderer;
 import com.kltyton.mob_battle.entity.silverfish.silverfish.AngrySilverfishRenderer;
+import com.kltyton.mob_battle.entity.silverfish.silverfish.GreenConcreteProjectileRenderer;
 import com.kltyton.mob_battle.entity.sugarmanscorpion.SugarManScorpionRenderer;
 import com.kltyton.mob_battle.entity.villager.archervillager.ArcherVillagerRenderer;
 import com.kltyton.mob_battle.entity.villager.militia.MilitiaArcherVillagerRenderer;
@@ -130,6 +131,7 @@ public class ModEntityRenderer {
         EntityRenderers.register(ModEntities.ICE_ARROW, IceArrowEntityRenderer::new);
         EntityRenderers.register(ModEntities.GOLDEN_TRAIL_PROJECTILE, GoldenTrailProjectileRenderer::new);
         EntityRenderers.register(ModEntities.GOLDEN_BULLET, GoldenBulletEntityRenderer::new);
+        EntityRenderers.register(ModEntities.GREEN_CONCRETE_PROJECTILE, GreenConcreteProjectileRenderer::new);
         EntityRenderers.register(ModEntities.LITTLE_STONE_PROJECTILE, ThrownItemRenderer::new);
         EntityRenderers.register(ModEntities.ELEMENTAL_SWORD_PROJECTILE, ThrownItemRenderer::new);
         EntityRenderers.register(ModEntities.SNOWMAN_ICE_BLOCK, SnowmanIceBlockRenderer::new);

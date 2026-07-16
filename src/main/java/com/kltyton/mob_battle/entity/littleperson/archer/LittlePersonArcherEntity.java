@@ -12,13 +12,14 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
-import net.minecraft.world.entity.ai.goal.RangedAttackGoal;
+import net.minecraft.world.entity.ai.goal.RangedBowAttackGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.animal.golem.AbstractGolem;
@@ -26,6 +27,8 @@ import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.monster.RangedAttackMob;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
@@ -42,10 +45,12 @@ public class LittlePersonArcherEntity extends Monster implements LittlePersonEnt
 
     public LittlePersonArcherEntity(EntityType<? extends Monster> entityType, Level world) {
         super(entityType, world);
+        this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.BOW));
+        this.setDropChance(EquipmentSlot.MAINHAND, 0.0F);
     }
     @Override
     protected void registerGoals() {
-        this.goalSelector.addGoal(2, new RangedAttackGoal(this, 1.0D, 20, 6.0F));
+        this.goalSelector.addGoal(2, new RangedBowAttackGoal<>(this, 1.0D, 40, 15.0F));
         this.goalSelector.addGoal(7, new WaterAvoidingRandomStrollGoal(this, 1.0)); // 添加远距离游荡目标
         this.goalSelector.addGoal(8, new LookAtPlayerGoal(this, Player.class, 8.0F)); // 添加看向玩家的目标
         this.goalSelector.addGoal(8, new RandomLookAroundGoal(this)); // 添加环顾四周的目标
@@ -154,21 +159,27 @@ public class LittlePersonArcherEntity extends Monster implements LittlePersonEnt
 
         if (world instanceof ServerLevel serverWorld) {
             this.triggerAnim("attack_controller", "attack");
-            // 创建箭实体
-            LittleArrowEntity arrowEntity = new LittleArrowEntity(world, this, new ItemStack(Items.ARROW), this.getMainHandItem().getItem() == Items.BOW ? this.getMainHandItem() : null);
+            ItemStack bowStack = this.getItemInHand(ProjectileUtil.getWeaponHoldingHand(this, Items.BOW));
+            ItemStack arrowStack = this.getProjectile(bowStack);
+            LittleArrowEntity arrowEntity = new LittleArrowEntity(world, this, arrowStack, bowStack);
             // 设置箭的伤害
             arrowEntity.setBaseDamage(this.getAttributeValue(Attributes.ATTACK_DAMAGE));
             arrowEntity.setOwner(this);
-
-            // 减小散布参数以提高精度（从0.1F改为0.01F）
-            arrowEntity.shoot(targetX, targetY, targetZ, 1.6F, 0.01F);
             arrowEntity.setTrueDamage(true, false);
-            // 发射箭
-            serverWorld.addFreshEntity(arrowEntity);
+            Projectile.spawnProjectileUsingShoot(
+                    arrowEntity,
+                    serverWorld,
+                    arrowStack,
+                    targetX,
+                    targetY + distance * 0.20000000298023224D,
+                    targetZ,
+                    1.6F,
+                    14 - serverWorld.getDifficulty().getId() * 4
+            );
         }
 
         // 播放攻击音效
-        this.playSound(SoundEvents.SNOW_GOLEM_SHOOT, 1.0F, 0.4F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
+        this.playSound(SoundEvents.SKELETON_SHOOT, 1.0F, 1.0F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
     }
 
 }

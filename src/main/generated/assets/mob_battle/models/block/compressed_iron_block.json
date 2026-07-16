@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "mob_battle:block/compressed/compressed_iron_block"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "type": "mob_battle:mechanical_crafting_shaped",
+  "category": "building",
+  "group": "mechanical_compressed_blocks",
+  "key": {
+    "d": "mob_battle:compressed_diamond"
+  },
+  "pattern": [
+    "ddd",
+    "ddd",
+    "ddd"
+  ],
+  "result": {
+    "id": "mob_battle:compressed_diamond_block"
+  }
+}

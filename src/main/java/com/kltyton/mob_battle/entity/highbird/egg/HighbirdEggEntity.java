@@ -113,13 +113,8 @@ public class HighbirdEggEntity extends HighbirdAndEggEntity implements HighbirdS
         if (this.level() instanceof ServerLevel serverWorld) {
             HighbirdBabyEntity highbird = ModEntities.HIGHBIRD_BABY.create(serverWorld, EntitySpawnReason.CONVERSION);
             if (highbird != null) {
-                if (this.isTame()) {
-                    highbird.setOwnerReference(this.getOwnerReference());
-                    highbird.setOwner(this.getOwner());
-                    if (this.getOwner() instanceof Player player) highbird.tame(player);
-                    highbird.setTame(true, true);
-                    highbird.setPos(this.position());
-                }
+                copyOwnershipTo(highbird);
+                highbird.setPos(this.position());
                 serverWorld.addFreshEntity(highbird);
                 this.discard();
             }

@@ -330,6 +330,7 @@ public class LongWhipSilverfishEntity extends Silverfish implements GeneralEntit
         return Silverfish.createAttributes()
                 .add(Attributes.MAX_HEALTH, 3500.0)
                 .add(Attributes.ATTACK_DAMAGE, 150.0)
+                .add(Attributes.KNOCKBACK_RESISTANCE, 0.8)
                 .add(ModEntityAttributes.DAMAGE_REDUCTION, 0.72);
     }
     public void setGrabbedEntityId(int id) {

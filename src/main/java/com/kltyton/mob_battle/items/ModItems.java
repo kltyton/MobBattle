@@ -104,6 +104,7 @@ public class ModItems {
     public static WoodenWhistleItem WOODEN_WHISTLE;
     public static Item LITTLE_PERSON_TOOL;
     public static LittlePersonScepterItem LITTLE_PERSON_SCEPTER;
+    public static Item ILLAGER_CURRENCY;
     public static Item NIBI;
     public static Item NIBI_BAG;
     public static Item NIBI_BOX;
@@ -349,11 +350,6 @@ public class ModItems {
                         registryBaseItemSettings("obsidian_lobster")
                                 .stacksTo(1)
                                 .durability(1500)
-                                .food(new FoodProperties.Builder()
-                                        .nutrition(10)
-                                        .saturationModifier(0.6F)
-                                        .alwaysEdible()
-                                        .build())
                                 .component(DataComponents.BLOCKS_ATTACKS,
                                         new BlocksAttacks(
                                                 0.25F,
@@ -979,6 +975,7 @@ public class ModItems {
                 true,
                 false
         );
+        ILLAGER_CURRENCY = registerItem("illager_currency");
         NIBI = registerItem("nibi");
         NIBI_BAG = registerItem("nibi_bag");
         NIBI_BOX = registerItem("nibi_box", registryBaseItemSettings("nibi_box").craftRemainder(Items.CHEST));

@@ -1,20 +1,31 @@
 package com.kltyton.mob_battle.utils;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonParser;
 import com.geckolib.animation.AnimationController;
 import com.geckolib.animation.RawAnimation;
 import com.geckolib.animation.object.PlayState;
 import com.geckolib.animation.state.AnimationTest;
 import com.kltyton.mob_battle.Mob_battle;
 import com.kltyton.mob_battle.config.MobBattleConfig;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 public final class GeoAnimationUtil {
     private static final double FINISHED_TRIGGERED_TIMELINE = -2.0D;
@@ -24,6 +35,7 @@ public final class GeoAnimationUtil {
             Collections.synchronizedMap(new WeakHashMap<>());
     private static final Map<AnimationController<?>, Long> NEXT_SAMPLE_LOG_MS =
             Collections.synchronizedMap(new WeakHashMap<>());
+    private static final Map<String, Set<String>> ANIMATION_NAME_CACHE = new ConcurrentHashMap<>();
     private static final long FINISHED_ANIMATION_BRIDGE_MS = 250L;
     private static final long ANIMATION_SAMPLE_LOG_MS = 500L;
 
@@ -76,6 +88,45 @@ public final class GeoAnimationUtil {
             logAnimationState("pending", animationTest, controller);
         }
         return controller.isPlayingTriggeredAnimation() || pendingTriggeredAnimation ? PlayState.CONTINUE : PlayState.STOP;
+    }
+
+    public static boolean hasEntityAnimation(Entity entity, String animationName) {
+        String entityPath = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType()).getPath();
+        String resourcePath = "assets/" + Mob_battle.MOD_ID + "/geckolib/animations/" + entityPath + ".animation.json";
+        return ANIMATION_NAME_CACHE.computeIfAbsent(resourcePath, GeoAnimationUtil::readAnimationNames)
+                .contains(animationName);
+    }
+
+    public static boolean hasDeathAnimation(Entity entity) {
+        return getDeathAnimationName(entity).isPresent();
+    }
+
+    public static Optional<String> getDeathAnimationName(Entity entity) {
+        if (hasEntityAnimation(entity, "die")) {
+            return Optional.of("die");
+        }
+        if (hasEntityAnimation(entity, "death")) {
+            return Optional.of("death");
+        }
+        return Optional.empty();
+    }
+
+    public static boolean isMissingDeathAnimation(Entity entity, String animationName) {
+        return ("die".equals(animationName) || "death".equals(animationName))
+                && !hasEntityAnimation(entity, animationName);
+    }
+
+    private static Set<String> readAnimationNames(String resourcePath) {
+        try (InputStream input = GeoAnimationUtil.class.getClassLoader().getResourceAsStream(resourcePath)) {
+            if (input == null) {
+                return Set.of();
+            }
+            JsonObject root = JsonParser.parseReader(new InputStreamReader(input, StandardCharsets.UTF_8)).getAsJsonObject();
+            JsonObject animations = root.getAsJsonObject("animations");
+            return animations == null ? Set.of() : Set.copyOf(animations.keySet());
+        } catch (IOException | JsonParseException | IllegalStateException ignored) {
+            return Set.of();
+        }
     }
 
     private static boolean hasFinishedTriggeredAnimation(AnimationController<?> controller) {

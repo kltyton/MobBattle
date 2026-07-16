@@ -193,6 +193,7 @@ public class ModEnglishLangProvider extends FabricLanguageProvider {
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.LITTLE_PERSON_SCEPTER), "Little Person Scepter");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.LITTLE_STONE), "Little Stone");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.WOODEN_WHISTLE), "Wooden Whistle");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.ILLAGER_CURRENCY), "Illager Currency");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.NIBI), "Nibi");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.NIBI_BAG), "Nibi Bag");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.NIBI_BOX), "Nibi Box");
@@ -201,6 +202,9 @@ public class ModEnglishLangProvider extends FabricLanguageProvider {
         translationBuilder.add("item.mob_battle.wooden_whistle.message.follow", "Nearby wolves are following");
         translationBuilder.add("item.mob_battle.wooden_whistle.message.attack", "Nearby wolves are attacking nearby enemies");
         translationBuilder.add("item.mob_battle.wooden_whistle.message.calm", "Nearby wolves stopped attacking");
+        translationBuilder.add("item.mob_battle.wooden_whistle.tooltip.1", "Right-click: make nearby tamed wolves follow");
+        translationBuilder.add("item.mob_battle.wooden_whistle.tooltip.2", "Sneak right-click: make nearby tamed wolves stop attacking");
+        translationBuilder.add("item.mob_battle.wooden_whistle.tooltip.3", "Left-click: sit; sneak left-click: attack nearby enemies");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.ICE_SWORD), "Ice Sword");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.FIRE_SWORD), "Fire Sword");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.CHASING_WIND_SWORD), "Chasing Wind Sword");

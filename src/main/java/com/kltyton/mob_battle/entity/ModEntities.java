@@ -147,6 +147,7 @@ public class ModEntities {
     public static final ResourceKey<EntityType<?>> ice_fangs = ResourceKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID,"ice_fangs"));
     public static final ResourceKey<EntityType<?>> ninja_clone = ResourceKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID,"ninja_clone"));
     public static final ResourceKey<EntityType<?>> elemental_sword_projectile = ResourceKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID,"elemental_sword_projectile"));
+    public static final ResourceKey<EntityType<?>> green_concrete_projectile = ResourceKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID,"green_concrete_projectile"));
 
     public static final ResourceKey<EntityType<?>> bullet = ResourceKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID,"bullet"));
     public static final ResourceKey<EntityType<?>> wither_skull_bullet = ResourceKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID,"wither_skull_bullet"));
@@ -593,7 +594,7 @@ public class ModEntities {
                             (mob) -> mob.defaultAttributes(ChestGolemEntity::createAttributes)
                                     .spawnPlacement(SpawnPlacementTypes.ON_GROUND,
                                             Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (type, world, reason, pos, random) -> false))
-                    .sized(1.4F, 2.7F)
+                    .sized(1.5F, 1.5F)
                     .eyeHeight(2.3F)
                     .clientTrackingRange(10),
             true,
@@ -1399,6 +1400,16 @@ public class ModEntities {
                     .eyeHeight(0.13F)
                     .clientTrackingRange(4)
                     .updateInterval(20),
+            false,
+            false
+    );
+    public static final EntityType<GreenConcreteProjectileEntity> GREEN_CONCRETE_PROJECTILE = createEntityType(
+            "green_concrete_projectile",
+            EntityType.Builder.<GreenConcreteProjectileEntity>of(GreenConcreteProjectileEntity::new, MobCategory.MISC)
+                    .noLootTable()
+                    .sized(0.35F, 0.35F)
+                    .clientTrackingRange(64)
+                    .updateInterval(1),
             false,
             false
     );

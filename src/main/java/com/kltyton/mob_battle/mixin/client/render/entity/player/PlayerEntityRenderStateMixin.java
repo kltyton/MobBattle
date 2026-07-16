@@ -12,10 +12,23 @@ import org.spongepowered.asm.mixin.Unique;
 public abstract class PlayerEntityRenderStateMixin {
     @Unique
     private boolean isUsingGeckoLib = false;
+
+    @Unique
+    private boolean compressedCopperPower = false;
+
     public void accessor$setUseGeckoLib(boolean use) {
         this.isUsingGeckoLib = use;
     }
+
     public boolean accessor$isUsingGeckoLib() {
         return this.isUsingGeckoLib;
+    }
+
+    public void accessor$setCompressedCopperPower(boolean charged) {
+        this.compressedCopperPower = charged;
+    }
+
+    public boolean accessor$hasCompressedCopperPower() {
+        return this.compressedCopperPower;
     }
 }

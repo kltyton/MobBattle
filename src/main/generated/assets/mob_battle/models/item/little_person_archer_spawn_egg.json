@@ -1,0 +1,6 @@
+{
+  "parent": "mob_battle:item/dan",
+  "textures": {
+    "layer0": "mob_battle:item/dan/little_person_archer_spawn_egg"
+  }
+}

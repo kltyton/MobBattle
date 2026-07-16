@@ -1,9 +1,11 @@
 package com.kltyton.mob_battle.mixin.net.minecraft.entity.player;
 
+import com.kltyton.mob_battle.accessor.ITotemDamageTracker;
 import com.kltyton.mob_battle.items.ModFabricItem;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyArg;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
@@ -18,6 +20,19 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(Player.class)
 public abstract class PlayerEntityMixin {
+
+    @ModifyArg(
+            method = "actuallyHurt",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;setHealth(F)V"),
+            index = 0
+    )
+    private float mobBattle$captureAppliedDamage(float healthAfterDamage) {
+        Player player = (Player) (Object) this;
+        ((ITotemDamageTracker) player).mobBattle$setLastAppliedDamage(
+                Math.max(0.0F, player.getHealth() - healthAfterDamage)
+        );
+        return healthAfterDamage;
+    }
 
     /**
      * 成功暴击后执行。

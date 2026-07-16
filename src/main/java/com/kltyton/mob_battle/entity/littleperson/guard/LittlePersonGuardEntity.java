@@ -28,6 +28,7 @@ import com.geckolib.animation.object.PlayState;
 import com.geckolib.animation.RawAnimation;
 
 public class LittlePersonGuardEntity extends LittlePersonMilitiaEntity {
+    private static final int MAX_GUARDIANSHIP_LEVEL = 4;
     private static final double FOLLOW_OWNER_DISTANCE_SQ = 8.0D * 8.0D;
     private static final double FOLLOW_OWNER_SPEED = 1.15D;
 
@@ -122,7 +123,7 @@ public class LittlePersonGuardEntity extends LittlePersonMilitiaEntity {
             owner.addEffect(new MobEffectInstance(
                     ModEffects.LITTLE_PERSON_GUARDIANSHIP_ENTRY,
                     5 * 20,
-                    Math.min(nearbyGuards, 20) - 1,
+                    Math.min(nearbyGuards, MAX_GUARDIANSHIP_LEVEL) - 1,
                     false,
                     true,
                     true

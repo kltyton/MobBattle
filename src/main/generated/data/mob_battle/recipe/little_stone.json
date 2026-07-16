@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "group": "little_stone",
+  "ingredients": [
+    "minecraft:cobblestone"
+  ],
+  "result": {
+    "count": 9,
+    "id": "mob_battle:little_stone"
+  }
+}

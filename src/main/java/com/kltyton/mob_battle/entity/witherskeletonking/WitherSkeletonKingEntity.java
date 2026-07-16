@@ -14,6 +14,7 @@ import com.kltyton.mob_battle.network.packet.SkillPayload;
 import com.kltyton.mob_battle.utils.CombatEffectUtil;
 import com.kltyton.mob_battle.utils.DeathAnimationUtil;
 import com.kltyton.mob_battle.utils.GeoAnimationUtil;
+import com.kltyton.mob_battle.utils.GeckoParticleKeyframeUtil;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.core.Holder;
 import net.minecraft.world.entity.Entity;
@@ -255,6 +256,7 @@ public class WitherSkeletonKingEntity extends WitherSkeleton implements GeoEntit
     }
     private boolean tryAttackBase(ServerLevel world, Entity target) {
         if (!ModSkillEntityType.canSkill(this)) return false;
+        if (target == null || target.isRemoved() || !target.isAlive()) return false;
         float f = 100.0F;
         ItemStack itemStack = this.getWeaponItem();
         DamageSource damageSource = this.damageSources().mobAttack(this);
@@ -439,6 +441,7 @@ public class WitherSkeletonKingEntity extends WitherSkeleton implements GeoEntit
                 .triggerableAnim("enhance_wither_call", ENHANCE_WITHER_CALL)
                 .triggerableAnim("death", DEATH)
                 .setSoundKeyframeHandler(s -> {})
+                .setParticleKeyframeHandler(s -> GeckoParticleKeyframeUtil.handle(this, s))
                 .setCustomInstructionKeyframeHandler(s -> {
                     Player player = ClientUtil.getClientPlayer();
                     String instruction = s.keyframeData().getInstructions().replaceAll("[\\s;]+", "");

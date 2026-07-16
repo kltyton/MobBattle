@@ -537,7 +537,8 @@ public class PiglinGeneralEntity extends AbstractPiglin implements GeneralEntity
 
     @Override
     public int getMaxSkillCooldown_1() {
-        return 20 * 20;
+        int cooldown = 20 * 20;
+        return this.getHealth() > 0.0F && this.getHealth() <= this.getMaxHealth() * 0.5F ? cooldown / 2 : cooldown;
     }
 
     @Override

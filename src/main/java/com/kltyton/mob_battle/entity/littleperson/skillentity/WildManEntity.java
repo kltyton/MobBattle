@@ -79,21 +79,24 @@ public class WildManEntity extends BaseSkillLittlePersonEntity implements Ranged
     }
     @Override
     public void runSkill_2(BaseSkillLittlePersonEntity entity) {
-        if (entity.getTarget() != null) {
-            shootAt(this, entity.getTarget(), 40);
+        LivingEntity target = entity.getTarget();
+        if (target != null) {
+            shootAt(this, target, 40);
         }
     }
 
     @Override
     public void runSkill_3(BaseSkillLittlePersonEntity entity) {
-        if (entity.getTarget() != null) {
-            entity.getTarget().hurtServer((ServerLevel) entity.level(), entity.damageSources().mobAttack(entity), 35);
+        LivingEntity target = entity.getTarget();
+        if (target != null) {
+            target.hurtServer((ServerLevel) entity.level(), entity.damageSources().mobAttack(entity), 35);
         }
     }
     @Override
     public void runSkill_5(BaseSkillLittlePersonEntity entity) {
-        if (entity.getTarget() != null) {
-            entity.getTarget().hurtServer((ServerLevel) entity.level(), entity.damageSources().mobAttack(entity), 35);
+        LivingEntity target = entity.getTarget();
+        if (target != null) {
+            target.hurtServer((ServerLevel) entity.level(), entity.damageSources().mobAttack(entity), 35);
         }
     }
 

@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_ice_sword": {
+      "conditions": {
+        "items": [
+          {
+            "items": "mob_battle:ice_sword"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "mob_battle:chasing_wind_sword"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_ice_sword"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "mob_battle:chasing_wind_sword"
+    ]
+  }
+}

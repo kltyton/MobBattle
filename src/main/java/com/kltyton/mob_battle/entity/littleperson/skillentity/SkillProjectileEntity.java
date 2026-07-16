@@ -22,6 +22,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
@@ -167,7 +168,7 @@ public class SkillProjectileEntity extends Projectile implements GeoEntity {
             return;
         }
         Entity owner = this.getOwner();
-        world.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, net.minecraft.world.level.block.Blocks.ICE.defaultBlockState()),
+        world.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, Blocks.ICE.defaultBlockState()),
                 this.getX(), this.getY(), this.getZ(), 35, 0.8D, 0.6D, 0.8D, 0.12D);
         world.playSound(null, this.blockPosition(), SoundEvents.GENERIC_EXPLODE.value(), this.getSoundSource(), 1.2F, 0.9F);
         AABB box = this.getBoundingBox().inflate(this.explosionRadius);

@@ -12,6 +12,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 
 public class PoisonousSlashEntity extends BaseSkillLittlePersonEntity {
     public PoisonousSlashEntity(EntityType<? extends Monster> entityType, Level world) {
@@ -68,13 +69,14 @@ public class PoisonousSlashEntity extends BaseSkillLittlePersonEntity {
     }
     @Override
     public void runSkill_4(BaseSkillLittlePersonEntity entity) {
-        if (entity.getTarget() != null) {
-            entity.getTarget().setDeltaMovement(
-                    (entity.getTarget().getX() - entity.getX()) * 0.5,  // 水平速度分量
+        LivingEntity target = entity.getTarget();
+        if (target != null) {
+            target.setDeltaMovement(
+                    (target.getX() - entity.getX()) * 0.5,  // 水平速度分量
                     1.2,                                    // 垂直速度分量（向上）
-                    (entity.getTarget().getZ() - entity.getZ()) * 0.5   // 水平速度分量
+                    (target.getZ() - entity.getZ()) * 0.5   // 水平速度分量
             );
-            entity.getTarget().hurtServer((ServerLevel) entity.level(), entity.damageSources().mobAttack(entity), 80);
+            target.hurtServer((ServerLevel) entity.level(), entity.damageSources().mobAttack(entity), 80);
         }
     }
     @Override
@@ -87,6 +89,16 @@ public class PoisonousSlashEntity extends BaseSkillLittlePersonEntity {
     public void runSkill_6(BaseSkillLittlePersonEntity entity) {
         LivingEntity target = entity.getTarget();
         if (target != null && EntityUtil.isValidSummonCombatTarget(entity, entity.getSummonOwner(), target)) {
+            Vec3 direction = target.position().subtract(entity.position());
+            Vec3 horizontal = new Vec3(direction.x, 0.0D, direction.z);
+            if (horizontal.lengthSqr() > 1.0E-4D) {
+                horizontal = horizontal.normalize();
+                entity.setNoAi(false);
+                entity.getLookControl().setLookAt(target, 30.0F, 30.0F);
+                entity.getNavigation().moveTo(target, 1.35D);
+                entity.setDeltaMovement(horizontal.x * 1.4D, 0.08D, horizontal.z * 1.4D);
+                entity.hurtMarked = true;
+            }
             target.hurtServer((ServerLevel) entity.level(), entity.damageSources().mobAttack(entity), 120);
         }
     }

@@ -1,12 +1,16 @@
 package com.kltyton.mob_battle.entity.highbird.adulthood;
 
+import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.entity.highbird.HighbirdBaseEntity;
+import com.kltyton.mob_battle.entity.highbird.egg.HighbirdEggEntity;
 import com.kltyton.mob_battle.entity.highbird.goals.*;
 import com.kltyton.mob_battle.entity.highbird.predicate.NonHighbirdPredicate;
 import com.kltyton.mob_battle.network.packet.HighbirdAttackPayload;
 import com.kltyton.mob_battle.utils.GeoAnimationUtil;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -24,11 +28,16 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import com.geckolib.animatable.manager.AnimatableManager;
 import com.geckolib.animation.AnimationController;
 import com.geckolib.animation.object.PlayState;
 import com.geckolib.animation.RawAnimation;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.Comparator;
 
 public class HighbirdAdulthoodEntity extends HighbirdBaseEntity {
     // 在类顶部添加新字段
@@ -39,6 +48,13 @@ public class HighbirdAdulthoodEntity extends HighbirdBaseEntity {
     public static final int HAY_BLOCK_CHECK_INTERVAL = 200; // 检查干草块的间隔（刻）
     protected static final RawAnimation ANGER_ANIM = RawAnimation.begin().thenPlay("yujing");
     public boolean angerTriggered = false;
+    private static final long EGG_LAY_INTERVAL_TICKS = 7L * 24000L;
+    private static final int MAX_EGGS_LAID = 3;
+    private static final String EGGS_LAID_KEY = "EggsLaid";
+    private static final String NEXT_EGG_TIME_KEY = "NextEggGameTime";
+    private int eggsLaid;
+    private long nextEggGameTime = -1L;
+    private int eggLaySearchCooldown;
 
     public HighbirdAdulthoodEntity(EntityType<? extends HighbirdAdulthoodEntity> entityType, Level world) {
         super(entityType, world);
@@ -58,7 +74,7 @@ public class HighbirdAdulthoodEntity extends HighbirdBaseEntity {
     @Override
     public void tick() {
         super.tick();
-        if (!this.level().isClientSide()) {
+        if (this.level() instanceof ServerLevel serverLevel) {
             if (getTarget() == null || !getTarget().isAlive()) {
                 angerTriggered = false;
             }
@@ -97,6 +113,8 @@ public class HighbirdAdulthoodEntity extends HighbirdBaseEntity {
                 this.setDeltaMovement(0, this.getDeltaMovement().y, 0);
                 this.hurtMarked = true;
             }
+
+            tickEggLaying(serverLevel);
         }
     }
     @Override
@@ -175,6 +193,74 @@ public class HighbirdAdulthoodEntity extends HighbirdBaseEntity {
     public boolean isNestValid() {
         return hasNest() &&
                 level().getBlockState(nestPos).getBlock() == Blocks.HAY_BLOCK;
+    }
+
+    private void tickEggLaying(ServerLevel level) {
+        if (!this.isTame() || this.getOwnerReference() == null || this.eggsLaid >= MAX_EGGS_LAID) {
+            return;
+        }
+
+        long gameTime = level.getGameTime();
+        if (this.nextEggGameTime < 0L) {
+            this.nextEggGameTime = gameTime + EGG_LAY_INTERVAL_TICKS;
+            return;
+        }
+        if (gameTime < this.nextEggGameTime) {
+            return;
+        }
+        if (this.eggLaySearchCooldown > 0) {
+            this.eggLaySearchCooldown--;
+            return;
+        }
+        this.eggLaySearchCooldown = HAY_BLOCK_CHECK_INTERVAL;
+
+        BlockPos hayBlock = findNearestAvailableHayBlock();
+        if (hayBlock == null) {
+            return;
+        }
+
+        HighbirdEggEntity egg = ModEntities.HIGHBIRD_EGG.create(level, EntitySpawnReason.BREEDING);
+        if (egg == null) {
+            return;
+        }
+
+        BlockPos spawnPos = hayBlock.above();
+        egg.snapTo(spawnPos.getX() + 0.5D, spawnPos.getY(), spawnPos.getZ() + 0.5D,
+                this.getRandom().nextFloat() * 360.0F, 0.0F);
+        level.addFreshEntity(egg);
+        this.setNestPos(hayBlock);
+        this.eggsLaid++;
+        this.nextEggGameTime = gameTime + EGG_LAY_INTERVAL_TICKS;
+    }
+
+    private @Nullable BlockPos findNearestAvailableHayBlock() {
+        BlockPos origin = this.blockPosition();
+        int range = (int) Math.ceil(this.getAttributeValue(Attributes.FOLLOW_RANGE));
+        return BlockPos.withinManhattanStream(origin, range, 3, range)
+                .filter(pos -> this.level().getBlockState(pos).is(Blocks.HAY_BLOCK))
+                .filter(pos -> this.level().getBlockState(pos.above())
+                        .getCollisionShape(this.level(), pos.above()).isEmpty())
+                .min(Comparator.comparingDouble(pos -> this.distanceToSqr(
+                        pos.getX() + 0.5D,
+                        pos.getY() + 1.0D,
+                        pos.getZ() + 0.5D
+                )))
+                .map(BlockPos::immutable)
+                .orElse(null);
+    }
+
+    @Override
+    protected void addAdditionalSaveData(ValueOutput output) {
+        super.addAdditionalSaveData(output);
+        output.putInt(EGGS_LAID_KEY, this.eggsLaid);
+        output.putLong(NEXT_EGG_TIME_KEY, this.nextEggGameTime);
+    }
+
+    @Override
+    protected void readAdditionalSaveData(ValueInput input) {
+        super.readAdditionalSaveData(input);
+        this.eggsLaid = Math.max(0, Math.min(MAX_EGGS_LAID, input.getIntOr(EGGS_LAID_KEY, 0)));
+        this.nextEggGameTime = input.getLongOr(NEXT_EGG_TIME_KEY, -1L);
     }
 
     public static AttributeSupplier.Builder createHighbirdAttributes() {

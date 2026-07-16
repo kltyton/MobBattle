@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "group": "wooden_whistle",
+  "key": {
+    "a": "#minecraft:planks",
+    "b": "mob_battle:little_stone"
+  },
+  "pattern": [
+    "aaa",
+    " ba",
+    " aa"
+  ],
+  "result": {
+    "id": "mob_battle:wooden_whistle"
+  }
+}

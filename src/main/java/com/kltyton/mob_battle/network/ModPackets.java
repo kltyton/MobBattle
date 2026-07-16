@@ -90,5 +90,13 @@ public class ModPackets {
                 PlayerAnimationPayload.ID,
                 PlayerAnimationPayload.CODEC
         );
+        PayloadTypeRegistry.clientboundPlay().register(
+                PalMorePlayerAnimationPayload.ID,
+                PalMorePlayerAnimationPayload.CODEC
+        );
+        PayloadTypeRegistry.clientboundPlay().register(
+                ParticleStormEmitterPayload.ID,
+                ParticleStormEmitterPayload.CODEC
+        );
     }
 }

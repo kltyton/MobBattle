@@ -7,15 +7,15 @@ import com.kltyton.mob_battle.entity.bullet.GoldenBulletEntity;
 import com.kltyton.mob_battle.entity.customfireball.CustomFireballEntity;
 import com.kltyton.mob_battle.items.ModItems;
 import com.kltyton.mob_battle.items.ModMaterial;
+import com.kltyton.mob_battle.network.packet.ParticleStormEmitterPayload;
 import com.kltyton.mob_battle.utils.ArmorUtil;
 import com.kltyton.mob_battle.utils.EntityUtil;
 import com.kltyton.mob_battle.utils.TaskSchedulerUtil;
 import com.mojang.math.Transformation;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
-import org.mesdag.particlestorm.data.molang.MolangExp;
-import org.mesdag.particlestorm.network.EmitterCreationPacketS2C;
 
 import java.util.HashMap;
 import java.util.List;
@@ -338,9 +338,11 @@ public class CompressArmorSkillManager {
     }
 
     private static void spawnParticleStormEmitter(ServerLevel world, Vec3 center, Identifier particleId) {
-        Vector3f pos = center.toVector3f();
+        ParticleStormEmitterPayload payload = new ParticleStormEmitterPayload(particleId, center, -1);
         for (ServerPlayer viewer : world.players()) {
-            EmitterCreationPacketS2C.sendToClient(viewer, particleId, new Vector3f(pos), MolangExp.EMPTY, null);
+            if (ServerPlayNetworking.canSend(viewer, ParticleStormEmitterPayload.ID)) {
+                ServerPlayNetworking.send(viewer, payload);
+            }
         }
     }
 

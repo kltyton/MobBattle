@@ -1,0 +1,60 @@
+{
+	"format_version": "1.21.11",
+	"credit": "Made with Blockbench",
+	"texture_size": [32, 32],
+	"textures": {
+		"particle": "mob_battle:item/poison_knife",
+		"0": "mob_battle:item/poison_knife"
+	},
+	"elements": [
+		{
+			"from": [8, 0, 6],
+			"to": [10, 6, 9],
+			"rotation": {"angle": 0, "axis": "y", "origin": [8, 0, 8]},
+			"faces": {
+				"north": {"uv": [2, 12, 4, 15], "texture": "#0"},
+				"east": {"uv": [4, 12, 6, 15], "texture": "#0"},
+				"south": {"uv": [12, 4, 14, 7], "texture": "#0"},
+				"west": {"uv": [6, 12, 8, 15], "texture": "#0"},
+				"up": {"uv": [14, 9, 12, 7], "texture": "#0"},
+				"down": {"uv": [10, 12, 8, 14], "texture": "#0"}
+			}
+		},
+		{
+			"from": [8, 6, 2],
+			"to": [10, 30, 9],
+			"rotation": {"angle": 0, "axis": "y", "origin": [8, 6, 8]},
+			"faces": {
+				"north": {"uv": [8, 0, 10, 12], "texture": "#0"},
+				"east": {"uv": [0, 0, 4, 12], "texture": "#0"},
+				"south": {"uv": [10, 0, 12, 12], "texture": "#0"},
+				"west": {"uv": [4, 0, 8, 12], "texture": "#0"},
+				"up": {"uv": [2, 16, 0, 12], "texture": "#0"},
+				"down": {"uv": [14, 0, 12, 4], "texture": "#0"}
+			}
+		}
+	],
+	"display": {
+		"thirdperson_righthand": {
+			"translation": [-1, 3, 2.75]
+		},
+		"thirdperson_lefthand": {
+			"rotation": [1, 0, 0],
+			"translation": [1.25, 3, 2.5]
+		},
+		"firstperson_righthand": {
+			"translation": [0, -1, 0]
+		},
+		"firstperson_lefthand": {
+			"translation": [0, 0.25, 0]
+		},
+		"gui": {
+			"rotation": [-79.54, 49.77, 81.92],
+			"translation": [4.75, -3.5, 0]
+		},
+		"fixed": {
+			"rotation": [88.88, 48.49, -89.73],
+			"translation": [-4, -5, 0]
+		}
+	}
+}

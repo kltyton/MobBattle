@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "group": "wire",
+  "key": {
+    "a": "minecraft:redstone",
+    "b": "minecraft:copper_ingot",
+    "c": "minecraft:resin_clump"
+  },
+  "pattern": [
+    " c ",
+    "aba",
+    " c "
+  ],
+  "result": {
+    "id": "mob_battle:wire"
+  }
+}

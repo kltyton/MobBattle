@@ -264,10 +264,14 @@ public class BaseSkillLittlePersonEntity extends LittlePersonMilitiaEntity imple
         if (!this.level().isClientSide()) {
             this.setAggressive(this.getTarget() != null);
             if (this.isDeadOrDying()) {
+                String deathAnimation = GeoAnimationUtil.getDeathAnimationName(this).orElse(null);
+                if (deathAnimation == null) {
+                    return;
+                }
                 if (this.deathFrozenPose == null) {
                     this.deathFrozenPose = DeathAnimationUtil.capture(this);
                     this.setHasSkill(true);
-                    this.triggerAnim("skill_controller", "die");
+                    this.triggerAnim("skill_controller", deathAnimation);
                 }
                 DeathAnimationUtil.freeze(this, this.deathFrozenPose);
                 this.setNoAi(true);
@@ -312,10 +316,12 @@ public class BaseSkillLittlePersonEntity extends LittlePersonMilitiaEntity imple
     protected static final RawAnimation ATTACK_ANIM_10 = RawAnimation.begin().thenPlay("attack10");
     protected static final RawAnimation ATTACK_ANIM_11 = RawAnimation.begin().thenPlay("attack11");
     protected static final RawAnimation DIE_ANIM = RawAnimation.begin().thenPlay("die");
+    protected static final RawAnimation DEATH_ANIM = RawAnimation.begin().thenPlay("death");
     public AnimationController<?> skillController = new AnimationController<>( "skill_controller", animTest -> {
         if (GeoAnimationUtil.consumeFinishedTriggeredAnimation(animTest)) {
             ClientPlayNetworking.send(new SkillPayload("stop", this.getId()));
-            if (GeoAnimationUtil.isLastFinishedAnimation(animTest, DIE_ANIM) && this instanceof IronManEntity) {
+            if ((GeoAnimationUtil.isLastFinishedAnimation(animTest, DIE_ANIM)
+                    || GeoAnimationUtil.isLastFinishedAnimation(animTest, DEATH_ANIM)) && this instanceof IronManEntity) {
                 this.deathTime = 400;
                 ClientPlayNetworking.send(new SkillPayload(
                         "die", this.getId()
@@ -336,6 +342,7 @@ public class BaseSkillLittlePersonEntity extends LittlePersonMilitiaEntity imple
             .triggerableAnim("attack10", ATTACK_ANIM_10)
             .triggerableAnim("attack11", ATTACK_ANIM_11)
             .triggerableAnim("die", DIE_ANIM)
+            .triggerableAnim("death", DEATH_ANIM)
             .setCustomInstructionKeyframeHandler(s -> dispatchSkillKeyframe(s.keyframeData().getInstructions()));
     public AnimationController<?> getSkillController() {
         return this.skillController;
@@ -463,6 +470,10 @@ public class BaseSkillLittlePersonEntity extends LittlePersonMilitiaEntity imple
     }
     protected void tickDeath() {
         if (this instanceof IronManEntity) {
+            if (!GeoAnimationUtil.hasDeathAnimation(this)) {
+                super.tickDeath();
+                return;
+            }
             this.deathTime++;
             if (this.deathTime >= 400 && !this.level().isClientSide() && !this.isRemoved()) {
                 die(this);

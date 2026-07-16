@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "group": "electronic_components",
+  "key": {
+    "a": "minecraft:gold_block",
+    "b": "minecraft:crafting_table",
+    "c": "minecraft:redstone_block",
+    "d": "mob_battle:wire"
+  },
+  "pattern": [
+    "dad",
+    "cbc",
+    "dad"
+  ],
+  "result": {
+    "id": "mob_battle:electronic_components"
+  }
+}

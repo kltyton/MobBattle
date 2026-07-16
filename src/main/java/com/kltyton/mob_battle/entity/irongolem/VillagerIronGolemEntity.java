@@ -159,6 +159,7 @@ public class VillagerIronGolemEntity extends IronGolem implements GeoEntity, Mod
         return bl;
     }
     public boolean tryAttackBase(ServerLevel world, Entity target, float i) {
+        if (target == null || target.isRemoved() || !target.isAlive()) return false;
         world.broadcastEntityEvent(this, EntityEvent.START_ATTACKING);
         float f = (float)this.getAttributeValue(Attributes.ATTACK_DAMAGE);
         float g = (int)f > 0 ? f / 2.0F + this.random.nextInt((int)f) : f;

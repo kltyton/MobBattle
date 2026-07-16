@@ -46,6 +46,14 @@ public abstract class HighbirdAndEggEntity extends TamableAnimal implements GeoE
     public void setGrowthValue(int value) {
         this.growthValue = value;
     }
+
+    protected void copyOwnershipTo(HighbirdAndEggEntity nextStage) {
+        if (this.isTame() && this.getOwnerReference() != null) {
+            nextStage.setOwnerReference(this.getOwnerReference());
+            nextStage.setTame(true, true);
+        }
+    }
+
     public boolean isDay() {
         long time = this.level().getDefaultClockTime() % 24000; // 获取当天游戏刻（0~23999）
         return time >= 1000 && time < 13000;

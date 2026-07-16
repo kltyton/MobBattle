@@ -1,5 +1,6 @@
 package com.kltyton.mob_battle.mixin.armor;
 
+import com.kltyton.mob_battle.client.render.CompressedCopperArmorPowerRenderer;
 import com.kltyton.mob_battle.items.armor.ModBaseArmorItem;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -31,5 +32,6 @@ public abstract class EcredcultistGlowArmorRenderer {
     )
     private void render(EquipmentClientInfo.LayerType layerType, ResourceKey<EquipmentAsset> assetKey, Model model, Object state, ItemStack stack, PoseStack matrices, SubmitNodeCollector renderTasks, int light, @Nullable Identifier texture, int outlineColor, int order, CallbackInfo ci, @Local(ordinal = 1) Identifier identifier) {
         if (stack.getItem() instanceof ModBaseArmorItem modBaseArmorItem) modBaseArmorItem.renderCustomArmor(model, state, stack, matrices, renderTasks, light, identifier, outlineColor);
+        CompressedCopperArmorPowerRenderer.render(model, state, stack, matrices, renderTasks, light, outlineColor, order);
     }
 }

@@ -1,0 +1,16 @@
+{
+  "type": "mob_battle:mechanical_crafting_shaped",
+  "category": "building",
+  "group": "mechanical_compressed_blocks",
+  "key": {
+    "i": "mob_battle:compressed_iron_ingot"
+  },
+  "pattern": [
+    "iii",
+    "iii",
+    "iii"
+  ],
+  "result": {
+    "id": "mob_battle:compressed_iron_block"
+  }
+}

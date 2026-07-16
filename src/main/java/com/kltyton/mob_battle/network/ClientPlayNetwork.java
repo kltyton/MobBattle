@@ -1,8 +1,11 @@
 package com.kltyton.mob_battle.network;
 
+import com.kltyton.mob_battle.Mob_battle;
 import com.kltyton.mob_battle.accessor.ILead;
 import com.kltyton.mob_battle.animation.ModPlayerAnimationClientHandler;
 import com.kltyton.mob_battle.bossbar.CustomBossBarClientState;
+import com.kltyton.mob_battle.client.PalMoreClientBridge;
+import com.kltyton.mob_battle.client.ParticleStormClientBridge;
 import com.kltyton.mob_battle.config.whitelist.ClientPermissionState;
 import com.kltyton.mob_battle.items.itemgroup.ClientTagManager;
 import com.kltyton.mob_battle.network.packet.*;
@@ -106,6 +109,30 @@ public class ClientPlayNetwork {
                     } else {
                         ModPlayerAnimationClientHandler.play(avatar, payload.animationId());
                     }
+                }
+            });
+        });
+        ClientPlayNetworking.registerGlobalReceiver(PalMorePlayerAnimationPayload.ID, (payload, context) -> {
+            Minecraft client = context.client();
+            client.execute(() -> {
+                if (client.level == null) {
+                    return;
+                }
+                Entity entity = client.level.getEntity(payload.avatarEntityId());
+                try {
+                    PalMoreClientBridge.playKnifeAnimation(entity, payload.animationId());
+                } catch (LinkageError error) {
+                    Mob_battle.LOGGER.warn("PALMR 客户端桥接未加载，无法播放动画：{}", payload.animationId(), error);
+                }
+            });
+        });
+        ClientPlayNetworking.registerGlobalReceiver(ParticleStormEmitterPayload.ID, (payload, context) -> {
+            Minecraft client = context.client();
+            client.execute(() -> {
+                try {
+                    ParticleStormClientBridge.spawnEmitter(payload.particleId(), payload.pos(), payload.entityId());
+                } catch (LinkageError error) {
+                    Mob_battle.LOGGER.warn("ParticleStorm 客户端桥接未加载，无法生成粒子：{}", payload.particleId(), error);
                 }
             });
         });

@@ -63,7 +63,8 @@ public abstract class RequestedLittlePersonEntity extends BaseSkillLittlePersonE
     private final AnimationController<?> requestedSkillController = new AnimationController<>("skill_controller", 0, animTest -> {
         if (GeoAnimationUtil.consumeFinishedTriggeredAnimation(animTest)) {
             ClientPlayNetworking.send(new SkillPayload("stop", this.getId()));
-            if (GeoAnimationUtil.isLastFinishedAnimation(animTest, DIE_ANIM)) {
+            if (GeoAnimationUtil.isLastFinishedAnimation(animTest, DIE_ANIM)
+                    || GeoAnimationUtil.isLastFinishedAnimation(animTest, DEATH_ANIM)) {
                 ClientPlayNetworking.send(new SkillPayload("die", this.getId()));
             }
         }
@@ -94,6 +95,7 @@ public abstract class RequestedLittlePersonEntity extends BaseSkillLittlePersonE
             .triggerableAnim("block", BLOCK_ANIM)
             .triggerableAnim("block_1", BLOCK_1_ANIM)
             .triggerableAnim("die", DIE_ANIM)
+            .triggerableAnim("death", DEATH_ANIM)
             .setCustomInstructionKeyframeHandler(s -> dispatchKeyframe(s.keyframeData().getInstructions()));
 
     protected RequestedLittlePersonEntity(EntityType<? extends Monster> entityType, Level world, int skillCount) {

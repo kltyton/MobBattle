@@ -1,0 +1,6 @@
+{
+  "parent": "mob_battle:item/dan",
+  "textures": {
+    "layer0": "minecraft:item/piglin_brute_spawn_egg"
+  }
+}

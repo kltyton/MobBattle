@@ -13,6 +13,7 @@ import com.kltyton.mob_battle.utils.DeathAnimationUtil;
 import com.kltyton.mob_battle.utils.EnchantmentUtil;
 import com.kltyton.mob_battle.utils.EntityUtil;
 import com.kltyton.mob_battle.utils.GeoAnimationUtil;
+import com.kltyton.mob_battle.utils.GeckoParticleKeyframeUtil;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -185,6 +186,7 @@ public class VindicatorGeneralEntity extends Vindicator implements GeoEntity, Mo
     }
     public boolean tryAttackBaseDamage(ServerLevel world, Entity target, float damage) {
         if (!ModSkillEntityType.canSkill(this)) return false;
+        if (target == null || target.isRemoved() || !target.isAlive()) return false;
         float f = damage;
         ItemStack itemStack = this.getWeaponItem();
 
@@ -434,6 +436,7 @@ public class VindicatorGeneralEntity extends Vindicator implements GeoEntity, Mo
                 .triggerableAnim("recovery_axe", RECOVERY_AXE_ANIM)
                 .triggerableAnim("death", DEATH_ANIM)
                 .setSoundKeyframeHandler(s -> {})
+                .setParticleKeyframeHandler(s -> GeckoParticleKeyframeUtil.handle(this, s))
                 .setCustomInstructionKeyframeHandler(s -> {
                     String instruction = s.keyframeData().getInstructions().replaceAll("[\\s;]+", "");
                     if ("runAttack".equals(instruction)) {

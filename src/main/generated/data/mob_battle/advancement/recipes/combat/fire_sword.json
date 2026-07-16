@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_fire_red": {
+      "conditions": {
+        "items": [
+          {
+            "items": "mob_battle:fire_red"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "mob_battle:fire_sword"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_fire_red"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "mob_battle:fire_sword"
+    ]
+  }
+}

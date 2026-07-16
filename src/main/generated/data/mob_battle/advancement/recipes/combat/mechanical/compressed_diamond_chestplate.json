@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_compressed_diamond": {
+      "conditions": {
+        "items": [
+          {
+            "items": "mob_battle:compressed_diamond"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "mob_battle:mechanical/compressed_diamond_chestplate"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_compressed_diamond"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "mob_battle:mechanical/compressed_diamond_chestplate"
+    ]
+  }
+}

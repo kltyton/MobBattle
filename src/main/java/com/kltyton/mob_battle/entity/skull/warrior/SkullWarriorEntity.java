@@ -128,6 +128,7 @@ public class SkullWarriorEntity extends WitherSkeleton implements GeoEntity, IMo
         this.setSkillCooldown(0);
     }
     public boolean tryAttackBase(ServerLevel world, Entity target) {
+        if (target == null || target.isRemoved() || !target.isAlive()) return false;
         float f = 80.0F;
         ItemStack itemStack = this.getWeaponItem();
         DamageSource damageSource = this.damageSources().mobAttack(this);

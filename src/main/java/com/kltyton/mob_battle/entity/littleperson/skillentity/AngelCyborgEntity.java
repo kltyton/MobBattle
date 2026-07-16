@@ -3,6 +3,7 @@ package com.kltyton.mob_battle.entity.littleperson.skillentity;
 import com.kltyton.mob_battle.effect.ModEffects;
 import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.entity.littleperson.archer.littlearrow.LittleArrowEntity;
+import com.kltyton.mob_battle.utils.EntityUtil;
 import com.kltyton.mob_battle.utils.TaskSchedulerUtil;
 import com.geckolib.animation.RawAnimation;
 import net.minecraft.network.chat.Component;
@@ -148,20 +149,21 @@ public class AngelCyborgEntity extends RequestedLittlePersonEntity {
      * 并造成 50 魔法伤害。
      */
     private void runAttack3() {
-        LivingEntity target = this.getTarget();
-        if (target == null || !isValidSummonTarget(target)) {
-            return;
+        for (LivingEntity target : EntityUtil.getEntitiesInCone(this, LivingEntity.class, 3.0, 180, EntityUtil.TeamFilter.EXCLUDE_TEAM)) {
+            if (target == null || !isValidSummonTarget(target)) {
+                return;
+            }
+
+            target.addEffect(new MobEffectInstance(MobEffects.POISON, 10 * 20, 2), this);
+            target.addEffect(new MobEffectInstance(MobEffects.NAUSEA, 10 * 20, 2), this);
+            target.addEffect(new MobEffectInstance(MobEffects.WITHER, 10 * 20, 2), this);
+            target.addEffect(new MobEffectInstance(MobEffects.HUNGER, 10 * 20, 2), this);
+            target.addEffect(new MobEffectInstance(MobEffects.DARKNESS, 10 * 20, 2), this);
+            target.addEffect(new MobEffectInstance(ModEffects.ARMOR_PIERCING_ENTRY, 10 * 20, 2), this);
+            target.addEffect(new MobEffectInstance(ModEffects.VOID_ARMOR_PIERCING_ENTRY, 10 * 20, 2), this);
+
+            damageMagic(target, 50.0F);
         }
-
-        target.addEffect(new MobEffectInstance(MobEffects.POISON, 10 * 20, 2), this);
-        target.addEffect(new MobEffectInstance(MobEffects.NAUSEA, 10 * 20, 2), this);
-        target.addEffect(new MobEffectInstance(MobEffects.WITHER, 10 * 20, 2), this);
-        target.addEffect(new MobEffectInstance(MobEffects.HUNGER, 10 * 20, 2), this);
-        target.addEffect(new MobEffectInstance(MobEffects.DARKNESS, 10 * 20, 2), this);
-        target.addEffect(new MobEffectInstance(ModEffects.ARMOR_PIERCING_ENTRY, 10 * 20, 2), this);
-        target.addEffect(new MobEffectInstance(ModEffects.VOID_ARMOR_PIERCING_ENTRY, 10 * 20, 2), this);
-
-        damageMagic(target, 50.0F);
     }
 
     /**

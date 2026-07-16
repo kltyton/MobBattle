@@ -188,6 +188,7 @@ public class SkullKingEntity extends WitherSkeleton implements GeoEntity, IModSk
     }
     public boolean tryAttackBase(ServerLevel world, Entity target) {
         if (!ModSkillEntityType.canSkill(this)) return false;
+        if (target == null || target.isRemoved() || !target.isAlive()) return false;
         float f = 90.0F;
         ItemStack itemStack = this.getWeaponItem();
         DamageSource damageSource = this.damageSources().mobAttack(this);

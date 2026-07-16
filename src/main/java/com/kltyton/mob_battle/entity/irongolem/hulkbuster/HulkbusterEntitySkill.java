@@ -16,7 +16,7 @@ import net.minecraft.world.phys.Vec3;
 
 public class HulkbusterEntitySkill {
     public static void runAttackSkill(HulkbusterEntity hulkbusterEntity) {
-        double range = 5.0D;
+        double range = 7.0D;
         Level world = hulkbusterEntity.level();
         if (hulkbusterEntity.tryAttackBase((ServerLevel)world, hulkbusterEntity.getTarget())) {
             AABB damageBox = hulkbusterEntity.getBoundingBox().inflate(range, range, range);
@@ -85,6 +85,15 @@ public class HulkbusterEntitySkill {
 
         world.addFreshEntity(left_meteorite);
         world.addFreshEntity(right_meteorite);
+        LivingEntity target = hulkbusterEntity.getTarget();
+        if (target != null && world instanceof ServerLevel serverWorld) {
+            AABB damageBox = target.getBoundingBox().inflate(2.0D);
+            for (LivingEntity nearby : serverWorld.getEntitiesOfClass(LivingEntity.class, damageBox,
+                    living -> EntityUtil.isValidCombatTarget(hulkbusterEntity, living)
+                            && living.distanceToSqr(target) <= 4.0D)) {
+                hulkbusterEntity.tryAttackBaseDamage(serverWorld, nearby, 400.0F);
+            }
+        }
     }
     public static void runClapHandsSkill(HulkbusterEntity hulkbusterEntity) {
         if (!(hulkbusterEntity.level() instanceof ServerLevel world)) {

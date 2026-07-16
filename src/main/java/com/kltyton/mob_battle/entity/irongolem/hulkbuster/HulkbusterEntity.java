@@ -196,7 +196,7 @@ public class HulkbusterEntity extends IronGolem implements GeoEntity, ModBaseIro
     }
     @Override
     public boolean isWithinMeleeAttackRange(LivingEntity entity) {
-        AABB attackBox = this.getAttackBoundingBox(1.0).inflate(1.05);
+        AABB attackBox = this.getAttackBoundingBox(1.0).inflate(3.05);
         return attackBox.intersects(entity.getBoundingBox());
     }
     public boolean tryAttackBase(ServerLevel world, LivingEntity target) {
@@ -205,6 +205,7 @@ public class HulkbusterEntity extends IronGolem implements GeoEntity, ModBaseIro
     }
     public boolean tryAttackBaseDamage(ServerLevel world, Entity target, float damage) {
         if (!ModSkillEntityType.canSkill(this)) return false;
+        if (target == null || target.isRemoved() || !target.isAlive()) return false;
         float f = damage;
         ItemStack itemStack = this.getWeaponItem();
         DamageSource damageSource = this.damageSources().mobAttack(this);
@@ -289,7 +290,7 @@ public class HulkbusterEntity extends IronGolem implements GeoEntity, ModBaseIro
         setHasSkill(true);
         this.setNoAi(true);
         setSkillCooldown(SKILL_COOLDOWN_MAX);
-        setPunchCooldown(PUNCH_COOLDOWN_MAX);
+        setPunchCooldown(getScaledPunchCooldown());
         this.triggerAnim("skill_controller", "punch");
     }
     public boolean canSuperAttack() {
@@ -352,6 +353,9 @@ public class HulkbusterEntity extends IronGolem implements GeoEntity, ModBaseIro
     }
     public void setPunchCooldown(int cooldown) {
         getEntityData().set(PUNCH_COOLDOWN, cooldown);
+    }
+    private int getScaledPunchCooldown() {
+        return this.getHealth() <= this.getMaxHealth() * 0.5F ? PUNCH_COOLDOWN_MAX / 2 : PUNCH_COOLDOWN_MAX;
     }
     public static AttributeSupplier.Builder addAttributes() {
         return Monster.createMonsterAttributes()

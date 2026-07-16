@@ -3,6 +3,7 @@ package com.kltyton.mob_battle.entity.silverfish.silverfish;
 import com.kltyton.mob_battle.entity.ModEntityAttributes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.monster.Silverfish;
@@ -22,7 +23,10 @@ public class LiruiSilverfishEntity extends CoalSilverfishEntity {
     }
     @Override
     public void runSkill(CoalSilverfishEntity entity) {
-        if (entity.getTarget() != null && !this.level().isClientSide()) entity.getTarget().hurtServer((ServerLevel) this.level(), this.damageSources().mobAttack(this), 230);
+        LivingEntity target = entity.getTarget();
+        if (target != null && !this.level().isClientSide()) {
+            target.hurtServer((ServerLevel) this.level(), this.damageSources().mobAttack(this), 230);
+        }
     }
     public static AttributeSupplier.Builder createAttributes() {
         return Silverfish.createAttributes()

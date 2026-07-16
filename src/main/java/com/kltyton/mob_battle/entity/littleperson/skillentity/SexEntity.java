@@ -154,6 +154,10 @@ public class SexEntity extends BaseSkillLittlePersonEntity {
 
     @Override
     protected void tickDeath() {
+        if (!GeoAnimationUtil.hasEntityAnimation(this, "die")) {
+            super.tickDeath();
+            return;
+        }
         this.deathTime++;
         if (this.deathTime == 1 && !this.level().isClientSide()) {
             this.setNoAi(true);

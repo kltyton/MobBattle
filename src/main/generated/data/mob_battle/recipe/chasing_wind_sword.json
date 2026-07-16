@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "group": "elemental_sword",
+  "ingredients": [
+    "mob_battle:ice_sword",
+    "mob_battle:fire_sword"
+  ],
+  "result": {
+    "id": "mob_battle:chasing_wind_sword"
+  }
+}

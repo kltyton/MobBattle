@@ -6,7 +6,10 @@ import com.kltyton.mob_battle.entity.sensor.ModSensorTypes;
 import com.kltyton.mob_battle.items.ModItems;
 import java.util.ArrayList;
 import java.util.List;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
@@ -26,6 +29,10 @@ import net.minecraft.world.entity.npc.villager.VillagerProfession;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.EnchantmentInstance;
+import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.item.trading.ItemCost;
 import net.minecraft.world.item.trading.MerchantOffer;
 import net.minecraft.world.item.trading.MerchantOffers;
@@ -49,36 +56,38 @@ public class LittlePersonCivilianEntity extends Villager implements LittlePerson
     private static final long DAY_TICKS = 24000L;
     private static final int TRADE_COUNT = 2;
     private static final List<LittlePersonTradeFactory> TRADE_POOL = List.of(
-            () -> offer(Blocks.HAY_BLOCK, 6, ModItems.NIBI_BAG, 1, 3),
-            () -> offer(ModItems.NIBI, 2, ModItems.LITTLE_PERSON_TOOL, 1, 3),
-            () -> offer(ModItems.NIBI, 1, Items.GLOWSTONE, 1, 9),
-            () -> offer(Items.BREAD, 20, ModItems.NIBI, 2, 3),
-            () -> offer(Items.BAKED_POTATO, 20, ModItems.NIBI, 2, 3),
-            () -> offer(Items.FERMENTED_SPIDER_EYE, 1, ModItems.NIBI, 3, 3),
-            () -> offer(Blocks.HAY_BLOCK, 1, ModItems.NIBI, 1, 3),
-            () -> offer(ModItems.NIBI, 1, Items.SPRUCE_LOG, 1, 3),
-            () -> offer(ModItems.NIBI, 3, Blocks.PODZOL, 3, 3),
-            () -> offer(ModItems.NIBI, 2, Items.GLOWSTONE, 2, 3),
-            () -> offer(ModItems.NIBI, 1, Blocks.MOSS_BLOCK, 1, 3),
-            () -> offer(ModItems.NIBI, 5, Blocks.MANGROVE_PROPAGULE, 1, 3),
-            () -> offer(ModItems.NIBI, 1, Blocks.WILDFLOWERS, 1, 3),
-            () -> offer(ModItems.NIBI, 1, Blocks.BLUE_WOOL, 1, 3),
-            () -> offer(ModItems.NIBI, 1, Blocks.ORANGE_TULIP, 1, 3),
-            () -> offer(ModItems.NIBI, 1, Blocks.POPPY, 1, 3),
-            () -> offer(ModItems.NIBI, 1, Blocks.CORNFLOWER, 1, 3),
-            () -> offer(Blocks.STONE, 64, ModItems.NIBI, 1, 6),
-            () -> offer(Items.EMERALD, 2, ModItems.NIBI, 1, 6),
-            () -> offer(ModItems.NIBI_BAG, 3, Items.EMERALD, 1, 3),
-            () -> offer(ModItems.NIBI, 10, ModItems.SMALL_BACKPACK, 1, 2),
-            () -> offer(Items.LEATHER, 5, ModItems.NIBI, 1, 6),
-            () -> offer(Blocks.PUMPKIN, 1, ModItems.NIBI, 1, 6),
-            () -> offer(Items.PUMPKIN_PIE, 1, ModItems.NIBI, 2, 6),
-            () -> offer(Blocks.CARVED_PUMPKIN, 1, ModItems.NIBI, 2, 6),
-            () -> offer(Blocks.JACK_O_LANTERN, 1, ModItems.NIBI, 2, 6),
-            () -> offer(Items.DIAMOND_PICKAXE, 1, ModItems.NIBI, 6, 2),
-            () -> offer(ModItems.LITTLE_PERSON_TOOL, 1, ModItems.NIBI, 1, 3),
-            () -> offer(Items.WATER_BUCKET, 1, Items.GOLD_INGOT, 1, 3),
-            () -> offer(ModItems.NIBI_BAG, 2, Items.DIAMOND, 1, 2)
+            offerTrade(Blocks.HAY_BLOCK, 6, ModItems.NIBI_BAG, 1, 3),
+            offerTrade(ModItems.NIBI, 2, ModItems.LITTLE_PERSON_TOOL, 1, 3),
+            offerTrade(ModItems.NIBI, 1, Items.GLOWSTONE, 1, 9),
+            offerTrade(Items.BREAD, 20, ModItems.NIBI, 2, 3),
+            offerTrade(Items.BAKED_POTATO, 20, ModItems.NIBI, 2, 3),
+            offerTrade(Items.FERMENTED_SPIDER_EYE, 1, ModItems.NIBI, 3, 3),
+            offerTrade(Blocks.HAY_BLOCK, 1, ModItems.NIBI, 1, 3),
+            offerTrade(ModItems.NIBI, 1, Items.SPRUCE_LOG, 1, 3),
+            offerTrade(ModItems.NIBI, 3, Blocks.PODZOL, 3, 3),
+            offerTrade(ModItems.NIBI, 2, Items.GLOWSTONE, 2, 3),
+            offerTrade(ModItems.NIBI, 1, Blocks.MOSS_BLOCK, 1, 3),
+            offerTrade(ModItems.NIBI, 5, Blocks.MANGROVE_PROPAGULE, 1, 3),
+            offerTrade(ModItems.NIBI, 1, Blocks.WILDFLOWERS, 1, 3),
+            offerTrade(ModItems.NIBI, 1, Blocks.BLUE_WOOL, 1, 3),
+            offerTrade(ModItems.NIBI, 1, Blocks.ORANGE_TULIP, 1, 3),
+            offerTrade(ModItems.NIBI, 1, Blocks.POPPY, 1, 3),
+            offerTrade(ModItems.NIBI, 1, Blocks.CORNFLOWER, 1, 3),
+            offerTrade(Blocks.STONE, 64, ModItems.NIBI, 1, 6),
+            offerTrade(Items.EMERALD, 2, ModItems.NIBI, 1, 6),
+            offerTrade(ModItems.NIBI_BAG, 3, Items.EMERALD, 1, 3),
+            offerTrade(ModItems.NIBI, 10, ModItems.SMALL_BACKPACK, 1, 2),
+            offerTrade(Items.LEATHER, 5, ModItems.NIBI, 1, 6),
+            offerTrade(Blocks.PUMPKIN, 1, ModItems.NIBI, 1, 6),
+            offerTrade(Items.PUMPKIN_PIE, 1, ModItems.NIBI, 2, 6),
+            offerTrade(Blocks.CARVED_PUMPKIN, 1, ModItems.NIBI, 2, 6),
+            offerTrade(Blocks.JACK_O_LANTERN, 1, ModItems.NIBI, 2, 6),
+            offerTrade(Items.DIAMOND_PICKAXE, 1, ModItems.NIBI, 6, 2),
+            offerTrade(ModItems.LITTLE_PERSON_TOOL, 1, ModItems.NIBI, 1, 3),
+            offerTrade(Items.WATER_BUCKET, 1, Items.GOLD_INGOT, 1, 3),
+            offerTrade(ModItems.NIBI_BAG, 2, Items.DIAMOND, 1, 2),
+            enchantedBookTrade(Enchantments.MENDING, 1),
+            enchantedBookTrade(Enchantments.UNBREAKING, 3)
     );
     private static final ImmutableList<SensorType<? extends Sensor<? super Villager>>> SENSORS = ImmutableList.of(
             SensorType.NEAREST_LIVING_ENTITIES,
@@ -179,7 +188,7 @@ public class LittlePersonCivilianEntity extends Villager implements LittlePerson
 
         List<LittlePersonTradeFactory> pool = new ArrayList<>(TRADE_POOL);
         for (int i = 0; i < TRADE_COUNT && !pool.isEmpty(); i++) {
-            offers.add(pool.remove(this.random.nextInt(pool.size())).create());
+            offers.add(pool.remove(this.random.nextInt(pool.size())).create(level));
         }
         this.ensureRestockScheduled();
     }
@@ -247,8 +256,21 @@ public class LittlePersonCivilianEntity extends Villager implements LittlePerson
         return new MerchantOffer(cost, new ItemStack(result, resultCount), maxUses, 0, 0.0F);
     }
 
+    private static LittlePersonTradeFactory offerTrade(ItemLike cost, int costCount, ItemLike result, int resultCount, int maxUses) {
+        return level -> offer(cost, costCount, result, resultCount, maxUses);
+    }
+
+    private static LittlePersonTradeFactory enchantedBookTrade(ResourceKey<Enchantment> enchantment, int enchantmentLevel) {
+        return level -> new MerchantOffer(new ItemCost(ModItems.NIBI_BOX, 10), enchantedBook(level, enchantment, enchantmentLevel), 3, 0, 0.0F);
+    }
+
+    private static ItemStack enchantedBook(ServerLevel level, ResourceKey<Enchantment> enchantment, int enchantmentLevel) {
+        HolderLookup.RegistryLookup<Enchantment> enchantmentRegistry = level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT);
+        return EnchantmentHelper.createBook(new EnchantmentInstance(enchantmentRegistry.getOrThrow(enchantment), enchantmentLevel));
+    }
+
     private interface LittlePersonTradeFactory {
-        MerchantOffer create();
+        MerchantOffer create(ServerLevel level);
     }
 
     @Override

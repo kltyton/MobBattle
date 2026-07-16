@@ -100,8 +100,9 @@ public class IronManEntity extends BaseSkillLittlePersonEntity {
     }
     @Override
     public void runSkill_2(BaseSkillLittlePersonEntity entity) {
-        if (entity.getTarget() != null) {
-            entity.getTarget().hurtServer((ServerLevel) entity.level(), entity.damageSources().mobAttack(entity), 75);
+        LivingEntity target = entity.getTarget();
+        if (target != null) {
+            target.hurtServer((ServerLevel) entity.level(), entity.damageSources().mobAttack(entity), 75);
         }
     }
     @Override

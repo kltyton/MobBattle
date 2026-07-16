@@ -2,6 +2,7 @@ package com.kltyton.mob_battle.mixin.undead;
 
 import com.kltyton.mob_battle.Mob_battle;
 import com.kltyton.mob_battle.accessor.ILead;
+import com.kltyton.mob_battle.accessor.ITotemDamageTracker;
 import com.kltyton.mob_battle.effect.ModEffects;
 import com.kltyton.mob_battle.entity.littleperson.skillentity.base.BaseSkillLittlePersonEntity;
 import com.kltyton.mob_battle.entity.littleperson.skillentity.HumanHammerEntity;
@@ -13,7 +14,9 @@ import com.kltyton.mob_battle.items.ModMaterial;
 import com.kltyton.mob_battle.utils.ArmorUtil;
 import com.kltyton.mob_battle.utils.EntityUtil;
 import com.llamalad7.mixinextras.sugar.Local;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.stats.Stats;
 import net.minecraft.world.entity.Attackable;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -44,6 +47,7 @@ import net.minecraft.world.entity.projectile.throwableitemprojectile.Snowball;
 import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrownEgg;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.DeathProtection;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
@@ -56,13 +60,25 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 @Mixin(LivingEntity.class)
 @Implements(@Interface(iface = ILead.class, prefix = "custom$"))
-public abstract class LivingEntityMixin extends Entity implements Attackable, WaypointTransmitter {
+public abstract class LivingEntityMixin extends Entity implements Attackable, WaypointTransmitter, ITotemDamageTracker {
     @Unique
     private static final EntityDataAccessor<Boolean> UNIVERSAL_LEAD = SynchedEntityData.defineId(LivingEntity.class, EntityDataSerializers.BOOLEAN);
     @Unique
     private static final EntityDataAccessor<Boolean> INVISIBLE_LEAD = SynchedEntityData.defineId(LivingEntity.class, EntityDataSerializers.BOOLEAN);
     @Unique
     private boolean mobBattle$handlingExcitementBonus;
+    @Unique
+    private float mobBattle$lastAppliedDamage;
+
+    @Override
+    public float mobBattle$getLastAppliedDamage() {
+        return this.mobBattle$lastAppliedDamage;
+    }
+
+    @Override
+    public void mobBattle$setLastAppliedDamage(float damage) {
+        this.mobBattle$lastAppliedDamage = damage;
+    }
 
     @Unique
     public boolean custom$getIsUniversalLeadEnyity() {
@@ -97,6 +113,12 @@ public abstract class LivingEntityMixin extends Entity implements Attackable, Wa
 
     @Shadow
     public abstract boolean isDeadOrDying();
+
+    @Inject(method = "hurtServer", at = @At("HEAD"))
+    private void mobBattle$resetAppliedDamage(ServerLevel world, DamageSource source, float amount,
+                                              CallbackInfoReturnable<Boolean> cir) {
+        this.mobBattle$lastAppliedDamage = 0.0F;
+    }
 
     @Inject(method = "canAttack(Lnet/minecraft/world/entity/LivingEntity;)Z", at = @At("HEAD"), cancellable = true)
     private void preventTeamTargeting(LivingEntity target, CallbackInfoReturnable<Boolean> cir) {
@@ -316,6 +338,32 @@ public abstract class LivingEntityMixin extends Entity implements Attackable, Wa
             instance.hurtWithoutBreaking(5000, player);
         } else {
             instance.shrink(amount);
+        }
+    }
+
+    @Inject(method = "checkTotemDeathProtection", at = @At("HEAD"), cancellable = true)
+    private void mobBattle$breakOverpoweredTotem(DamageSource source, CallbackInfoReturnable<Boolean> cir) {
+        if (this.mobBattle$lastAppliedDamage <= 40.0F
+                || source.is(DamageTypeTags.BYPASSES_INVULNERABILITY)
+                || !((Object) this instanceof Player player)) {
+            return;
+        }
+
+        for (InteractionHand hand : InteractionHand.values()) {
+            ItemStack stack = player.getItemInHand(hand);
+            if (stack.get(DataComponents.DEATH_PROTECTION) == null) {
+                continue;
+            }
+            if (!stack.is(Items.TOTEM_OF_UNDYING)) {
+                return;
+            }
+
+            LivingEntity self = (LivingEntity) (Object) this;
+            this.level().broadcastEntityEvent(self, hand == InteractionHand.MAIN_HAND ? (byte) 47 : (byte) 48);
+            stack.shrink(1);
+            player.awardStat(Stats.ITEM_USED.get(Items.TOTEM_OF_UNDYING));
+            cir.setReturnValue(false);
+            return;
         }
     }
     @Unique

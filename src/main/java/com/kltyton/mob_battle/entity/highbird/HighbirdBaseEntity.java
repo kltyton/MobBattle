@@ -65,7 +65,6 @@ public abstract class HighbirdBaseEntity extends HighbirdAndEggEntity {
     public boolean isSleeping = false;
     public boolean forcedWakeUp = false;
     public boolean farstAttack = false;
-    public boolean attackOwner = false;
     public int excitedTime = 1200;
     /* ========== 新增饥饿机制相关字段 ========== */
     public int hunger = getMaxHunger();        // 当前饥饿值（0-20）
@@ -129,13 +128,11 @@ public abstract class HighbirdBaseEntity extends HighbirdAndEggEntity {
                 // 处理饥饿值为0的状态
                 if (hunger <= 0) {
                     starveTicks++;
-                    if (!attackOwner) attackOwner = true;
                     // 超过120刻则死亡
                     if (starveTicks >= getMaxStarveTicks()) this.kill((ServerLevel)this.level());
                     // 禁用AI
                     this.setNoAi(true);
                 } else {
-                    if (attackOwner) attackOwner = false;
                     starveTicks = 0; // 重置饥饿计时
                     // 确保AI在非饥饿状态可用（除非睡眠中）
                     if (!isSleeping) {
@@ -169,6 +166,11 @@ public abstract class HighbirdBaseEntity extends HighbirdAndEggEntity {
     // 当实体尝试攻击目标时调用此方法
     public boolean performAttack(ServerLevel world, Entity target) {
         if (!ModSkillEntityType.canSkill(this)) return false;
+        if (!(target instanceof LivingEntity livingTarget)
+                || !this.canAttack(livingTarget)
+                || this.isAlliedTo(livingTarget)) {
+            return false;
+        }
         // 获取当前实体的基础攻击力（来自属性系统）
         float f = (float) this.getAttributeValue(Attributes.ATTACK_DAMAGE);
 
@@ -183,8 +185,6 @@ public abstract class HighbirdBaseEntity extends HighbirdAndEggEntity {
 
         // 应用武器的额外伤害（如三叉戟对水生生物的额外伤害）
         f += itemStack.getItem().getAttackDamageBonus(target, f, damageSource);
-        if (attackOwner) f = 1;
-
         // 对目标实体造成伤害，返回是否成功造成伤害
         boolean bl = target.hurtServer(world, damageSource, f);
 

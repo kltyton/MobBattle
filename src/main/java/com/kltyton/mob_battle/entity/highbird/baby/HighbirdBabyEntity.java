@@ -15,7 +15,6 @@ import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.OwnerHurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.OwnerHurtTargetGoal;
 import net.minecraft.world.entity.animal.Animal;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
@@ -69,13 +68,8 @@ public class HighbirdBabyEntity extends HighbirdBaseEntity implements HighbirdSB
         if (this.level() instanceof ServerLevel serverWorld) {
             HighbirdTeenageEntity highbird = ModEntities.HIGHBIRD_TEENAGE.create(serverWorld, EntitySpawnReason.CONVERSION);
             if (highbird != null) {
-                if (this.isTame()) {
-                    highbird.setOwnerReference(this.getOwnerReference());
-                    highbird.setOwner(this.getOwner());
-                    if (this.getOwner() instanceof Player player) highbird.tame(player);
-                    highbird.setTame(true, true);
-                    highbird.setPos(this.position());
-                }
+                copyOwnershipTo(highbird);
+                highbird.setPos(this.position());
                 serverWorld.addFreshEntity(highbird);
                 this.discard();
             }

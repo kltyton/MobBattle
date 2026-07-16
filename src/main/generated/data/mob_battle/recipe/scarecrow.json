@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "group": "scarecrow",
+  "key": {
+    "a": "minecraft:carved_pumpkin",
+    "b": "minecraft:hay_block",
+    "c": "#minecraft:wooden_fences",
+    "d": "#minecraft:wooden_slabs"
+  },
+  "pattern": [
+    " a ",
+    "cbc",
+    "dcd"
+  ],
+  "result": {
+    "id": "mob_battle:scarecrow"
+  }
+}

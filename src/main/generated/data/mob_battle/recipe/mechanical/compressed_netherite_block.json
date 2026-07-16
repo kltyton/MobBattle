@@ -1,0 +1,16 @@
+{
+  "type": "mob_battle:mechanical_crafting_shaped",
+  "category": "building",
+  "group": "mechanical_compressed_blocks",
+  "key": {
+    "n": "mob_battle:compressed_netherite_ingot"
+  },
+  "pattern": [
+    "nnn",
+    "nnn",
+    "nnn"
+  ],
+  "result": {
+    "id": "mob_battle:compressed_netherite_block"
+  }
+}

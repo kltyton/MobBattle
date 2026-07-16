@@ -176,6 +176,7 @@ public class ModChineseLangProvider extends FabricLanguageProvider {
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.LITTLE_PERSON_SCEPTER), "小人权杖");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.LITTLE_STONE), "小石子");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.WOODEN_WHISTLE), "木哨子");
+        translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.ILLAGER_CURRENCY), "灾厄货币");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.NIBI), "尼币");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.NIBI_BAG), "一袋尼币");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.NIBI_BOX), "一箱尼币");
@@ -258,6 +259,9 @@ public class ModChineseLangProvider extends FabricLanguageProvider {
         translationBuilder.add("item.mob_battle.wooden_whistle.message.follow", "附近的狼已跟随");
         translationBuilder.add("item.mob_battle.wooden_whistle.message.attack", "附近的狼已攻击周围敌人");
         translationBuilder.add("item.mob_battle.wooden_whistle.message.calm", "附近的狼已停止攻击");
+        translationBuilder.add("item.mob_battle.wooden_whistle.tooltip.1", "右键：让附近已驯服的狼跟随");
+        translationBuilder.add("item.mob_battle.wooden_whistle.tooltip.2", "潜行右键：让附近已驯服的狼停止攻击");
+        translationBuilder.add("item.mob_battle.wooden_whistle.tooltip.3", "左键：坐下；潜行左键：攻击附近敌人");
 
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.LOBSTER), "龙虾");
         translationBuilder.add(ModLangUtils.getTranslationKey(ModItems.MAGMA_LOBSTER), "岩浆龙虾");
