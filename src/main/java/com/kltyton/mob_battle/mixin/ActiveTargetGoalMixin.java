@@ -37,7 +37,13 @@ public abstract class ActiveTargetGoalMixin extends TargetGoal {
         List<LivingEntity> forcedTargets = world.getEntitiesOfClass(
                 LivingEntity.class,
                 searchBox,
-                living -> living != mob && living.isAlive() && TeamFightManager.areForcedOpponents(mob, living)
+                living -> living != mob
+                        && living.isAlive()
+                        && !living.isRemoved()
+                        && !living.hasInfiniteMaterials()
+                        && !living.isSpectator()
+                        && mob.canAttack(living)
+                        && TeamFightManager.areForcedOpponents(mob, living)
         );
         if (!forcedTargets.isEmpty()) {
             forcedTargets.sort((a, b) -> Double.compare(mob.distanceToSqr(a), mob.distanceToSqr(b)));

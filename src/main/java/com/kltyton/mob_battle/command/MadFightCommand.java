@@ -39,6 +39,10 @@ public final class MadFightCommand {
         CommandSourceStack source = context.getSource();
         Scoreboard scoreboard = source.getServer().getScoreboard();
         String rawTeams = StringArgumentType.getString(context, "teams").trim();
+        if (rawTeams.isEmpty()) {
+            source.sendFailure(Component.literal("madfight 至少需要一个队伍"));
+            return 0;
+        }
         Set<String> teamNames = new LinkedHashSet<>(Arrays.asList(rawTeams.split("\\s+")));
         List<PlayerTeam> teams = new ArrayList<>();
 
@@ -50,13 +54,8 @@ public final class MadFightCommand {
             }
             teams.add(team);
         }
-        if (teams.size() < 2) {
-            source.sendFailure(Component.literal("madfight 至少需要两个不同的队伍"));
-            return 0;
-        }
-
         TeamFightManager.startMadFight(teams);
-        source.sendSuccess(() -> Component.literal("已启动多队混战: " + String.join(", ", teamNames)), false);
+        source.sendSuccess(() -> Component.literal("以下队伍已进入发狂状态: " + String.join(", ", teamNames)), false);
         return teams.size();
     }
 

@@ -1,5 +1,6 @@
 package com.kltyton.mob_battle.event.golem;
 
+import com.kltyton.mob_battle.Mob_battle;
 import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.entity.golem.ChestGolemEntity;
 import com.kltyton.mob_battle.utils.TaskSchedulerUtil;
@@ -48,9 +49,11 @@ public final class ChestGolemBuildEvent {
     private static boolean trySpawnWithArms(ServerLevel level, BlockPos topPos, Direction armDirection, ServerPlayer player) {
         BlockPos bodyPos = topPos.below();
         BlockPos legPos = bodyPos.below();
+        BlockPos chestPos = bodyPos.relative(armDirection.getClockWise());
+        BlockPos chestPos2 = bodyPos.relative(armDirection.getCounterClockWise());
         BlockPos armA = bodyPos.relative(armDirection);
         BlockPos armB = bodyPos.relative(armDirection.getOpposite());
-        if (!isIron(level, bodyPos) || !isIron(level, legPos) || !isIron(level, armA) || !isIron(level, armB)) {
+        if (!isPlanks(level, bodyPos) || !isPlanks(level, legPos) || !isPlanks(level, armA) || !isPlanks(level, armB) || !(isVines(level, chestPos) || isVines(level, chestPos2))) {
             return false;
         }
 
@@ -76,8 +79,12 @@ public final class ChestGolemBuildEvent {
         return true;
     }
 
-    private static boolean isIron(ServerLevel level, BlockPos pos) {
-        return level.getBlockState(pos).is(Blocks.IRON_BLOCK);
+    private static boolean isPlanks(ServerLevel level, BlockPos pos) {
+        return level.getBlockState(pos).is(Blocks.OAK_PLANKS);
+    }
+    private static boolean isVines(ServerLevel level, BlockPos pos) {
+        Mob_battle.LOGGER.info(level.getBlockState(pos).toString());
+        return level.getBlockState(pos).is(Blocks.VINE);
     }
 
     private static void clear(ServerLevel level, BlockPos pos) {

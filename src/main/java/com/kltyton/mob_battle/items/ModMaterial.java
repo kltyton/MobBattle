@@ -391,11 +391,11 @@ public class ModMaterial {
                         new AttributeModifier(Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "swipe_" + id), 1.0, AttributeModifier.Operation.ADD_VALUE),
                         slot
                 );
-                updated = updated.withModifierAdded(
+/*                updated = updated.withModifierAdded(
                         Attributes.ARMOR,
                         new AttributeModifier(Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "armor_" + id), 3.0, AttributeModifier.Operation.ADD_VALUE),
                         slot
-                );
+                );*/
                 return updated;
             });
         } else if (toolMaterial == EMERALD_DIAMOND_ALLOY_TOOL_MATERIAL) {

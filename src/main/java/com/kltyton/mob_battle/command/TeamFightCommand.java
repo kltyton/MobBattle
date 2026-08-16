@@ -2,7 +2,6 @@ package com.kltyton.mob_battle.command;
 
 import com.kltyton.mob_battle.event.team.TeamFightManager;
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.arguments.StringArgumentType;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.TeamArgument;
 import net.minecraft.network.chat.Component;
@@ -14,40 +13,44 @@ import static net.minecraft.commands.Commands.literal;
 
 public class TeamFightCommand {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
-        dispatcher.register(literal("teamFight")
+        registerTeamFight(dispatcher, "teamfight");
+        registerTeamFight(dispatcher, "teamFight");
+        registerStopTeamFight(dispatcher, "stopteamfight");
+        registerStopTeamFight(dispatcher, "stopTeamFight");
+        registerStopAllTeamFights(dispatcher, "stopallteamfights");
+        registerStopAllTeamFights(dispatcher, "stopAllTeamFights");
+        registerListTeamFights(dispatcher, "listteamfights");
+        registerListTeamFights(dispatcher, "listTeamFights");
+    }
+
+    private static void registerTeamFight(CommandDispatcher<CommandSourceStack> dispatcher, String command) {
+        dispatcher.register(literal(command)
                 .requires(TeamFightCommand::isGameMaster)
                 .then(argument("team1", TeamArgument.team())
                         .then(argument("team2", TeamArgument.team())
                                 .executes(context -> {
                                     CommandSourceStack source = context.getSource();
-                                    String team1Name = StringArgumentType.getString(context, "team1");
-                                    String team2Name = StringArgumentType.getString(context, "team2");
-
-                                    PlayerTeam team1 = source.getServer().getScoreboard().getPlayerTeam(team1Name);
-                                    PlayerTeam team2 = source.getServer().getScoreboard().getPlayerTeam(team2Name);
-
-                                    if (team1 == null || team2 == null) {
-                                        source.sendFailure(Component.literal("一个或多个队伍不存在"));
+                                    PlayerTeam team1 = TeamArgument.getTeam(context, "team1");
+                                    PlayerTeam team2 = TeamArgument.getTeam(context, "team2");
+                                    if (team1 == team2) {
+                                        source.sendFailure(Component.literal("teamfight 需要两个不同的队伍"));
                                         return 0;
                                     }
 
                                     TeamFightManager.startTeamFight(team1, team2);
-                                    source.sendSuccess(() -> Component.literal("已启动队伍对战: " + team1Name + " vs " + team2Name), false);
+                                    source.sendSuccess(() -> Component.literal(
+                                            "已启动队伍对战: " + team1.getName() + " vs " + team2.getName()), false);
                                     return 1;
                                 }))));
-        // 新增停止指令
-        dispatcher.register(literal("stopTeamFight")
+    }
+
+    private static void registerStopTeamFight(CommandDispatcher<CommandSourceStack> dispatcher, String command) {
+        dispatcher.register(literal(command)
                 .requires(TeamFightCommand::isGameMaster)
                 .then(argument("team", TeamArgument.team())
                         .executes(context -> {
                             CommandSourceStack source = context.getSource();
-                            String teamName = StringArgumentType.getString(context, "team");
-                            PlayerTeam team = source.getServer().getScoreboard().getPlayerTeam(teamName);
-
-                            if (team == null) {
-                                source.sendFailure(Component.literal("队伍不存在"));
-                                return 0;
-                            }
+                            PlayerTeam team = TeamArgument.getTeam(context, "team");
 
                             if (!TeamFightManager.isInFight(team)) {
                                 source.sendFailure(Component.literal("该队伍未处于战斗中"));
@@ -55,12 +58,13 @@ public class TeamFightCommand {
                             }
 
                             TeamFightManager.stopTeamFight(team);
-                            source.sendSuccess(() -> Component.literal("已停止队伍战斗: " + teamName), false);
+                            source.sendSuccess(() -> Component.literal("已停止队伍战斗: " + team.getName()), false);
                             return 1;
                         })));
+    }
 
-        // 停止所有战斗
-        dispatcher.register(literal("stopAllTeamFights")
+    private static void registerStopAllTeamFights(CommandDispatcher<CommandSourceStack> dispatcher, String command) {
+        dispatcher.register(literal(command)
                 .requires(TeamFightCommand::isGameMaster)
                 .executes(context -> {
                     int count = TeamFightManager.clearAllFights();
@@ -70,8 +74,10 @@ public class TeamFightCommand {
                     );
                     return 1;
                 }));
-        // 查询指令
-        dispatcher.register(literal("listTeamFights")
+    }
+
+    private static void registerListTeamFights(CommandDispatcher<CommandSourceStack> dispatcher, String command) {
+        dispatcher.register(literal(command)
                 .requires(TeamFightCommand::isGameMaster)
                 .executes(context -> {
                     String fights = TeamFightManager.getActiveFights();
@@ -81,7 +87,6 @@ public class TeamFightCommand {
                     );
                     return 1;
                 }));
-
     }
 
     private static boolean isGameMaster(CommandSourceStack source) {
