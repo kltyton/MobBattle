@@ -1,6 +1,6 @@
 package com.kltyton.mob_battle.entity.bullet;
 
-import com.kltyton.mob_battle.client.render.SubmitRenderUtil;
+import com.kltyton.mob_battle.client.render.RenderSubmission;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -28,7 +28,7 @@ public class BulletEntityRenderer extends EntityRenderer<BulletEntity, ArrowRend
         matrices.mulPose(Axis.YP.rotationDegrees(state.yRot - 90.0F));
         matrices.mulPose(Axis.ZP.rotationDegrees(state.xRot));
         matrices.scale(0.1F, 0.1F, 0.1F);
-        SubmitRenderUtil.submitBlock(this.blockModelResolver, this.blockRenderState, Blocks.IRON_BLOCK.defaultBlockState(),
+        RenderSubmission.submitBlock(this.blockModelResolver, this.blockRenderState, Blocks.IRON_BLOCK.defaultBlockState(),
                 matrices, renderTasks, state.lightCoords, state.outlineColor);
         matrices.popPose();
         super.submit(state, matrices, renderTasks, cameraState);

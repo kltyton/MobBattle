@@ -5,7 +5,7 @@ import com.kltyton.mob_battle.entity.littleperson.LittlePersonEntity;
 import com.kltyton.mob_battle.entity.littleperson.archer.littlearrow.LittleArrowEntity;
 import com.kltyton.mob_battle.entity.littleperson.skillentity.RequestedLittlePersonEntity;
 import com.kltyton.mob_battle.entity.littleperson.skillentity.SkillProjectileEntity;
-import com.kltyton.mob_battle.utils.EntityUtil;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -143,7 +143,7 @@ abstract class RequestedTaskLittlePersonEntity extends RequestedLittlePersonEnti
     }
 
     protected Iterable<LivingEntity> alliedLittlePersons(double radius, boolean includeSelf) {
-        return EntityUtil.getNearbyEntity(this, LivingEntity.class, LittlePersonEntity.class, radius, includeSelf, EntityUtil.TeamFilter.ONLY_TEAM);
+        return EntityQueries.getNearbyEntity(this, LivingEntity.class, LittlePersonEntity.class, radius, includeSelf, EntityQueries.TeamFilter.ONLY_TEAM);
     }
 
     private Vec3 horizontalLook() {

@@ -2,7 +2,7 @@ package com.kltyton.mob_battle.entity.littleperson.skillentity;
 
 import com.kltyton.mob_battle.entity.ModEntityAttributes;
 import com.kltyton.mob_battle.entity.littleperson.skillentity.base.BaseSkillLittlePersonEntity;
-import com.kltyton.mob_battle.utils.EntityUtil;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -46,7 +46,7 @@ public class BloodyBladeEntity extends BaseSkillLittlePersonEntity {
     }
     @Override
     public void runSkill_3(BaseSkillLittlePersonEntity entity) {
-        EntityUtil.getNearbyEntity(entity, BloodyBladeEntity.class, 10, true, EntityUtil.TeamFilter.ONLY_TEAM).forEach(livingEntity -> {
+        EntityQueries.getNearbyEntity(entity, BloodyBladeEntity.class, 10, true, EntityQueries.TeamFilter.ONLY_TEAM).forEach(livingEntity -> {
             livingEntity.addEffect(new MobEffectInstance(MobEffects.RESISTANCE, 20 * 5, 0));
             livingEntity.addEffect(new MobEffectInstance(MobEffects.STRENGTH, 20 * 5, 4));
         });

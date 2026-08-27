@@ -1,7 +1,7 @@
 package com.kltyton.mob_battle.entity.cbot;
 
 import com.kltyton.mob_battle.effect.ModEffects;
-import com.kltyton.mob_battle.utils.EntityUtil;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -57,7 +57,7 @@ public class SnowmanIceBlockEntity extends Projectile {
         Entity owner = this.getOwner();
         AABB box = this.getBoundingBox().inflate(HIT_RADIUS);
         for (LivingEntity target : this.level().getEntitiesOfClass(LivingEntity.class, box,
-                target -> EntityUtil.isValidSummonCombatTarget(this, owner, target))) {
+                target -> EntityQueries.isValidSummonCombatTarget(this, owner, target))) {
             explode();
             return;
         }
@@ -78,7 +78,7 @@ public class SnowmanIceBlockEntity extends Projectile {
         world.playSound(null, this.blockPosition(), SoundEvents.GLASS_BREAK, this.getSoundSource(), 1.3F, 0.7F);
         AABB box = this.getBoundingBox().inflate(EXPLOSION_RADIUS);
         for (LivingEntity target : world.getEntitiesOfClass(LivingEntity.class, box,
-                target -> EntityUtil.isValidSummonCombatTarget(this, owner, target))) {
+                target -> EntityQueries.isValidSummonCombatTarget(this, owner, target))) {
             Entity attacker = owner == null ? this : owner;
             Vec3 motionBeforeHit = target.getDeltaMovement();
             target.hurtServer(world, this.damageSources().explosion(this, attacker), 50.0F);

@@ -5,8 +5,8 @@ import com.kltyton.mob_battle.config.MobBattleConfig;
 import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.entity.bullet.GoldenTrailProjectile;
 import com.kltyton.mob_battle.items.ModItems;
-import com.kltyton.mob_battle.utils.EntityUtil;
-import com.kltyton.mob_battle.utils.TaskSchedulerUtil;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
+import com.kltyton.mob_battle.event.scheduler.ServerTickScheduler;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -54,9 +54,9 @@ public class PiglinCannonItem extends Item {
         ItemStack stack = user.getItemInHand(hand);
 
         if (user.isShiftKeyDown()) {
-            PiglinCannonModeUtil.Mode mode = PiglinCannonModeUtil.toggleMode(stack);
+            PiglinCannonModes.Mode mode = PiglinCannonModes.toggleMode(stack);
             if (!world.isClientSide()) {
-                user.sendOverlayMessage(Component.literal(mode == PiglinCannonModeUtil.Mode.FAST_FIRE ? "切换为速射形态" : "切换为重击模式"));
+                user.sendOverlayMessage(Component.literal(mode == PiglinCannonModes.Mode.FAST_FIRE ? "切换为速射形态" : "切换为重击模式"));
             }
             return InteractionResult.SUCCESS;
         }
@@ -87,8 +87,8 @@ public class PiglinCannonItem extends Item {
         if (!(player.isUsingItem() && player.getUseItem() == stack)) {
             return;
         }
-        PiglinCannonModeUtil.Mode mode = PiglinCannonModeUtil.getMode(stack);
-        if (mode == PiglinCannonModeUtil.Mode.FAST_FIRE) {
+        PiglinCannonModes.Mode mode = PiglinCannonModes.getMode(stack);
+        if (mode == PiglinCannonModes.Mode.FAST_FIRE) {
             handleFastFireTick(world, player, stack);
         } else {
             handleHeavyChargeTick(world, player, stack);
@@ -104,8 +104,8 @@ public class PiglinCannonItem extends Item {
             return false;
         }
 
-        PiglinCannonModeUtil.Mode mode = PiglinCannonModeUtil.getMode(stack);
-        if (mode != PiglinCannonModeUtil.Mode.HEAVY_BLAST) {
+        PiglinCannonModes.Mode mode = PiglinCannonModes.getMode(stack);
+        if (mode != PiglinCannonModes.Mode.HEAVY_BLAST) {
             return true;
         }
 
@@ -223,7 +223,7 @@ public class PiglinCannonItem extends Item {
 
         world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.GENERIC_EXPLODE, SoundSource.PLAYERS, 1.0F, 0.6F);
 
-        TaskSchedulerUtil.runLater(20, () -> {
+        ServerTickScheduler.schedule(world.getServer(), 20, () -> {
             if (MobBattleConfig.isDebugLoggingEnabled()) {
                 Mob_battle.LOGGER.info("Exploding heavy blast: " + start + " -> " + end);
             }
@@ -329,7 +329,7 @@ public class PiglinCannonItem extends Item {
 
         while (remain > 0.0D) {
             List<AbstractPiglin> piglins = new ArrayList<>(
-                    EntityUtil.getNearbyEntity(player, AbstractPiglin.class, 8.0, false, EntityUtil.TeamFilter.ALL)
+                    EntityQueries.getNearbyEntity(player, AbstractPiglin.class, 8.0, false, EntityQueries.TeamFilter.ALL)
             );
 
             if (piglins.isEmpty()) {

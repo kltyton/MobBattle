@@ -24,7 +24,7 @@ import com.geckolib.animation.state.AnimationTest;
 import com.geckolib.animation.object.PlayState;
 import com.geckolib.animation.RawAnimation;
 import com.geckolib.util.GeckoLibUtil;
-import com.kltyton.mob_battle.utils.GeoAnimationUtil;
+import com.kltyton.mob_battle.client.animation.gecko.GeoAnimationState;
 
 public class FlowerFairyEntity extends AgeableMob implements GeoEntity {
 
@@ -93,7 +93,7 @@ public class FlowerFairyEntity extends AgeableMob implements GeoEntity {
     }
     private PlayState animationController(final AnimationTest<FlowerFairyEntity> state) {
         if (state.isCurrentAnimation(COM_ANIM)) {
-            return GeoAnimationUtil.playTriggeredAnimationOrStop(state);
+            return GeoAnimationState.playTriggeredAnimationOrStop(state);
         }
         if (state.isMoving()) {
             return state.setAndContinue(WALK_ANIM);

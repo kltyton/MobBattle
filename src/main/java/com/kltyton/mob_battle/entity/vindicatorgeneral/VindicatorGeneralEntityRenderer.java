@@ -1,7 +1,7 @@
 package com.kltyton.mob_battle.entity.vindicatorgeneral;
 
 import com.kltyton.mob_battle.client.render.ClientGeckoParticleEffects;
-import com.kltyton.mob_battle.client.render.GeoRenderUtil;
+import com.kltyton.mob_battle.client.render.GeoRenderTransforms;
 import com.geckolib.constant.DataTickets;
 import com.geckolib.renderer.GeoEntityRenderer;
 import com.geckolib.renderer.base.BoneSnapshots;
@@ -22,7 +22,7 @@ public class VindicatorGeneralEntityRenderer<R extends LivingEntityRenderState &
 
     @Override
     public void adjustModelBonesForRender(RenderPassInfo<R> renderPassInfo, BoneSnapshots snapshots) {
-        GeoRenderUtil.applyHeadRotation(renderPassInfo, snapshots, "Head", false);
+        GeoRenderTransforms.applyHeadRotation(renderPassInfo, snapshots, "Head", false);
     }
 
     @Override

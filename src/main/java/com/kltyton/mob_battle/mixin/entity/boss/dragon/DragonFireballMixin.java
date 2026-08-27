@@ -1,6 +1,6 @@
 package com.kltyton.mob_battle.mixin.entity.boss.dragon;
 
-import com.kltyton.mob_battle.entity.misc.ModifiedDragonBreathCloud;
+import com.kltyton.mob_battle.entity.cloud.ModifiedDragonBreathCloud;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.world.entity.AreaEffectCloud;
 import net.minecraft.world.entity.EntityType;

@@ -1,6 +1,6 @@
 package com.kltyton.mob_battle.entity.cbot;
 
-import com.kltyton.mob_battle.client.render.SubmitRenderUtil;
+import com.kltyton.mob_battle.client.render.RenderSubmission;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -25,7 +25,7 @@ public class CbotSnowballRenderer extends EntityRenderer<CbotSnowballEntity, Thr
 
     @Override
     public void submit(ThrownItemRenderState state, PoseStack matrices, SubmitNodeCollector renderTasks, CameraRenderState cameraState) {
-        SubmitRenderUtil.submitBillboardItem(state, matrices, renderTasks, cameraState, 1.0F);
+        RenderSubmission.submitBillboardItem(state, matrices, renderTasks, cameraState, 1.0F);
         super.submit(state, matrices, renderTasks, cameraState);
     }
 

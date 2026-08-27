@@ -3,7 +3,7 @@ package com.kltyton.mob_battle.entity.villager.militia;
 import com.kltyton.mob_battle.entity.ModSkillEntityType;
 import com.kltyton.mob_battle.entity.ai.goal.GeneralProtectionVillagerGoal;
 import com.kltyton.mob_battle.entity.irongolem.ModBaseIronGolemEntity;
-import com.kltyton.mob_battle.utils.EntityUtil;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -59,7 +59,7 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import java.util.List;
 
-// 杩戞垬鏉戞皯
+// 近战民兵村民。
 public class MilitiaWarriorVillager extends IronGolem implements ModBaseIronGolemEntity {
     private static final BlockPos NO_HOME_POS = new BlockPos(0, -9999, 0);
     private static final BlockPos FORCE_CONVERT_POS = new BlockPos(0, 9999, 0);
@@ -70,7 +70,7 @@ public class MilitiaWarriorVillager extends IronGolem implements ModBaseIronGole
                 .add(Attributes.MAX_HEALTH, 30)
                 .add(Attributes.ATTACK_DAMAGE, 10);
     }
-    // 娣诲姞缇や綋浠囨仺鐨勬娴嬭寖鍥达紙64鏍硷級
+    // 群体仇恨感知半径（64 格）。
     private static final double ALERT_RANGE = 64.0;
 
     public static final EntityDataAccessor<BlockPos> HOME_POS = SynchedEntityData.defineId(MilitiaWarriorVillager.class, EntityDataSerializers.BLOCK_POS);
@@ -107,18 +107,18 @@ public class MilitiaWarriorVillager extends IronGolem implements ModBaseIronGole
             if (shouldConvertBackToVillager()) {
                 Villager villager = EntityType.VILLAGER.create(this.level(), EntitySpawnReason.CONVERSION);
                 if (villager != null) {
-                    // 1. 鑾峰彇瀹炰綋褰撳墠浣嶇疆鐨勭兢绯绘敞鍐岄」
+                    // 读取实体当前位置的群系注册项。
                     Holder<Biome> biomeEntry = this.level().getBiome(this.blockPosition());
-                    // 2. 鏍规嵁缇ょ郴鑾峰彇瀵瑰簲鐨勬潙姘戠被鍨?(渚嬪锛氭矙婕犮€侀洩鍦般€佸钩鍘熺瓑)
+                    // 根据群系选择对应村民类型，例如沙漠、雪原或平原。
                     ResourceKey<VillagerType> type = VillagerType.byBiome(biomeEntry);
-                    // 3. 璁剧疆鏉戞皯鐨勮亴涓氭暟鎹紝淇濈暀榛樿鑱屼笟锛堟垨璁惧畾涓烘棤涓氾級锛屼絾鏇存柊澶栬绫诲瀷
+                    // 保留默认职业数据，仅更新外观对应的村民类型。
                     Holder<VillagerType> typeEntry = BuiltInRegistries.VILLAGER_TYPE.getOrThrow(type);
                     villager.setVillagerData(villager.getVillagerData().withType(typeEntry));
 
                     villager.snapTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), this.getXRot());
                     this.level().addFreshEntity(villager);
 
-                    EntityUtil.joinSameTeam(villager, this);
+                    EntityQueries.joinSameTeam(villager, this);
                     this.discard();
                 }
             }
@@ -171,7 +171,7 @@ public class MilitiaWarriorVillager extends IronGolem implements ModBaseIronGole
         return bl;
     }
     private void alertOthers(LivingEntity attacker) {
-        if (!EntityUtil.isValidCombatTarget(this, attacker)) {
+        if (!EntityQueries.isValidCombatTarget(this, attacker)) {
             return;
         }
 
@@ -182,14 +182,14 @@ public class MilitiaWarriorVillager extends IronGolem implements ModBaseIronGole
         );
 
         for (IronGolem golem : golems) {
-            if (attacker instanceof AbstractGolem || !EntityUtil.isValidCombatTarget(golem, attacker)) {
+            if (attacker instanceof AbstractGolem || !EntityQueries.isValidCombatTarget(golem, attacker)) {
                 continue;
             }
 
             golem.setPersistentAngerTarget(net.minecraft.world.entity.EntityReference.of(attacker));
             golem.startPersistentAngerTimer();
 
-            // 绔嬪嵆鏇存柊鐩爣閫夋嫨
+            // 立即更新目标选择。
             if (golem.getTarget() != attacker) {
                 golem.setTarget(attacker);
             }
@@ -212,7 +212,7 @@ public class MilitiaWarriorVillager extends IronGolem implements ModBaseIronGole
     }
     @Override
     protected void registerGoals() {
-        this.goalSelector.addGoal(0, new FloatGoal(this)); // 娣诲姞娓告吵AI
+        this.goalSelector.addGoal(0, new FloatGoal(this)); // 添加游泳 AI。
         this.goalSelector.addGoal(1, new MeleeAttackGoal(this, 1.0, true));
         this.goalSelector.addGoal(2, new MoveTowardsTargetGoal(this, 0.9, 32.0F));
         this.goalSelector.addGoal(2, new MoveBackToVillageGoal(this, 0.6, false));
@@ -224,9 +224,9 @@ public class MilitiaWarriorVillager extends IronGolem implements ModBaseIronGole
         this.targetSelector.addGoal(1, new GeneralProtectionVillagerGoal(this));
         this.targetSelector.addGoal(2, new HurtByTargetGoal(this));
         this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, Player.class, 10, true, false,
-                (entity, world) -> this.isAngryAt(entity, world) && EntityUtil.isValidCombatTarget(this, entity)));
+                (entity, world) -> this.isAngryAt(entity, world) && EntityQueries.isValidCombatTarget(this, entity)));
         this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, Mob.class, 5, false, false,
-                (entity, world) -> entity instanceof Enemy && EntityUtil.isValidCombatTarget(this, entity)));
+                (entity, world) -> entity instanceof Enemy && EntityQueries.isValidCombatTarget(this, entity)));
         this.targetSelector.addGoal(4, new ResetUniversalAngerTargetGoal<>(this, false));
     }
     @Override

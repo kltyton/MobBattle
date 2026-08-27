@@ -1,7 +1,7 @@
 package com.kltyton.mob_battle.entity.littleperson.skillentity.requestedprojectile;
 
 import com.kltyton.mob_battle.Mob_battle;
-import com.kltyton.mob_battle.client.render.SubmitRenderUtil;
+import com.kltyton.mob_battle.client.render.RenderSubmission;
 import com.kltyton.mob_battle.entity.littleperson.skillentity.SkillProjectileEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
@@ -48,7 +48,7 @@ public class TexturedSkillProjectileRenderer extends EntityRenderer<SkillProject
         matrices.scale(this.scale, this.scale, this.scale);
         matrices.mulPose(Axis.YP.rotationDegrees(state.yRot - 90.0F));
         matrices.mulPose(Axis.ZP.rotationDegrees(state.xRot));
-        SubmitRenderUtil.submitModel(this.model, state, matrices, renderTasks, this.texture);
+        RenderSubmission.submitModel(this.model, state, matrices, renderTasks, this.texture);
         matrices.popPose();
         super.submit(state, matrices, renderTasks, cameraState);
     }

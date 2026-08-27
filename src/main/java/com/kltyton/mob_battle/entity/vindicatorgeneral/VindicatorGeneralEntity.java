@@ -8,12 +8,12 @@ import com.kltyton.mob_battle.entity.accessor.BigBossNavigation;
 import com.kltyton.mob_battle.bossbar.CustomBossBarStyles;
 import com.kltyton.mob_battle.bossbar.CustomBossBarSync;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
-import com.kltyton.mob_battle.utils.CombatEffectUtil;
-import com.kltyton.mob_battle.utils.DeathAnimationUtil;
-import com.kltyton.mob_battle.utils.EnchantmentUtil;
-import com.kltyton.mob_battle.utils.EntityUtil;
-import com.kltyton.mob_battle.utils.GeoAnimationUtil;
-import com.kltyton.mob_battle.utils.GeckoParticleKeyframeUtil;
+import com.kltyton.mob_battle.combat.effect.CombatEffectApplier;
+import com.kltyton.mob_battle.animation.death.DeathAnimationState;
+import com.kltyton.mob_battle.enchantment.support.EnchantmentAccess;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
+import com.kltyton.mob_battle.client.animation.gecko.GeoAnimationState;
+import com.kltyton.mob_battle.client.animation.keyframe.ParticleKeyframeHandler;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -71,7 +71,7 @@ public class VindicatorGeneralEntity extends Vindicator implements GeoEntity, Mo
     private boolean waitingForAxeRecovery;
     private int axeRecoveryTimeout;
     private int deathAnimationTicks;
-    private DeathAnimationUtil.FrozenPose deathFrozenPose;
+    private DeathAnimationState.FrozenPose deathFrozenPose;
     @Override
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
         super.defineSynchedData(builder);
@@ -190,7 +190,7 @@ public class VindicatorGeneralEntity extends Vindicator implements GeoEntity, Mo
         float f = damage;
         ItemStack itemStack = this.getWeaponItem();
 
-        EnchantmentUtil.addEnchantment(world, itemStack, Enchantments.BREACH, 1);
+        EnchantmentAccess.addEnchantment(world, itemStack, Enchantments.BREACH, 1);
 
         DamageSource damageSource = this.damageSources().mobAttack(this);
         f = EnchantmentHelper.modifyDamage(world, itemStack, target, damageSource, f);
@@ -198,7 +198,7 @@ public class VindicatorGeneralEntity extends Vindicator implements GeoEntity, Mo
         boolean bl = target.hurtServer(world, damageSource, f);
         if (bl) {
             if (target instanceof LivingEntity livingEntity) {
-                CombatEffectUtil.addStackingArmorPiercing(livingEntity, this);
+                CombatEffectApplier.addStackingArmorPiercing(livingEntity, this);
             }
             float g = this.getKnockback(target, damageSource);
             if (g > 0.0F && target instanceof LivingEntity livingEntity) {
@@ -236,7 +236,7 @@ public class VindicatorGeneralEntity extends Vindicator implements GeoEntity, Mo
             return true;
         }
         return target instanceof LivingEntity living
-                && EntityUtil.isValidCombatTarget(this, living)
+                && EntityQueries.isValidCombatTarget(this, living)
                 && tryAttackBase(world, living);
     }
     private void tryUseTargetedSkill() {
@@ -318,7 +318,7 @@ public class VindicatorGeneralEntity extends Vindicator implements GeoEntity, Mo
         if (target == null) return false;
         double distance = this.distanceTo(target);
         return canSkill()
-                && EntityUtil.isValidCombatTarget(this, target)
+                && EntityQueries.isValidCombatTarget(this, target)
                 && getCollisionKillCooldown() == 0
                 && distance > 4.0D
                 && distance <= 20.0D;
@@ -331,7 +331,7 @@ public class VindicatorGeneralEntity extends Vindicator implements GeoEntity, Mo
         return canSkill()
                 && getThrowAxeCooldown() == 0
                 && target != null
-                && EntityUtil.isValidCombatTarget(this, target);
+                && EntityQueries.isValidCombatTarget(this, target);
     }
     public boolean canSkill() {
         if (!ModSkillEntityType.canSkill(this)) return false;
@@ -416,14 +416,14 @@ public class VindicatorGeneralEntity extends Vindicator implements GeoEntity, Mo
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>("main_controller", this::animationController));
         controllers.add(new AnimationController<>("skill_controller", animTest -> {
-            if (GeoAnimationUtil.consumeFinishedTriggeredAnimation(animTest)) {
+            if (GeoAnimationState.consumeFinishedTriggeredAnimation(animTest)) {
                 if (!this.isWaitingForAxeRecovery()) {
                     ClientPlayNetworking.send(new SkillPayload(
                             "stop", this.getId()
                     ));
                 }
             }
-            return GeoAnimationUtil.playTriggeredAnimationOrStop(animTest);
+            return GeoAnimationState.playTriggeredAnimationOrStop(animTest);
         })
                 .receiveTriggeredAnimations()
                 .triggerableAnim("attack", ATTACK_ANIM)
@@ -436,7 +436,7 @@ public class VindicatorGeneralEntity extends Vindicator implements GeoEntity, Mo
                 .triggerableAnim("recovery_axe", RECOVERY_AXE_ANIM)
                 .triggerableAnim("death", DEATH_ANIM)
                 .setSoundKeyframeHandler(s -> {})
-                .setParticleKeyframeHandler(s -> GeckoParticleKeyframeUtil.handle(this, s))
+                .setParticleKeyframeHandler(s -> ParticleKeyframeHandler.handle(this, s))
                 .setCustomInstructionKeyframeHandler(s -> {
                     String instruction = s.keyframeData().getInstructions().replaceAll("[\\s;]+", "");
                     if ("runAttack".equals(instruction)) {
@@ -515,7 +515,7 @@ public class VindicatorGeneralEntity extends Vindicator implements GeoEntity, Mo
     }
 
     private void startDeathAnimation() {
-        this.deathFrozenPose = DeathAnimationUtil.capture(this);
+        this.deathFrozenPose = DeathAnimationState.capture(this);
         this.setHealth(1.0F);
         this.setNoAi(true);
         this.setHasSkill(true);
@@ -527,10 +527,45 @@ public class VindicatorGeneralEntity extends Vindicator implements GeoEntity, Mo
 
     private void tickDeathAnimation() {
         this.setHealth(1.0F);
-        DeathAnimationUtil.freeze(this, this.deathFrozenPose);
+        DeathAnimationState.freeze(this, this.deathFrozenPose);
         this.deathAnimationTicks--;
         if (this.deathAnimationTicks <= 0) {
             this.remove(Entity.RemovalReason.KILLED);
         }
+    }
+
+    /**
+     * 处理已经通过服务端边界校验的技能关键帧指令。
+     *
+     * <p>指令字符串、动作调用与状态副作用与 ServerPlayNetwork 中本实体的
+     * 分发分支保持逐字节一致；识别成功返回 true，未识别返回 false 且不改变状态。
+     *
+     * @param skillName 兼容现有网络协议的技能字符串
+     * @return 指令是否被识别并处理
+     */
+    @Override
+    public boolean handleSkillPayload(String skillName) {
+        switch (skillName) {
+            case "attack" -> VindicatorGeneralEntitySkill.runAttackSkill(this);
+            case "super_attack" -> VindicatorGeneralEntitySkill.runSuperAttackSkill(this);
+            case "mini_attack" -> VindicatorGeneralEntitySkill.runMiniAttackSkill(this);
+            case "max_attack_1" -> VindicatorGeneralEntitySkill.runMaxAttackSkill_1(this);
+            case "max_attack_2" -> VindicatorGeneralEntitySkill.runMaxAttackSkill_2(this);
+            case "max_attack_3" -> VindicatorGeneralEntitySkill.runMaxAttackSkill_3(this);
+            case "collision_kill" -> VindicatorGeneralEntitySkill.runCollisionKillSkill(this);
+            case "collision_kill_1" -> VindicatorGeneralEntitySkill.runCollisionKillDamageSkill(this);
+            case "spin_chop" -> VindicatorGeneralEntitySkill.runSpinChopSkill(this);
+            case "throw_axe" -> VindicatorGeneralEntitySkill.runThrowAxeSkill(this);
+            case "stop_ai" -> this.setNoAi(true);
+            case "start_ai" -> this.setNoAi(false);
+            case "stop" -> {
+                this.setHasSkill(false);
+                this.setNoAi(false);
+            }
+            default -> {
+                return false;
+            }
+        }
+        return true;
     }
 }

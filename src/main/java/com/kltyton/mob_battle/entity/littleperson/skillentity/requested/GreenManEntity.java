@@ -1,6 +1,6 @@
 package com.kltyton.mob_battle.entity.littleperson.skillentity.requested;
 
-import com.kltyton.mob_battle.utils.TaskSchedulerUtil;
+import com.kltyton.mob_battle.event.scheduler.ServerTickScheduler;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -42,7 +42,7 @@ public class GreenManEntity extends RequestedTaskLittlePersonEntity {
         switch (attack) {
             case 2 -> {
                 for (int i = 0; i < 20; i++) {
-                    TaskSchedulerUtil.runLater(i, () -> {
+                    ServerTickScheduler.schedule(this.level().getServer(), i, () -> {
                         if (!this.isRemoved()) {
                             damageTargetNoInvulnerability(1.0F);
                         }

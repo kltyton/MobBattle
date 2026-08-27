@@ -1,6 +1,6 @@
 package com.kltyton.mob_battle.entity.silverfish.silverfish;
 
-import com.kltyton.mob_battle.utils.EntityUtil;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
@@ -39,7 +39,7 @@ public class LoadSilverfishEntity extends CoalSilverfishEntity {
     public void tick() {
         super.tick();
         if (this.tickCount % 20 == 0 && !this.level().isClientSide()) {
-            EntityUtil.getNearbyEntity(this, LivingEntity.class, Object.class, 5, true, EntityUtil.TeamFilter.ONLY_TEAM).forEach(entity -> {
+            EntityQueries.getNearbyEntity(this, LivingEntity.class, Object.class, 5, true, EntityQueries.TeamFilter.ONLY_TEAM).forEach(entity -> {
                 entity.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 40, 2));
             });
         }

@@ -25,6 +25,12 @@ public class TeamFightHandler {
             try {
                 if (++tickCounter >= TARGET_UPDATE_INTERVAL) {
                     tickCounter = 0;
+                    // 没有任何活跃战斗（普通对战或发狂战）时 O(1) 直接返回，
+                    // 跳过 getAllLevels/getAllEntities 的世界与实体遍历，保证空闲状态零扫描。
+                    // ACTIVE_TEAMS 与 FIGHTING_TEAMS/MAD_TEAMS 同增同减，isEmpty() 可作唯一切面。
+                    if (!TeamFightManager.hasActiveFights()) {
+                        return;
+                    }
                     server.getAllLevels().forEach(world -> {
                         if (world instanceof ServerLevel serverWorld) {
                             updateTeamTargets(serverWorld);

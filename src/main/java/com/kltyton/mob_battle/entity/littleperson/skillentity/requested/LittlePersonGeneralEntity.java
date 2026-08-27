@@ -3,7 +3,7 @@ package com.kltyton.mob_battle.entity.littleperson.skillentity.requested;
 import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.entity.littleperson.archer.soldier.LittlePersonSoldierArcherEntity;
 import com.kltyton.mob_battle.entity.littleperson.militia.soldier.LittlePersonSoldierEntity;
-import com.kltyton.mob_battle.utils.EntityUtil;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -37,7 +37,7 @@ public class LittlePersonGeneralEntity extends RequestedTaskLittlePersonEntity {
     public void tick() {
         super.tick();
         if (!this.level().isClientSide() && this.tickCount % 40 == 0) {
-            for (LivingEntity ally : EntityUtil.getNearbyEntity(this, LivingEntity.class, 3.0D, false, EntityUtil.TeamFilter.ONLY_TEAM)) {
+            for (LivingEntity ally : EntityQueries.getNearbyEntity(this, LivingEntity.class, 3.0D, false, EntityQueries.TeamFilter.ONLY_TEAM)) {
                 if (ally instanceof LittlePersonSoldierEntity || ally instanceof LittlePersonSoldierArcherEntity) {
                     ally.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 4 * 20, 1), this);
                     ally.addEffect(new MobEffectInstance(MobEffects.STRENGTH, 4 * 20, 1), this);
@@ -62,7 +62,7 @@ public class LittlePersonGeneralEntity extends RequestedTaskLittlePersonEntity {
         switch (attack) {
             case 2 -> damageTarget(65.0F, 0.0F);
             case 3 -> {
-                for (LivingEntity ally : EntityUtil.getNearbyEntity(this, LivingEntity.class, 8.0D, true, EntityUtil.TeamFilter.ONLY_TEAM)) {
+                for (LivingEntity ally : EntityQueries.getNearbyEntity(this, LivingEntity.class, 8.0D, true, EntityQueries.TeamFilter.ONLY_TEAM)) {
                     if (ally == this || ally instanceof LittlePersonSoldierEntity || ally instanceof LittlePersonSoldierArcherEntity) {
                         ally.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, 20 * 20, 9), this);
                         ally.addEffect(new MobEffectInstance(MobEffects.STRENGTH, 20 * 20, 4), this);
@@ -109,7 +109,7 @@ public class LittlePersonGeneralEntity extends RequestedTaskLittlePersonEntity {
         double angle = index * Math.PI / 3.0D;
         Vec3 pos = this.position().add(Math.cos(angle) * 2.0D, 0.0D, Math.sin(angle) * 2.0D);
         entity.snapTo(pos.x, pos.y, pos.z, this.getYRot(), this.getXRot());
-        EntityUtil.joinSameTeam(entity, this);
+        EntityQueries.joinSameTeam(entity, this);
         if (this.getTarget() != null) {
             entity.setTarget(this.getTarget());
         }

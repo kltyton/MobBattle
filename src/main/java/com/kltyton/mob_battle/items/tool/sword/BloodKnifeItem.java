@@ -6,7 +6,7 @@ import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.entity.littleperson.skillentity.SkillProjectileEntity;
 import com.kltyton.mob_battle.items.cooldown.StackBoundCooldowns;
 import com.kltyton.mob_battle.items.ModFabricItem;
-import com.kltyton.mob_battle.utils.TaskSchedulerUtil;
+import com.kltyton.mob_battle.event.scheduler.ServerTickScheduler;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -47,7 +47,7 @@ public class BloodKnifeItem extends Item implements ModFabricItem {
         if (player instanceof ServerPlayer serverPlayer) {
             PENDING_RELEASES.add(serverPlayer.getUUID());
             PalMorePlayerAnimationServerHandler.play(serverPlayer, ModPlayerAnimationIds.BLOOD_KNIFE);
-            TaskSchedulerUtil.runLater(FALLBACK_RELEASE_TICKS, () -> releasePendingSkill(serverPlayer));
+            ServerTickScheduler.schedule(player.level().getServer(), FALLBACK_RELEASE_TICKS, () -> releasePendingSkill(serverPlayer));
         }
         StackBoundCooldowns.start(player, stack, COOLDOWN_ID, COOLDOWN_TICKS);
     }

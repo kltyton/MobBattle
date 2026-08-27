@@ -5,9 +5,9 @@ import com.kltyton.mob_battle.entity.ModSkillEntityType;
 import com.kltyton.mob_battle.entity.general.GeneralEntityOnlyOneSkill;
 import com.kltyton.mob_battle.entity.littleperson.LittlePersonEntity;
 import com.kltyton.mob_battle.entity.villager.warriorvillager.WarriorVillager;
-import com.kltyton.mob_battle.utils.EntityUtil;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
-import com.kltyton.mob_battle.utils.GeoAnimationUtil;
+import com.kltyton.mob_battle.client.animation.gecko.GeoAnimationState;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -104,7 +104,7 @@ public class LittlePersonSoldierEntity extends Monster implements LittlePersonEn
     }
 
     private boolean canTarget(LivingEntity target, ServerLevel world) {
-        return EntityUtil.isValidCombatTarget(this, target);
+        return EntityQueries.isValidCombatTarget(this, target);
     }
 
     public static AttributeSupplier.Builder createLittlePersonMilitiaAttributes() {
@@ -333,10 +333,10 @@ public class LittlePersonSoldierEntity extends Monster implements LittlePersonEn
         controllers.add(new AnimationController<>("main_controller", 0, this::mainController));
 
         controllers.add(new AnimationController<>("attack_controller", animTest -> {
-                    if (GeoAnimationUtil.consumeFinishedTriggeredAnimation(animTest)) {
+                    if (GeoAnimationState.consumeFinishedTriggeredAnimation(animTest)) {
                         ClientPlayNetworking.send(new SkillPayload("stop", this.getId()));
                     }
-                    return GeoAnimationUtil.playTriggeredAnimationOrStop(animTest);
+                    return GeoAnimationState.playTriggeredAnimationOrStop(animTest);
                 })
                         .receiveTriggeredAnimations()
                         .triggerableAnim("attack", ATTACK_ANIM)

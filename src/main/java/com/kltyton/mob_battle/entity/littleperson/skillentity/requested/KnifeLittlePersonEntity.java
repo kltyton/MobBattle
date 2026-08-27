@@ -1,7 +1,7 @@
 package com.kltyton.mob_battle.entity.littleperson.skillentity.requested;
 
 import com.kltyton.mob_battle.entity.ModEntities;
-import com.kltyton.mob_battle.utils.TaskSchedulerUtil;
+import com.kltyton.mob_battle.event.scheduler.ServerTickScheduler;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
@@ -66,7 +66,7 @@ public class KnifeLittlePersonEntity extends RequestedTaskLittlePersonEntity {
     public void performSkill(String skill, boolean isAfterSkill) {
         super.performSkill(skill, isAfterSkill);
         if ("attack6".equals(skill)) {
-            TaskSchedulerUtil.runLater(12, () -> {
+            ServerTickScheduler.schedule(this.level().getServer(), 12, () -> {
                 if (!this.isRemoved() && this.isAlive() && this.hasSkill()) {
                     runSkill(6, 0);
                 }

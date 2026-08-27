@@ -19,7 +19,7 @@ import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.level.Level;
 import com.kltyton.mob_battle.entity.littleperson.LittlePersonEntity;
-import com.kltyton.mob_battle.utils.EntityUtil;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
@@ -52,7 +52,7 @@ public class Xbot002Entity extends RequestedTaskLittlePersonEntity {
                 10,
                 true,
                 false,
-                (target, world) -> target instanceof LittlePersonEntity && EntityUtil.isValidCombatTarget(this, target)
+                (target, world) -> target instanceof LittlePersonEntity && EntityQueries.isValidCombatTarget(this, target)
         ));
     }
 
@@ -67,7 +67,7 @@ public class Xbot002Entity extends RequestedTaskLittlePersonEntity {
         switch (attack) {
             case 2 -> {
                 LivingEntity target = this.getTarget();
-                boolean validTarget = target != null && EntityUtil.isValidCombatTarget(this, target);
+                boolean validTarget = target != null && EntityQueries.isValidCombatTarget(this, target);
                 damageTarget(phase == 2 ? 210.0F : 105.0F, 0.0F);
                 if (validTarget && this.level() instanceof ServerLevel serverLevel) {
                     serverLevel.levelEvent(2013, target.getOnPos(), 750);
@@ -95,7 +95,7 @@ public class Xbot002Entity extends RequestedTaskLittlePersonEntity {
 
     private void knockTargetLikeIronGolem(double strength) {
         LivingEntity target = this.getTarget();
-        if (target == null || !EntityUtil.isValidCombatTarget(this, target)) {
+        if (target == null || !EntityQueries.isValidCombatTarget(this, target)) {
             return;
         }
         target.knockback(strength, Mth.sin(this.getYRot() * (float) (Math.PI / 180.0)), -Mth.cos(this.getYRot() * (float) (Math.PI / 180.0)));

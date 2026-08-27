@@ -4,8 +4,8 @@ import com.kltyton.mob_battle.entity.ModSkillEntityType;
 import com.kltyton.mob_battle.entity.littleperson.LittlePersonEntity;
 import com.kltyton.mob_battle.entity.littleperson.archer.littlearrow.LittleArrowEntity;
 import com.kltyton.mob_battle.entity.villager.warriorvillager.WarriorVillager;
-import com.kltyton.mob_battle.utils.EntityUtil;
-import com.kltyton.mob_battle.utils.GeoAnimationUtil;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
+import com.kltyton.mob_battle.client.animation.gecko.GeoAnimationState;
 
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
@@ -62,7 +62,7 @@ public class LittlePersonArcherEntity extends Monster implements LittlePersonEnt
     }
 
     private boolean canTarget(LivingEntity target, ServerLevel world) {
-        return EntityUtil.isValidCombatTarget(this, target);
+        return EntityQueries.isValidCombatTarget(this, target);
     }
     public static AttributeSupplier.Builder createLittlePersonArcherAttributes() {
         return LittlePersonEntity.createLittlePersonAttributes()
@@ -117,7 +117,7 @@ public class LittlePersonArcherEntity extends Monster implements LittlePersonEnt
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         // 主控制器：负责所有常规状态
         controllers.add(new AnimationController<>("main_controller", 0, this::mainController));
-        controllers.add(new AnimationController<>( "attack_controller", GeoAnimationUtil::playTriggeredAnimationOrStop)
+        controllers.add(new AnimationController<>( "attack_controller", GeoAnimationState::playTriggeredAnimationOrStop)
                 .receiveTriggeredAnimations()
                 .triggerableAnim("attack", ATTACK_ANIM)
                 .triggerableAnim("skill", SKILL_ANIM)

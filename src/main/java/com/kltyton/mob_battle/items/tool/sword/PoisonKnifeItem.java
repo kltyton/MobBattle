@@ -4,7 +4,7 @@ import com.kltyton.mob_battle.animation.ModPlayerAnimationIds;
 import com.kltyton.mob_battle.animation.PalMorePlayerAnimationServerHandler;
 import com.kltyton.mob_battle.items.cooldown.StackBoundCooldowns;
 import com.kltyton.mob_battle.items.ModFabricItem;
-import com.kltyton.mob_battle.utils.TaskSchedulerUtil;
+import com.kltyton.mob_battle.event.scheduler.ServerTickScheduler;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -52,7 +52,7 @@ public class PoisonKnifeItem extends Item implements ModFabricItem {
             if (player instanceof ServerPlayer serverPlayer) {
                 PENDING_RELEASES.put(serverPlayer.getUUID(), hand);
                 PalMorePlayerAnimationServerHandler.play(serverPlayer, ModPlayerAnimationIds.POISON_KNIFE);
-                TaskSchedulerUtil.runLater(FALLBACK_RELEASE_TICKS, () -> releasePendingSkill(serverPlayer));
+                ServerTickScheduler.schedule(level.getServer(), FALLBACK_RELEASE_TICKS, () -> releasePendingSkill(serverPlayer));
             }
         }
         StackBoundCooldowns.start(player, stack, COOLDOWN_ID, COOLDOWN_TICKS);

@@ -3,8 +3,8 @@ package com.kltyton.mob_battle.entity.drone;
 import com.kltyton.mob_battle.entity.drone.goal.FlyFollowOwnerGoal;
 import com.kltyton.mob_battle.entity.drone.goal.FlyWanderAroundFarGoal;
 import com.kltyton.mob_battle.items.ModMaterial;
-import com.kltyton.mob_battle.utils.ArmorUtil;
-import com.kltyton.mob_battle.utils.GeoAnimationUtil;
+import com.kltyton.mob_battle.items.armor.support.ArmorSetRules;
+import com.kltyton.mob_battle.client.animation.gecko.GeoAnimationState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -79,7 +79,7 @@ public abstract class DroneEntity extends TamableAnimal implements RangedAttackM
 
         if (!this.level().isClientSide()) {
             LivingEntity owner = this.getOwner();
-            if (owner instanceof ServerPlayer player && (!DroneManager.isPlayersDrone(this, player) || !ArmorUtil.hasFullArmor(owner, ModMaterial.IRON_GOLD_INSTANCE))) {
+            if (owner instanceof ServerPlayer player && (!DroneManager.isPlayersDrone(this, player) || !ArmorSetRules.hasFullArmor(owner, ModMaterial.IRON_GOLD_INSTANCE))) {
                 this.discard();
             }
             if (this.tickCount % 20 == 0) this.heal(10.0F);
@@ -201,7 +201,7 @@ public abstract class DroneEntity extends TamableAnimal implements RangedAttackM
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>("main_controller", 0, this::animationController));
-        controllers.add(new AnimationController<>( "attack_controller", GeoAnimationUtil::playTriggeredAnimationOrStop)
+        controllers.add(new AnimationController<>( "attack_controller", GeoAnimationState::playTriggeredAnimationOrStop)
                 .receiveTriggeredAnimations()
                 .triggerableAnim("attack", ATTACK_ANIM));
     }

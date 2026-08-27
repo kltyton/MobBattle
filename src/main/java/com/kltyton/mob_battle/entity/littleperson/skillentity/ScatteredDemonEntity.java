@@ -1,7 +1,7 @@
 package com.kltyton.mob_battle.entity.littleperson.skillentity;
 
 import com.kltyton.mob_battle.entity.ModEntities;
-import com.kltyton.mob_battle.utils.EntityUtil;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.damagesource.DamageSource;

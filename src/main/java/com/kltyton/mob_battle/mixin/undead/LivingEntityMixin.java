@@ -11,8 +11,8 @@ import com.kltyton.mob_battle.entity.projectile.LittleStoneEntity;
 import com.kltyton.mob_battle.entity.witherskeletonking.skill.WitherSkullKingEntity;
 import com.kltyton.mob_battle.items.ModItems;
 import com.kltyton.mob_battle.items.ModMaterial;
-import com.kltyton.mob_battle.utils.ArmorUtil;
-import com.kltyton.mob_battle.utils.EntityUtil;
+import com.kltyton.mob_battle.items.armor.support.ArmorSetRules;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -123,7 +123,7 @@ public abstract class LivingEntityMixin extends Entity implements Attackable, Wa
     @Inject(method = "canAttack(Lnet/minecraft/world/entity/LivingEntity;)Z", at = @At("HEAD"), cancellable = true)
     private void preventTeamTargeting(LivingEntity target, CallbackInfoReturnable<Boolean> cir) {
         LivingEntity self = (LivingEntity) (Object) this;
-        if (self.isAlliedTo(target) || EntityUtil.shouldBlockOwnedSummonDamage(self, target)) {
+        if (self.isAlliedTo(target) || EntityQueries.shouldBlockOwnedSummonDamage(self, target)) {
             cir.setReturnValue(false);
         }
     }
@@ -148,7 +148,7 @@ public abstract class LivingEntityMixin extends Entity implements Attackable, Wa
             return instance.hurtServer(world, source, amount);
         }
     }
-    //鐚伒鍗拌
+    // 猪灵印记伤害修正。
     @Unique
     private long lastPigSpiritAbsorptionTime = -200L;
     @Inject(method = "hurtServer", at = @At("RETURN"))
@@ -169,7 +169,7 @@ public abstract class LivingEntityMixin extends Entity implements Attackable, Wa
                 piglin.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, 5 * 20, Math.max(0, amplifier), false, false));
                 this.lastPigSpiritAbsorptionTime = currentTime;
             }
-        } else if (attacker instanceof Player player && ArmorUtil.hasFullArmor(player, ModMaterial.ZIJIN_ARMOR_INSTANCE)) {
+        } else if (attacker instanceof Player player && ArmorSetRules.hasFullArmor(player, ModMaterial.ZIJIN_ARMOR_INSTANCE)) {
             if (currentTime - this.lastPigSpiritAbsorptionTime >= 200L) {
                 player.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, 5 * 20, Math.max(0, amplifier), false, false));
                 this.lastPigSpiritAbsorptionTime = currentTime;
@@ -234,7 +234,7 @@ public abstract class LivingEntityMixin extends Entity implements Attackable, Wa
                 || mobBattle$isNonPlayerEntityDamageSource(source.getEntity()))) {
             damage += 30.0F;
         }
-        // --- 閫昏緫2锛氭嫢鏈夊嵃璁扮殑鐢熺墿鍙楀埌鏉ヨ嚜鐚伒鐨勯澶栦激瀹?---
+        // 猪灵或完整紫金护甲玩家对带猪灵印记的目标造成额外伤害。
         if (target.hasEffect(ModEffects.PIG_SPIRIT_MARK_ENTRY)) {
             MobEffectInstance effect = target.getEffect(ModEffects.PIG_SPIRIT_MARK_ENTRY);
             int amplifier = effect != null ? effect.getAmplifier() : 0;
@@ -243,11 +243,11 @@ public abstract class LivingEntityMixin extends Entity implements Attackable, Wa
             if (source.getEntity() instanceof AbstractPiglin) {
                 damage += extraDamage;
             } else if (source.getEntity() instanceof Player player
-                    && ArmorUtil.hasFullArmor(player, ModMaterial.ZIJIN_ARMOR_INSTANCE)) {
+                    && ArmorSetRules.hasFullArmor(player, ModMaterial.ZIJIN_ARMOR_INSTANCE)) {
                 damage += extraDamage;
             }
         }
-        int level = ArmorUtil.getMagicProtectionLevel((LivingEntity) (Object) this);
+        int level = ArmorSetRules.getMagicProtectionLevel((LivingEntity) (Object) this);
         if (isMagic && level > 0) {
             float reductionPercentage = Math.min(level * 0.04f, 0.80f);
             damage *= 1.0f - reductionPercentage;
@@ -291,8 +291,8 @@ public abstract class LivingEntityMixin extends Entity implements Attackable, Wa
                 return;
             }
         }
-        if ((sourceEntity != null && EntityUtil.shouldBlockOwnedSummonDamage(sourceEntity, target))
-                || (attacker != null && attacker != sourceEntity && EntityUtil.shouldBlockOwnedSummonDamage(attacker, target))) {
+        if ((sourceEntity != null && EntityQueries.shouldBlockOwnedSummonDamage(sourceEntity, target))
+                || (attacker != null && attacker != sourceEntity && EntityQueries.shouldBlockOwnedSummonDamage(attacker, target))) {
             cir.setReturnValue(false);
             cir.cancel();
             return;
@@ -370,7 +370,7 @@ public abstract class LivingEntityMixin extends Entity implements Attackable, Wa
     public boolean isIronGoldSword = false;
     @Inject(method = "checkTotemDeathProtection", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;copy()Lnet/minecraft/world/item/ItemStack;"), locals = LocalCapture.CAPTURE_FAILSOFT, cancellable = true)
     public void tryUseDeathProtector(DamageSource source, CallbackInfoReturnable<Boolean> cir, ItemStack protectionItem, DeathProtection deathProtectionComponent, ItemStack itemStack, InteractionHand[] var5, int var6, int var7, InteractionHand hand) {
-        if (itemStack.is(ModItems.IRON_GOLD_SWORD) && (!ArmorUtil.hasFullArmor((LivingEntity) (Object) this, ModMaterial.IRON_GOLD_INSTANCE) || itemStack.getDamageValue() >= itemStack.getMaxDamage() - 1)) {
+        if (itemStack.is(ModItems.IRON_GOLD_SWORD) && (!ArmorSetRules.hasFullArmor((LivingEntity) (Object) this, ModMaterial.IRON_GOLD_INSTANCE) || itemStack.getDamageValue() >= itemStack.getMaxDamage() - 1)) {
             isIronGoldSword = false;
             cir.cancel();
             cir.setReturnValue(false);

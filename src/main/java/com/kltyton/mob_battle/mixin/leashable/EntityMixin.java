@@ -1,7 +1,7 @@
 package com.kltyton.mob_battle.mixin.leashable;
 
 import com.kltyton.mob_battle.accessor.ILead;
-import com.kltyton.mob_battle.event.alliance.AllianceUtils;
+import com.kltyton.mob_battle.event.alliance.AllianceRules;
 import com.kltyton.mob_battle.items.ModItems;
 import com.kltyton.mob_battle.network.packet.ILeadUpdatePayload;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -108,10 +108,10 @@ public abstract class EntityMixin implements ILead {
     @Inject(method = "isAlliedTo(Lnet/minecraft/world/entity/Entity;)Z", at = @At("RETURN"), cancellable = true)
     //同盟指令
     public final void isTeammate(Entity other, CallbackInfoReturnable<Boolean> cir) {
-        if (other != null && AllianceUtils.isSameAlliance((Entity) (Object) this, other)) cir.setReturnValue(true);
+        if (other != null && AllianceRules.isSameAlliance((Entity) (Object) this, other)) cir.setReturnValue(true);
     }
     @Inject(method = "considersEntityAsAlly", at = @At("RETURN"), cancellable = true)
     protected void isInSameTeam(Entity other, CallbackInfoReturnable<Boolean> cir) {
-        if (other != null && AllianceUtils.isSameAlliance((Entity) (Object) this, other)) cir.setReturnValue(true);
+        if (other != null && AllianceRules.isSameAlliance((Entity) (Object) this, other)) cir.setReturnValue(true);
     }
 }

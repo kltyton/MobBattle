@@ -1,6 +1,6 @@
 package com.kltyton.mob_battle.entity.skull.king;
 
-import com.kltyton.mob_battle.client.render.GeoRenderUtil;
+import com.kltyton.mob_battle.client.render.GeoRenderTransforms;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import com.geckolib.renderer.GeoEntityRenderer;
@@ -15,6 +15,6 @@ public class SkullKingEntityRenderer <R extends LivingEntityRenderState & GeoRen
 
     @Override
     public void adjustModelBonesForRender(RenderPassInfo<R> renderPassInfo, BoneSnapshots snapshots) {
-        GeoRenderUtil.applyHeadRotation(renderPassInfo, snapshots, "head", false);
+        GeoRenderTransforms.applyHeadRotation(renderPassInfo, snapshots, "head", false);
     }
 }

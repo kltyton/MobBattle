@@ -2,7 +2,7 @@ package com.kltyton.mob_battle.entity.littleperson.skillentity;
 
 import com.kltyton.mob_battle.entity.ModEntityAttributes;
 import com.kltyton.mob_battle.entity.littleperson.skillentity.base.BaseSkillLittlePersonEntity;
-import com.kltyton.mob_battle.utils.EntityUtil;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
@@ -40,7 +40,7 @@ public class HeavenCrippledFeetEntity extends BaseSkillLittlePersonEntity {
     }
     @Override
     public void runSkill_3(BaseSkillLittlePersonEntity entity) {
-        LivingEntity target = EntityUtil.getClosestNearbyEntity(entity, LivingEntity.class, 2, EntityUtil.TeamFilter.EXCLUDE_TEAM);
+        LivingEntity target = EntityQueries.getClosestNearbyEntity(entity, LivingEntity.class, 2, EntityQueries.TeamFilter.EXCLUDE_TEAM);
         if (target != null && this.level() instanceof ServerLevel serverWorld) {
             target.hurtServer(serverWorld, this.damageSources().mobAttack(entity), 40);
         }

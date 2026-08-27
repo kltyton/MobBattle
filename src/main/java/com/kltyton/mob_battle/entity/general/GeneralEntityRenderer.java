@@ -1,6 +1,6 @@
 package com.kltyton.mob_battle.entity.general;
 
-import com.kltyton.mob_battle.client.render.GeoRenderUtil;
+import com.kltyton.mob_battle.client.render.GeoRenderTransforms;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.world.entity.Entity;
@@ -29,7 +29,7 @@ public class GeneralEntityRenderer<T extends Entity & GeoAnimatable, R extends E
     @Override
     public void adjustModelBonesForRender(RenderPassInfo<R> renderPassInfo, BoneSnapshots snapshots) {
         if (this.hasHand) {
-            GeoRenderUtil.applyHeadRotation(renderPassInfo, snapshots, "Head", true);
+            GeoRenderTransforms.applyHeadRotation(renderPassInfo, snapshots, "Head", true);
         }
     }
 

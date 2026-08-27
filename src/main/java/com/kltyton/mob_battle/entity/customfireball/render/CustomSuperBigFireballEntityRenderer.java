@@ -1,6 +1,6 @@
 package com.kltyton.mob_battle.entity.customfireball.render;
 
-import com.kltyton.mob_battle.client.render.SubmitRenderUtil;
+import com.kltyton.mob_battle.client.render.RenderSubmission;
 import com.kltyton.mob_battle.entity.customfireball.CustomSuperBigFireballEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.fabricmc.api.EnvType;
@@ -43,7 +43,7 @@ public class CustomSuperBigFireballEntityRenderer<T extends CustomSuperBigFireba
     public void submit(ThrownItemRenderState state, PoseStack matrices, SubmitNodeCollector renderTasks, CameraRenderState cameraState) {
         float progress = Math.min(state.ageInTicks / (float) growTime, 1.0F);
         float scaleMagnification = 1.0F + 2.0F * progress;
-        SubmitRenderUtil.submitBillboardItem(state, matrices, renderTasks, cameraState, this.scale * scaleMagnification);
+        RenderSubmission.submitBillboardItem(state, matrices, renderTasks, cameraState, this.scale * scaleMagnification);
         super.submit(state, matrices, renderTasks, cameraState);
     }
 

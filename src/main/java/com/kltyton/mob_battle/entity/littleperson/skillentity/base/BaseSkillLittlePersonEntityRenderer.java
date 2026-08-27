@@ -1,8 +1,8 @@
 package com.kltyton.mob_battle.entity.littleperson.skillentity.base;
 
-import com.kltyton.mob_battle.client.render.GeoRenderUtil;
+import com.kltyton.mob_battle.client.render.GeoRenderTransforms;
 import com.kltyton.mob_battle.entity.littleperson.LittlePersonEntity;
-import com.kltyton.mob_battle.utils.GeoAnimationUtil;
+import com.kltyton.mob_battle.client.animation.gecko.GeoAnimationState;
 import com.geckolib.constant.dataticket.DataTicket;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
@@ -23,12 +23,12 @@ public class BaseSkillLittlePersonEntityRenderer<T extends LivingEntity & Little
 
     @Override
     public void adjustModelBonesForRender(RenderPassInfo<R> renderPassInfo, BoneSnapshots snapshots) {
-        GeoRenderUtil.applyHeadRotation(renderPassInfo, snapshots, "head", true);
+        GeoRenderTransforms.applyHeadRotation(renderPassInfo, snapshots, "head", true);
     }
 
     @Override
     public void addRenderData(T animatable, Void relatedObject, R renderState, float partialTick) {
-        renderState.addGeckolibData(HAS_DEATH_ANIMATION, GeoAnimationUtil.hasDeathAnimation(animatable));
+        renderState.addGeckolibData(HAS_DEATH_ANIMATION, GeoAnimationState.hasDeathAnimation(animatable));
     }
 
     @Override
@@ -42,7 +42,7 @@ public class BaseSkillLittlePersonEntityRenderer<T extends LivingEntity & Little
     public int getPackedOverlay(T animatable, Void relatedObject, float u, float partialTick) {
         if (animatable == null)
             return OverlayTexture.NO_OVERLAY;
-        boolean hasDeathAnimation = GeoAnimationUtil.hasDeathAnimation(animatable);
+        boolean hasDeathAnimation = GeoAnimationState.hasDeathAnimation(animatable);
         boolean showRedOverlay = animatable.isDeadOrDying()
                 ? !hasDeathAnimation
                 : animatable.hurtTime > 0;

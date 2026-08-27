@@ -1,7 +1,7 @@
 package com.kltyton.mob_battle.entity.summon;
 
 import com.kltyton.mob_battle.entity.OwnedSummon;
-import com.kltyton.mob_battle.utils.EntityUtil;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -36,7 +36,7 @@ public class SummonedVexEntity extends Vex implements OwnedSummon {
     public void setSummonOwner(@Nullable LivingEntity owner) {
         this.entityData.set(OWNER, Optional.ofNullable(owner).map(EntityReference::of));
         if (owner != null) {
-            EntityUtil.joinSameTeam(this, owner);
+            EntityQueries.joinSameTeam(this, owner);
             this.setBoundOrigin(owner.blockPosition());
         }
     }
@@ -51,7 +51,7 @@ public class SummonedVexEntity extends Vex implements OwnedSummon {
 
     @Override
     public boolean canAttack(LivingEntity target) {
-        return EntityUtil.isValidSummonCombatTarget(this, getSummonOwner(), target) && super.canAttack(target);
+        return EntityQueries.isValidSummonCombatTarget(this, getSummonOwner(), target) && super.canAttack(target);
     }
 
     @Override
@@ -78,7 +78,7 @@ public class SummonedVexEntity extends Vex implements OwnedSummon {
     }
 
     private boolean trySetOwnerTarget(@Nullable LivingEntity target) {
-        if (target != null && EntityUtil.isValidSummonCombatTarget(this, getSummonOwner(), target)) {
+        if (target != null && EntityQueries.isValidSummonCombatTarget(this, getSummonOwner(), target)) {
             this.setTarget(target);
             return true;
         }

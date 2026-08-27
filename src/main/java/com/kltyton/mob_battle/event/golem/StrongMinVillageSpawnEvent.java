@@ -2,7 +2,7 @@ package com.kltyton.mob_battle.event.golem;
 
 import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.entity.golem.StrongMinEntity;
-import com.kltyton.mob_battle.utils.EntityUtil;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.core.SectionPos;
 import net.minecraft.server.level.ServerLevel;
@@ -38,7 +38,7 @@ public final class StrongMinVillageSpawnEvent {
             if (strongMin == null) {
                 continue;
             }
-            Vec3 spawnPos = EntityUtil.findSafeSpawnPosition(level, strongMin, player.position(), 12.0D, 3.0D, 40, true)
+            Vec3 spawnPos = EntityQueries.findSafeSpawnPosition(level, strongMin, player.position(), 12.0D, 3.0D, 40, true)
                     .orElse(player.position());
             strongMin.snapTo(spawnPos.x, spawnPos.y, spawnPos.z, level.getRandom().nextFloat() * 360.0F, 0.0F);
             strongMin.finalizeSpawn(level, level.getCurrentDifficultyAt(strongMin.blockPosition()), EntitySpawnReason.MOB_SUMMONED, null);

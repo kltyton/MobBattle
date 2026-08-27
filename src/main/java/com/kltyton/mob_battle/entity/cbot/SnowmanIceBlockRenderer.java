@@ -2,7 +2,7 @@ package com.kltyton.mob_battle.entity.cbot;
 
 import com.kltyton.mob_battle.Mob_battle;
 import com.kltyton.mob_battle.client.ModModel;
-import com.kltyton.mob_battle.client.render.SubmitRenderUtil;
+import com.kltyton.mob_battle.client.render.RenderSubmission;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
@@ -33,7 +33,7 @@ public class SnowmanIceBlockRenderer extends EntityRenderer<SnowmanIceBlockEntit
         matrices.pushPose();
         matrices.mulPose(Axis.YP.rotationDegrees(state.yRot - 90.0F));
         matrices.mulPose(Axis.ZP.rotationDegrees(state.xRot));
-        SubmitRenderUtil.submitModel(this.model, state, matrices, renderTasks, TEXTURE);
+        RenderSubmission.submitModel(this.model, state, matrices, renderTasks, TEXTURE);
         matrices.popPose();
         super.submit(state, matrices, renderTasks, cameraState);
     }

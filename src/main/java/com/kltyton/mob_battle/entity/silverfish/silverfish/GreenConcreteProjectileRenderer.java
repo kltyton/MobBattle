@@ -1,6 +1,6 @@
 package com.kltyton.mob_battle.entity.silverfish.silverfish;
 
-import com.kltyton.mob_battle.client.render.SubmitRenderUtil;
+import com.kltyton.mob_battle.client.render.RenderSubmission;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.renderer.SubmitNodeCollector;
@@ -27,7 +27,7 @@ public class GreenConcreteProjectileRenderer extends EntityRenderer<GreenConcret
         matrices.mulPose(Axis.YP.rotationDegrees(state.yRot - 90.0F));
         matrices.mulPose(Axis.ZP.rotationDegrees(state.xRot));
         matrices.scale(0.12F, 0.12F, 0.12F);
-        SubmitRenderUtil.submitBlock(this.blockModelResolver, this.blockRenderState, Blocks.GREEN_CONCRETE.defaultBlockState(),
+        RenderSubmission.submitBlock(this.blockModelResolver, this.blockRenderState, Blocks.GREEN_CONCRETE.defaultBlockState(),
                 matrices, renderTasks, state.lightCoords, state.outlineColor);
         matrices.popPose();
         super.submit(state, matrices, renderTasks, cameraState);

@@ -1,77 +1,64 @@
 package com.kltyton.mob_battle.items;
 
-import com.kltyton.mob_battle.Mob_battle;
-import com.kltyton.mob_battle.accessor.IPiglinBruteSpearMode;
-import com.kltyton.mob_battle.components.ModComponents;
-import com.kltyton.mob_battle.components.ModConsumableComponents;
-import com.kltyton.mob_battle.effect.ModEffects;
-import com.kltyton.mob_battle.entity.ModEntities;
-import com.kltyton.mob_battle.entity.ai.PiglinBruteWeaponData;
-import com.kltyton.mob_battle.entity.ai.ZombieBowData;
 import com.kltyton.mob_battle.items.armor.ModBaseArmorItem;
-import com.kltyton.mob_battle.items.food.MagmaLobsterItemMod;
+import com.kltyton.mob_battle.items.consumable.CardiotonicInjectionItem;
+import com.kltyton.mob_battle.items.control.LittlePersonScepterItem;
+import com.kltyton.mob_battle.items.control.MutualAttackStickItem;
+import com.kltyton.mob_battle.items.control.WoodenWhistleItem;
 import com.kltyton.mob_battle.items.food.ThousandBlossomedImmortalFruit;
-import com.kltyton.mob_battle.items.misc.*;
-import com.kltyton.mob_battle.items.tool.BaseSword;
-import com.kltyton.mob_battle.items.tool.LittlePersonToolItem;
+import com.kltyton.mob_battle.items.heartstone.HeartStoneItem;
+import com.kltyton.mob_battle.items.heartstone.LittleStoneItem;
+import com.kltyton.mob_battle.items.incubation.IncubationEggItem;
+import com.kltyton.mob_battle.items.leash.InvisibleUniversalLeadItem;
+import com.kltyton.mob_battle.items.leash.UniversalLeadItem;
+import com.kltyton.mob_battle.items.registry.ArmorItemRegistrar;
+import com.kltyton.mob_battle.items.registry.BaseMaterialItems;
+import com.kltyton.mob_battle.items.registry.BowItemRegistrar;
+import com.kltyton.mob_battle.items.registry.CombatItemRegistrar;
+import com.kltyton.mob_battle.items.registry.CurrencyItemRegistrar;
+import com.kltyton.mob_battle.items.registry.DeviceItemRegistrar;
+import com.kltyton.mob_battle.items.registry.EquipmentItemRegistrar;
+import com.kltyton.mob_battle.items.registry.FoodItemRegistrar;
+import com.kltyton.mob_battle.items.registry.HeartStoneItemRegistrar;
+import com.kltyton.mob_battle.items.registry.LobsterItemRegistrar;
+import com.kltyton.mob_battle.items.registry.MaterialItemRegistrar;
+import com.kltyton.mob_battle.items.registry.RegistrySupport;
+import com.kltyton.mob_battle.items.registry.ScrollItemRegistrar;
+import com.kltyton.mob_battle.items.registry.SnackItemRegistrar;
+import com.kltyton.mob_battle.items.registry.SpawnEggItemRegistrar;
+import com.kltyton.mob_battle.items.registry.ToolItemRegistrar;
+import com.kltyton.mob_battle.items.registry.WeaponItemRegistrar;
 import com.kltyton.mob_battle.items.scroll.*;
-import com.kltyton.mob_battle.items.tool.BaseAxe;
 import com.kltyton.mob_battle.items.tool.MasterScepterItem;
 import com.kltyton.mob_battle.items.tool.backpack.BackpackItem;
-import com.kltyton.mob_battle.items.tool.bow.IceBowItem;
-import com.kltyton.mob_battle.items.tool.bow.MeteoricoreBowItem;
-import com.kltyton.mob_battle.items.tool.irongold.IronGoldSword;
-import com.kltyton.mob_battle.items.tool.meteorite.MeteoriteSword;
-import com.kltyton.mob_battle.items.tool.piglin.PiglinCannonItem;
 import com.kltyton.mob_battle.items.tool.snipe.VsSnipe;
-import com.kltyton.mob_battle.items.tool.sword.CompressedMarkedSword;
 import com.kltyton.mob_battle.items.tool.sword.BloodKnifeItem;
 import com.kltyton.mob_battle.items.tool.sword.ChasingWindSwordItem;
 import com.kltyton.mob_battle.items.tool.sword.ElementalSwordItem;
 import com.kltyton.mob_battle.items.tool.sword.FineKnifeItem;
 import com.kltyton.mob_battle.items.tool.sword.IronManMissileLauncherItem;
 import com.kltyton.mob_battle.items.tool.sword.PoisonKnifeItem;
-import com.kltyton.mob_battle.items.tool.sword.zijin.ZiJinSword;
-import net.minecraft.core.Registry;
-import net.minecraft.core.component.DataComponents;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.Identifier;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.tags.DamageTypeTags;
-import net.minecraft.util.Unit;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.EquipmentSlotGroup;
-import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.food.FoodProperties;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.Rarity;
-import net.minecraft.world.item.SpawnEggItem;
-import net.minecraft.world.item.ToolMaterial;
-import net.minecraft.world.item.component.BlocksAttacks;
-import net.minecraft.world.item.component.ChargedProjectiles;
-import net.minecraft.world.item.component.DeathProtection;
-import net.minecraft.world.item.component.ItemAttributeModifiers;
-import net.minecraft.world.item.component.TypedEntityData;
-import net.minecraft.world.item.equipment.ArmorMaterial;
-import net.minecraft.world.item.equipment.ArmorType;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.SpawnEggItem;
 
+/**
+ * 物品注册兼容门面。
+ *
+ * <p>公开字段和注册方法保持原签名，实际构造与分类注册由 {@code items.registry}
+ * 下的领域注册器完成。{@link #init()} 只编排稳定的历史顺序，避免把新业务重新堆回本类。</p>
+ */
 public class ModItems {
-    public static final Map<String, Item> ITEMS = new HashMap<>();
-    public static final Map<String, SpawnEggItem> SPAWN_EGG_ITEMS = new HashMap<>();
-    public static final Map<String, Item> GENERATED_ITEMS = new HashMap<>();
+    /** 创造模式物品组使用的稳定物品目录。 */
+    public static final Map<String, Item> ITEMS = RegistrySupport.ITEMS;
+    /** 刷怪蛋物品目录。 */
+    public static final Map<String, SpawnEggItem> SPAWN_EGG_ITEMS = RegistrySupport.SPAWN_EGG_ITEMS;
+    /** 需要由 Datagen 生成标准模型的物品目录。 */
+    public static final Map<String, Item> GENERATED_ITEMS = RegistrySupport.GENERATED_ITEMS;
 
-
-    // 杂项物品
+    // 工具、卷轴、战斗与通用装备的兼容字段
     public static MutualAttackStickItem MUTUAL_ATTACK_STICK;
     public static MasterScepterItem MASTER_SCEPTER;
     public static UniversalLeadItem UNIVERSAL_LEAD;
@@ -246,918 +233,73 @@ public class ModItems {
 
     public static CardiotonicInjectionItem CARDIOTONIC_INJECTION;
 
+    /**
+     * 按历史顺序初始化全部物品。
+     *
+     * <p>注册顺序属于兼容契约：显式刷怪蛋会触发实体类型初始化，动态刷怪蛋必须最后执行。</p>
+     */
     public static void init() {
-        BaseItems.init();
-        //注册物品
-        MUTUAL_ATTACK_STICK = Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "mutual_attack_stick"),
-                new MutualAttackStickItem(new Item.Properties().stacksTo(1)
-                        .setId(ResourceKey.create(
-                                Registries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "mutual_attack_stick")))));
-        MASTER_SCEPTER = Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "master_scepter"),
-                new MasterScepterItem(new Item.Properties().stacksTo(1).component(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true)
-                        .setId(ResourceKey.create(
-                                Registries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "master_scepter")))));
-        UNIVERSAL_LEAD = Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "universal_lead"),
-                new UniversalLeadItem(new Item.Properties()
-                        .setId(ResourceKey.create(
-                                Registries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "universal_lead")))));
-        INVISIBLE_UNIVERSAL_LEAD = Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "invisible_universal_lead"),
-                new InvisibleUniversalLeadItem(new Item.Properties()
-                        .setId(ResourceKey.create(
-                                Registries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "invisible_universal_lead")))));
-        FIREBALL_SCROLL = Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "fireball_scroll"),
-                new FireballScrollItem(new Item.Properties()
-                        .setId(ResourceKey.create(
-                                Registries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "fireball_scroll")))));
-        BIG_FIREBALL_SCROLL = Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "big_fireball_scroll"),
-                new BigFireballScrollItem(new Item.Properties()
-                        .setId(ResourceKey.create(
-                                Registries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "big_fireball_scroll")))));
-        SUPER_BIG_FIREBALL_SCROLL = Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "super_big_fireball_scroll"),
-                new SuperBigFireballScrollItem(new Item.Properties().useCooldown(7)
-                        .setId(ResourceKey.create(
-                                Registries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "super_big_fireball_scroll")))));
-
-        FIREMAN_SCROLL = Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "fireman_scroll"),
-                new FiremanScrollItem(new Item.Properties()
-                        .setId(ResourceKey.create(
-                                Registries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "fireman_scroll")))));
-        SLOWNESS_SCROLL = Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "slowness_scroll"),
-                new SlownessScrollItem(new Item.Properties().useCooldown(20)
-                        .setId(ResourceKey.create(
-                                Registries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "slowness_scroll")))));
-        FIRE_WALL_SCROLL = Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "fire_wall_scroll"),
-                new FireWallScrollItem(new Item.Properties().useCooldown(35)
-                        .setId(ResourceKey.create(
-                                Registries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "fire_wall_scroll")))));
-        PURIFICATION_SCROLL = registerItem("purification_scroll",
-                new PurificationScrollItem(registryBaseItemSettings("purification_scroll")
-                        .useCooldown(75))
-        );
-        SKULL_MAGE_SCROLL = registerItem("skull_mage_scroll",
-                new SkullMageScrollItem(registryBaseItemSettings("skull_mage_scroll")
-                        .useCooldown(20))
-        );
-        //.useRemainder(THOUSAND_BLOSSOMED_IMMORTAL_FRUIT)
-        THOUSAND_BLOSSOMED_IMMORTAL_FRUIT = Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "thousand_blossomed_immortal_fruit"),
-                new ThousandBlossomedImmortalFruit(new Item.Properties().food(new FoodProperties.Builder().nutrition(4).saturationModifier(0.3F).alwaysEdible().build()).useCooldown(60)
-                        .setId(ResourceKey.create(
-                                Registries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "thousand_blossomed_immortal_fruit")))));
-        LOBSTER_MAIN_COURSE = registerItem("lobster_main_course",
-                registryBaseItemSettings("lobster_main_course").food(
-                        new FoodProperties.Builder().nutrition(10).saturationModifier(0.3F).build()
-                )
-        );
-        COMPRESSED_COPPER_INGOT = registerItem("compressed_copper_ingot", registryBaseItemSettings("compressed_copper_ingot").rarity(Rarity.UNCOMMON));
-        COMPRESSED_IRON_INGOT = registerItem("compressed_iron_ingot", registryBaseItemSettings("compressed_iron_ingot").rarity(Rarity.UNCOMMON));
-        COMPRESSED_GOLD_INGOT = registerItem("compressed_gold_ingot", registryBaseItemSettings("compressed_gold_ingot").rarity(Rarity.UNCOMMON));
-        COMPRESSED_DIAMOND = registerItem("compressed_diamond", registryBaseItemSettings("compressed_diamond").rarity(Rarity.UNCOMMON));
-        COMPRESSED_NETHERITE_INGOT = registerItem("compressed_netherite_ingot", registryBaseItemSettings("compressed_netherite_ingot").rarity(Rarity.UNCOMMON));
-        COMPRESSED_REDSTONE = registerItem("compressed_redstone", registryBaseItemSettings("compressed_redstone").rarity(Rarity.UNCOMMON));
-        COMPRESSED_LAPIS_LAZULI = registerItem("compressed_lapis_lazuli", registryBaseItemSettings("compressed_lapis_lazuli").rarity(Rarity.UNCOMMON));
-
-        // 龙虾系列
-        LOBSTER = registerItem("lobster",
-                registryBaseItemSettings("lobster").food(
-                        new FoodProperties.Builder()
-                                .nutrition(8)
-                                .saturationModifier(0.8F)
-                                .alwaysEdible()
-                                .build(),
-                        ModConsumableComponents.LOBSTER
-                )
-        );
-        // 岩浆龙虾：
-        // 1. 吃下着火
-        // 2. 扔到水里变黑曜石龙虾并播放冷却音效
-        MAGMA_LOBSTER = registerItem("magma_lobster",
-                new MagmaLobsterItemMod(
-                        registryBaseItemSettings("magma_lobster").food(
-                                new FoodProperties.Builder()
-                                        .nutrition(10)
-                                        .saturationModifier(0.6F)
-                                        .alwaysEdible()
-                                        .build(),
-                                ModConsumableComponents.MAGMA_LOBSTER
-                        )
-                )
-        );
-
-        // 黑曜石龙虾：
-        // 右键当盾牌，1500耐久，不能附魔
-        OBSIDIAN_LOBSTER = registerItem("obsidian_lobster",
-                new ObsidianLobsterItem(
-                        registryBaseItemSettings("obsidian_lobster")
-                                .stacksTo(1)
-                                .durability(1500)
-                                .component(DataComponents.BLOCKS_ATTACKS,
-                                        new BlocksAttacks(
-                                                0.25F,
-                                                1.0F,
-                                                List.of(new BlocksAttacks.DamageReduction(90.0F, Optional.empty(), 0.0F, 1.0F)),
-                                                new BlocksAttacks.ItemDamageFunction(3.0F, 1.0F, 1.0F),
-                                                Optional.empty(),
-                                                Optional.of(SoundEvents.SHIELD_BLOCK),
-                                                Optional.of(SoundEvents.SHIELD_BREAK)
-                                        )
-                                )
-                                .component(ModComponents.LOBSTER_TRANSFORMED, false)
-                                .component(DataComponents.BREAK_SOUND, SoundEvents.SHIELD_BREAK)
-                )
-        );
-
-        // 爆开的黑曜石龙虾
-        BURST_OBSIDIAN_LOBSTER = registerItem("burst_obsidian_lobster",
-                registryBaseItemSettings("burst_obsidian_lobster").food(
-                        new FoodProperties.Builder()
-                                .nutrition(10)
-                                .saturationModifier(0.6F)
-                                .alwaysEdible()
-                                .build(),
-                        ModConsumableComponents.BURST_OBSIDIAN_LOBSTER
-                )
-        );
-
-        // 寒冰弓
-        ICE_BOW = registerItem("ice_bow",
-                new IceBowItem(
-                        registryBaseItemSettings("ice_bow")
-                                .rarity(Rarity.EPIC)
-                                .durability(25000)
-                                .stacksTo(1)
-                ),
-                 false
-        );
-
-        COOKED_HIGHBIRD_EGG = registerItem("cooked_highbird_egg",
-                registryBaseItemSettings("cooked_highbird_egg").food(
-                        new FoodProperties.Builder().nutrition(20).saturationModifier(20).alwaysEdible().build(),
-                        ModConsumableComponents.COOKED_HIGHBIRD_EGG
-                )
-        );
-        CHEESE = registerItem("cheese",
-                registryBaseItemSettings("cheese").food(
-                        new FoodProperties.Builder().nutrition(1).saturationModifier(2.0F).build()
-                )
-        );
-        BEER = registerItem("beer",
-                registryBaseItemSettings("beer").food(
-                        new FoodProperties.Builder().nutrition(1).saturationModifier(1.0F).alwaysEdible().build(),
-                        ModConsumableComponents.BEER
-                )
-        );
-
-        HEART_STONE = Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "heart_stone"),
-                new HeartStoneItem(new Item.Properties().stacksTo(3)
-                        .setId(ResourceKey.create(
-                                Registries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "heart_stone")))));
-
-        HELL_HELMET_1 = Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "hell_helmet_1"),
-                new Item(new Item.Properties().humanoidArmor(ModMaterial.HELL_ARMOR_INSTANCE_1, ArmorType.HELMET)
-                                .durability(0).stacksTo(1)
-                                .setId(ResourceKey.create(
-                                        Registries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "hell_helmet_1")
-                                ))
-                )
-        );
-        HELL_CHESTPLATE_1 = Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "hell_chestplate_1"),
-                new Item(new Item.Properties().humanoidArmor(ModMaterial.HELL_ARMOR_INSTANCE_1, ArmorType.CHESTPLATE)
-                                .durability(0).stacksTo(1)
-                                .setId(ResourceKey.create(
-                                        Registries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "hell_chestplate_1")
-                                ))
-                )
-        );
-        HELL_LEGGINGS_1 = Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "hell_leggings_1"),
-                new Item(new Item.Properties().humanoidArmor(ModMaterial.HELL_ARMOR_INSTANCE_1, ArmorType.LEGGINGS)
-                                .durability(0).stacksTo(1)
-                                .setId(ResourceKey.create(
-                                        Registries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "hell_leggings_1")
-                                ))
-                )
-        );
-        HELL_BOOTS_1 = Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "hell_boots_1"),
-                new Item(new Item.Properties().humanoidArmor(ModMaterial.HELL_ARMOR_INSTANCE_1, ArmorType.BOOTS)
-                                .durability(0).stacksTo(1)
-                                .setId(ResourceKey.create(
-                                        Registries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "hell_boots_1")
-                                ))
-                )
-        );
-        HELL_HELMET_2 = Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "hell_helmet_2"),
-                new Item(new Item.Properties().humanoidArmor(ModMaterial.HELL_ARMOR_INSTANCE_2, ArmorType.HELMET)
-                                .durability(0).stacksTo(1)
-                                .setId(ResourceKey.create(
-                                        Registries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "hell_helmet_2")
-                                ))
-                )
-        );
-        HELL_CHESTPLATE_2 = Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "hell_chestplate_2"),
-                new Item(new Item.Properties().humanoidArmor(ModMaterial.HELL_ARMOR_INSTANCE_2, ArmorType.CHESTPLATE)
-                                .durability(0).stacksTo(1)
-                                .setId(ResourceKey.create(
-                                        Registries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "hell_chestplate_2")
-                                ))
-                )
-        );
-        HELL_LEGGINGS_2 = Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "hell_leggings_2"),
-                new Item(new Item.Properties().humanoidArmor(ModMaterial.HELL_ARMOR_INSTANCE_2, ArmorType.LEGGINGS)
-                                .durability(0).stacksTo(1)
-                                .setId(ResourceKey.create(
-                                        Registries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "hell_leggings_2")
-                                ))
-                )
-        );
-        HELL_BOOTS_2 = Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "hell_boots_2"),
-                new Item(new Item.Properties().humanoidArmor(ModMaterial.HELL_ARMOR_INSTANCE_2, ArmorType.BOOTS)
-                                .durability(0).stacksTo(1)
-                                .setId(ResourceKey.create(
-                                        Registries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "hell_boots_2")
-                                ))
-                )
-        );
-
-        ECREDCULTIST_HELMET = Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "ecredcultist_helmet"),
-                new ModBaseArmorItem(new Item.Properties().humanoidArmor(ModMaterial.ECREDCULTIST_INSTANCE, ArmorType.HELMET)
-                        .durability(1).stacksTo(1).component(DataComponents.UNBREAKABLE, Unit.INSTANCE)
-                        .setId(ResourceKey.create(
-                                Registries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "ecredcultist_helmet")
-                        )),
-                        ModMaterial.ECREDCULTIST_INSTANCE
-                )
-        );
-        ECREDCULTIST_CHESTPLATE = Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "ecredcultist_chestplate"),
-                new ModBaseArmorItem(new Item.Properties().humanoidArmor(ModMaterial.ECREDCULTIST_INSTANCE, ArmorType.CHESTPLATE)
-                        .durability(1).stacksTo(1).component(DataComponents.UNBREAKABLE, Unit.INSTANCE)
-                        .setId(ResourceKey.create(
-                                Registries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "ecredcultist_chestplate")
-                        )),
-                        ModMaterial.ECREDCULTIST_INSTANCE
-                )
-        );
-        ECREDCULTIST_LEGGINGS = Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "ecredcultist_leggings"),
-                new ModBaseArmorItem(new Item.Properties().humanoidArmor(ModMaterial.ECREDCULTIST_INSTANCE, ArmorType.LEGGINGS)
-                        .durability(1).stacksTo(1).component(DataComponents.UNBREAKABLE, Unit.INSTANCE)
-                        .setId(ResourceKey.create(
-                                Registries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "ecredcultist_leggings")
-                        )),
-                        ModMaterial.ECREDCULTIST_INSTANCE
-                )
-        );
-        ECREDCULTIST_BOOTS = Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "ecredcultist_boots"),
-                new ModBaseArmorItem(
-                        new Item.Properties().humanoidArmor(ModMaterial.ECREDCULTIST_INSTANCE, ArmorType.BOOTS)
-                        .durability(1).stacksTo(1).component(DataComponents.UNBREAKABLE, Unit.INSTANCE)
-                        .setId(ResourceKey.create(
-                                Registries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "ecredcultist_boots")
-                        )),
-                        ModMaterial.ECREDCULTIST_INSTANCE
-                )
-        );
-        IRON_GOLD_HELMET = Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "iron_gold_helmet"),
-                new Item(new Item.Properties().humanoidArmor(ModMaterial.IRON_GOLD_INSTANCE, ArmorType.HELMET)
-                                .rarity(Rarity.EPIC)
-                                .durability(512).stacksTo(1).component(DataComponents.UNBREAKABLE, Unit.INSTANCE)
-                                .setId(ResourceKey.create(
-                                        Registries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "iron_gold_helmet")
-                                ))
-                )
-        );
-        IRON_GOLD_CHESTPLATE = Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "iron_gold_chestplate"),
-                new Item(new Item.Properties().humanoidArmor(ModMaterial.IRON_GOLD_INSTANCE, ArmorType.CHESTPLATE)
-                                .rarity(Rarity.EPIC)
-                                .durability(512).stacksTo(1).component(DataComponents.UNBREAKABLE, Unit.INSTANCE)
-                                .setId(ResourceKey.create(
-                                        Registries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "iron_gold_chestplate")
-                                ))
-                )
-        );
-        IRON_GOLD_LEGGINGS = Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "iron_gold_leggings"),
-                new Item(new Item.Properties().humanoidArmor(ModMaterial.IRON_GOLD_INSTANCE, ArmorType.LEGGINGS)
-                                .rarity(Rarity.EPIC)
-                                .durability(512).stacksTo(1).component(DataComponents.UNBREAKABLE, Unit.INSTANCE)
-                                .setId(ResourceKey.create(
-                                        Registries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "iron_gold_leggings")
-                                ))
-                )
-        );
-        IRON_GOLD_BOOTS = Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "iron_gold_boots"),
-                new Item(new Item.Properties().humanoidArmor(ModMaterial.IRON_GOLD_INSTANCE, ArmorType.BOOTS)
-                                .rarity(Rarity.EPIC)
-                                .durability(512).stacksTo(1).component(DataComponents.UNBREAKABLE, Unit.INSTANCE)
-                                .setId(ResourceKey.create(
-                                        Registries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "iron_gold_boots")
-                                ))
-                )
-        );
-        // 翠钻合金套
-        EMERALD_DIAMOND_HELMET = Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "emerald_diamond_helmet"),
-                new Item(new Item.Properties()
-                        .rarity(Rarity.EPIC)
-                        .humanoidArmor(ModMaterial.EMERALD_DIAMOND_ALLOY_INSTANCE, ArmorType.HELMET)
-                        .component(DataComponents.UNBREAKABLE, Unit.INSTANCE)
-                        .stacksTo(1)
-                        .setId(ResourceKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "emerald_diamond_helmet")))
-                )
-        );
-
-        EMERALD_DIAMOND_CHESTPLATE = Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "emerald_diamond_chestplate"),
-                new Item(new Item.Properties()
-                        .rarity(Rarity.EPIC)
-                        .humanoidArmor(ModMaterial.EMERALD_DIAMOND_ALLOY_INSTANCE, ArmorType.CHESTPLATE)
-                        .component(DataComponents.UNBREAKABLE, Unit.INSTANCE)
-                        .stacksTo(1)
-                        .setId(ResourceKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "emerald_diamond_chestplate")))
-                )
-        );
-
-        EMERALD_DIAMOND_LEGGINGS = Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "emerald_diamond_leggings"),
-                new Item(new Item.Properties()
-                        .rarity(Rarity.EPIC)
-                        .humanoidArmor(ModMaterial.EMERALD_DIAMOND_ALLOY_INSTANCE, ArmorType.LEGGINGS)
-                        .component(DataComponents.UNBREAKABLE, Unit.INSTANCE)
-                        .stacksTo(1)
-                        .setId(ResourceKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "emerald_diamond_leggings")))
-                )
-        );
-
-        EMERALD_DIAMOND_BOOTS = Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "emerald_diamond_boots"),
-                new Item(new Item.Properties()
-                        .rarity(Rarity.EPIC)
-                        .humanoidArmor(ModMaterial.EMERALD_DIAMOND_ALLOY_INSTANCE, ArmorType.BOOTS)
-                        .component(DataComponents.UNBREAKABLE, Unit.INSTANCE)
-                        .stacksTo(1)
-                        .setId(ResourceKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "emerald_diamond_boots")))
-                )
-        );
-
-        ZIJIN_HELMET = registerItem(
-                "zijin_helmet",
-                registryBaseItemSettings("zijin_helmet")
-                        .rarity(Rarity.EPIC)
-                        .humanoidArmor(ModMaterial.ZIJIN_ARMOR_INSTANCE, ArmorType.HELMET)
-                        .component(DataComponents.UNBREAKABLE, Unit.INSTANCE)
-                        .stacksTo(1)
-        );
-
-        ZIJIN_CHESTPLATE = registerItem(
-                "zijin_chestplate",
-                registryBaseItemSettings("zijin_chestplate")
-                        .rarity(Rarity.EPIC)
-                        .humanoidArmor(ModMaterial.ZIJIN_ARMOR_INSTANCE, ArmorType.CHESTPLATE)
-                        .component(DataComponents.UNBREAKABLE, Unit.INSTANCE)
-                        .stacksTo(1)
-        );
-
-        ZIJIN_LEGGINGS = registerItem(
-                "zijin_leggings",
-                registryBaseItemSettings("zijin_leggings")
-                        .rarity(Rarity.EPIC)
-                        .humanoidArmor(ModMaterial.ZIJIN_ARMOR_INSTANCE, ArmorType.LEGGINGS)
-                        .component(DataComponents.UNBREAKABLE, Unit.INSTANCE)
-                        .stacksTo(1)
-        );
-
-        ZIJIN_BOOTS = registerItem("zijin_boots",
-                registryBaseItemSettings("zijin_boots")
-                        .rarity(Rarity.EPIC)
-                        .humanoidArmor(ModMaterial.ZIJIN_ARMOR_INSTANCE, ArmorType.BOOTS)
-                        .component(DataComponents.UNBREAKABLE, Unit.INSTANCE)
-                        .stacksTo(1)
-        );
-
-        // 注册工具和武器
-        COMPRESSED_COPPER_HELMET = registerCompressedArmor("compressed_copper_helmet", ModMaterial.COMPRESSED_COPPER_ARMOR_INSTANCE, ArmorType.HELMET, 2500, 5.0, 0.0);
-        COMPRESSED_COPPER_CHESTPLATE = registerCompressedArmor("compressed_copper_chestplate", ModMaterial.COMPRESSED_COPPER_ARMOR_INSTANCE, ArmorType.CHESTPLATE, 2500, 5.0, 0.0);
-        COMPRESSED_COPPER_LEGGINGS = registerCompressedArmor("compressed_copper_leggings", ModMaterial.COMPRESSED_COPPER_ARMOR_INSTANCE, ArmorType.LEGGINGS, 2500, 5.0, 0.0);
-        COMPRESSED_COPPER_BOOTS = registerCompressedArmor("compressed_copper_boots", ModMaterial.COMPRESSED_COPPER_ARMOR_INSTANCE, ArmorType.BOOTS, 2500, 5.0, 0.0);
-
-        COMPRESSED_IRON_HELMET = registerCompressedArmor("compressed_iron_helmet", ModMaterial.COMPRESSED_IRON_ARMOR_INSTANCE, ArmorType.HELMET, 5000, 6.0, 0.0);
-        COMPRESSED_IRON_CHESTPLATE = registerCompressedArmor("compressed_iron_chestplate", ModMaterial.COMPRESSED_IRON_ARMOR_INSTANCE, ArmorType.CHESTPLATE, 5000, 6.0, 0.0);
-        COMPRESSED_IRON_LEGGINGS = registerCompressedArmor("compressed_iron_leggings", ModMaterial.COMPRESSED_IRON_ARMOR_INSTANCE, ArmorType.LEGGINGS, 5000, 6.0, 0.0);
-        COMPRESSED_IRON_BOOTS = registerCompressedArmor("compressed_iron_boots", ModMaterial.COMPRESSED_IRON_ARMOR_INSTANCE, ArmorType.BOOTS, 5000, 6.0, 0.0);
-
-        COMPRESSED_GOLD_HELMET = registerCompressedArmor("compressed_gold_helmet", ModMaterial.COMPRESSED_GOLD_ARMOR_INSTANCE, ArmorType.HELMET, 4000, 5.0, 0.0);
-        COMPRESSED_GOLD_CHESTPLATE = registerCompressedArmor("compressed_gold_chestplate", ModMaterial.COMPRESSED_GOLD_ARMOR_INSTANCE, ArmorType.CHESTPLATE, 4000, 5.0, 0.0);
-        COMPRESSED_GOLD_LEGGINGS = registerCompressedArmor("compressed_gold_leggings", ModMaterial.COMPRESSED_GOLD_ARMOR_INSTANCE, ArmorType.LEGGINGS, 4000, 5.0, 0.0);
-        COMPRESSED_GOLD_BOOTS = registerCompressedArmor("compressed_gold_boots", ModMaterial.COMPRESSED_GOLD_ARMOR_INSTANCE, ArmorType.BOOTS, 4000, 5.0, 0.0);
-
-        COMPRESSED_DIAMOND_HELMET = registerCompressedArmor("compressed_diamond_helmet", ModMaterial.COMPRESSED_DIAMOND_ARMOR_INSTANCE, ArmorType.HELMET, 10000, 7.0, 0.0);
-        COMPRESSED_DIAMOND_CHESTPLATE = registerCompressedArmor("compressed_diamond_chestplate", ModMaterial.COMPRESSED_DIAMOND_ARMOR_INSTANCE, ArmorType.CHESTPLATE, 10000, 7.0, 1.0);
-        COMPRESSED_DIAMOND_LEGGINGS = registerCompressedArmor("compressed_diamond_leggings", ModMaterial.COMPRESSED_DIAMOND_ARMOR_INSTANCE, ArmorType.LEGGINGS, 10000, 7.0, 1.0);
-        COMPRESSED_DIAMOND_BOOTS = registerCompressedArmor("compressed_diamond_boots", ModMaterial.COMPRESSED_DIAMOND_ARMOR_INSTANCE, ArmorType.BOOTS, 10000, 7.0, 0.0);
-
-        COMPRESSED_NETHERITE_HELMET = registerCompressedArmor("compressed_netherite_helmet", ModMaterial.COMPRESSED_NETHERITE_ARMOR_INSTANCE, ArmorType.HELMET, 20000, 10.0, 0.0);
-        COMPRESSED_NETHERITE_CHESTPLATE = registerCompressedArmor("compressed_netherite_chestplate", ModMaterial.COMPRESSED_NETHERITE_ARMOR_INSTANCE, ArmorType.CHESTPLATE, 20000, 10.0, 0.0);
-        COMPRESSED_NETHERITE_LEGGINGS = registerCompressedArmor("compressed_netherite_leggings", ModMaterial.COMPRESSED_NETHERITE_ARMOR_INSTANCE, ArmorType.LEGGINGS, 20000, 10.0, 0.0);
-        COMPRESSED_NETHERITE_BOOTS = registerCompressedArmor("compressed_netherite_boots", ModMaterial.COMPRESSED_NETHERITE_ARMOR_INSTANCE, ArmorType.BOOTS, 20000, 10.0, 0.0);
-
-        METEORICORE_AXE = Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "meteoricore_axe"),
-                new BaseAxe(new Item.Properties()
-                        .setId(ResourceKey.create(
-                                Registries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "meteoricore_axe")
-                        ))
-                )
-        );
-
-        METEORICORE_BOW = Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "meteoricore_bow"),
-                new MeteoricoreBowItem(new Item.Properties()
-                        .setId(ResourceKey.create(
-                                Registries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "meteoricore_bow")
-                        ))
-                )
-        );
-
-        METEORICORE_SWORD = Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "meteoricore_sword"),
-                new MeteoriteSword(new Item.Properties()
-                        .setId(ResourceKey.create(
-                                Registries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "meteoricore_sword")
-                        ))
-                )
-        );
-        IRON_GOLD_SWORD = Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "iron_gold_sword"),
-                new IronGoldSword(new Item.Properties()
-                        .sword(ModMaterial.IRON_GOLD_TOOL_MATERIAL, 84f, 1024)
-                        .rarity(Rarity.EPIC)
-                        .stacksTo(1)
-                        .component(DataComponents.DEATH_PROTECTION, DeathProtection.TOTEM_OF_UNDYING)
-                        .setId(ResourceKey.create(
-                                Registries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "iron_gold_sword")
-                        ))
-                )
-        );
-
-        EMERALD_DIAMOND_SWORD = registerItem("emerald_diamond_sword",
-                registryBaseItemSettings("emerald_diamond_sword")
-                        .rarity(Rarity.EPIC)
-                        .sword(ModMaterial.EMERALD_DIAMOND_ALLOY_TOOL_MATERIAL, 149.0F, -2.4F)
-                        .stacksTo(1)
-                        .component(DataComponents.UNBREAKABLE, Unit.INSTANCE),
-                false
-        );
-
-        ZIJIN_SWORD = registerItem("zijin_sword",
-                new ZiJinSword(
-                        registryBaseItemSettings("zijin_sword")
-                                .rarity(Rarity.EPIC)
-                                .sword(ModMaterial.ZIJIN_ARMOR_TOOL_MATERIAL, 84, 0f)
-                                .attributes(ItemAttributeModifiers.builder()
-                                        .add(
-                                                Attributes.ATTACK_DAMAGE,
-                                                new AttributeModifier(Item.BASE_ATTACK_DAMAGE_ID, 84.0 + ModMaterial.ZIJIN_ARMOR_TOOL_MATERIAL.attackDamageBonus(), AttributeModifier.Operation.ADD_VALUE),
-                                                EquipmentSlotGroup.MAINHAND
-                                        )
-                                        .add(
-                                                Attributes.ATTACK_SPEED,
-                                                new AttributeModifier(Item.BASE_ATTACK_SPEED_ID, 0.0, AttributeModifier.Operation.ADD_VALUE),
-                                                EquipmentSlotGroup.MAINHAND
-                                        )
-                                        .add(
-                                                Attributes.SWEEPING_DAMAGE_RATIO,
-                                                new AttributeModifier(Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "sweeping_zijin_sword"), 1.0, AttributeModifier.Operation.ADD_VALUE),
-                                                EquipmentSlotGroup.MAINHAND
-                                        )
-                                        .build())
-                                .stacksTo(1)
-                                .component(DataComponents.UNBREAKABLE, Unit.INSTANCE)
-                ),
-                false
-        );
-
-        COMPRESSED_COPPER_SWORD = registerCompressedSword(
-                "compressed_copper_sword",
-                new BaseSword(compressedSwordSettings("compressed_copper_sword", ModMaterial.COMPRESSED_COPPER_TOOL_MATERIAL, 15.0F, -2.2F))
-        );
-        COMPRESSED_IRON_SWORD = registerCompressedSword(
-                "compressed_iron_sword",
-                new BaseSword(compressedSwordSettings("compressed_iron_sword", ModMaterial.COMPRESSED_IRON_TOOL_MATERIAL, 25.0F, -2.2F))
-        );
-        COMPRESSED_GOLD_SWORD = registerCompressedSword(
-                "compressed_gold_sword",
-                new BaseSword(compressedSwordSettings("compressed_gold_sword", ModMaterial.COMPRESSED_GOLD_TOOL_MATERIAL, 30.0F, -2.3F))
-        );
-        COMPRESSED_DIAMOND_SWORD = registerCompressedSword(
-                "compressed_diamond_sword",
-                new CompressedMarkedSword(compressedSwordSettings("compressed_diamond_sword", ModMaterial.COMPRESSED_DIAMOND_TOOL_MATERIAL, 68.0F, -2.0F), ModEffects.DIAMOND_MARK_ENTRY)
-        );
-        COMPRESSED_NETHERITE_SWORD = registerCompressedSword(
-                "compressed_netherite_sword",
-                new CompressedMarkedSword(compressedSwordSettings("compressed_netherite_sword", ModMaterial.COMPRESSED_NETHERITE_TOOL_MATERIAL, 120.0F, -2.0F), ModEffects.NETHERITE_MARK_ENTRY)
-        );
-
-        VS_SNIPE = Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "vs_snipe"),
-                new VsSnipe(new Item.Properties()
-                        .stacksTo(1).durability(465).component(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.EMPTY).enchantable(1)
-                        .setId(ResourceKey.create(
-                                Registries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "vs_snipe")
-                        ))
-                )
-        );
-        SKULL_KING_SPAWN_EGG = registerSpawnEggItem(ModEntities.SKULL_KING, "skull_king_spawn_egg");
-        SKULL_ARCHER_SPAWN_EGG = registerSpawnEggItem(ModEntities.SKULL_ARCHER, "skull_archer_spawn_egg");
-        SKULL_WARRIOR_SPAWN_EGG = registerSpawnEggItem(ModEntities.SKULL_WARRIOR, "skull_warrior_spawn_egg");
-        SKULL_MAGE_SPAWN_EGG = registerSpawnEggItem(ModEntities.SKULL_MAGE, "skull_mage_spawn_egg");
-        VOID_CELL_SPAWN_EGG = registerSpawnEggItem(ModEntities.VOID_CELL, "void_cell_spawn_egg");
-        YOUNG_MIN_SPAWN_EGG = registerSpawnEggItem(ModEntities.YOUNG_MIN, "young_min_spawn_egg");
-        HIDDEN_EYE_SPAWN_EGG = registerSpawnEggItem(ModEntities.HIDDEN_EYE, "hidden_eye_spawn_egg");
-        // 注册高脚鸟刷怪蛋
-        HIGHBIRD_BABY_SPAWN_EGG = registerSpawnEggItem(ModEntities.HIGHBIRD_BABY, "highbird_baby_spawn_egg");
-        HIGHBIRD_TEENAGE_SPAWN_EGG = registerSpawnEggItem(ModEntities.HIGHBIRD_TEENAGE, "highbird_teenage_spawn_egg");
-        HIGHBIRD_ADULTHOOD_SPAWN_EGG = registerSpawnEggItem(ModEntities.HIGHBIRD_ADULTHOOD, "highbird_adulthood_spawn_egg");
-        HIGHBIRD_EGG_SPAWN_EGG = registerSpawnEggItem(ModEntities.HIGHBIRD_EGG, "highbird_egg_spawn_egg");
-        XUN_SHENG_SPAWN_EGG = registerSpawnEggItem(ModEntities.XUN_SHENG, "xun_sheng_spawn_egg");
-        DEEP_CREATURE_SPAWN_EGG = registerSpawnEggItem(ModEntities.DEEP_CREATURE, "deep_creature_spawn_egg");
-        WITHER_SKELETON_KING_SPAWN_EGG = registerSpawnEggItem(ModEntities.WITHER_SKELETON_KING, "wither_skeleton_king_spawn_egg");
-        MILITIA_ARCHER_VILLAGER_SPAWN_EGG = registerSpawnEggItem(ModEntities.MILITIA_ARCHER_VILLAGER, "militia_archer_villager_spawn_egg");
-        MILITIA_WARRIOR_VILLAGER_SPAWN_EGG = registerSpawnEggItem(ModEntities.MILITIA_WARRIOR_VILLAGER, "militia_warrior_villager_spawn_egg");
-        ARCHER_VILLAGER_SPAWN_EGG = registerSpawnEggItem(ModEntities.ARCHER_VILLAGER, "archer_villager_spawn_egg");
-        WARRIOR_VILLAGER_SPAWN_EGG = registerSpawnEggItem(ModEntities.WARRIOR_VILLAGER, "warrior_villager_spawn_egg");
-        BLUE_IRON_GOLEM_SPAWN_EGG = registerSpawnEggItem(ModEntities.BLUE_IRON_GOLEM, "blue_iron_golem_spawn_egg");
-        SUGAR_MAN_SCORPION_SPAWN_EGG = registerSpawnEggItem(ModEntities.SUGAR_MAN_SCORPION, "sugar_man_scorpion_spawn_egg");
-        IRON_GOLEM_SPAWN_EGG = registerSpawnEggItem(ModEntities.VILLAGER_IRON_GOLEM_ENTITY, "iron_golem_spawn_egg");
-        LITTLE_PERSON_CIVILIAN_SPAWN_EGG = registerSpawnEggItem(ModEntities.LITTLE_PERSON_CIVILIAN, "little_person_civilian_spawn_egg");
-        LITTLE_PERSON_MILITIA_SPAWN_EGG = registerSpawnEggItem(ModEntities.LITTLE_PERSON_MILITIA, "little_person_militia_spawn_egg");
-        LITTLE_PERSON_ARCHER_SPAWN_EGG = registerSpawnEggItem(ModEntities.LITTLE_PERSON_ARCHER, "little_person_archer_spawn_egg");
-        LITTLE_PERSON_GIANT_SPAWN_EGG = registerSpawnEggItem(ModEntities.LITTLE_PERSON_GIANT, "little_person_giant_spawn_egg");
-        LITTLE_PERSON_GUARD_SPAWN_EGG = registerSpawnEggItem(ModEntities.LITTLE_PERSON_GUARD, "little_person_guard_spawn_egg");
-        LITTLE_PERSON_KING_SPAWN_EGG = registerSpawnEggItem(ModEntities.LITTLE_PERSON_KING, "little_person_king_spawn_egg");
-        VILLAGER_KING_SPAWN_EGG = registerSpawnEggItem(ModEntities.VILLAGER_KING_ENTITY, "villager_king_spawn_egg");
-        VINDICATOR_GENERAL_SPAWN_EGG = registerSpawnEggItem(ModEntities.VINDICATOR_GENERAL, "vindicator_general_spawn_egg");
-
-        HULKBUSTER_SPAWN_EGG = registerSpawnEggItem(ModEntities.HULKBUSTER, "hulkbuster_spawn_egg");
-        SILENCE_PHANTOM_SPAWN_EGG = registerSpawnEggItem(ModEntities.SILENCE_PHANTOM, "silence_phantom_spawn_egg");
-        COAL_SILVERFISH_SPAWN_EGG = registerSpawnEggItem(ModEntities.COAL_SILVERFISH, "coal_silverfish_spawn_egg");
-        PIGLIN_BRUTE_SPEAR_USE_SPAWN_EGG = registerPiglinBruteSpearSpawnEgg(
-                "piglin_brute_spear_use_spawn_egg",
-                true
-        );
-        PIGLIN_BRUTE_SPEAR_MELEE_SPAWN_EGG = registerPiglinBruteSpearSpawnEgg(
-                "piglin_brute_spear_melee_spawn_egg",
-                false
-        );
-        PIGLIN_BRUTE_BOW_SPAWN_EGG = registerPiglinBruteWeaponSpawnEgg(
-                "piglin_brute_bow_spawn_egg",
-                PiglinBruteWeaponData.FORCE_BOW_KEY
-        );
-        PIGLIN_BRUTE_CROSSBOW_SPAWN_EGG = registerPiglinBruteWeaponSpawnEgg(
-                "piglin_brute_crossbow_spawn_egg",
-                PiglinBruteWeaponData.FORCE_CROSSBOW_KEY
-        );
-        BOW_ZOMBIE_SPAWN_EGG = registerBowZombieSpawnEgg();
-        PIGLIN_BRUTE_SPEAR_MOD_SPAWN_EGG = registerSpawnEggItem(
-                ModEntities.PIGLIN_BRUTE_SPEAR_MOD,
-                "piglin_brute_spear_mod_spawn_egg"
-        );
-        BOW_ZOMBIE_MOD_SPAWN_EGG = registerSpawnEggItem(
-                ModEntities.BOW_ZOMBIE_MOD,
-                "bow_zombie_mod_spawn_egg"
-        );
-
-        INCUBATION_EGG = Registry.register(BuiltInRegistries.ITEM,
-                Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "incubation_egg"),
-                new IncubationEggItem(
-                        ModEntities.HIGHBIRD_EGG,
-                        new Item.Properties()
-                                .setId(ResourceKey.create(
-                                        Registries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "incubation_egg")
-                                ))
-                )
-        );
-
-        WARLOCK_BOOK = registerItem("warlock_book", new SummonVexBookItem(
-                registryBaseItemSettings("warlock_book")
-                        .useCooldown(15)
-                        .durability(150)
-                        .stacksTo(1),
-                3, 0, 0)
-        );
-
-        GRAND_SUMMON_BOOK = registerItem("grand_summon_book", new SummonVexBookItem(
-                registryBaseItemSettings("grand_summon_book")
-                        .rarity(Rarity.RARE)
-                        .useCooldown(20)
-                        .durability(150)
-                        .stacksTo(1),
-                10, 5, 10)
-        );
-
-        GUARDIAN_SEAL = registerItem("guardian_seal", new GuardianSealItem(
-                registryBaseItemSettings("guardian_seal")
-                        .useCooldown(2000)
-                        .stacksTo(1),
-                false)
-        );
-
-        FILLING_SEAL = registerItem("filling_seal", new GuardianSealItem(
-                registryBaseItemSettings("filling_seal")
-                        .stacksTo(1),
-                true)
-        );
-
-        FINE_KNIFE = registerItem("fine_knife", new FineKnifeItem(
-                registryBaseItemSettings("fine_knife")
-                        .durability(200)
-                        .sword(ToolMaterial.IRON, 0, 0)
-                        .stacksTo(1)),
-                false
-        );
-
-        POISON_KNIFE = registerItem("poison_knife", new PoisonKnifeItem(
-                        registryBaseItemSettings("poison_knife")
-                                .durability(2000)
-                                .sword(ToolMaterial.IRON, 48.0F, -2.4F)
-                                .stacksTo(1)),
-                true,
-                false
-        );
-
-        BLOOD_KNIFE = registerItem("blood_knife", new BloodKnifeItem(
-                        registryBaseItemSettings("blood_knife")
-                                .durability(3000)
-                                .sword(ToolMaterial.IRON, 48.0F, -2.4F)
-                                .stacksTo(1)),
-                true,
-                false
-        );
-
-        IRON_MAN_MISSILE_LAUNCHER = registerItem("iron_man_missile_launcher",
-                new IronManMissileLauncherItem(
-                        registryBaseItemSettings("iron_man_missile_launcher")
-                                .durability(10)
-                                .sword(ToolMaterial.IRON, 4.0F, -2.4F)
-                                .attributes(ItemAttributeModifiers.builder()
-                                        .add(
-                                                Attributes.ATTACK_DAMAGE,
-                                                new AttributeModifier(Item.BASE_ATTACK_DAMAGE_ID, 4.0F + ToolMaterial.IRON.attackDamageBonus(), AttributeModifier.Operation.ADD_VALUE),
-                                                EquipmentSlotGroup.MAINHAND
-                                        )
-                                        .add(
-                                                Attributes.ATTACK_SPEED,
-                                                new AttributeModifier(Item.BASE_ATTACK_SPEED_ID, -2.4F, AttributeModifier.Operation.ADD_VALUE),
-                                                EquipmentSlotGroup.MAINHAND
-                                        )
-                                        .add(
-                                                Attributes.ENTITY_INTERACTION_RANGE,
-                                                new AttributeModifier(Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "iron_man_missile_launcher_entity_range"), 20.0D, AttributeModifier.Operation.ADD_VALUE),
-                                                EquipmentSlotGroup.MAINHAND
-                                        )
-                                        .build())
-                                .stacksTo(1)),
-                true,
-                false
-        );
-
-        SMALL_BACKPACK = registerItem("small_backpack", new BackpackItem(
-                registryBaseItemSettings("small_backpack")
-                        .rarity(Rarity.UNCOMMON)
-                        .stacksTo(1),
-                false)
-        );
-
-        BIG_BACKPACK = registerItem("big_backpack", new BackpackItem(
-                registryBaseItemSettings("big_backpack")
-                        .rarity(Rarity.UNCOMMON)
-                        .stacksTo(1),
-                9)
-        );
-
-        LARGE_BACKPACK = registerItem("large_backpack", new BackpackItem(
-                registryBaseItemSettings("large_backpack")
-                        .rarity(Rarity.RARE)
-                        .stacksTo(1),
-                true)
-        );
-
-        CARDIOTONIC_INJECTION = registerItem("cardiotonic_injection", new CardiotonicInjectionItem(
-                registryBaseItemSettings("cardiotonic_injection")
-                        .stacksTo(1)),
-                false
-        );
-
-        ICE_ARROW_ITEM = registerItem("ice_arrow_item", registryBaseItemSettings("ice_arrow_item").stacksTo(64));
-        ENDER_PURPLE_PEARL = registerItem("ender_purple_pearl",
-                new EnderPurplePearlItem(registryBaseItemSettings("ender_purple_pearl").stacksTo(20)));
-        ICE_SWORD = registerItem("ice_sword",
-                new ElementalSwordItem(registryBaseItemSettings("ice_sword")
-                        .durability(230)
-                        .sword(ToolMaterial.IRON, 3.0F, -2.4F)
-                        .stacksTo(1),
-                        com.kltyton.mob_battle.entity.projectile.ElementalSwordProjectileEntity.ICE_SWORD,
-                        Items.SNOWBALL,
-                        1,
-                        0));
-        FIRE_SWORD = registerItem("fire_sword",
-                new ElementalSwordItem(registryBaseItemSettings("fire_sword")
-                        .durability(210)
-                        .sword(ToolMaterial.IRON, 3.0F, -2.4F)
-                        .stacksTo(1),
-                        com.kltyton.mob_battle.entity.projectile.ElementalSwordProjectileEntity.FIRE_SWORD,
-                        Items.FIRE_CHARGE,
-                        1,
-                        0));
-        CHASING_WIND_SWORD = registerItem("chasing_wind_sword",
-                new ChasingWindSwordItem(registryBaseItemSettings("chasing_wind_sword")
-                        .durability(1600)
-                        .sword(ToolMaterial.IRON, 33.0F, -2.4F)
-                        .stacksTo(1)));
-        LITTLE_STONE = registerItem("little_stone", new LittleStoneItem(registryBaseItemSettings("little_stone").stacksTo(64)));
-        WOODEN_WHISTLE = registerItem("wooden_whistle", new WoodenWhistleItem(registryBaseItemSettings("wooden_whistle").durability(10).stacksTo(1)));
-        LITTLE_PERSON_TOOL = registerItem("little_person_tool",
-                new LittlePersonToolItem(LittlePersonToolItem.applyAxePickaxeProperties(
-                        registryBaseItemSettings("little_person_tool")
-                                .durability(50))
-                        .stacksTo(1)),
-                true,
-                false
-        );
-        LITTLE_PERSON_SCEPTER = registerItem("little_person_scepter",
-                new LittlePersonScepterItem(registryBaseItemSettings("little_person_scepter").durability(100).stacksTo(1)),
-                true,
-                false
-        );
-        ILLAGER_CURRENCY = registerItem("illager_currency");
-        NIBI = registerItem("nibi");
-        NIBI_BAG = registerItem("nibi_bag");
-        NIBI_BOX = registerItem("nibi_box", registryBaseItemSettings("nibi_box").craftRemainder(Items.CHEST));
-        TRAIN_BULLET = registerItem("train_bullet", registryBaseItemSettings("train_bullet").stacksTo(64));
-        AREA_GRAVITY_DEVICE_ITEM = registerItem("area_gravity_device_item", new AreaGravityDeviceItem(
-                registryBaseItemSettings("area_gravity_device_item")
-                        .rarity(Rarity.RARE)
-                        .stacksTo(1)
-                        .useCooldown(70)
-                        .component(DataComponents.UNBREAKABLE, Unit.INSTANCE)
-
-        ));
-        PIGLIN_CANNON = registerItem("piglin_cannon",
-                new PiglinCannonItem(
-                        registryBaseItemSettings("piglin_cannon")
-                                .rarity(Rarity.RARE)
-                                .stacksTo(1)
-                                .component(DataComponents.UNBREAKABLE, Unit.INSTANCE)
-                )
-        );
-        WIRE = registerItem("wire");
-        ELECTRONIC_COMPONENTS = registerItem("electronic_components");
-        ModEntities.SPAWN_EGG_ENTITIES.forEach((id, entityType) -> {
-            @SuppressWarnings("unchecked")
-            EntityType<? extends Mob> mobType = (EntityType<? extends Mob>) entityType;
-            registerSpawnEggItem(mobType, id);
-        });
+        BaseMaterialItems.init();
+        ToolItemRegistrar.init();
+        ScrollItemRegistrar.init();
+        FoodItemRegistrar.init();
+        MaterialItemRegistrar.init();
+        LobsterItemRegistrar.init();
+        BowItemRegistrar.init();
+        SnackItemRegistrar.init();
+        HeartStoneItemRegistrar.init();
+        ArmorItemRegistrar.init();
+        WeaponItemRegistrar.init();
+        SpawnEggItemRegistrar.initExplicit();
+        CombatItemRegistrar.init();
+        EquipmentItemRegistrar.init();
+        CurrencyItemRegistrar.init();
+        DeviceItemRegistrar.init();
+        SpawnEggItemRegistrar.initDynamic();
     }
 
+    /** 构造带稳定注册 ID 的物品属性；保留旧公开入口供外部扩展调用。 */
     public static Item.Properties registryBaseItemSettings(String id) {
-        Identifier itemId = Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, id);
-        return new Item.Properties()
-                .setId(ResourceKey.create(Registries.ITEM, itemId));
+        return RegistrySupport.registryBaseItemSettings(id);
     }
-    private static Item registerCompressedArmor(String id, ArmorMaterial material, ArmorType type, int durability, double maxHealth, double extraToughness) {
-        EquipmentSlotGroup slot = EquipmentSlotGroup.bySlot(type.getSlot());
-        ItemAttributeModifiers attributes = material.createAttributes(type)
-                .withModifierAdded(
-                        Attributes.MAX_HEALTH,
-                        new AttributeModifier(Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "health_" + id), maxHealth, AttributeModifier.Operation.ADD_VALUE),
-                        slot
-                );
-        if (material == ModMaterial.COMPRESSED_COPPER_ARMOR_INSTANCE) {
-            attributes = attributes.withModifierAdded(
-                    Attributes.ENTITY_INTERACTION_RANGE,
-                    new AttributeModifier(Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "range_" + id), 0.1, AttributeModifier.Operation.ADD_VALUE),
-                    slot
-            );
-        }
-        if (extraToughness > 0.0) {
-            attributes = attributes.withModifierAdded(
-                    Attributes.ARMOR_TOUGHNESS,
-                    new AttributeModifier(Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "armor_toughness_" + id), extraToughness, AttributeModifier.Operation.ADD_VALUE),
-                    slot
-            );
-        }
-        return registerItem(
-                id,
-                new ModBaseArmorItem(
-                        registryBaseItemSettings(id)
-                        .humanoidArmor(material, type)
-                        .attributes(attributes)
-                        .durability(durability)
-                        .stacksTo(1),
-                        material,
-                        false
-                )
-        );
-    }
-    private static Item.Properties compressedSwordSettings(String id, ToolMaterial material, float attackDamage, float attackSpeed) {
-        ItemAttributeModifiers attributes = ItemAttributeModifiers.builder()
-                .add(
-                        Attributes.ATTACK_DAMAGE,
-                        new AttributeModifier(Item.BASE_ATTACK_DAMAGE_ID, attackDamage + material.attackDamageBonus(), AttributeModifier.Operation.ADD_VALUE),
-                        EquipmentSlotGroup.MAINHAND
-                )
-                .add(
-                        Attributes.ATTACK_SPEED,
-                        new AttributeModifier(Item.BASE_ATTACK_SPEED_ID, attackSpeed, AttributeModifier.Operation.ADD_VALUE),
-                        EquipmentSlotGroup.MAINHAND
-                )
-                .add(
-                        Attributes.SWEEPING_DAMAGE_RATIO,
-                        new AttributeModifier(Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "sweeping_" + id), 1.0, AttributeModifier.Operation.ADD_VALUE),
-                        EquipmentSlotGroup.MAINHAND
-                )
-                .build();
-        return registryBaseItemSettings(id)
-                .sword(material, attackDamage, attackSpeed)
-                .attributes(attributes)
-                .stacksTo(1);
-    }
-    private static Item registerCompressedSword(String id, Item item) {
-        return registerItem(id, item, true, false);
-    }
+
+    /** 注册普通物品；保留旧公开入口。 */
     public static Item registerItem(String id) {
-        return registerItem(id, registryBaseItemSettings(id));
+        return RegistrySupport.registerItem(id);
     }
+
+    /** 注册自定义物品实例；保留旧公开入口。 */
     public static <T extends Item> T registerItem(String id, T item) {
-        return registerItem(id, item, true);
+        return RegistrySupport.registerItem(id, item);
     }
+
+    /** 按属性注册物品；保留旧公开入口。 */
     public static Item registerItem(String id, Item.Properties settings) {
-        return registerItem(id, settings, true);
+        return RegistrySupport.registerItem(id, settings);
     }
+
+    /** 按属性注册物品并控制模型生成；保留旧公开入口。 */
     public static Item registerItem(String id, Item.Properties settings, boolean isGenerated) {
-        return registerItem(id, settings, true, isGenerated);
+        return RegistrySupport.registerItem(id, settings, isGenerated);
     }
+
+    /** 按属性注册物品并分别控制物品组与模型生成；保留旧公开入口。 */
     public static Item registerItem(String id, Item.Properties settings, boolean registerGroup, boolean isGenerated) {
-        return registerItem(id, new Item(settings), registerGroup, isGenerated);
+        return RegistrySupport.registerItem(id, settings, registerGroup, isGenerated);
     }
+
+    /** 注册自定义物品并控制模型生成；保留旧公开入口。 */
     public static <T extends Item> T registerItem(String id, T item, boolean isGenerated) {
-        return registerItem(id, item, true, isGenerated);
+        return RegistrySupport.registerItem(id, item, isGenerated);
     }
+
+    /** 注册自定义物品并分别控制物品组与模型生成；保留旧公开入口。 */
     public static <T extends Item> T registerItem(String id, T item, boolean registerGroup, boolean isGenerated) {
-        Identifier itemId = Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, id);
-        T registered = Registry.register(
-                BuiltInRegistries.ITEM,
-                itemId,
-                item
-        );
-        if (registerGroup) ITEMS.put(id, registered);
-        if (isGenerated) GENERATED_ITEMS.put(id, registered);
-        return registered;
+        return RegistrySupport.registerItem(id, item, registerGroup, isGenerated);
     }
+
+    /** 注册刷怪蛋；保留旧公开入口。 */
     public static SpawnEggItem registerSpawnEggItem(EntityType<? extends Mob> entityType, String id) {
-        SpawnEggItem item = registerItem(id, new SpawnEggItem(registryBaseItemSettings(id).spawnEgg(entityType)), false, false);
-        SPAWN_EGG_ITEMS.put(id, item);
-        return item;
-    }
-
-    private static SpawnEggItem registerPiglinBruteSpearSpawnEgg(String id, boolean useSpearAsItem) {
-        CompoundTag entityData = new CompoundTag();
-        entityData.putBoolean(IPiglinBruteSpearMode.FORCE_GOLDEN_SPEAR_KEY, true);
-        if (useSpearAsItem) {
-            entityData.putInt(IPiglinBruteSpearMode.SPEAR_ATTACK_MODE_KEY, IPiglinBruteSpearMode.SPEAR_MODE_USE);
-        }
-        SpawnEggItem item = registerItem(
-                id,
-                new SpawnEggItem(
-                        registryBaseItemSettings(id)
-                                .spawnEgg(EntityType.PIGLIN_BRUTE)
-                                .component(DataComponents.ENTITY_DATA, TypedEntityData.of(EntityType.PIGLIN_BRUTE, entityData))
-                ),
-                false,
-                false
-        );
-        SPAWN_EGG_ITEMS.put(id, item);
-        return item;
-    }
-
-    private static SpawnEggItem registerBowZombieSpawnEgg() {
-        String id = "bow_zombie_spawn_egg";
-        CompoundTag entityData = new CompoundTag();
-        entityData.putBoolean(ZombieBowData.FORCE_BOW_KEY, true);
-        SpawnEggItem item = registerItem(
-                id,
-                new SpawnEggItem(
-                        registryBaseItemSettings(id)
-                                .spawnEgg(EntityType.ZOMBIE)
-                                .component(DataComponents.ENTITY_DATA, TypedEntityData.of(EntityType.ZOMBIE, entityData))
-                ),
-                false,
-                false
-        );
-        SPAWN_EGG_ITEMS.put(id, item);
-        return item;
-    }
-
-    private static SpawnEggItem registerPiglinBruteWeaponSpawnEgg(String id, String forceWeaponKey) {
-        CompoundTag entityData = new CompoundTag();
-        entityData.putBoolean(forceWeaponKey, true);
-        SpawnEggItem item = registerItem(
-                id,
-                new SpawnEggItem(
-                        registryBaseItemSettings(id)
-                                .spawnEgg(EntityType.PIGLIN_BRUTE)
-                                .component(DataComponents.ENTITY_DATA, TypedEntityData.of(EntityType.PIGLIN_BRUTE, entityData))
-                ),
-                false,
-                false
-        );
-        SPAWN_EGG_ITEMS.put(id, item);
-        return item;
+        return RegistrySupport.registerSpawnEggItem(entityType, id);
     }
 }

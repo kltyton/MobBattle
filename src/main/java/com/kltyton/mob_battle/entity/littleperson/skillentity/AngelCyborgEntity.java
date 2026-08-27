@@ -3,8 +3,8 @@ package com.kltyton.mob_battle.entity.littleperson.skillentity;
 import com.kltyton.mob_battle.effect.ModEffects;
 import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.entity.littleperson.archer.littlearrow.LittleArrowEntity;
-import com.kltyton.mob_battle.utils.EntityUtil;
-import com.kltyton.mob_battle.utils.TaskSchedulerUtil;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
+import com.kltyton.mob_battle.event.scheduler.ServerTickScheduler;
 import com.geckolib.animation.RawAnimation;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerBossEvent;
@@ -149,7 +149,7 @@ public class AngelCyborgEntity extends RequestedLittlePersonEntity {
      * 并造成 50 魔法伤害。
      */
     private void runAttack3() {
-        for (LivingEntity target : EntityUtil.getEntitiesInCone(this, LivingEntity.class, 3.0, 180, EntityUtil.TeamFilter.EXCLUDE_TEAM)) {
+        for (LivingEntity target : EntityQueries.getEntitiesInCone(this, LivingEntity.class, 3.0, 180, EntityQueries.TeamFilter.EXCLUDE_TEAM)) {
             if (target == null || !isValidSummonTarget(target)) {
                 return;
             }
@@ -266,7 +266,7 @@ public class AngelCyborgEntity extends RequestedLittlePersonEntity {
 
         world.addFreshEntity(arrow);
 
-        TaskSchedulerUtil.runLater(5 * 20, () -> {
+        ServerTickScheduler.schedule(world.getServer(), 5 * 20, () -> {
             if (!arrow.isRemoved()) {
                 arrow.discard();
             }

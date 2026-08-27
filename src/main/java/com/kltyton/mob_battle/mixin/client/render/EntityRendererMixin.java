@@ -5,12 +5,12 @@ import com.kltyton.mob_battle.accessor.IEffectMarker;
 import com.kltyton.mob_battle.accessor.ILead;
 import com.kltyton.mob_battle.accessor.ILeadRenderData;
 import com.kltyton.mob_battle.accessor.IModEntityRenderState;
-import com.kltyton.mob_battle.client.render.SubmitRenderUtil;
+import com.kltyton.mob_battle.client.render.RenderSubmission;
 import com.kltyton.mob_battle.config.MobBattleConfig;
 import com.kltyton.mob_battle.entity.drone.DroneEntity;
 import com.kltyton.mob_battle.items.ModItems;
 import com.kltyton.mob_battle.items.ModMaterial;
-import com.kltyton.mob_battle.utils.ArmorUtil;
+import com.kltyton.mob_battle.items.armor.support.ArmorSetRules;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
@@ -190,7 +190,7 @@ public abstract class EntityRendererMixin {
             matrices.pushPose();
             matrices.translate(-0.28F, 0.7F, -0.28F);
             matrices.scale(0.7F, 0.7F, 0.7F);
-            SubmitRenderUtil.submitBlock(this.blockModelResolver, this.iceBlockRenderState, Blocks.PACKED_ICE.defaultBlockState(),
+            RenderSubmission.submitBlock(this.blockModelResolver, this.iceBlockRenderState, Blocks.PACKED_ICE.defaultBlockState(),
                     matrices, renderTasks, state.lightCoords, state.outlineColor);
             matrices.popPose();
         }
@@ -202,9 +202,9 @@ public abstract class EntityRendererMixin {
 
         Item markerItem = null;
         int markerMask = ((IModEntityRenderState) state).getCompressedArmorMarkerType();
-        if ((markerMask & NETHERITE_MARKER_MASK) != 0 && ArmorUtil.hasFullArmor(player, ModMaterial.COMPRESSED_NETHERITE_ARMOR_INSTANCE)) {
+        if ((markerMask & NETHERITE_MARKER_MASK) != 0 && ArmorSetRules.hasFullArmor(player, ModMaterial.COMPRESSED_NETHERITE_ARMOR_INSTANCE)) {
             markerItem = ModItems.COMPRESSED_NETHERITE_INGOT;
-        } else if ((markerMask & DIAMOND_MARKER_MASK) != 0 && ArmorUtil.hasFullArmor(player, ModMaterial.COMPRESSED_DIAMOND_ARMOR_INSTANCE)) {
+        } else if ((markerMask & DIAMOND_MARKER_MASK) != 0 && ArmorSetRules.hasFullArmor(player, ModMaterial.COMPRESSED_DIAMOND_ARMOR_INSTANCE)) {
             markerItem = ModItems.COMPRESSED_DIAMOND;
         }
         if (markerItem == null) return;

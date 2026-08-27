@@ -2,7 +2,7 @@ package com.kltyton.mob_battle.items.armor;
 
 import com.kltyton.mob_battle.items.ModMaterial;
 import com.kltyton.mob_battle.items.armor.compressarmor.CompressArmorSkillManager;
-import com.kltyton.mob_battle.utils.ArmorUtil;
+import com.kltyton.mob_battle.items.armor.support.ArmorSetRules;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.renderer.SubmitNodeCollector;
@@ -39,11 +39,11 @@ public class ModBaseArmorItem extends Item {
     public void inventoryTick(ItemStack stack, ServerLevel world, Entity entity, EquipmentSlot slot) {
         super.inventoryTick(stack, world, entity, slot);
         if (entity instanceof LivingEntity living
-                && ArmorUtil.hasFullArmor(living, ModMaterial.COMPRESSED_IRON_ARMOR_INSTANCE)) {
+                && ArmorSetRules.hasFullArmor(living, ModMaterial.COMPRESSED_IRON_ARMOR_INSTANCE)) {
             living.addEffect(new MobEffectInstance(MobEffects.RESISTANCE, 40, 0, false, false, true));
         }
         if (entity instanceof ServerPlayer player
-                && ArmorUtil.hasFullArmor(player, ModMaterial.ECREDCULTIST_INSTANCE)) {
+                && ArmorSetRules.hasFullArmor(player, ModMaterial.ECREDCULTIST_INSTANCE)) {
             CompressArmorSkillManager.tickEcredcultistArmor(player);
         }
     }

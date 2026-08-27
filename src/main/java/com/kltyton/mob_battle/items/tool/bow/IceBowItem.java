@@ -159,7 +159,7 @@ public class IceBowItem extends BaseBow {
     private void shootShotgun(ServerLevel world, Player shooter, ItemStack bowStack, float pull, boolean fullyCharged) {
         Vec3 look = shooter.getViewVector(1.0F);
         Vec3 eyePos = shooter.getEyePosition();
-        Vec3 spawnPos = eyePos.add(look.scale(0.6)); // 鍦ㄧ帺瀹跺墠鏂圭敓鎴愶紝閬垮厤鎵撳埌鑷繁
+        Vec3 spawnPos = eyePos.add(look.scale(0.6)); // 在玩家前方生成，避免箭矢立即命中自己。
 
         for (int i = 0; i < SHOT_COUNT; i++) {
             IceArrowEntity arrow = new IceArrowEntity(world, shooter, new ItemStack(ModItems.ICE_ARROW_ITEM), bowStack);

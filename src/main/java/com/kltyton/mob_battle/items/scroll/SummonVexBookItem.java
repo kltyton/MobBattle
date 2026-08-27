@@ -3,7 +3,7 @@ package com.kltyton.mob_battle.items.scroll;
 import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.entity.ModEntityAttributes;
 import com.kltyton.mob_battle.entity.summon.SummonedVexEntity;
-import com.kltyton.mob_battle.utils.EntityUtil;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -35,11 +35,11 @@ public class SummonVexBookItem extends Item {
             for (int i = 0; i < summonCount; i++) {
                 SummonedVexEntity vex = ModEntities.SUMMONED_VEX.create(world, EntitySpawnReason.MOB_SUMMONED);
                 if (vex != null) {
-                    // 鍦ㄧ帺瀹跺懆鍥撮殢鏈轰綅缃敓鎴?
+                    // 在玩家周围 3 格范围内随机生成。
                     double offsetX = -3.0 + world.getRandom().nextDouble() * 6.0;
                     double offsetZ = -3.0 + world.getRandom().nextDouble() * 6.0;
                     vex.snapTo(user.getX() + offsetX, user.getY() + 1, user.getZ() + offsetZ, user.getYRot(), 0);
-                    // 璁剧疆鏀诲嚮鍔?
+                    // 仅在配置值非零时覆盖攻击属性。
                     if (attackDamage != 0.0) vex.getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(attackDamage);
                     if (magicDamage != 0.0) {
                         AttributeInstance reductionInstance = vex.getAttribute(ModEntityAttributes.MAGIC_DAMAGE);
@@ -48,11 +48,11 @@ public class SummonVexBookItem extends Item {
                         }
                     }
                     vex.setSummonOwner(user);
-                    if (user.getLastHurtMob() != null && EntityUtil.isValidSummonCombatTarget(vex, user, user.getLastHurtMob())) {
+                    if (user.getLastHurtMob() != null && EntityQueries.isValidSummonCombatTarget(vex, user, user.getLastHurtMob())) {
                         vex.setTarget(user.getLastHurtMob());
                     }
                     world.addFreshEntity(vex);
-                    EntityUtil.joinSameTeam(vex, user);
+                    EntityQueries.joinSameTeam(vex, user);
                     itemStack.hurtWithoutBreaking(1, user);
                 }
             }

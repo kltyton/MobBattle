@@ -8,7 +8,7 @@ import com.geckolib.animation.RawAnimation;
 import com.geckolib.animation.object.PlayState;
 import com.geckolib.animation.state.AnimationTest;
 import com.geckolib.util.GeckoLibUtil;
-import com.kltyton.mob_battle.utils.EntityUtil;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
@@ -56,7 +56,7 @@ public class AngrySilverfishEntity extends Silverfish implements GeoEntity, Rang
                 true,
                 false,
                 (living, world) -> !(living instanceof Silverfish)
-                        && EntityUtil.isValidCombatTarget(this, living)
+                        && EntityQueries.isValidCombatTarget(this, living)
         ));
     }
 
@@ -71,7 +71,7 @@ public class AngrySilverfishEntity extends Silverfish implements GeoEntity, Rang
     @Override
     public void performRangedAttack(LivingEntity target, float power) {
         if (!(this.level() instanceof net.minecraft.server.level.ServerLevel world)
-                || !EntityUtil.isValidCombatTarget(this, target)) {
+                || !EntityQueries.isValidCombatTarget(this, target)) {
             return;
         }
         GreenConcreteProjectileEntity projectile = new GreenConcreteProjectileEntity(this.level(), this);

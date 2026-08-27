@@ -1,6 +1,6 @@
 package com.kltyton.mob_battle.entity.voidcell;
 
-import com.kltyton.mob_battle.client.render.GeoRenderUtil;
+import com.kltyton.mob_battle.client.render.GeoRenderTransforms;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -23,7 +23,7 @@ public class VoidCellEntityRenderer <R extends LivingEntityRenderState & GeoRend
 
     @Override
     public void adjustModelBonesForRender(RenderPassInfo<R> renderPassInfo, BoneSnapshots snapshots) {
-        GeoRenderUtil.applyHeadRotation(renderPassInfo, snapshots, "head", false);
+        GeoRenderTransforms.applyHeadRotation(renderPassInfo, snapshots, "head", false);
     }
 
     @Nullable

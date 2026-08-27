@@ -2,7 +2,7 @@ package com.kltyton.mob_battle.mixin.leashable;
 
 import com.kltyton.mob_battle.accessor.ILead;
 import com.kltyton.mob_battle.entity.ModEntityAttributes;
-import com.kltyton.mob_battle.utils.EntityUtil;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Leashable;
@@ -45,11 +45,11 @@ public abstract class MobEntityMixin extends LivingEntity implements EquipmentUs
     }
     @Inject(method = "setTarget", at = @At("HEAD"), cancellable = true)
     private void allowUniversalLead(LivingEntity target, CallbackInfo ci) {
-        if (target != null && (target.isAlliedTo(this) || EntityUtil.shouldBlockOwnedSummonDamage(this, target))) ci.cancel();
+        if (target != null && (target.isAlliedTo(this) || EntityQueries.shouldBlockOwnedSummonDamage(this, target))) ci.cancel();
     }
     @Inject(method = "doHurtTarget", at = @At("HEAD"), cancellable = true)
     private void preventOwnedSummonMelee(ServerLevel world, Entity target, CallbackInfoReturnable<Boolean> cir) {
-        if (target instanceof LivingEntity living && EntityUtil.shouldBlockOwnedSummonDamage(this, living)) {
+        if (target instanceof LivingEntity living && EntityQueries.shouldBlockOwnedSummonDamage(this, living)) {
             cir.setReturnValue(false);
         }
     }

@@ -1,7 +1,7 @@
 package com.kltyton.mob_battle.entity.littleperson.skillentity.requested;
 
 import com.kltyton.mob_battle.entity.ModEntities;
-import com.kltyton.mob_battle.utils.TaskSchedulerUtil;
+import com.kltyton.mob_battle.event.scheduler.ServerTickScheduler;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -99,7 +99,7 @@ public class SevenHarvestLittlePersonEntity extends RequestedTaskLittlePersonEnt
             }
             case 3 -> {
                 for (int i = 0; i < 24; i++) {
-                    TaskSchedulerUtil.runLater(i * 2, () -> {
+                    ServerTickScheduler.schedule(this.level().getServer(), i * 2, () -> {
                         if (!this.isRemoved() && this.isAlive()) {
                             shootSkillProjectileAtTarget(ModEntities.SEVEN_HARVEST_BULLET, 80.0F, 0.0F, 2.6D, 50, false, false, false, 0.0D);
                         }
@@ -112,7 +112,7 @@ public class SevenHarvestLittlePersonEntity extends RequestedTaskLittlePersonEnt
                     return;
                 }
                 for (int i = 0; i < 10; i++) {
-                    TaskSchedulerUtil.runLater(i * 3, () -> {
+                    ServerTickScheduler.schedule(this.level().getServer(), i * 3, () -> {
                         LivingEntity current = this.getTarget();
                         if (current == null || !isValidSummonTarget(current) || this.isRemoved()) {
                             return;

@@ -2,7 +2,7 @@ package com.kltyton.mob_battle.entity.irongolem.hulkbuster.missile;
 
 import com.kltyton.mob_battle.Mob_battle;
 import com.kltyton.mob_battle.client.ModModel;
-import com.kltyton.mob_battle.client.render.SubmitRenderUtil;
+import com.kltyton.mob_battle.client.render.RenderSubmission;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
@@ -31,7 +31,7 @@ public class MissileEntityRenderer extends EntityRenderer<MissileEntity, Tippabl
         matrices.pushPose();
         matrices.mulPose(Axis.YP.rotationDegrees(state.yRot));
         matrices.mulPose(Axis.XP.rotationDegrees(state.xRot));
-        SubmitRenderUtil.submitModel(this.model, state, matrices, renderTasks, this.getTextureLocation(state));
+        RenderSubmission.submitModel(this.model, state, matrices, renderTasks, this.getTextureLocation(state));
         matrices.popPose();
         super.submit(state, matrices, renderTasks, cameraState);
     }

@@ -1,6 +1,6 @@
 package com.kltyton.mob_battle.entity.littleperson.skillentity;
 
-import com.kltyton.mob_battle.utils.EntityUtil;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -95,7 +95,7 @@ public class SkillVisualEntity extends Entity implements GeoEntity {
         }
         AABB box = this.getBoundingBox().inflate(this.radius);
         for (LivingEntity target : world.getEntitiesOfClass(LivingEntity.class, box,
-                living -> EntityUtil.isValidSummonCombatTarget(this, this.owner, living))) {
+                living -> EntityQueries.isValidSummonCombatTarget(this, this.owner, living))) {
             target.invulnerableTime = 0;
             target.hurtServer(world, this.owner.damageSources().mobAttack(this.owner), this.damage);
             target.invulnerableTime = 0;

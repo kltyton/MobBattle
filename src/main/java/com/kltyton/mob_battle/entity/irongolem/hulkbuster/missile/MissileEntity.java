@@ -2,7 +2,7 @@ package com.kltyton.mob_battle.entity.irongolem.hulkbuster.missile;
 
 import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.entity.customfireball.CustomFireballEntity;
-import com.kltyton.mob_battle.utils.EntityUtil;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -156,7 +156,7 @@ public class MissileEntity extends CustomFireballEntity {
             List<LivingEntity> targets = world.getEntitiesOfClass(LivingEntity.class, box);
             Entity owner = this.getOwner();
             for (LivingEntity target : targets) {
-                if (!EntityUtil.isValidSummonCombatTarget(this, owner, target)) {
+                if (!EntityQueries.isValidSummonCombatTarget(this, owner, target)) {
                     continue;
                 }
                 DamageSource physicalSource = world.damageSources().fireball(this, owner);

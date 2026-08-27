@@ -1,6 +1,6 @@
 package com.kltyton.mob_battle.mixin.trident;
 
-import com.kltyton.mob_battle.utils.EntityUtil;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -20,7 +20,7 @@ public abstract class TridentEntityMixin {
         Entity owner = ((Projectile) (Object) this).getOwner();
         Entity target = hitResult.getEntity();
         if (owner != null && target instanceof LivingEntity livingTarget
-                && (target.isAlliedTo(owner) || owner.isAlliedTo(target) || EntityUtil.shouldBlockOwnedSummonDamage(owner, livingTarget))) {
+                && (target.isAlliedTo(owner) || owner.isAlliedTo(target) || EntityQueries.shouldBlockOwnedSummonDamage(owner, livingTarget))) {
             ci.cancel();
         }
     }

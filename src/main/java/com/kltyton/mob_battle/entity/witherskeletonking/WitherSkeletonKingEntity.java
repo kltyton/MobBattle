@@ -11,10 +11,10 @@ import com.kltyton.mob_battle.entity.witherskeletonking.skill.WitherSkeletonKing
 import com.kltyton.mob_battle.entity.witherskeletonking.summon.DualBladeWitherSkeletonEntity;
 import com.kltyton.mob_battle.entity.witherskeletonking.summon.ShieldAxeWitherSkeletonEntity;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
-import com.kltyton.mob_battle.utils.CombatEffectUtil;
-import com.kltyton.mob_battle.utils.DeathAnimationUtil;
-import com.kltyton.mob_battle.utils.GeoAnimationUtil;
-import com.kltyton.mob_battle.utils.GeckoParticleKeyframeUtil;
+import com.kltyton.mob_battle.combat.effect.CombatEffectApplier;
+import com.kltyton.mob_battle.animation.death.DeathAnimationState;
+import com.kltyton.mob_battle.client.animation.gecko.GeoAnimationState;
+import com.kltyton.mob_battle.client.animation.keyframe.ParticleKeyframeHandler;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.core.Holder;
 import net.minecraft.world.entity.Entity;
@@ -73,8 +73,11 @@ import com.geckolib.util.GeckoLibUtil;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoField;
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 
 public class WitherSkeletonKingEntity extends WitherSkeleton implements GeoEntity, ModSkillEntityType {
 
@@ -93,8 +96,14 @@ public class WitherSkeletonKingEntity extends WitherSkeleton implements GeoEntit
     public static final EntityDataAccessor<Integer> THORN_COOLDOWN = SynchedEntityData.defineId(WitherSkeletonKingEntity.class, EntityDataSerializers.INT);
     public static final EntityDataAccessor<Integer> ENHANCE_WITHER_CALL_COOLDOWN = SynchedEntityData.defineId(WitherSkeletonKingEntity.class, EntityDataSerializers.INT);
     private int deathAnimationTicks;
-    private DeathAnimationUtil.FrozenPose deathFrozenPose;
+    private DeathAnimationState.FrozenPose deathFrozenPose;
     private boolean summonDogsAfterSuperShot;
+    /**
+     * 本实体已登记的精锐召唤物 UUID 集合（双刀凋零骷髅、盾斧凋零骷髅）。
+     * 只保存 UUID、不保存召唤物实体强引用，避免实体泄漏；
+     * 失效条目由 {@link #hasLivingEliteSummons()} 在判定时惰性清理。
+     */
+    private final Set<UUID> eliteSummonIds = new HashSet<>();
     @Override
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
         super.defineSynchedData(builder);
@@ -132,7 +141,7 @@ public class WitherSkeletonKingEntity extends WitherSkeleton implements GeoEntit
                 if (canSuperShotWitherSkull()) performSuperShotWitherSkull();
                 if (canShotAllWitherSkull()) performShotAllWitherSkull();
 
-                // 鍐峰嵈閫掑噺
+                // 冷却时间递减。
                 int cd = getSkillCooldown();
                 if (cd > 0) setSkillCooldown(cd - 1);
                 int superAttackCd = getSuperAttackSkillCooldown();
@@ -266,7 +275,7 @@ public class WitherSkeletonKingEntity extends WitherSkeleton implements GeoEntit
         boolean bl = target.hurtServer(world, damageSource, f);
         if (bl) {
             if (target instanceof LivingEntity livingEntity) {
-                CombatEffectUtil.addStackingArmorPiercing(livingEntity, this);
+                CombatEffectApplier.addStackingArmorPiercing(livingEntity, this);
             }
             float g = this.getKnockback(target, damageSource);
             if (g > 0.0F && target instanceof LivingEntity livingEntity) {
@@ -392,18 +401,47 @@ public class WitherSkeletonKingEntity extends WitherSkeleton implements GeoEntit
     public boolean canEnhanceWitherCall() {
         return canSkill() && getEnhanceWitherCallCooldown() == 0 && !hasLivingEliteSummons();
     }
+
+    /**
+     * 判断当前是否仍有存活的本实体精锐召唤物（双刀凋零骷髅、盾斧凋零骷髅）。
+     *
+     * <p>不再遍历整个世界实体：本方法只在自身维护的 UUID 集合上做惰性清理，
+     * 每次判定复杂度 O(k)，k 为已登记召唤物数量（k 通常为 2~3 且只减不增）。
+     * 无法解析、已死亡/移除、跨维度或所有权身份不符的条目在本次判定中被移除，
+     * 生命周期由此闭合。
+     *
+     * @return 是否存在仍存活且归属本实体的精锐召唤物
+     */
     public boolean hasLivingEliteSummons() {
         if (!(this.level() instanceof ServerLevel world)) {
             return false;
         }
-        for (Entity entity : world.getAllEntities()) {
-            if (entity.isAlive()
-                    && ((entity instanceof DualBladeWitherSkeletonEntity dualBlade && dualBlade.getSummonOwner() == this)
-                    || (entity instanceof ShieldAxeWitherSkeletonEntity shieldAxe && shieldAxe.getSummonOwner() == this))) {
-                return true;
-            }
+        // 单次扫描即完成清理：保留存活且归属校验通过的条目，其余全部移除。
+        this.eliteSummonIds.removeIf(summonId -> {
+            Entity summon = world.getEntity(summonId);
+            return summon == null || !summon.isAlive() || !isOwnedEliteSummon(summon);
+        });
+        return !this.eliteSummonIds.isEmpty();
+    }
+
+    /**
+     * 登记一个本实体召唤的精锐召唤物 UUID（双刀凋零骷髅、盾斧凋零骷髅）。
+     *
+     * <p>仅在服务端召唤路径中调用；只保存 UUID、不保存实体引用。
+     * 条目生命周期由 {@link #hasLivingEliteSummons()} 的惰性清理闭合。
+     *
+     * @param summonId 召唤物 UUID
+     */
+    public void registerEliteSummon(UUID summonId) {
+        if (summonId != null) {
+            this.eliteSummonIds.add(summonId);
         }
-        return false;
+    }
+
+    /** 校验实体是否仍为本实体的精锐召唤物（包含召唤物所有权身份校验）。 */
+    private boolean isOwnedEliteSummon(Entity summon) {
+        return (summon instanceof DualBladeWitherSkeletonEntity dualBlade && dualBlade.getSummonOwner() == this)
+                || (summon instanceof ShieldAxeWitherSkeletonEntity shieldAxe && shieldAxe.getSummonOwner() == this);
     }
     public boolean canSkill() {
         if (!ModSkillEntityType.canSkill(this)) return false;
@@ -424,12 +462,12 @@ public class WitherSkeletonKingEntity extends WitherSkeleton implements GeoEntit
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>("main_controller", 0,this::animationController));
         controllers.add(new AnimationController<>("skill_controller",animTest -> {
-            if (GeoAnimationUtil.consumeFinishedTriggeredAnimation(animTest)) {
+            if (GeoAnimationState.consumeFinishedTriggeredAnimation(animTest)) {
                 ClientPlayNetworking.send(new SkillPayload(
                         "stop", this.getId()
                 ));
             }
-            return GeoAnimationUtil.playTriggeredAnimationOrStop(animTest);
+            return GeoAnimationState.playTriggeredAnimationOrStop(animTest);
         })
                 .receiveTriggeredAnimations()
                 .triggerableAnim("attack", ATTACK_ANIM)
@@ -441,7 +479,7 @@ public class WitherSkeletonKingEntity extends WitherSkeleton implements GeoEntit
                 .triggerableAnim("enhance_wither_call", ENHANCE_WITHER_CALL)
                 .triggerableAnim("death", DEATH)
                 .setSoundKeyframeHandler(s -> {})
-                .setParticleKeyframeHandler(s -> GeckoParticleKeyframeUtil.handle(this, s))
+                .setParticleKeyframeHandler(s -> ParticleKeyframeHandler.handle(this, s))
                 .setCustomInstructionKeyframeHandler(s -> {
                     Player player = ClientUtil.getClientPlayer();
                     String instruction = s.keyframeData().getInstructions().replaceAll("[\\s;]+", "");
@@ -606,7 +644,7 @@ public class WitherSkeletonKingEntity extends WitherSkeleton implements GeoEntit
     }
 
     private void startDeathAnimation() {
-        this.deathFrozenPose = DeathAnimationUtil.capture(this);
+        this.deathFrozenPose = DeathAnimationState.capture(this);
         this.setHealth(1.0F);
         this.setNoAi(true);
         this.setHasSkill(true);
@@ -617,10 +655,39 @@ public class WitherSkeletonKingEntity extends WitherSkeleton implements GeoEntit
 
     private void tickDeathAnimation() {
         this.setHealth(1.0F);
-        DeathAnimationUtil.freeze(this, this.deathFrozenPose);
+        DeathAnimationState.freeze(this, this.deathFrozenPose);
         this.deathAnimationTicks--;
         if (this.deathAnimationTicks <= 0) {
             this.remove(Entity.RemovalReason.KILLED);
         }
+    }
+
+    /**
+     * 处理已经通过服务端边界校验的技能关键帧指令。
+     *
+     * <p>指令字符串、动作调用与状态副作用与 ServerPlayNetwork 中本实体的
+     * 分发分支保持逐字节一致；识别成功返回 true，未识别返回 false 且不改变状态。
+     *
+     * @param skillName 兼容现有网络协议的技能字符串
+     * @return 指令是否被识别并处理
+     */
+    @Override
+    public boolean handleSkillPayload(String skillName) {
+        switch (skillName) {
+            case "attack" -> WitherSkeletonKingEntitySkill.runAttackSkill(this);
+            case "super_attack" -> WitherSkeletonKingEntitySkill.runSuperAttackSkill(this);
+            case "shot_wither_skull" -> WitherSkeletonKingEntitySkill.runWitherSkullSkill(this);
+            case "shot_all_wither_skull" -> WitherSkeletonKingEntitySkill.runWitherAllSkullSkill(this);
+            case "super_shot_wither_skull" -> WitherSkeletonKingEntitySkill.runSuperWitherSkullSkill(this);
+            case "thorn" -> WitherSkeletonKingEntitySkill.runThornSkill(this);
+            case "enhance_wither_call" -> WitherSkeletonKingEntitySkill.runEnhanceWitherCallSkill(this);
+            case "stop_ai" -> this.setNoAi(true);
+            case "start_ai" -> this.setNoAi(false);
+            case "stop" -> this.finishSkill();
+            default -> {
+                return false;
+            }
+        }
+        return true;
     }
 }

@@ -3,7 +3,7 @@ package com.kltyton.mob_battle.block.doubleblock.target;
 import com.kltyton.mob_battle.block.ModBlockEntities;
 import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.entity.villager.militia.MilitiaArcherVillager;
-import com.kltyton.mob_battle.utils.EntityUtil;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -72,7 +72,7 @@ public class TargetBlockEntity extends BlockEntity {
                 golem.snapTo(villager.getX(), villager.getY(), villager.getZ(), villager.getYRot(), villager.getXRot());
                 world.addFreshEntity(golem);
                 trackedGolems.add(golem.getUUID());
-                EntityUtil.joinSameTeam(golem, villager);
+                EntityQueries.joinSameTeam(golem, villager);
                 villager.discard();
                 setChanged();
             }

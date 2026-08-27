@@ -3,50 +3,24 @@ package com.kltyton.mob_battle.entity.general;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
 import net.minecraft.world.entity.Mob;
 
-public class GeneralEntitySkillHelper {
-    public static <E extends Mob> void handleSkillPayload(GeneralEntityOnlyOneSkill<E> skillInterface, SkillPayload payload) {
-        if (skillInterface instanceof Mob mobEntity) {
-            @SuppressWarnings("unchecked")
-            E entity = (E) mobEntity;
-            switch (payload.skillName()) {
-                case "attack" -> skillInterface.runSkill(entity);
-                case "stop_ai" -> mobEntity.setNoAi(true);
-                case "start_ai" -> mobEntity.setNoAi(false);
-                case "stop" -> {
-                    skillInterface.stopSkill();
-                    mobEntity.setNoAi(false);
-                }
-            }
-        }
+/**
+ * 通用/单技能实体层级在旧服务端网络层的分发适配。
+ *
+ * <p>指令表与各接口的 {@code handleSkillPayload} 默认实现保持一致；返回 {@code true}
+ * 表示该载荷已被识别并执行，返回 {@code false} 表示实体不认识的指令。
+ *
+ * @deprecated 统一网络入口已直接调用 {@code SkillEntity.handleSkillPayload}；
+ * 仅为附属代码的源码兼容保留。
+ */
+@Deprecated(forRemoval = false)
+public final class GeneralEntitySkillHelper {
+    private GeneralEntitySkillHelper() {
     }
-    public static <E extends Mob> void handleSkillPayload(GeneralEntity<E> skillInterface, SkillPayload payload) {
-        if (skillInterface instanceof Mob mobEntity) {
-            @SuppressWarnings("unchecked")
-            E entity = (E) mobEntity;
-            switch (payload.skillName()) {
-                case "attack" -> skillInterface.runSkill_1(entity);
-                case "attack1_1" -> skillInterface.runSkill_1_1(entity);
-                case "attack1_2" -> skillInterface.runSkill_1_2(entity);
-                case "attack1_3" -> skillInterface.runSkill_1_3(entity);
-                case "attack2" -> skillInterface.runSkill_2(entity);
-                case "attack2_stop" -> skillInterface.stopSkill_2(entity);
-                case "attack3" -> skillInterface.runSkill_3(entity);
-                case "attack3_1" -> skillInterface.runSkill_3_1(entity);
-                case "attack3_2" -> skillInterface.runSkill_3_2(entity);
-                case "attack4" -> skillInterface.runSkill_4(entity);
-                case "attack4_stop" -> skillInterface.stopSkill_4(entity);
-                case "attack5" -> skillInterface.runSkill_5(entity);
-                case "attack6" -> skillInterface.runSkill_6(entity);
-                case "attack7" -> skillInterface.runSkill_7(entity);
-                case "attack7_1" -> skillInterface.runSkill_7_1(entity);
-                case "buff" -> skillInterface.runBuff(entity);
-                case "stop_ai" -> mobEntity.setNoAi(true);
-                case "start_ai" -> mobEntity.setNoAi(false);
-                case "stop" -> {
-                    skillInterface.setHasSkill(false);
-                    mobEntity.setNoAi(false);
-                }
-            }
-        }
+
+    public static <E extends Mob> boolean handleSkillPayload(GeneralEntityOnlyOneSkill<E> skillInterface, SkillPayload payload) {
+        return skillInterface.handleSkillPayload(payload.skillName());
+    }
+    public static <E extends Mob> boolean handleSkillPayload(GeneralEntity<E> skillInterface, SkillPayload payload) {
+        return skillInterface.handleSkillPayload(payload.skillName());
     }
 }

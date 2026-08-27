@@ -9,8 +9,8 @@ import com.kltyton.mob_battle.entity.littleperson.militia.LittlePersonMilitiaEnt
 import com.kltyton.mob_battle.entity.littleperson.skillentity.IronManEntity;
 import com.kltyton.mob_battle.entity.littleperson.skillentity.KeyframedLittlePersonEntity;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
-import com.kltyton.mob_battle.utils.DeathAnimationUtil;
-import com.kltyton.mob_battle.utils.GeoAnimationUtil;
+import com.kltyton.mob_battle.animation.death.DeathAnimationState;
+import com.kltyton.mob_battle.client.animation.gecko.GeoAnimationState;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -41,7 +41,7 @@ public class BaseSkillLittlePersonEntity extends LittlePersonMilitiaEntity imple
     public int COOL_DOWN_TIME_8 = -1;
     public int COOL_DOWN_TIME_9 = -1;
     public int COOL_DOWN_TIME_10 = -1;
-    private DeathAnimationUtil.FrozenPose deathFrozenPose;
+    private DeathAnimationState.FrozenPose deathFrozenPose;
     private boolean normalAttackKnockbackAllowed;
 
     public static final EntityDataAccessor<Boolean> HAS_SKILL = SynchedEntityData.defineId(BaseSkillLittlePersonEntity.class, EntityDataSerializers.BOOLEAN);
@@ -264,16 +264,16 @@ public class BaseSkillLittlePersonEntity extends LittlePersonMilitiaEntity imple
         if (!this.level().isClientSide()) {
             this.setAggressive(this.getTarget() != null);
             if (this.isDeadOrDying()) {
-                String deathAnimation = GeoAnimationUtil.getDeathAnimationName(this).orElse(null);
+                String deathAnimation = GeoAnimationState.getDeathAnimationName(this).orElse(null);
                 if (deathAnimation == null) {
                     return;
                 }
                 if (this.deathFrozenPose == null) {
-                    this.deathFrozenPose = DeathAnimationUtil.capture(this);
+                    this.deathFrozenPose = DeathAnimationState.capture(this);
                     this.setHasSkill(true);
                     this.triggerAnim("skill_controller", deathAnimation);
                 }
-                DeathAnimationUtil.freeze(this, this.deathFrozenPose);
+                DeathAnimationState.freeze(this, this.deathFrozenPose);
                 this.setNoAi(true);
                 return;
             }
@@ -318,17 +318,17 @@ public class BaseSkillLittlePersonEntity extends LittlePersonMilitiaEntity imple
     protected static final RawAnimation DIE_ANIM = RawAnimation.begin().thenPlay("die");
     protected static final RawAnimation DEATH_ANIM = RawAnimation.begin().thenPlay("death");
     public AnimationController<?> skillController = new AnimationController<>( "skill_controller", animTest -> {
-        if (GeoAnimationUtil.consumeFinishedTriggeredAnimation(animTest)) {
+        if (GeoAnimationState.consumeFinishedTriggeredAnimation(animTest)) {
             ClientPlayNetworking.send(new SkillPayload("stop", this.getId()));
-            if ((GeoAnimationUtil.isLastFinishedAnimation(animTest, DIE_ANIM)
-                    || GeoAnimationUtil.isLastFinishedAnimation(animTest, DEATH_ANIM)) && this instanceof IronManEntity) {
+            if ((GeoAnimationState.isLastFinishedAnimation(animTest, DIE_ANIM)
+                    || GeoAnimationState.isLastFinishedAnimation(animTest, DEATH_ANIM)) && this instanceof IronManEntity) {
                 this.deathTime = 400;
                 ClientPlayNetworking.send(new SkillPayload(
                         "die", this.getId()
                 ));
             }
         }
-        return GeoAnimationUtil.playTriggeredAnimationOrStop(animTest);
+        return GeoAnimationState.playTriggeredAnimationOrStop(animTest);
     })
             .receiveTriggeredAnimations()
             .triggerableAnim("attack2", ATTACK_ANIM_2)
@@ -371,6 +371,14 @@ public class BaseSkillLittlePersonEntity extends LittlePersonMilitiaEntity imple
         }
     }
 
+    /**
+     * 服务端技能指令分发契约（小人物技能实体基类）。
+     *
+     * <p>{@code stop_ai}/{@code start_ai}/{@code die}/{@code stop} 为通用控制指令；
+     * {@code attackN} 或 {@code attackN_phase} 按 {@code N[_phase]} 解析后交给
+     * {@code runSkill(int, int)} 执行。指令形态合法即返回 {@code true}，未识别指令
+     * 返回 {@code false} 且不改变实体状态。
+     */
     @Override
     public boolean handleSkillPayload(String skillName) {
         return switch (skillName) {
@@ -470,7 +478,7 @@ public class BaseSkillLittlePersonEntity extends LittlePersonMilitiaEntity imple
     }
     protected void tickDeath() {
         if (this instanceof IronManEntity) {
-            if (!GeoAnimationUtil.hasDeathAnimation(this)) {
+            if (!GeoAnimationState.hasDeathAnimation(this)) {
                 super.tickDeath();
                 return;
             }

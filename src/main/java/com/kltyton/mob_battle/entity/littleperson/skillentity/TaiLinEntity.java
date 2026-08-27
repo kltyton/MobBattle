@@ -3,7 +3,7 @@ package com.kltyton.mob_battle.entity.littleperson.skillentity;
 import com.kltyton.mob_battle.effect.ModEffects;
 import com.kltyton.mob_battle.entity.ModEntityAttributes;
 import com.kltyton.mob_battle.entity.littleperson.skillentity.base.BaseSkillLittlePersonEntity;
-import com.kltyton.mob_battle.utils.EntityUtil;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -65,7 +65,7 @@ public class TaiLinEntity extends BaseSkillLittlePersonEntity {
                 this.triggerAnim("attack_controller", "idle_sometimes");
             }
             if (this.endDamage) {
-                for (LivingEntity entity : EntityUtil.getNearbyEntity(this, LivingEntity.class, Object.class, 2, false, EntityUtil.TeamFilter.EXCLUDE_TEAM)) {
+                for (LivingEntity entity : EntityQueries.getNearbyEntity(this, LivingEntity.class, Object.class, 2, false, EntityQueries.TeamFilter.EXCLUDE_TEAM)) {
                     entity.hurtServer((ServerLevel) this.level(), this.damageSources().mobAttack(this), 70);
                 }
             }
@@ -79,7 +79,7 @@ public class TaiLinEntity extends BaseSkillLittlePersonEntity {
     }
     @Override
     public void runSkill_5(BaseSkillLittlePersonEntity entity) {
-        for (LivingEntity livingEntity : EntityUtil.getNearbyEntity(entity, LivingEntity.class, Object.class, 5, false, EntityUtil.TeamFilter.EXCLUDE_TEAM)) {
+        for (LivingEntity livingEntity : EntityQueries.getNearbyEntity(entity, LivingEntity.class, Object.class, 5, false, EntityQueries.TeamFilter.EXCLUDE_TEAM)) {
             livingEntity.hurtServer((ServerLevel) entity.level(), entity.damageSources().mobAttack(entity), 80);
         }
     }
@@ -87,7 +87,7 @@ public class TaiLinEntity extends BaseSkillLittlePersonEntity {
     @Override
     public void runSkill_6(BaseSkillLittlePersonEntity entity) {
         LivingEntity target = entity.getTarget();
-        if (target != null && entity.level() instanceof ServerLevel world && EntityUtil.isValidSummonCombatTarget(entity, entity.getSummonOwner(), target)) {
+        if (target != null && entity.level() instanceof ServerLevel world && EntityQueries.isValidSummonCombatTarget(entity, entity.getSummonOwner(), target)) {
             target.hurtServer(world, entity.damageSources().mobAttack(entity), 100.0F);
             target.addEffect(new MobEffectInstance(ModEffects.STUN_ENTRY, 20, 0), entity);
         }

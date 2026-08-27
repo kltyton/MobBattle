@@ -2,7 +2,7 @@ package com.kltyton.mob_battle.entity.littleperson.skillentity;
 
 import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.entity.littleperson.militia.LittlePersonMilitiaEntity;
-import com.kltyton.mob_battle.utils.GeoAnimationUtil;
+import com.kltyton.mob_battle.client.animation.gecko.GeoAnimationState;
 import com.geckolib.animation.RawAnimation;
 import com.geckolib.animation.object.PlayState;
 import com.geckolib.animation.state.AnimationTest;
@@ -50,7 +50,7 @@ public class IceManEntity extends RequestedLittlePersonEntity {
 
     @Override
     public PlayState mainController(AnimationTest<LittlePersonMilitiaEntity> event) {
-        if (this.hasSkill() && !GeoAnimationUtil.hasRecentlyFinishedTriggeredAnimation(this)) {
+        if (this.hasSkill() && !GeoAnimationState.hasRecentlyFinishedTriggeredAnimation(this)) {
             return PlayState.CONTINUE;
         }
         if (event.isMoving()) {

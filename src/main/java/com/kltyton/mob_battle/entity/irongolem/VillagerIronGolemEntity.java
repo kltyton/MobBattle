@@ -2,10 +2,11 @@ package com.kltyton.mob_battle.entity.irongolem;
 
 import com.kltyton.mob_battle.entity.ModSkillEntityType;
 import com.kltyton.mob_battle.entity.ai.goal.GeneralProtectionVillagerGoal;
+import com.kltyton.mob_battle.entity.irongolem.skill.IronGolemSkill;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
-import com.kltyton.mob_battle.utils.CombatEffectUtil;
-import com.kltyton.mob_battle.utils.EntityUtil;
-import com.kltyton.mob_battle.utils.GeoAnimationUtil;
+import com.kltyton.mob_battle.combat.effect.CombatEffectApplier;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
+import com.kltyton.mob_battle.client.animation.gecko.GeoAnimationState;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -66,9 +67,9 @@ public class VillagerIronGolemEntity extends IronGolem implements GeoEntity, Mod
         this.targetSelector.addGoal(1, new GeneralProtectionVillagerGoal(this));
         this.targetSelector.addGoal(2, new HurtByTargetGoal(this));
         this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, Player.class, 10, true, false,
-                (entity, world) -> this.isAngryAt(entity, world) && EntityUtil.isValidCombatTarget(this, entity)));
+                (entity, world) -> this.isAngryAt(entity, world) && EntityQueries.isValidCombatTarget(this, entity)));
         this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, Mob.class, 5, false, false,
-                (entity, world) -> entity instanceof Enemy && EntityUtil.isValidCombatTarget(this, entity)));
+                (entity, world) -> entity instanceof Enemy && EntityQueries.isValidCombatTarget(this, entity)));
         this.targetSelector.addGoal(4, new ResetUniversalAngerTargetGoal<>(this, false));
     }
     //skill
@@ -90,6 +91,31 @@ public class VillagerIronGolemEntity extends IronGolem implements GeoEntity, Mod
 
     public void setHasSkill(boolean hasSkill) {
         getEntityData().set(HAS_SKILL, hasSkill);
+    }
+    /**
+     * 处理服务端边界校验后的技能指令。
+     *
+     * <p>保留旧网络分发逻辑中的全部指令字符串与动作，包括伤害指令、技能停止与 AI 开关。
+     *
+     * @param skillName 兼容现有网络协议的技能字符串
+     * @return 指令是否被本实体识别并处理
+     */
+    @Override
+    public boolean handleSkillPayload(String skillName) {
+        switch (skillName) {
+            case "damage_1_5" -> IronGolemSkill.runSkill_1_5(this);
+            case "damage_2" -> IronGolemSkill.runSkill_2(this);
+            case "stop_ai" -> this.setNoAi(true);
+            case "start_ai" -> this.setNoAi(false);
+            case "stop" -> {
+                this.setHasSkill(false);
+                this.setNoAi(false);
+            }
+            default -> {
+                return false;
+            }
+        }
+        return true;
     }
     public void setSkillCooldown(int cooldown) {
         getEntityData().set(SKILL_COOLDOWN, cooldown);
@@ -147,7 +173,7 @@ public class VillagerIronGolemEntity extends IronGolem implements GeoEntity, Mod
         }
         if (bl) {
             if (target instanceof LivingEntity livingEntity) {
-                CombatEffectUtil.addStackingArmorPiercing(livingEntity, this);
+                CombatEffectApplier.addStackingArmorPiercing(livingEntity, this);
             }
             double d = target instanceof LivingEntity livingEntity ? livingEntity.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE) : 0.0;
             double e = Math.max(0.0, 1.0 - d);
@@ -167,7 +193,7 @@ public class VillagerIronGolemEntity extends IronGolem implements GeoEntity, Mod
         boolean bl = target.hurtServer(world, damageSource, g * i);
         if (bl) {
             if (target instanceof LivingEntity livingEntity) {
-                CombatEffectUtil.addStackingArmorPiercing(livingEntity, this);
+                CombatEffectApplier.addStackingArmorPiercing(livingEntity, this);
             }
             double d = target instanceof LivingEntity livingEntity ? livingEntity.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE) : 0.0;
             double e = Math.max(0.0, 1.0 - d);
@@ -182,12 +208,12 @@ public class VillagerIronGolemEntity extends IronGolem implements GeoEntity, Mod
     public void registerControllers(AnimatableManager.ControllerRegistrar controllerRegistrar) {
         controllerRegistrar.add(new AnimationController<>("main_controller", 0,this::animationController));
         controllerRegistrar.add(new AnimationController<>( "attack_controller",animTest -> {
-                    if (GeoAnimationUtil.consumeFinishedTriggeredAnimation(animTest)) {
+                    if (GeoAnimationState.consumeFinishedTriggeredAnimation(animTest)) {
                         ClientPlayNetworking.send(new SkillPayload(
                                 "stop", this.getId()
                         ));
                     }
-                    return GeoAnimationUtil.playTriggeredAnimationOrStop(animTest);
+                    return GeoAnimationState.playTriggeredAnimationOrStop(animTest);
                 })
                 .receiveTriggeredAnimations()
                 .triggerableAnim("attack", ATTACK_ANIM)

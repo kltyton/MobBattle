@@ -3,7 +3,7 @@ package com.kltyton.mob_battle.entity.littleperson.skillentity;
 import com.kltyton.mob_battle.entity.ModEntityAttributes;
 import com.kltyton.mob_battle.entity.littleperson.LittlePersonEntity;
 import com.kltyton.mob_battle.entity.littleperson.skillentity.base.BaseSkillLittlePersonEntity;
-import com.kltyton.mob_battle.utils.EntityUtil;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -35,7 +35,7 @@ public class MagicManEntity extends BaseSkillLittlePersonEntity {
     }
     @Override
     public void runSkill_2(BaseSkillLittlePersonEntity entity) {
-        EntityUtil.getNearbyEntity(entity, LivingEntity.class, LittlePersonEntity.class, 5, true, EntityUtil.TeamFilter.ONLY_TEAM).forEach(
+        EntityQueries.getNearbyEntity(entity, LivingEntity.class, LittlePersonEntity.class, 5, true, EntityQueries.TeamFilter.ONLY_TEAM).forEach(
                 livingEntity -> {
                     livingEntity.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, 5 * 20, 14), entity);
                 }
@@ -43,7 +43,7 @@ public class MagicManEntity extends BaseSkillLittlePersonEntity {
     }
     @Override
     public void runSkill_3(BaseSkillLittlePersonEntity entity) {
-        EntityUtil.getNearbyEntity(entity, LivingEntity.class, LittlePersonEntity.class, 5, true, EntityUtil.TeamFilter.ONLY_TEAM).forEach(
+        EntityQueries.getNearbyEntity(entity, LivingEntity.class, LittlePersonEntity.class, 5, true, EntityQueries.TeamFilter.ONLY_TEAM).forEach(
                 livingEntity -> {
                     livingEntity.addEffect(new MobEffectInstance(MobEffects.INSTANT_HEALTH, 1, 4), entity);
                 }
@@ -52,12 +52,12 @@ public class MagicManEntity extends BaseSkillLittlePersonEntity {
     @Override
     public void runSkill_4(BaseSkillLittlePersonEntity entity) {
         if (this.level() instanceof ServerLevel serverWorld) {
-            EntityUtil.getNearbyEntity(entity, LivingEntity.class, Object.class, 5, false, EntityUtil.TeamFilter.EXCLUDE_TEAM).forEach(
+            EntityQueries.getNearbyEntity(entity, LivingEntity.class, Object.class, 5, false, EntityQueries.TeamFilter.EXCLUDE_TEAM).forEach(
                     livingEntity -> {
                         livingEntity.hurtServer(serverWorld, this.damageSources().indirectMagic(entity, entity), 150);
                     }
             );
-            EntityUtil.getNearbyEntity(entity, LivingEntity.class, LittlePersonEntity.class, 5, true, EntityUtil.TeamFilter.ONLY_TEAM).forEach(
+            EntityQueries.getNearbyEntity(entity, LivingEntity.class, LittlePersonEntity.class, 5, true, EntityQueries.TeamFilter.ONLY_TEAM).forEach(
                     livingEntity -> {
                         livingEntity.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, 10 * 20, 14), entity);
                     }

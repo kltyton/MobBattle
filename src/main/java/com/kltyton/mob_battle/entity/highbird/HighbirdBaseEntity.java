@@ -3,8 +3,8 @@ package com.kltyton.mob_battle.entity.highbird;
 import com.kltyton.mob_battle.entity.ModSkillEntityType;
 import com.kltyton.mob_battle.entity.highbird.adulthood.HighbirdAdulthoodEntity;
 import com.kltyton.mob_battle.network.packet.HighbirdAttackPayload;
-import com.kltyton.mob_battle.utils.DeathAnimationUtil;
-import com.kltyton.mob_battle.utils.GeoAnimationUtil;
+import com.kltyton.mob_battle.animation.death.DeathAnimationState;
+import com.kltyton.mob_battle.client.animation.gecko.GeoAnimationState;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -60,7 +60,7 @@ public abstract class HighbirdBaseEntity extends HighbirdAndEggEntity {
     private static final int WAKE_AI_RESTORE_TICKS = 24;
 
     private final AnimatableInstanceCache geoCache = GeckoLibUtil.createInstanceCache(this);
-    private DeathAnimationUtil.FrozenPose deathFrozenPose;
+    private DeathAnimationState.FrozenPose deathFrozenPose;
     private int wakeAiRestoreTicks;
     public boolean isSleeping = false;
     public boolean forcedWakeUp = false;
@@ -108,8 +108,8 @@ public abstract class HighbirdBaseEntity extends HighbirdAndEggEntity {
 
         if (!this.level().isClientSide()) {
             if (this.isDeadOrDying()) {
-                this.deathFrozenPose = DeathAnimationUtil.captureIfNeeded(this, this.deathFrozenPose);
-                DeathAnimationUtil.freeze(this, this.deathFrozenPose);
+                this.deathFrozenPose = DeathAnimationState.captureIfNeeded(this, this.deathFrozenPose);
+                DeathAnimationState.freeze(this, this.deathFrozenPose);
                 return;
             }
 
@@ -347,7 +347,7 @@ public abstract class HighbirdBaseEntity extends HighbirdAndEggEntity {
         // 攻击控制器
         controllers.add(
                 new AnimationController<>("attack_controller", state ->
-                    GeoAnimationUtil.playTriggeredAnimationOrStop(state)
+                    GeoAnimationState.playTriggeredAnimationOrStop(state)
                 )
                         .receiveTriggeredAnimations()
                         .triggerableAnim("attack", ATTACK_ANIM)
@@ -363,7 +363,7 @@ public abstract class HighbirdBaseEntity extends HighbirdAndEggEntity {
                             }
                         }));
         controllers.add(
-                new AnimationController<>("sleep_controller", GeoAnimationUtil::playTriggeredAnimationOrStop)
+                new AnimationController<>("sleep_controller", GeoAnimationState::playTriggeredAnimationOrStop)
                         .receiveTriggeredAnimations()
                         .triggerableAnim("sleep", SLEEP_ANIM)
                         .triggerableAnim("wake", WAKE_ANIM)

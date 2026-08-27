@@ -15,6 +15,12 @@ fabricApi {
     configureDataGeneration {
         client = true
     }
+    configureTests {
+        createSourceSet = true
+        modId = "mob_battle_gametest"
+        enableGameTests = true
+        enableClientGameTests = false
+    }
 }
 
 loom {

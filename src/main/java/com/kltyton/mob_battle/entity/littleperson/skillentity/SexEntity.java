@@ -5,8 +5,8 @@ import com.kltyton.mob_battle.entity.ModEntityAttributes;
 import com.kltyton.mob_battle.entity.littleperson.militia.LittlePersonMilitiaEntity;
 import com.kltyton.mob_battle.entity.littleperson.skillentity.base.BaseSkillLittlePersonEntity;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
-import com.kltyton.mob_battle.utils.EntityUtil;
-import com.kltyton.mob_battle.utils.GeoAnimationUtil;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
+import com.kltyton.mob_battle.client.animation.gecko.GeoAnimationState;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -109,16 +109,16 @@ public class SexEntity extends BaseSkillLittlePersonEntity {
         } else return event.setAndContinue(IDLE_ANIM);
     }
     public AnimationController<?> sexEntitySkillController = new AnimationController<>( "skill_controller", animTest -> {
-        if (GeoAnimationUtil.consumeFinishedTriggeredAnimation(animTest)) {
+        if (GeoAnimationState.consumeFinishedTriggeredAnimation(animTest)) {
             ClientPlayNetworking.send(new SkillPayload("stop", this.getId()));
-            if (GeoAnimationUtil.isLastFinishedAnimation(animTest, DIE_ANIM)) {
+            if (GeoAnimationState.isLastFinishedAnimation(animTest, DIE_ANIM)) {
                 this.deathTime = 400;
                 ClientPlayNetworking.send(new SkillPayload(
                         "die", this.getId()
                 ));
             }
         }
-        return GeoAnimationUtil.playTriggeredAnimationOrStop(animTest);
+        return GeoAnimationState.playTriggeredAnimationOrStop(animTest);
     })
             .receiveTriggeredAnimations()
             .triggerableAnim("attack2", ATTACK_ANIM_2)
@@ -154,7 +154,7 @@ public class SexEntity extends BaseSkillLittlePersonEntity {
 
     @Override
     protected void tickDeath() {
-        if (!GeoAnimationUtil.hasEntityAnimation(this, "die")) {
+        if (!GeoAnimationState.hasEntityAnimation(this, "die")) {
             super.tickDeath();
             return;
         }
@@ -182,7 +182,7 @@ public class SexEntity extends BaseSkillLittlePersonEntity {
         super.tick();
         if (!this.level().isClientSide()) {
             if (this.endDamage) {
-                for (LivingEntity entity : EntityUtil.getNearbyEntity(this, LivingEntity.class, Object.class, 2, false, EntityUtil.TeamFilter.EXCLUDE_TEAM)) {
+                for (LivingEntity entity : EntityQueries.getNearbyEntity(this, LivingEntity.class, Object.class, 2, false, EntityQueries.TeamFilter.EXCLUDE_TEAM)) {
                     entity.hurtServer((ServerLevel) this.level(), this.damageSources().mobAttack(this), 85);
                 }
             }
@@ -252,13 +252,13 @@ public class SexEntity extends BaseSkillLittlePersonEntity {
     }
     @Override
     public void runSkill_2(BaseSkillLittlePersonEntity entity) {
-        EntityUtil.getNearbyEntity(entity, LivingEntity.class, 5, false, EntityUtil.TeamFilter.EXCLUDE_TEAM).forEach(livingEntity -> {
+        EntityQueries.getNearbyEntity(entity, LivingEntity.class, 5, false, EntityQueries.TeamFilter.EXCLUDE_TEAM).forEach(livingEntity -> {
             livingEntity.hurtServer((ServerLevel) entity.level(), entity.damageSources().mobAttack(entity), 120);
         });
     }
     @Override
     public void runSkill_3(BaseSkillLittlePersonEntity entity) {
-        EntityUtil.getNearbyEntity(entity, LivingEntity.class, 5, false, EntityUtil.TeamFilter.EXCLUDE_TEAM).forEach(livingEntity -> {
+        EntityQueries.getNearbyEntity(entity, LivingEntity.class, 5, false, EntityQueries.TeamFilter.EXCLUDE_TEAM).forEach(livingEntity -> {
             livingEntity.hurtServer((ServerLevel) entity.level(), entity.damageSources().mobAttack(entity), 145);
         });
     }
@@ -305,7 +305,7 @@ public class SexEntity extends BaseSkillLittlePersonEntity {
         if (livingEntity != null) {
             boolean result = livingEntity.hurtServer((ServerLevel) entity.level(), entity.damageSources().mobAttack(entity), 150);
             if (result) {
-                EntityUtil.getNearbyEntity(entity, LivingEntity.class, 5, false, EntityUtil.TeamFilter.EXCLUDE_TEAM).forEach(livingEntity1 -> {
+                EntityQueries.getNearbyEntity(entity, LivingEntity.class, 5, false, EntityQueries.TeamFilter.EXCLUDE_TEAM).forEach(livingEntity1 -> {
                     livingEntity1.hurtServer((ServerLevel) entity.level(), entity.damageSources().mobAttack(entity), 120);
                 });
             }
@@ -315,7 +315,7 @@ public class SexEntity extends BaseSkillLittlePersonEntity {
     @Override
     public void runSkill_6(BaseSkillLittlePersonEntity entity) {
         if (this.level().isClientSide()) return;
-        LivingEntity target = EntityUtil.getClosestNearbyEntity(entity, LivingEntity.class, 5, EntityUtil.TeamFilter.EXCLUDE_TEAM);
+        LivingEntity target = EntityQueries.getClosestNearbyEntity(entity, LivingEntity.class, 5, EntityQueries.TeamFilter.EXCLUDE_TEAM);
         // 2. 如果找到了目标，设置 ID
         if (target != null) {
             if (target instanceof LivingEntity livingEntity) {

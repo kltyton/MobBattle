@@ -62,8 +62,13 @@ public abstract class EnderDragonEntityRendererMixin extends EntityRenderer<Ende
     }
 
     /**
+     * 覆盖 Minecraft 26.1.2 的末影龙 submit 渲染流水线，在不改变历史姿态、死亡光束
+     * 和节点提交顺序的前提下应用项目缩放与暗影龙纹理。纹理选择、姿态栈和多个模型
+     * part 提交跨越整个方法，拆为多个注入点会依赖局部变量与提交顺序，无法稳定等价；
+     * 上游修改渲染状态或 submit 签名时必须逐段重新核对。
+     *
      * @author Kltyton
-     * @reason Preserve Mob Battle dragon visual scaling and shadow dragon textures on the 26.1.2 submit pipeline.
+     * @reason 保留项目龙缩放与暗影纹理，并明确锁定 Minecraft 26.1.2 提交流水线。
      */
     @Overwrite
     public void submit(EnderDragonRenderState state, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState camera) {

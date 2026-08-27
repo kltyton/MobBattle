@@ -3,7 +3,7 @@ package com.kltyton.mob_battle.event.golem;
 import com.kltyton.mob_battle.Mob_battle;
 import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.entity.golem.ChestGolemEntity;
-import com.kltyton.mob_battle.utils.TaskSchedulerUtil;
+import com.kltyton.mob_battle.event.scheduler.ServerTickScheduler;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
@@ -29,7 +29,7 @@ public final class ChestGolemBuildEvent {
 
             BlockPos clickedPos = hitResult.getBlockPos();
             BlockPos placedPos = clickedPos.relative(hitResult.getDirection());
-            TaskSchedulerUtil.runLater(1, () -> {
+            ServerTickScheduler.schedule(level.getServer(), 1, () -> {
                 if (!trySpawn(level, placedPos, player instanceof ServerPlayer serverPlayer ? serverPlayer : null)) {
                     trySpawn(level, clickedPos, player instanceof ServerPlayer serverPlayer ? serverPlayer : null);
                 }

@@ -1,7 +1,7 @@
 package com.kltyton.mob_battle.event;
 
 import com.kltyton.mob_battle.network.packet.LeftClickPacket;
-import com.kltyton.mob_battle.utils.LeftClickUtil;
+import com.kltyton.mob_battle.input.LeftClickDispatcher;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.Minecraft;
@@ -17,7 +17,7 @@ public class LeftClickEvent {
                 wasPressed = isPressed;
                 Player player = client.player;
                 ClientPlayNetworking.send(new LeftClickPacket(isPressed));
-                LeftClickUtil.leftClick(player, isPressed, false);
+                LeftClickDispatcher.leftClick(player, isPressed, false);
             }
         });
     }

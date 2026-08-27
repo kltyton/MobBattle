@@ -1,7 +1,7 @@
 package com.kltyton.mob_battle.entity.golem;
 
 import com.kltyton.mob_battle.entity.OwnedSummon;
-import com.kltyton.mob_battle.utils.EntityUtil;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -86,7 +86,7 @@ public class ChestGolemEntity extends IronGolem implements Container, MenuProvid
         this.targetSelector.addGoal(1, new HurtByTargetGoal(this));
         this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Mob.class, 5, false, false,
                 (target, world) -> target instanceof Enemy
-                        && EntityUtil.isValidSummonCombatTarget(this, getSummonOwner(), target)));
+                        && EntityQueries.isValidSummonCombatTarget(this, getSummonOwner(), target)));
     }
 
     @Override
@@ -112,7 +112,7 @@ public class ChestGolemEntity extends IronGolem implements Container, MenuProvid
     }
 
     private boolean trySetOwnerTarget(@Nullable LivingEntity target) {
-        if (target != null && EntityUtil.isValidSummonCombatTarget(this, getSummonOwner(), target)) {
+        if (target != null && EntityQueries.isValidSummonCombatTarget(this, getSummonOwner(), target)) {
             this.setTarget(target);
             return true;
         }
@@ -130,7 +130,7 @@ public class ChestGolemEntity extends IronGolem implements Container, MenuProvid
     public void setSummonOwner(@Nullable LivingEntity owner) {
         this.entityData.set(OWNER, Optional.ofNullable(owner).map(EntityReference::of));
         if (owner != null) {
-            EntityUtil.joinSameTeam(this, owner);
+            EntityQueries.joinSameTeam(this, owner);
         }
     }
 
@@ -143,7 +143,7 @@ public class ChestGolemEntity extends IronGolem implements Container, MenuProvid
 
     @Override
     public boolean canAttack(LivingEntity target) {
-        return EntityUtil.isValidSummonCombatTarget(this, getSummonOwner(), target) && super.canAttack(target);
+        return EntityQueries.isValidSummonCombatTarget(this, getSummonOwner(), target) && super.canAttack(target);
     }
 
     @Override

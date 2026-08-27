@@ -3,7 +3,7 @@ package com.kltyton.mob_battle.entity.littleperson.skillentity;
 import com.kltyton.mob_battle.entity.ModEntityAttributes;
 import com.kltyton.mob_battle.entity.littleperson.skillentity.base.BaseSkillLittlePersonEntity;
 import com.kltyton.mob_battle.entity.littleperson.skillentity.ironmanbullet.IronManBulletEntity;
-import com.kltyton.mob_battle.utils.EntityUtil;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
 import java.util.List;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -57,7 +57,7 @@ public class IronManTrueEntity extends BaseSkillLittlePersonEntity {
         double range = 8.0;
         List<Entity> targets = world.getEntities(entity, entity.getBoundingBox().inflate(range));
         for (Entity target : targets) {
-            if (target instanceof LivingEntity livingTarget && EntityUtil.isValidSummonCombatTarget(entity, entity.getSummonOwner(), livingTarget)) {
+            if (target instanceof LivingEntity livingTarget && EntityQueries.isValidSummonCombatTarget(entity, entity.getSummonOwner(), livingTarget)) {
                 Vec3 relativePos = target.position().subtract(pos);
                 double distanceForward = relativePos.dot(forward);
                 double distanceSide = Math.abs(relativePos.dot(side));
@@ -77,9 +77,9 @@ public class IronManTrueEntity extends BaseSkillLittlePersonEntity {
     @Override
     public void runSkill_3(BaseSkillLittlePersonEntity entity) {
         if (entity.getTarget() != null) {
-            List<LivingEntity> targets = EntityUtil.getNearbyEntity(entity,LivingEntity.class, Object.class,6, false, EntityUtil.TeamFilter.EXCLUDE_TEAM);
+            List<LivingEntity> targets = EntityQueries.getNearbyEntity(entity,LivingEntity.class, Object.class,6, false, EntityQueries.TeamFilter.EXCLUDE_TEAM);
             for (LivingEntity livingEntity : targets) {
-                if (!EntityUtil.isValidSummonCombatTarget(entity, entity.getSummonOwner(), livingEntity)) {
+                if (!EntityQueries.isValidSummonCombatTarget(entity, entity.getSummonOwner(), livingEntity)) {
                     continue;
                 }
                 livingEntity.hurtServer((ServerLevel) entity.level(), entity.damageSources().mobAttack(entity), 90);
@@ -96,7 +96,7 @@ public class IronManTrueEntity extends BaseSkillLittlePersonEntity {
         double range = 18.0;
         List<Entity> targets = world.getEntities(entity, entity.getBoundingBox().inflate(range));
         for (Entity target : targets) {
-            if (target instanceof LivingEntity livingTarget && EntityUtil.isValidSummonCombatTarget(entity, entity.getSummonOwner(), livingTarget)) {
+            if (target instanceof LivingEntity livingTarget && EntityQueries.isValidSummonCombatTarget(entity, entity.getSummonOwner(), livingTarget)) {
                 Vec3 relativePos = target.position().subtract(pos);
                 double distanceForward = relativePos.dot(forward);
                 double distanceSide = Math.abs(relativePos.dot(side));
@@ -147,8 +147,8 @@ public class IronManTrueEntity extends BaseSkillLittlePersonEntity {
         if (!(entity.level() instanceof ServerLevel world)) {
             return;
         }
-        for (LivingEntity living : EntityUtil.getNearbyEntity(entity, LivingEntity.class, Object.class, 2.0D, false, EntityUtil.TeamFilter.EXCLUDE_TEAM)) {
-            if (EntityUtil.isValidSummonCombatTarget(entity, entity.getSummonOwner(), living)) {
+        for (LivingEntity living : EntityQueries.getNearbyEntity(entity, LivingEntity.class, Object.class, 2.0D, false, EntityQueries.TeamFilter.EXCLUDE_TEAM)) {
+            if (EntityQueries.isValidSummonCombatTarget(entity, entity.getSummonOwner(), living)) {
                 living.hurtServer(world, entity.damageSources().mobAttack(entity), 95.0F);
             }
         }
@@ -162,7 +162,7 @@ public class IronManTrueEntity extends BaseSkillLittlePersonEntity {
         Vec3 forward = entity.getViewVector(1.0F);
         Vec3 side = new Vec3(-forward.z, 0.0D, forward.x).normalize();
         for (Entity target : world.getEntities(entity, entity.getBoundingBox().inflate(5.0D))) {
-            if (target instanceof LivingEntity living && EntityUtil.isValidSummonCombatTarget(entity, entity.getSummonOwner(), living)) {
+            if (target instanceof LivingEntity living && EntityQueries.isValidSummonCombatTarget(entity, entity.getSummonOwner(), living)) {
                 Vec3 relativePos = target.position().subtract(entity.position());
                 double distanceForward = relativePos.dot(forward);
                 double distanceSide = Math.abs(relativePos.dot(side));

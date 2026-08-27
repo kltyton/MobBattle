@@ -1,7 +1,7 @@
 package com.kltyton.mob_battle.entity.enhancedwither;
 
 import com.kltyton.mob_battle.entity.OwnedSummon;
-import com.kltyton.mob_battle.utils.EntityUtil;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -26,7 +26,7 @@ public class EnhancedWitherEntity extends WitherBoss implements OwnedSummon {
     public void setSummonOwner(@Nullable LivingEntity summonOwner) {
         this.summonOwner = summonOwner;
         if (summonOwner != null) {
-            EntityUtil.joinSameTeam(this, summonOwner);
+            EntityQueries.joinSameTeam(this, summonOwner);
         }
     }
 
@@ -37,7 +37,7 @@ public class EnhancedWitherEntity extends WitherBoss implements OwnedSummon {
     }
 
     private boolean isValidSummonTarget(LivingEntity target) {
-        return EntityUtil.isValidSummonCombatTarget(this, this.summonOwner, target);
+        return EntityQueries.isValidSummonCombatTarget(this, this.summonOwner, target);
     }
 
     @Override

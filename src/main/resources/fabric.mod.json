@@ -7,7 +7,7 @@
   "authors": [],
   "contact": {},
   "license": "MIT",
-  "icon": "assets/mob_battle/icon.png",
+  "icon": "assets/mob_battle/textures/item/icon.png",
   "environment": "*",
   "entrypoints": {
     "fabric-datagen": [
@@ -25,6 +25,7 @@
   ],
   "depends": {
     "fabricloader": ">=${loader_version}",
+    "fabric-api": ">=0.150.0+26.1.2",
     "minecraft": "${minecraft_version}",
     "geckolib": ">=5.1.0"
   },

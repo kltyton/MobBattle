@@ -8,7 +8,7 @@ import com.kltyton.mob_battle.entity.littleperson.king.skill.LittlePersonKingSki
 import com.kltyton.mob_battle.entity.littleperson.militia.LittlePersonMilitiaEntity;
 import com.kltyton.mob_battle.entity.littleperson.skillentity.requested.EliteLittlePersonGuardEntity;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
-import com.kltyton.mob_battle.utils.GeoAnimationUtil;
+import com.kltyton.mob_battle.client.animation.gecko.GeoAnimationState;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -31,7 +31,7 @@ import com.geckolib.animation.RawAnimation;
 
 import java.util.List;
 
-public class LittlePersonKingEntity extends LittlePersonMilitiaEntity {
+public class LittlePersonKingEntity extends LittlePersonMilitiaEntity implements ModSkillEntityType {
     public static final EntityDataAccessor<Boolean> HAS_SKILL = SynchedEntityData.defineId(LittlePersonKingEntity.class, EntityDataSerializers.BOOLEAN);
     public static final EntityDataAccessor<Integer> SKILL_COOLDOWN_1 = SynchedEntityData.defineId(LittlePersonKingEntity.class, EntityDataSerializers.INT);
     public static final EntityDataAccessor<Integer> SKILL_COOLDOWN_2 = SynchedEntityData.defineId(LittlePersonKingEntity.class, EntityDataSerializers.INT);
@@ -109,6 +109,32 @@ public class LittlePersonKingEntity extends LittlePersonMilitiaEntity {
     }
     public void setHasSkill(boolean hasSkill) {
         this.entityData.set(HAS_SKILL, hasSkill);
+    }
+    /**
+     * 处理服务端边界校验后的技能指令。
+     *
+     * <p>保留旧网络分发逻辑中的全部指令字符串与动作，包括技能停止与 AI 开关。
+     *
+     * @param skillName 兼容现有网络协议的技能字符串
+     * @return 指令是否被本实体识别并处理
+     */
+    @Override
+    public boolean handleSkillPayload(String skillName) {
+        switch (skillName) {
+            case "attack2" -> LittlePersonKingSkill.runSkill_2(this);
+            case "attack3" -> LittlePersonKingSkill.runSkill_3(this);
+            case "attack4" -> LittlePersonKingSkill.runSkill_4(this);
+            case "stop_ai" -> this.setNoAi(true);
+            case "start_ai" -> this.setNoAi(false);
+            case "stop" -> {
+                this.setHasSkill(false);
+                this.setNoAi(false);
+            }
+            default -> {
+                return false;
+            }
+        }
+        return true;
     }
     public int getStage() {
         return this.entityData.get(STAGE);
@@ -205,12 +231,12 @@ public class LittlePersonKingEntity extends LittlePersonMilitiaEntity {
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         super.registerControllers(controllers);
         controllers.add(new AnimationController<>( "skill_controller", animTest -> {
-                    if (GeoAnimationUtil.consumeFinishedTriggeredAnimation(animTest)) {
+                    if (GeoAnimationState.consumeFinishedTriggeredAnimation(animTest)) {
                         ClientPlayNetworking.send(new SkillPayload(
                                 "stop", this.getId()
                         ));
                     }
-                    return GeoAnimationUtil.playTriggeredAnimationOrStop(animTest);
+                    return GeoAnimationState.playTriggeredAnimationOrStop(animTest);
                 })
                         .receiveTriggeredAnimations()
                         .triggerableAnim("attack2", ATTACK_ANIM_2)

@@ -2,7 +2,7 @@ package com.kltyton.mob_battle.entity.littleperson.skillentity;
 
 import com.kltyton.mob_battle.entity.ModEntityAttributes;
 import com.kltyton.mob_battle.entity.littleperson.skillentity.base.BaseSkillLittlePersonEntity;
-import com.kltyton.mob_battle.utils.EntityUtil;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -45,7 +45,7 @@ public class PoisonousSlashEntity extends BaseSkillLittlePersonEntity {
     public void tick() {
         super.tick();
         if (!this.level().isClientSide() && this.endDamage) {
-            for (LivingEntity entity : EntityUtil.getNearbyEntity(this, LivingEntity.class, Object.class, 3, false, EntityUtil.TeamFilter.EXCLUDE_TEAM)) {
+            for (LivingEntity entity : EntityQueries.getNearbyEntity(this, LivingEntity.class, Object.class, 3, false, EntityQueries.TeamFilter.EXCLUDE_TEAM)) {
                 entity.hurtServer((ServerLevel) this.level(), this.damageSources().mobAttack(this), 70);
             }
         }
@@ -81,14 +81,14 @@ public class PoisonousSlashEntity extends BaseSkillLittlePersonEntity {
     }
     @Override
     public void runSkill_5(BaseSkillLittlePersonEntity entity) {
-        for (LivingEntity livingEntity : EntityUtil.getNearbyEntity(entity, LivingEntity.class, Object.class, 3, false, EntityUtil.TeamFilter.EXCLUDE_TEAM)) {
+        for (LivingEntity livingEntity : EntityQueries.getNearbyEntity(entity, LivingEntity.class, Object.class, 3, false, EntityQueries.TeamFilter.EXCLUDE_TEAM)) {
             livingEntity.hurtServer((ServerLevel) entity.level(), entity.damageSources().mobAttack(entity), 80);
         }
     }
     @Override
     public void runSkill_6(BaseSkillLittlePersonEntity entity) {
         LivingEntity target = entity.getTarget();
-        if (target != null && EntityUtil.isValidSummonCombatTarget(entity, entity.getSummonOwner(), target)) {
+        if (target != null && EntityQueries.isValidSummonCombatTarget(entity, entity.getSummonOwner(), target)) {
             Vec3 direction = target.position().subtract(entity.position());
             Vec3 horizontal = new Vec3(direction.x, 0.0D, direction.z);
             if (horizontal.lengthSqr() > 1.0E-4D) {
@@ -107,14 +107,14 @@ public class PoisonousSlashEntity extends BaseSkillLittlePersonEntity {
     public void runSkill_7(BaseSkillLittlePersonEntity entity) {
         LivingEntity target = entity.getTarget();
         if (target == null || !(entity.level() instanceof ServerLevel world)
-                || !EntityUtil.isValidSummonCombatTarget(entity, entity.getSummonOwner(), target)) {
+                || !EntityQueries.isValidSummonCombatTarget(entity, entity.getSummonOwner(), target)) {
             return;
         }
         var direction = target.position().subtract(entity.position()).normalize();
         entity.setDeltaMovement(direction.x * 1.4D, 0.2D, direction.z * 1.4D);
         entity.hurtMarked = true;
-        for (LivingEntity living : EntityUtil.getNearbyEntity(entity, LivingEntity.class, Object.class, 2.2D, false, EntityUtil.TeamFilter.EXCLUDE_TEAM)) {
-            if (EntityUtil.isValidSummonCombatTarget(entity, entity.getSummonOwner(), living)) {
+        for (LivingEntity living : EntityQueries.getNearbyEntity(entity, LivingEntity.class, Object.class, 2.2D, false, EntityQueries.TeamFilter.EXCLUDE_TEAM)) {
+            if (EntityQueries.isValidSummonCombatTarget(entity, entity.getSummonOwner(), living)) {
                 living.invulnerableTime = 0;
                 living.hurtServer(world, entity.damageSources().mobAttack(entity), 88.0F);
                 living.invulnerableTime = 0;

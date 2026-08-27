@@ -2,9 +2,9 @@ package com.kltyton.mob_battle.entity.boss.dragon;
 
 import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.entity.meteorite.EnderDragonMeteoriteEntity;
-import com.kltyton.mob_battle.entity.misc.ModifiedDragonBreathCloud;
+import com.kltyton.mob_battle.entity.cloud.ModifiedDragonBreathCloud;
 import com.kltyton.mob_battle.sounds.ModSounds;
-import com.kltyton.mob_battle.utils.TaskSchedulerUtil;
+import com.kltyton.mob_battle.event.scheduler.ServerTickScheduler;
 import java.util.List;
 import java.util.Random;
 import net.minecraft.core.BlockPos;
@@ -83,7 +83,7 @@ public class EnderDragonSkillManager {
         dragon.playSound(SoundEvents.ENDER_DRAGON_SHOOT, 5.0F, 0.8F);
 
         for (int i = 0; i < 10; i++) {
-            TaskSchedulerUtil.runLater(i * 8, () -> { // 每8tick一颗
+            ServerTickScheduler.schedule(world.getServer(), i * 8, () -> { // 每8tick一颗
                 if (dragon.isRemoved()) return;
                 Vec3 dir = dragon.getViewVector(0).normalize().scale(1.8);
                 DragonFireball fireball = new DragonFireball(
@@ -122,7 +122,7 @@ public class EnderDragonSkillManager {
 
         int count = 3 + random.nextInt(3);
         for (int i = 0; i < count; i++) {
-            TaskSchedulerUtil.runLater(i * 12, () -> {
+            ServerTickScheduler.schedule(world.getServer(), i * 12, () -> {
                 if (dragon.isRemoved()) return;
                 Vec3 target = dragon.position().add(
                         (random.nextDouble() - 0.5) * 60,
@@ -165,7 +165,7 @@ public class EnderDragonSkillManager {
                 Vec3 basePos = start.lerp(end, t);
 
                 // 每段生成多粒子，形成“粗线”效果
-                TaskSchedulerUtil.runLater(i, () -> {  // 每tick生成一帧粒子（更连贯）
+                ServerTickScheduler.schedule(world.getServer(), i, () -> {  // 每tick生成一帧粒子（更连贯）
                     if (dragon.isRemoved()) return;
 
                     for (int layer = 0; layer < 4; layer++) {  // 4层叠加，显得更粗
@@ -184,7 +184,7 @@ public class EnderDragonSkillManager {
             }
 
             // 2秒后爆炸（范围略扩大，视觉更震撼）
-            TaskSchedulerUtil.runLater(40, () -> {
+            ServerTickScheduler.schedule(world.getServer(), 40, () -> {
                 if (dragon.isRemoved()) return;
                 world.explode(dragon, end.x, end.y, end.z, 8.0F, false, Level.ExplosionInteraction.MOB);
                 AABB box = new AABB(end.x - 10, end.y - 10, end.z - 10, end.x + 10, end.y + 10, end.z + 10);
@@ -228,7 +228,7 @@ public class EnderDragonSkillManager {
         rushEndTime = world.getGameTime() + 40; // 最多持续2秒（可被打断或自然结束）
 
         // 定时结束冲刺状态（防止卡住）
-        TaskSchedulerUtil.runLater(40, () -> {
+        ServerTickScheduler.schedule(world.getServer(), 40, () -> {
             isChargingRush = false;
             if (!dragon.isRemoved()) {
                 dragon.setDeltaMovement(dragon.getDeltaMovement().scale(0.4)); // 减速
@@ -252,7 +252,7 @@ public class EnderDragonSkillManager {
 
                 // 画直径3格紫色圈（持续2秒）
                 for (int t = 0; t < 40; t++) {
-                    TaskSchedulerUtil.runLater(t, () -> {
+                    ServerTickScheduler.schedule(world.getServer(), t, () -> {
                         double r = 1.5;
                         for (int a = 0; a < 24; a++) {
                             double ang = a * Math.PI * 2 / 24;
@@ -264,7 +264,7 @@ public class EnderDragonSkillManager {
                 }
 
                 // 2秒后爆炸
-                TaskSchedulerUtil.runLater(40, () -> {
+                ServerTickScheduler.schedule(world.getServer(), 40, () -> {
                     AABB box = new AABB(center.x-2, center.y-2, center.z-2, center.x+2, center.y+3, center.z+2);
                     for (Entity e : world.getEntities(null, box)) {
                         if (e instanceof LivingEntity living) {
@@ -344,7 +344,7 @@ public class EnderDragonSkillManager {
         // 被动2：陆续掉20颗
         if (now % 200 == 0) { // 每10秒掉一批
             for (int i = 0; i < 20; i++) {
-                TaskSchedulerUtil.runLater(i * 3, () -> {
+                ServerTickScheduler.schedule(world.getServer(), i * 3, () -> {
                     Vec3 spawn = dragon.position().add(
                             (random.nextDouble()-0.5)*120,
                             70 + random.nextDouble()*30,

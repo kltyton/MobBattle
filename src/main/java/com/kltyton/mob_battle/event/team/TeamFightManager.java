@@ -48,6 +48,18 @@ public class TeamFightManager {
         }
     }
 
+    /**
+     * 当前是否存在任意团队战斗（普通对战或发狂战）。
+     *
+     * <p>供 TeamFightHandler 在每轮世界扫描前 O(1) 判断：没有任何活跃战斗时直接
+     * 跳过整个世界的实体遍历，避免空战斗状态下产生无意义的世界扫描开销。
+     *
+     * @return 存在任意活跃战斗时返回 true
+     */
+    public static boolean hasActiveFights() {
+        return !ACTIVE_TEAMS.isEmpty();
+    }
+
     public static boolean isInFight(PlayerTeam team) {
         return ACTIVE_TEAMS.contains(team);
     }
@@ -74,10 +86,16 @@ public class TeamFightManager {
         if (sourceTeam == null) {
             return false;
         }
+        // 没有任何活跃战斗时直接短路，且不分配任何集合副本。
+        if (!ACTIVE_TEAMS.contains(sourceTeam)) {
+            return false;
+        }
         if (isMadFight(sourceTeam)) {
             return targetTeam != sourceTeam;
         }
-        return targetTeam != null && getOpponents(sourceTeam).contains(targetTeam);
+        // 直接查询内部映射，避免为每个候选实体执行 Set.copyOf 分配。
+        Set<PlayerTeam> opponents = FIGHTING_TEAMS.get(sourceTeam);
+        return targetTeam != null && opponents != null && opponents.contains(targetTeam);
     }
 
     public static int clearAllFights() {

@@ -3,8 +3,8 @@ package com.kltyton.mob_battle.entity.skull.warrior;
 import com.kltyton.mob_battle.entity.skull.IModSkullEntity;
 import com.kltyton.mob_battle.entity.witherskeletonking.WitherSkeletonKingEntity;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
-import com.kltyton.mob_battle.utils.EntityUtil;
-import com.kltyton.mob_battle.utils.GeoAnimationUtil;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
+import com.kltyton.mob_battle.client.animation.gecko.GeoAnimationState;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -73,7 +73,7 @@ public class SkullWarriorEntity extends WitherSkeleton implements GeoEntity, IMo
             killSlave();
             if (!hasSkill()) {
                 this.setNoAi(false);
-                // 鍐峰嵈閫掑噺
+                // 冷却时间递减。
                 int cd = getSkillCooldown();
                 if (cd > 0) setSkillCooldown(cd - 1);
             }
@@ -134,7 +134,7 @@ public class SkullWarriorEntity extends WitherSkeleton implements GeoEntity, IMo
         DamageSource damageSource = this.damageSources().mobAttack(this);
         f = EnchantmentHelper.modifyDamage(world, itemStack, target, damageSource, f);
         f += itemStack.getItem().getAttackDamageBonus(target, f, damageSource);
-        if (target instanceof LivingEntity living && !EntityUtil.isValidSummonCombatTarget(this, this.getOwner(), living)) return false;
+        if (target instanceof LivingEntity living && !EntityQueries.isValidSummonCombatTarget(this, this.getOwner(), living)) return false;
         boolean bl = target.hurtServer(world, damageSource, f);
         if (bl) {
             float g = this.getKnockback(target, damageSource);
@@ -153,7 +153,7 @@ public class SkullWarriorEntity extends WitherSkeleton implements GeoEntity, IMo
     }
     @Override
     public boolean doHurtTarget(ServerLevel world, Entity target) {
-        if (target instanceof LivingEntity living && !EntityUtil.isValidSummonCombatTarget(this, this.getOwner(), living)) {
+        if (target instanceof LivingEntity living && !EntityQueries.isValidSummonCombatTarget(this, this.getOwner(), living)) {
             return false;
         }
         if (canSkill()) {
@@ -171,6 +171,31 @@ public class SkullWarriorEntity extends WitherSkeleton implements GeoEntity, IMo
     public boolean canSkill() {
         return !this.level().isClientSide() && !hasSkill() && getSkillCooldown() == 0 && this.getTarget() != null;
     }
+    /**
+     * 处理已经通过服务端边界校验的技能关键帧指令。
+     *
+     * <p>指令字符串、动作调用与状态副作用与 ServerPlayNetwork 中本实体的
+     * 分发分支保持逐字节一致；识别成功返回 true，未识别返回 false 且不改变状态。
+     *
+     * @param skillName 兼容现有网络协议的技能字符串
+     * @return 指令是否被识别并处理
+     */
+    @Override
+    public boolean handleSkillPayload(String skillName) {
+        switch (skillName) {
+            case "attack" -> SkullWarriorEntitySkill.runAttackSkill(this);
+            case "stop_ai" -> this.setNoAi(true);
+            case "start_ai" -> this.setNoAi(false);
+            case "stop" -> {
+                this.setHasSkill(false);
+                this.setNoAi(false);
+            }
+            default -> {
+                return false;
+            }
+        }
+        return true;
+    }
     protected static final RawAnimation IDEA_ANIM = RawAnimation.begin().thenLoop("idle");
     protected static final RawAnimation WALK_ANIM = RawAnimation.begin().thenLoop("walk");
     protected static final RawAnimation ATTACK_ANIM = RawAnimation.begin().thenPlay("attack");
@@ -178,12 +203,12 @@ public class SkullWarriorEntity extends WitherSkeleton implements GeoEntity, IMo
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>("main_controller", 0,this::animationController));
         controllers.add(new AnimationController<>("skill_controller",animTest -> {
-            if (GeoAnimationUtil.consumeFinishedTriggeredAnimation(animTest)) {
+            if (GeoAnimationState.consumeFinishedTriggeredAnimation(animTest)) {
                 ClientPlayNetworking.send(new SkillPayload(
                         "stop", this.getId()
                 ));
             }
-            return GeoAnimationUtil.playTriggeredAnimationOrStop(animTest);
+            return GeoAnimationState.playTriggeredAnimationOrStop(animTest);
         })
                 .receiveTriggeredAnimations()
                 .triggerableAnim("attack", ATTACK_ANIM)
@@ -273,7 +298,7 @@ public class SkullWarriorEntity extends WitherSkeleton implements GeoEntity, IMo
     }
     @Override
     public boolean canAttack(LivingEntity target) {
-        return EntityUtil.isValidSummonCombatTarget(this, this.getOwner(), target) && super.canAttack(target);
+        return EntityQueries.isValidSummonCombatTarget(this, this.getOwner(), target) && super.canAttack(target);
     }
     @Override
     public boolean isOwner(LivingEntity entity) {

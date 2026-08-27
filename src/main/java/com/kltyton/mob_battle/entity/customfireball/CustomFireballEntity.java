@@ -1,6 +1,6 @@
 package com.kltyton.mob_battle.entity.customfireball;
 
-import com.kltyton.mob_battle.utils.EntityUtil;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.EntityTypeTags;
@@ -66,7 +66,7 @@ public class CustomFireballEntity extends LargeFireball {
             // 处理命中实体的情况
             EntityHitResult entityHitResult = (EntityHitResult)hitResult;
             Entity entity = entityHitResult.getEntity();
-            if (entity instanceof LivingEntity living && !EntityUtil.isValidSummonCombatTarget(this, this.getOwner(), living)) {
+            if (entity instanceof LivingEntity living && !EntityQueries.isValidSummonCombatTarget(this, this.getOwner(), living)) {
                 return;
             }
             // 如果命中的是可重定向的投射物实体，则进行重定向
@@ -134,7 +134,7 @@ public class CustomFireballEntity extends LargeFireball {
 
     @Override
     public boolean canHitEntity(Entity entity) {
-        if (entity instanceof LivingEntity living && !EntityUtil.isValidSummonCombatTarget(this, this.getOwner(), living)) {
+        if (entity instanceof LivingEntity living && !EntityQueries.isValidSummonCombatTarget(this, this.getOwner(), living)) {
             return false;
         }
         return super.canHitEntity(entity);
@@ -146,7 +146,7 @@ public class CustomFireballEntity extends LargeFireball {
         if (this.level() instanceof ServerLevel serverWorld) {
             // 获取被击中的实体
             Entity entity = entityHitResult.getEntity();
-            if (entity instanceof LivingEntity living && !EntityUtil.isValidSummonCombatTarget(this, this.getOwner(), living)) {
+            if (entity instanceof LivingEntity living && !EntityQueries.isValidSummonCombatTarget(this, this.getOwner(), living)) {
                 return;
             }
             // 获取攻击者实体（拥有者）

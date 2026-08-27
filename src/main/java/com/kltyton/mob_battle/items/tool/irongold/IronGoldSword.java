@@ -6,7 +6,7 @@ import com.kltyton.mob_battle.animation.ModPlayerAnimationServerHandler;
 import com.kltyton.mob_battle.items.ModFabricItem;
 import com.kltyton.mob_battle.items.ModMaterial;
 import com.kltyton.mob_battle.items.tool.BaseSword;
-import com.kltyton.mob_battle.utils.ArmorUtil;
+import com.kltyton.mob_battle.items.armor.support.ArmorSetRules;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
@@ -39,7 +39,7 @@ public class IronGoldSword extends BaseSword implements ModFabricItem {
         super.inventoryTick(stack, world, entity, slot);
         if (entity instanceof LivingEntity living) {
             ItemAttributeModifiers current = stack.getOrDefault(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY);
-            boolean shouldHaveBonus = ArmorUtil.hasFullArmor(living, ModMaterial.IRON_GOLD_INSTANCE);
+            boolean shouldHaveBonus = ArmorSetRules.hasFullArmor(living, ModMaterial.IRON_GOLD_INSTANCE);
             ItemAttributeModifiers updated = current.withModifierAdded(
                     Attributes.ARMOR,
                     ARMOR_MODIFIER,
@@ -75,8 +75,8 @@ public class IronGoldSword extends BaseSword implements ModFabricItem {
 /*    @Override
     public void inventoryTick(ItemStack stack, ServerWorld world, Entity entity, @Nullable EquipmentSlot slot) {
         super.inventoryTick(stack, world, entity, slot);
-        if (EnchantmentUtil.getEnchantmentLevel(world, stack, Enchantments.SWEEPING_EDGE) < 1) {
-            EnchantmentUtil.addEnchantment(world, stack, Enchantments.SWEEPING_EDGE, 1);
+        if (EnchantmentAccess.getEnchantmentLevel(world, stack, Enchantments.SWEEPING_EDGE) < 1) {
+            EnchantmentAccess.addEnchantment(world, stack, Enchantments.SWEEPING_EDGE, 1);
         }
     }*/
 /*    @Override

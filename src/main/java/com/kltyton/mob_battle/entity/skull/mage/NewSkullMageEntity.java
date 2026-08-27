@@ -3,7 +3,7 @@ package com.kltyton.mob_battle.entity.skull.mage;
 import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.entity.littleperson.skillentity.RequestedLittlePersonEntity;
 import com.kltyton.mob_battle.items.ModItems;
-import com.kltyton.mob_battle.utils.EntityUtil;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -64,7 +64,7 @@ public class NewSkullMageEntity extends RequestedLittlePersonEntity {
     }
 
     private boolean isOwnSummon(LivingEntity target) {
-        return EntityUtil.getKnownOwner(target) == this;
+        return EntityQueries.getKnownOwner(target) == this;
     }
 
     @Override
@@ -99,12 +99,12 @@ public class NewSkullMageEntity extends RequestedLittlePersonEntity {
         }
         double angle = index * Math.PI * 0.5D;
         Vec3 fallback = center.add(Math.cos(angle) * 2.0D, 0.0D, Math.sin(angle) * 2.0D);
-        Vec3 spawnPos = EntityUtil.findSafeSpawnPosition(world, skeleton, fallback).orElse(fallback);
+        Vec3 spawnPos = EntityQueries.findSafeSpawnPosition(world, skeleton, fallback).orElse(fallback);
         skeleton.snapTo(spawnPos.x, spawnPos.y, spawnPos.z, owner.getYRot(), 0.0F);
         skeleton.setSummonOwner(owner);
         skeleton.setItemSlot(EquipmentSlot.MAINHAND, melee ? new ItemStack(Items.IRON_SWORD) : new ItemStack(Items.BOW));
         skeleton.reassessWeaponGoal();
-        if (target != null && EntityUtil.isValidSummonCombatTarget(skeleton, owner, target)) {
+        if (target != null && EntityQueries.isValidSummonCombatTarget(skeleton, owner, target)) {
             skeleton.setTarget(target);
         }
         world.addFreshEntity(skeleton);

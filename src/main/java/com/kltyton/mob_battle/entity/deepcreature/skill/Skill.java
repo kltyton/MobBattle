@@ -1,8 +1,8 @@
 package com.kltyton.mob_battle.entity.deepcreature.skill;
 
 import com.kltyton.mob_battle.entity.deepcreature.DeepCreatureEntity;
-import com.kltyton.mob_battle.utils.EntityUtil;
-import com.kltyton.mob_battle.utils.TaskSchedulerUtil;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
+import com.kltyton.mob_battle.event.scheduler.ServerTickScheduler;
 import java.util.List;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
@@ -13,14 +13,14 @@ import net.minecraft.world.phys.Vec3;
 public class Skill {
     public static void runRoarSkill(DeepCreatureEntity entity) {
         double radius = 10.0D;
-        List<LivingEntity> players = SkillUtils.getNearbyPlayers(entity, radius);
-        if (players.isEmpty()) return;
+        List<LivingEntity> targets = DeepCreatureSkillEffects.getNearbyTargets(entity, radius);
+        if (targets.isEmpty()) return;
 
         ServerLevel sw = (ServerLevel) entity.level();
-        for (LivingEntity player : players) {
-            SkillUtils.knockbackPlayer(entity, player, 1.5, 0.95, 0.2);
+        for (LivingEntity target : targets) {
+            DeepCreatureSkillEffects.knockbackTarget(entity, target, 1.5, 0.95, 0.2);
         }
-        SkillUtils.spawnParticles(sw, entity, 40, 24);
+        DeepCreatureSkillEffects.spawnParticles(sw, entity, 40, 24);
     }
 
     public static void runEarthquake(DeepCreatureEntity entity) {
@@ -50,22 +50,22 @@ public class Skill {
     }
     public static void runDamage(DeepCreatureEntity entity) {
         hurtCurrentTarget(entity, 5.0F);
-        TaskSchedulerUtil.runLater(15, () -> hurtCurrentTarget(entity, 5.0F));
-        TaskSchedulerUtil.runLater(25, () -> hurtCurrentTarget(entity, 5.0F));
+        ServerTickScheduler.schedule(entity.level().getServer(), 15, () -> hurtCurrentTarget(entity, 5.0F));
+        ServerTickScheduler.schedule(entity.level().getServer(), 25, () -> hurtCurrentTarget(entity, 5.0F));
     }
     public static void runCatchEnd(DeepCreatureEntity entity) {
         if (entity.getGrabTargetId() == -1) return;
         entity.setGrabTargetId(-1);
     }
     public static void runSmashGround(DeepCreatureEntity entity, double radius, double horizPower, double vertPowerBase, double vertPowerRand, double spacing, double delayPerRing) {
-        List<LivingEntity> players = SkillUtils.getNearbyPlayers(entity, radius);
-        if (players.isEmpty()) return;
+        List<LivingEntity> targets = DeepCreatureSkillEffects.getNearbyTargets(entity, radius);
+        if (targets.isEmpty()) return;
         ServerLevel sw = (ServerLevel) entity.level();
-        for (LivingEntity player : players) {
-            SkillUtils.knockbackPlayer(entity, player, horizPower, vertPowerBase, vertPowerRand);
+        for (LivingEntity target : targets) {
+            DeepCreatureSkillEffects.knockbackTarget(entity, target, horizPower, vertPowerBase, vertPowerRand);
         }
-        SkillUtils.spawnParticles(sw, entity, 60, radius);
-        SkillUtils.spawnEvokerFangsRing(sw, entity, radius, spacing, delayPerRing);
+        DeepCreatureSkillEffects.spawnParticles(sw, entity, 60, radius);
+        DeepCreatureSkillEffects.spawnEvokerFangsRing(sw, entity, radius, spacing, delayPerRing);
     }
     public static void runSmash(DeepCreatureEntity entity) {
         double radius = 8.0D;
@@ -88,13 +88,13 @@ public class Skill {
 
     public static void runSideSkill(DeepCreatureEntity entity) {
         double radius = 12.0D;
-        List<LivingEntity> players = SkillUtils.getNearbyPlayers(entity, radius);
-        if (players.isEmpty()) return;
+        List<LivingEntity> targets = DeepCreatureSkillEffects.getNearbyTargets(entity, radius);
+        if (targets.isEmpty()) return;
 
         ServerLevel sw = (ServerLevel) entity.level();
-        for (LivingEntity player : players) {
-            SkillUtils.knockbackPlayer(entity, player, 0.8, 0.2, 0.05);
-            player.hurtServer(sw, entity.damageSources().mobAttack(entity), 90F);
+        for (LivingEntity target : targets) {
+            DeepCreatureSkillEffects.knockbackTarget(entity, target, 0.8, 0.2, 0.05);
+            target.hurtServer(sw, entity.damageSources().mobAttack(entity), 90F);
         }
     }
 
@@ -157,7 +157,7 @@ public class Skill {
         // === 命中检测 ===
         List<LivingEntity> players = world.getEntitiesOfClass(LivingEntity.class,
                 entity.getBoundingBox().inflate(distance + 16),
-                p -> EntityUtil.isValidCombatTarget(entity, p));
+                p -> EntityQueries.isValidCombatTarget(entity, p));
 
         for (LivingEntity player : players) {
             Vec3 playerPos = player.position().add(0, player.getEyeHeight() * 0.5, 0);

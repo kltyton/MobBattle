@@ -6,8 +6,8 @@ import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.entity.littleperson.skillentity.base.BaseSkillLittlePersonEntity;
 import com.kltyton.mob_battle.entity.littleperson.skillentity.ironmanbullet.IronManBulletEntity;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
-import com.kltyton.mob_battle.utils.EntityUtil;
-import com.kltyton.mob_battle.utils.GeoAnimationUtil;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
+import com.kltyton.mob_battle.client.animation.gecko.GeoAnimationState;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
@@ -26,14 +26,14 @@ import net.minecraft.world.phys.Vec3;
 public class IronManEntity extends BaseSkillLittlePersonEntity {
     private static final RawAnimation IRON_MAN_ATTACK_ANIM_5 = RawAnimation.begin().thenPlay("attack5").thenPlay("attack5_1");
     private final AnimationController<?> ironManSkillController = new AnimationController<>("skill_controller", animTest -> {
-        if (GeoAnimationUtil.consumeFinishedTriggeredAnimation(animTest)) {
+        if (GeoAnimationState.consumeFinishedTriggeredAnimation(animTest)) {
             ClientPlayNetworking.send(new SkillPayload("stop", this.getId()));
-            if (GeoAnimationUtil.isLastFinishedAnimation(animTest, DIE_ANIM)) {
+            if (GeoAnimationState.isLastFinishedAnimation(animTest, DIE_ANIM)) {
                 this.deathTime = 400;
                 ClientPlayNetworking.send(new SkillPayload("die", this.getId()));
             }
         }
-        return GeoAnimationUtil.playTriggeredAnimationOrStop(animTest);
+        return GeoAnimationState.playTriggeredAnimationOrStop(animTest);
     })
             .receiveTriggeredAnimations()
             .triggerableAnim("attack2", ATTACK_ANIM_2)
@@ -78,13 +78,13 @@ public class IronManEntity extends BaseSkillLittlePersonEntity {
             if (target != null
                     && !this.hasSkill()
                     && this.canSkill("attack5")
-                    && EntityUtil.isValidSummonCombatTarget(this, this.getSummonOwner(), target)
+                    && EntityQueries.isValidSummonCombatTarget(this, this.getSummonOwner(), target)
                     && this.distanceTo(target) <= this.getAttributeValue(Attributes.FOLLOW_RANGE)) {
                 this.performSkill("attack5");
             }
             if (canSkill("attack3")) performSkill("attack3");
             if (this.endDamage) {
-                for (LivingEntity entity : EntityUtil.getNearbyEntity(this, LivingEntity.class, Object.class, 2, false, EntityUtil.TeamFilter.EXCLUDE_TEAM)) {
+                for (LivingEntity entity : EntityQueries.getNearbyEntity(this, LivingEntity.class, Object.class, 2, false, EntityQueries.TeamFilter.EXCLUDE_TEAM)) {
                     entity.hurtServer((ServerLevel) this.level(), this.damageSources().mobAttack(this), 65);
                 }
             }
@@ -139,7 +139,7 @@ public class IronManEntity extends BaseSkillLittlePersonEntity {
     public void runSkill_5(BaseSkillLittlePersonEntity entity) {
         LivingEntity target = entity.getTarget();
         if (target == null || !(entity.level() instanceof ServerLevel world)
-                || !EntityUtil.isValidSummonCombatTarget(entity, entity.getSummonOwner(), target)) {
+                || !EntityQueries.isValidSummonCombatTarget(entity, entity.getSummonOwner(), target)) {
             return;
         }
         Vec3 direction = target.position().subtract(entity.position()).normalize();
@@ -166,14 +166,14 @@ public class IronManEntity extends BaseSkillLittlePersonEntity {
         }
         LivingEntity target = entity.getTarget();
         boolean hitTarget = target != null
-                && EntityUtil.isValidSummonCombatTarget(entity, entity.getSummonOwner(), target)
+                && EntityQueries.isValidSummonCombatTarget(entity, entity.getSummonOwner(), target)
                 && entity.distanceToSqr(target) <= 20.25D;
         Vec3 center = hitTarget
                 ? target.position().add(0.0D, target.getBbHeight() * 0.5D, 0.0D)
                 : entity.position().add(entity.getViewVector(1.0F).normalize().scale(2.5D)).add(0.0D, 1.0D, 0.0D);
 
-        for (LivingEntity living : EntityUtil.getNearbyEntity(entity, LivingEntity.class, Object.class, 3.5D, false, EntityUtil.TeamFilter.EXCLUDE_TEAM)) {
-            if (EntityUtil.isValidSummonCombatTarget(entity, entity.getSummonOwner(), living)
+        for (LivingEntity living : EntityQueries.getNearbyEntity(entity, LivingEntity.class, Object.class, 3.5D, false, EntityQueries.TeamFilter.EXCLUDE_TEAM)) {
+            if (EntityQueries.isValidSummonCombatTarget(entity, entity.getSummonOwner(), living)
                     && living.distanceToSqr(center) <= 16.0D) {
                 living.invulnerableTime = 0;
                 living.hurtServer(world, entity.damageSources().mobAttack(entity), 100.0F);
@@ -203,8 +203,8 @@ public class IronManEntity extends BaseSkillLittlePersonEntity {
         if (!(entity.level() instanceof ServerLevel world)) {
             return;
         }
-        for (LivingEntity living : EntityUtil.getNearbyEntity(entity, LivingEntity.class, Object.class, 3.0D, false, EntityUtil.TeamFilter.EXCLUDE_TEAM)) {
-            if (EntityUtil.isValidSummonCombatTarget(entity, entity.getSummonOwner(), living)) {
+        for (LivingEntity living : EntityQueries.getNearbyEntity(entity, LivingEntity.class, Object.class, 3.0D, false, EntityQueries.TeamFilter.EXCLUDE_TEAM)) {
+            if (EntityQueries.isValidSummonCombatTarget(entity, entity.getSummonOwner(), living)) {
                 living.hurtServer(world, entity.damageSources().mobAttack(entity), 80.0F);
             }
         }

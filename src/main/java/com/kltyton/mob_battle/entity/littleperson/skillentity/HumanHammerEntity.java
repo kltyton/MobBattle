@@ -2,7 +2,7 @@ package com.kltyton.mob_battle.entity.littleperson.skillentity;
 
 import com.kltyton.mob_battle.entity.ModEntityAttributes;
 import com.kltyton.mob_battle.entity.littleperson.skillentity.base.BaseSkillLittlePersonEntity;
-import com.kltyton.mob_battle.utils.EntityUtil;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -38,7 +38,7 @@ public class HumanHammerEntity extends BaseSkillLittlePersonEntity {
     }
     @Override
     public boolean hurtServer(ServerLevel world, DamageSource source, float amount) {
-        HumanShieldEntity shieldEntity = EntityUtil.getClosestNearbyEntity(this, HumanShieldEntity.class, 5, EntityUtil.TeamFilter.ONLY_TEAM);
+        HumanShieldEntity shieldEntity = EntityQueries.getClosestNearbyEntity(this, HumanShieldEntity.class, 5, EntityQueries.TeamFilter.ONLY_TEAM);
         if (shieldEntity != null && shieldEntity.isAlive()) {
             this.addEffect(new MobEffectInstance(MobEffects.STRENGTH, 20 * 5, 14));
             shieldEntity.addEffect(new MobEffectInstance(MobEffects.RESISTANCE, 20 * 5, 2));
@@ -63,7 +63,7 @@ public class HumanHammerEntity extends BaseSkillLittlePersonEntity {
     }
     @Override
     public void runSkill_4(BaseSkillLittlePersonEntity entity) {
-        EntityUtil.getNearbyEntity(entity, LivingEntity.class,3,false, EntityUtil.TeamFilter.EXCLUDE_TEAM).forEach(target -> {
+        EntityQueries.getNearbyEntity(entity, LivingEntity.class,3,false, EntityQueries.TeamFilter.EXCLUDE_TEAM).forEach(target -> {
             target.hurtServer((ServerLevel) this.level(), this.damageSources().mobAttack(this), 55);
         });
     }

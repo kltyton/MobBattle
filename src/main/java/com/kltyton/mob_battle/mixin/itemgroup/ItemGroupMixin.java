@@ -1,6 +1,6 @@
 package com.kltyton.mob_battle.mixin.itemgroup;
 
-import com.kltyton.mob_battle.items.itemgroup.ClientTagManager;
+import com.kltyton.mob_battle.items.itemgroup.ClientItemGroupState;
 import com.kltyton.mob_battle.network.packet.ItemGroupPayload;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.network.chat.Component;
@@ -19,8 +19,8 @@ public abstract class ItemGroupMixin {
     @Inject(method = "shouldDisplay", at = @At("RETURN"), cancellable = true)
     public void shouldDisplay(CallbackInfoReturnable<Boolean> cir) {
         if (this.getDisplayName().equals(Component.translatable("itemGroup.mob_battle.main"))) {
-            ClientPlayNetworking.send(new ItemGroupPayload(ClientTagManager.isShen));
-            cir.setReturnValue(ClientTagManager.isShen);
+            ClientPlayNetworking.send(new ItemGroupPayload(ClientItemGroupState.isOpen));
+            cir.setReturnValue(ClientItemGroupState.isOpen);
         }
     }
 }

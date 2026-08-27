@@ -1,6 +1,6 @@
 package com.kltyton.mob_battle.entity.golem;
 
-import com.kltyton.mob_battle.utils.EntityUtil;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -57,9 +57,9 @@ public class StrongMinEntity extends IronGolem {
         this.targetSelector.addGoal(1, new DefendVillageTargetGoal(this));
         this.targetSelector.addGoal(2, new HurtByTargetGoal(this));
         this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, Player.class, 10, true, false,
-                (target, world) -> this.isAngryAt(target, world) && EntityUtil.isValidCombatTarget(this, target)));
+                (target, world) -> this.isAngryAt(target, world) && EntityQueries.isValidCombatTarget(this, target)));
         this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, Mob.class, 5, false, false,
-                (target, world) -> target instanceof Enemy && EntityUtil.isValidCombatTarget(this, target)));
+                (target, world) -> target instanceof Enemy && EntityQueries.isValidCombatTarget(this, target)));
         this.targetSelector.addGoal(4, new ResetUniversalAngerTargetGoal<>(this, false));
     }
 
@@ -81,7 +81,7 @@ public class StrongMinEntity extends IronGolem {
         for (IronGolem golem : this.level().getEntitiesOfClass(IronGolem.class, this.getBoundingBox().inflate(40.0D),
                 golem -> golem != this && golem.isAlive())) {
             LivingEntity attacker = golem.getLastHurtByMob();
-            if (attacker != null && EntityUtil.isValidCombatTarget(this, attacker)) {
+            if (attacker != null && EntityQueries.isValidCombatTarget(this, attacker)) {
                 this.setTarget(attacker);
                 return;
             }
@@ -95,7 +95,7 @@ public class StrongMinEntity extends IronGolem {
 
     @Override
     public boolean canAttack(LivingEntity target) {
-        return EntityUtil.isValidCombatTarget(this, target) && super.canAttack(target);
+        return EntityQueries.isValidCombatTarget(this, target) && super.canAttack(target);
     }
 
     @Override

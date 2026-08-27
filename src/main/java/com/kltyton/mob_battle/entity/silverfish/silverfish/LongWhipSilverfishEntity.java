@@ -5,9 +5,9 @@ import com.kltyton.mob_battle.entity.ModEntityAttributes;
 import com.kltyton.mob_battle.entity.general.GeneralEntity;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
 import com.kltyton.mob_battle.sounds.ModSounds;
-import com.kltyton.mob_battle.utils.EntityUtil;
-import com.kltyton.mob_battle.utils.GeoAnimationUtil;
-import com.kltyton.mob_battle.utils.TaskSchedulerUtil;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
+import com.kltyton.mob_battle.client.animation.gecko.GeoAnimationState;
+import com.kltyton.mob_battle.event.scheduler.ServerTickScheduler;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -140,7 +140,7 @@ public class LongWhipSilverfishEntity extends Silverfish implements GeneralEntit
 
     @Override
     public boolean doHurtTarget(ServerLevel world, Entity target) {
-        if (target instanceof LivingEntity living && !EntityUtil.isValidCombatTarget(this, living)) {
+        if (target instanceof LivingEntity living && !EntityQueries.isValidCombatTarget(this, living)) {
             return false;
         }
         for (int i = getSkillCount(); i >= 1; i--) {
@@ -220,10 +220,10 @@ public class LongWhipSilverfishEntity extends Silverfish implements GeneralEntit
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>("main_controller", 0, this::mainController));
         controllers.add(new AnimationController<>( "skill_controller", animTest -> {
-                    if (GeoAnimationUtil.consumeFinishedTriggeredAnimation(animTest)) {
+                    if (GeoAnimationState.consumeFinishedTriggeredAnimation(animTest)) {
                         ClientPlayNetworking.send(new SkillPayload("stop", this.getId()));
                     }
-                    return GeoAnimationUtil.playTriggeredAnimationOrStop(animTest);
+                    return GeoAnimationState.playTriggeredAnimationOrStop(animTest);
                 })
                         .receiveTriggeredAnimations()
                         .triggerableAnim("attack2_1", ATTACK_ANIM_2_1)
@@ -267,7 +267,7 @@ public class LongWhipSilverfishEntity extends Silverfish implements GeneralEntit
     }
     @Override
     public PlayState mainController(AnimationTest<?> event) {
-        if (this.hasSkill() && !GeoAnimationUtil.hasRecentlyFinishedTriggeredAnimation(this)) {
+        if (this.hasSkill() && !GeoAnimationState.hasRecentlyFinishedTriggeredAnimation(this)) {
             return PlayState.CONTINUE;
         }
         if (event.isMoving()) {
@@ -290,7 +290,7 @@ public class LongWhipSilverfishEntity extends Silverfish implements GeneralEntit
     @Override
     public void runSkill_3(LongWhipSilverfishEntity entity) {
         this.makeSound(ModSounds.B_C_BELLOW_DOG_JIAO_SOUND_EVENT);
-        EntityUtil.getNearbyEntity(entity, LivingEntity.class, Object.class, 7, false, EntityUtil.TeamFilter.EXCLUDE_TEAM).forEach(livingEntity -> {
+        EntityQueries.getNearbyEntity(entity, LivingEntity.class, Object.class, 7, false, EntityQueries.TeamFilter.EXCLUDE_TEAM).forEach(livingEntity -> {
             livingEntity.addEffect(new MobEffectInstance(ModEffects.DISARM_ENTRY, 160, 0));
             livingEntity.hurtServer((ServerLevel) this.level(), this.damageSources().indirectMagic(this, this), 10);
         });
@@ -298,14 +298,14 @@ public class LongWhipSilverfishEntity extends Silverfish implements GeneralEntit
     @Override
     public void runSkill_4(LongWhipSilverfishEntity entity) {
         this.makeSound(ModSounds.B_C_DEBUFF_DOG_JIAO_SOUND_EVENT);
-        EntityUtil.getNearbyEntity(entity, LivingEntity.class, Object.class, 6, false, EntityUtil.TeamFilter.EXCLUDE_TEAM).forEach(livingEntity -> {
+        EntityQueries.getNearbyEntity(entity, LivingEntity.class, Object.class, 6, false, EntityQueries.TeamFilter.EXCLUDE_TEAM).forEach(livingEntity -> {
             livingEntity.addEffect(new MobEffectInstance(ModEffects.INFESTATION_ENTRY, 100, 0));
         });
     }
     @Override
     public void runSkill_5(LongWhipSilverfishEntity entity) {
         if (this.level().isClientSide()) return;
-        LivingEntity target = EntityUtil.getClosestNearbyEntity(entity, LivingEntity.class, 5, EntityUtil.TeamFilter.EXCLUDE_TEAM);
+        LivingEntity target = EntityQueries.getClosestNearbyEntity(entity, LivingEntity.class, 5, EntityQueries.TeamFilter.EXCLUDE_TEAM);
         // 2. 如果找到了目标，设置 ID
         if (target != null) {
             this.setGrabbedEntityId(target.getId());
@@ -321,7 +321,7 @@ public class LongWhipSilverfishEntity extends Silverfish implements GeneralEntit
             livingEntity.hurtServer((ServerLevel) entity.level(), entity.damageSources().indirectMagic(entity, entity), 50);
             entity.heal(100);
             entity.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, 15 * 20, 29));
-            TaskSchedulerUtil.runLater(24, () -> {
+            ServerTickScheduler.schedule(entity.level().getServer(), 24, () -> {
                 entity.setGrabbedEntityId(-1);
             });
         }

@@ -1,7 +1,7 @@
 package com.kltyton.mob_battle.mixin.wither;
 
 import com.kltyton.mob_battle.entity.enhancedwither.EnhancedWitherEntity;
-import com.kltyton.mob_battle.utils.EntityUtil;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -32,7 +32,7 @@ public abstract class WitherSkullEntityMixin {
         Entity owner = self.getOwner();
         if (owner instanceof EnhancedWitherEntity
                 && hitResult.getEntity() instanceof LivingEntity target
-                && !EntityUtil.isValidSummonCombatTarget(self, owner, target)) {
+                && !EntityQueries.isValidSummonCombatTarget(self, owner, target)) {
             ci.cancel();
         }
     }
@@ -49,7 +49,7 @@ public abstract class WitherSkullEntityMixin {
         AABB damageBox = self.getBoundingBox().inflate(3.0D);
         for (LivingEntity target : world.getEntitiesOfClass(LivingEntity.class, damageBox,
                 target -> target.distanceToSqr(self) <= 9.0D
-                        && EntityUtil.isValidSummonCombatTarget(self, owner, target))) {
+                        && EntityQueries.isValidSummonCombatTarget(self, owner, target))) {
             int oldInvulnerableTime = target.invulnerableTime;
             boolean hit = target.hurtServer(world, self.damageSources().explosion(self, livingOwner), 40.0F);
             int postExplosionInvulnerableTime = target.invulnerableTime;

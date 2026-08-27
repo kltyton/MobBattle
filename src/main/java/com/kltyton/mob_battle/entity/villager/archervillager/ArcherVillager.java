@@ -2,8 +2,8 @@ package com.kltyton.mob_battle.entity.villager.archervillager;
 
 import com.kltyton.mob_battle.entity.ModSkillEntityType;
 import com.kltyton.mob_battle.entity.ai.goal.GeneralProtectionVillagerGoal;
-import com.kltyton.mob_battle.utils.EntityUtil;
-import com.kltyton.mob_battle.utils.GeoAnimationUtil;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
+import com.kltyton.mob_battle.client.animation.gecko.GeoAnimationState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
@@ -72,7 +72,7 @@ public class ArcherVillager extends SnowGolem implements NeutralMob, GeoEntity {
         this.targetSelector.addGoal(1, new GeneralProtectionVillagerGoal(this));
         this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, net.minecraft.world.entity.monster.Phantom.class, true));
         this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, 10, true, false,
-                (entity, world) -> this.isAngryAt(entity, world) && EntityUtil.isValidCombatTarget(this, entity)));
+                (entity, world) -> this.isAngryAt(entity, world) && EntityQueries.isValidCombatTarget(this, entity)));
         this.targetSelector.addGoal(2, new ResetUniversalAngerTargetGoal<>(this, false));
     }
     @Override
@@ -152,7 +152,7 @@ public class ArcherVillager extends SnowGolem implements NeutralMob, GeoEntity {
         return bl;
     }
     private void alertOthers(LivingEntity attacker) {
-        if (!EntityUtil.isValidCombatTarget(this, attacker)) {
+        if (!EntityQueries.isValidCombatTarget(this, attacker)) {
             return;
         }
 
@@ -165,7 +165,7 @@ public class ArcherVillager extends SnowGolem implements NeutralMob, GeoEntity {
 
         for (SnowGolem golem : golems) {
             // 跳过玩家创建的且攻击者是玩家的铁傀儡
-            if (attacker instanceof AbstractGolem || !EntityUtil.isValidCombatTarget(golem, attacker)) {
+            if (attacker instanceof AbstractGolem || !EntityQueries.isValidCombatTarget(golem, attacker)) {
                 continue;
             }
 
@@ -225,7 +225,7 @@ public class ArcherVillager extends SnowGolem implements NeutralMob, GeoEntity {
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllerRegistrar) {
         controllerRegistrar.add(new AnimationController<>("main_controller", 0,this::animationController));
-        controllerRegistrar.add(new AnimationController<>( "attack_controller", GeoAnimationUtil::playTriggeredAnimationOrStop)
+        controllerRegistrar.add(new AnimationController<>( "attack_controller", GeoAnimationState::playTriggeredAnimationOrStop)
                 .receiveTriggeredAnimations()
                 .triggerableAnim("attack", ATTACK_ANIM));
     }

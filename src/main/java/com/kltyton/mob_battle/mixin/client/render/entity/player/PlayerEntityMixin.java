@@ -8,8 +8,8 @@ import com.kltyton.mob_battle.entity.player.PlayerEntitySkill;
 import com.kltyton.mob_battle.event.DataTrackersEvent;
 import com.kltyton.mob_battle.network.packet.PlayerSkillUtilPayload;
 import com.kltyton.mob_battle.sounds.ModSounds;
-import com.kltyton.mob_battle.utils.EntityUtil;
-import com.kltyton.mob_battle.utils.GeoAnimationUtil;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
+import com.kltyton.mob_battle.client.animation.gecko.GeoAnimationState;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -118,7 +118,7 @@ public abstract class PlayerEntityMixin extends LivingEntity implements GeoEntit
                 && target.isAlive()
                 && target != this
                 && !target.getUUID().equals(this.getUUID())
-                && !EntityUtil.isCreativeOrSpectator(target);
+                && !EntityQueries.isCreativeOrSpectator(target);
     }
     @Unique
     @Override
@@ -213,7 +213,7 @@ public abstract class PlayerEntityMixin extends LivingEntity implements GeoEntit
                 // 2. 抓取逻辑
                 if (this.collidingEntity == null) {
                     // 探测前方 1.5 格内的生物
-                    LivingEntity target = EntityUtil.getClosestNearbyEntity((Player) (Object) this, LivingEntity.class, 5, EntityUtil.TeamFilter.EXCLUDE_TEAM);
+                    LivingEntity target = EntityQueries.getClosestNearbyEntity((Player) (Object) this, LivingEntity.class, 5, EntityQueries.TeamFilter.EXCLUDE_TEAM);
                     if (this.mobBattle$isValidCollisionTarget(target)) {
                         this.collidingEntity = target;
                     }
@@ -238,7 +238,7 @@ public abstract class PlayerEntityMixin extends LivingEntity implements GeoEntit
     @Inject(method = "tick", at = @At("HEAD"))
     public void tick(CallbackInfo ci) {
         if (!this.level().isClientSide()) {
-            if (EntityUtil.isCreativeOrSpectator(this)) {
+            if (EntityQueries.isCreativeOrSpectator(this)) {
                 PlayerEntitySkill.clearJumpSkillGravityModifier(this);
                 this.mobBattle$stopCollision();
                 this.grabbedEntity = null;
@@ -322,22 +322,22 @@ public abstract class PlayerEntityMixin extends LivingEntity implements GeoEntit
     }
     public void gecko$registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>("main_controller", 5 ,this::animationController));
-        controllers.add(new AnimationController<>("jump_controller", GeoAnimationUtil::playTriggeredAnimationOrStop)
+        controllers.add(new AnimationController<>("jump_controller", GeoAnimationState::playTriggeredAnimationOrStop)
                 .receiveTriggeredAnimations()
                 .triggerableAnim("jump", JUMP_ANIM));
-        controllers.add(new AnimationController<>("wave_controller", GeoAnimationUtil::playTriggeredAnimationOrStop)
+        controllers.add(new AnimationController<>("wave_controller", GeoAnimationState::playTriggeredAnimationOrStop)
                 .receiveTriggeredAnimations()
                 .triggerableAnim("wave", WAVE_ANIM));
         controllers.add(new AnimationController<>("attack_controller", animTest -> {
                     if (animTest.controller().getCurrentRawAnimation() != SCRAPING_ANIM
-                            && GeoAnimationUtil.consumeFinishedTriggeredAnimation(animTest)) {
+                            && GeoAnimationState.consumeFinishedTriggeredAnimation(animTest)) {
                         if (this.mobBattle$hasSkill()) {
                             ((IClientPlayerEntityAccessor)this).clientSend("stop");
                             ((IClientPlayerEntityAccessor)this).clientSend("can_move");
                             //((IClientPlayerEntityAccessor)this).setPerson(1);
                         }
                     }
-                    return GeoAnimationUtil.playTriggeredAnimationOrStop(animTest);
+                    return GeoAnimationState.playTriggeredAnimationOrStop(animTest);
                 })
                 .receiveTriggeredAnimations()
                 .triggerableAnim("attack", ATTACK_ANIM)
@@ -459,7 +459,7 @@ public abstract class PlayerEntityMixin extends LivingEntity implements GeoEntit
     }
     @Unique
     public boolean mobBattle$canAttack(String animationName) {
-        if (EntityUtil.isCreativeOrSpectator(this)) return false;
+        if (EntityQueries.isCreativeOrSpectator(this)) return false;
         if (!ModSkillEntityType.canSkill(this)) return false;
         return this.mobBattle$getAttackCooldown(animationName) <= 0 && !mobBattle$hasSkill();
     }

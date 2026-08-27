@@ -2,7 +2,7 @@ package com.kltyton.mob_battle.event.player;
 
 import com.kltyton.mob_battle.effect.ModEffects;
 import com.kltyton.mob_battle.entity.player.IPlayerEntityAccessor;
-import com.kltyton.mob_battle.items.misc.CardiotonicInjectionItem;
+import com.kltyton.mob_battle.items.consumable.CardiotonicInjectionItem;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import net.minecraft.server.level.ServerPlayer;

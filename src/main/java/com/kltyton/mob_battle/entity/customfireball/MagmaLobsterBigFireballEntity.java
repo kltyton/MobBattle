@@ -1,6 +1,6 @@
 package com.kltyton.mob_battle.entity.customfireball;
 
-import com.kltyton.mob_battle.utils.EntityUtil;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
@@ -56,7 +56,7 @@ public class MagmaLobsterBigFireballEntity extends CustomFireballEntity implemen
         for (LivingEntity living : serverWorld.getEntitiesOfClass(
                 LivingEntity.class,
                 this.getBoundingBox().inflate(3.0D),
-                entity -> EntityUtil.isValidSummonCombatTarget(this, owner, entity)
+                entity -> EntityQueries.isValidSummonCombatTarget(this, owner, entity)
         )) {
             DamageSource explosionSource = this.damageSources().explosion(this, owner);
             DamageSource fireballSource = this.damageSources().fireball(this, owner);

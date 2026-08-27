@@ -14,6 +14,7 @@ import net.minecraft.client.data.models.model.ModelTemplates;
 import net.minecraft.client.data.models.model.TextureMapping;
 import net.minecraft.client.data.models.model.TextureSlot;
 import net.minecraft.client.resources.model.sprite.Material;
+import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
@@ -38,7 +39,6 @@ public class ModModelGenerator extends FabricModelProvider {
     );
     public ModModelGenerator(FabricPackOutput output) {
         super(output);
-        // 2. 在这里赋值
         this.output = output;
     }
 
@@ -50,6 +50,9 @@ public class ModModelGenerator extends FabricModelProvider {
         registerCompressedBlock(blockStateCollector, ModBlocks.COMPRESSED_GOLD_BLOCK);
         registerCompressedBlock(blockStateCollector, ModBlocks.COMPRESSED_DIAMOND_BLOCK);
         registerCompressedBlock(blockStateCollector, ModBlocks.COMPRESSED_NETHERITE_BLOCK);
+        // 双格结构方块:模型正面方向必须与旧手写 blockstate 一致(scarecrow=NORTH、target=EAST)。
+        FacingBlockModels.register(blockStateCollector, ModBlocks.SCARECROW_BLOCK, Direction.NORTH);
+        FacingBlockModels.register(blockStateCollector, ModBlocks.TARGET_BLOCK, Direction.EAST);
         blockStateCollector.createNonTemplateHorizontalBlock(ModBlocks.MACHINE_WORKTABLE_BLOCK);
         blockStateCollector.registerSimpleItemModel(ModBlocks.MACHINE_WORKTABLE_BLOCK, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "block/machine_worktable"));
     }
@@ -72,11 +75,6 @@ public class ModModelGenerator extends FabricModelProvider {
     public void generateItemModels(ItemModelGenerators itemModelCollector) {
         itemModelCollector.itemModelOutput.accept(ModBlocks.NEST_BLOCK.asItem(), ItemModelUtils.plainModel(Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "block/nest")));
         itemModelCollector.itemModelOutput.accept(ModBlocks.MUSHROOM_BLOCK.asItem(), ItemModelUtils.plainModel(Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "block/mushroom")));
-
-/*        itemModelCollector.register(ModBlocks.NEST_BLOCK.asItem(),
-                new Model(Optional.of(Identifier.of(Mob_battle.MOD_ID, "block/nest_block")), Optional.empty()));
-        itemModelCollector.register(ModBlocks.MUSHROOM_BLOCK.asItem(),
-                new Model(Optional.of(Identifier.of(Mob_battle.MOD_ID, "block/mushroom_block")), Optional.empty()));*/
         itemModelCollector.generateFlatItem(ModItems.FINE_KNIFE, ModelTemplates.FLAT_HANDHELD_ITEM);
 
         itemModelCollector.generateFlatItem(ModItems.EMERALD_DIAMOND_HELMET, ModelTemplates.FLAT_ITEM);
@@ -172,6 +170,25 @@ public class ModModelGenerator extends FabricModelProvider {
                             )
                     )
             );
+        }
+
+        // 旧手写 items/*.json 描述符的代码生成:标准 flat 模型同时生成模型本体,
+        // 复杂/自定义 display 模型只生成 item descriptor(模型本体保留手写)。
+        generateHandwrittenItemModels(itemModelCollector);
+    }
+
+    /**
+     * 依据 HandwrittenItemModels 目录生成旧手写物品描述符。
+     * 标准 flat 模型生成模型本体与描述符;复杂/自定义模型仅生成描述符,
+     * 不覆写手写模型本体,保证 head display 等 API 无法表达的语义不丢失。
+     */
+    private static void generateHandwrittenItemModels(ItemModelGenerators itemModelCollector) {
+        for (HandwrittenItemModels.BodySpec spec : HandwrittenItemModels.standardFlatBodySpecs()) {
+            spec.template().create(spec.modelLocation(), spec.textures(), itemModelCollector.modelOutput);
+            itemModelCollector.itemModelOutput.accept(spec.item(), ItemModelUtils.plainModel(spec.modelLocation()));
+        }
+        for (HandwrittenItemModels.DescriptorSpec spec : HandwrittenItemModels.descriptorOnlySpecs()) {
+            itemModelCollector.itemModelOutput.accept(spec.item(), ItemModelUtils.plainModel(spec.modelLocation()));
         }
     }
 

@@ -3,7 +3,7 @@ package com.kltyton.mob_battle.entity.irongolem.hulkbuster;
 import com.kltyton.mob_battle.effect.ModEffects;
 import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.entity.irongolem.hulkbuster.missile.MissileEntity;
-import com.kltyton.mob_battle.utils.EntityUtil;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -21,7 +21,7 @@ public class HulkbusterEntitySkill {
         if (hulkbusterEntity.tryAttackBase((ServerLevel)world, hulkbusterEntity.getTarget())) {
             AABB damageBox = hulkbusterEntity.getBoundingBox().inflate(range, range, range);
             world.getEntities(hulkbusterEntity, damageBox).stream()
-                    .filter(entity -> entity instanceof LivingEntity living && EntityUtil.isValidCombatTarget(hulkbusterEntity, living))
+                    .filter(entity -> entity instanceof LivingEntity living && EntityQueries.isValidCombatTarget(hulkbusterEntity, living))
                     .filter(entity -> entity.distanceToSqr(hulkbusterEntity) <= range * range)
                     .forEach(entity -> {
                         if (entity != hulkbusterEntity.getTarget()) {
@@ -35,7 +35,7 @@ public class HulkbusterEntitySkill {
         Level world = hulkbusterEntity.level();
         AABB damageBox = hulkbusterEntity.getBoundingBox().inflate(range, range, range);
         world.getEntities(hulkbusterEntity, damageBox).stream()
-                .filter(entity -> entity instanceof LivingEntity living && EntityUtil.isValidCombatTarget(hulkbusterEntity, living))
+                .filter(entity -> entity instanceof LivingEntity living && EntityQueries.isValidCombatTarget(hulkbusterEntity, living))
                 .filter(entity -> entity.distanceToSqr(hulkbusterEntity) <= range * range)
                 .forEach(entity -> {
                     float attackDamage = 250.0f;
@@ -45,7 +45,7 @@ public class HulkbusterEntitySkill {
         world.getEntities(hulkbusterEntity, damageBox).stream()
                 .filter(e -> e instanceof LivingEntity)
                 .map(e -> (LivingEntity) e)
-                .filter(e -> e.isAlive() && !EntityUtil.isCreativeOrSpectator(e))
+                .filter(e -> e.isAlive() && !EntityQueries.isCreativeOrSpectator(e))
                 .filter(e -> e.isAlliedTo(hulkbusterEntity))
                 .forEach(ally -> {
                     ally.addEffect(
@@ -60,7 +60,7 @@ public class HulkbusterEntitySkill {
         Level world = hulkbusterEntity.level();
         AABB damageBox = hulkbusterEntity.getBoundingBox().inflate(range, range, range);
         world.getEntities(hulkbusterEntity, damageBox).stream()
-                .filter(entity -> entity instanceof LivingEntity living && EntityUtil.isValidCombatTarget(hulkbusterEntity, living))
+                .filter(entity -> entity instanceof LivingEntity living && EntityQueries.isValidCombatTarget(hulkbusterEntity, living))
                 .filter(entity -> entity.distanceToSqr(hulkbusterEntity) <= range * range)
                 .forEach(entity -> {
                     float attackDamage = 350.0f;
@@ -89,7 +89,7 @@ public class HulkbusterEntitySkill {
         if (target != null && world instanceof ServerLevel serverWorld) {
             AABB damageBox = target.getBoundingBox().inflate(2.0D);
             for (LivingEntity nearby : serverWorld.getEntitiesOfClass(LivingEntity.class, damageBox,
-                    living -> EntityUtil.isValidCombatTarget(hulkbusterEntity, living)
+                    living -> EntityQueries.isValidCombatTarget(hulkbusterEntity, living)
                             && living.distanceToSqr(target) <= 4.0D)) {
                 hulkbusterEntity.tryAttackBaseDamage(serverWorld, nearby, 400.0F);
             }
@@ -102,7 +102,7 @@ public class HulkbusterEntitySkill {
         world.levelEvent(LevelEvent.PARTICLES_SMASH_ATTACK, hulkbusterEntity.getOnPos(), 750);
         AABB damageBox = hulkbusterEntity.getBoundingBox().inflate(3.0D);
         for (LivingEntity target : world.getEntitiesOfClass(LivingEntity.class, damageBox,
-                living -> EntityUtil.isValidCombatTarget(hulkbusterEntity, living)
+                living -> EntityQueries.isValidCombatTarget(hulkbusterEntity, living)
                         && living.distanceToSqr(hulkbusterEntity) <= 9.0D)) {
             hulkbusterEntity.tryAttackBaseDamage(world, target, 280.0F);
             target.knockback(1.5D, hulkbusterEntity.getX() - target.getX(), hulkbusterEntity.getZ() - target.getZ());
@@ -120,7 +120,7 @@ public class HulkbusterEntitySkill {
         }
         AABB damageBox = hulkbusterEntity.getBoundingBox().inflate(1.75D);
         for (LivingEntity target : world.getEntitiesOfClass(LivingEntity.class, damageBox,
-                living -> EntityUtil.isValidCombatTarget(hulkbusterEntity, living))) {
+                living -> EntityQueries.isValidCombatTarget(hulkbusterEntity, living))) {
             hulkbusterEntity.tryAttackBaseDamage(world, target, 20.0F);
         }
         world.sendParticles(ParticleTypes.EXPLOSION, hulkbusterEntity.getX(), hulkbusterEntity.getY() + 0.5D, hulkbusterEntity.getZ(),

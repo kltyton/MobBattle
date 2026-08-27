@@ -3,7 +3,7 @@ package com.kltyton.mob_battle.datagen.server.recipe;
 import com.kltyton.mob_battle.Mob_battle;
 import com.kltyton.mob_battle.block.ModBlocks;
 import com.kltyton.mob_battle.items.ModItems;
-import com.kltyton.mob_battle.items.misc.BaseItems;
+import com.kltyton.mob_battle.items.registry.BaseMaterialItems;
 import net.fabricmc.fabric.api.datagen.v1.FabricPackOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider;
 import net.minecraft.core.HolderLookup;
@@ -63,20 +63,20 @@ public class ModRecipeGenerator extends FabricRecipeProvider {
                         .pattern(" a ")
                         .pattern(" a ")
                         .pattern(" b ")
-                        .define('a', BaseItems.ITEMS.get("blue_ice"))
+                        .define('a', BaseMaterialItems.ITEMS.get("blue_ice"))
                         .define('b', Items.STICK)
                         .group("elemental_sword")
-                        .unlockedBy(getHasName(BaseItems.ITEMS.get("blue_ice")), has(BaseItems.ITEMS.get("blue_ice")))
+                        .unlockedBy(getHasName(BaseMaterialItems.ITEMS.get("blue_ice")), has(BaseMaterialItems.ITEMS.get("blue_ice")))
                         .save(output);
 
                 shaped(RecipeCategory.COMBAT, ModItems.FIRE_SWORD, 1)
                         .pattern(" a ")
                         .pattern(" a ")
                         .pattern(" b ")
-                        .define('a', BaseItems.ITEMS.get("fire_red"))
+                        .define('a', BaseMaterialItems.ITEMS.get("fire_red"))
                         .define('b', Items.STICK)
                         .group("elemental_sword")
-                        .unlockedBy(getHasName(BaseItems.ITEMS.get("fire_red")), has(BaseItems.ITEMS.get("fire_red")))
+                        .unlockedBy(getHasName(BaseMaterialItems.ITEMS.get("fire_red")), has(BaseMaterialItems.ITEMS.get("fire_red")))
                         .save(output);
 
                 shapeless(RecipeCategory.COMBAT, ModItems.CHASING_WIND_SWORD, 1)

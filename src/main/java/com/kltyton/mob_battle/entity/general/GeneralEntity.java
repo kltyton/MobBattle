@@ -4,7 +4,7 @@ import com.kltyton.mob_battle.Mob_battle;
 import com.kltyton.mob_battle.config.MobBattleConfig;
 import com.kltyton.mob_battle.entity.ModSkillEntityType;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
-import com.kltyton.mob_battle.utils.GeoAnimationUtil;
+import com.kltyton.mob_battle.client.animation.gecko.GeoAnimationState;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -16,6 +16,15 @@ import com.geckolib.animation.state.AnimationTest;
 import com.geckolib.animation.object.PlayState;
 import com.geckolib.animation.RawAnimation;
 
+/**
+ * 多技能通用实体的兼容领域契约。
+ *
+ * <p>接口统一技能状态、五段冷却、动画控制器和服务端关键帧指令分发；实现类只需
+ * 提供实体数据键、技能数量和各技能行为。新代码通过继承的 {@code SkillEntity}
+ * 契约接入统一网络入口，不在网络层增加实体类型分支。
+ *
+ * @param <T> 实现该契约的具体 Mob 类型
+ */
 public interface GeneralEntity<T extends Mob> extends ModSkillEntityType, GeoEntity {
     Mob getEntity();
     int getSkillCount();
@@ -115,6 +124,48 @@ public interface GeneralEntity<T extends Mob> extends ModSkillEntityType, GeoEnt
     default void setHasSkill(boolean hasSkill) {
         getEntity().getEntityData().set(getHasSkillKey(), hasSkill);
     }
+    /**
+     * 服务端技能指令分发契约（通用实体层级）。
+     *
+     * <p>与 {@code GeneralEntitySkillHelper} 的既有指令表逐项等价：{@code attack}、
+     * {@code attack1_1}~{@code attack7_1} 等技能指令分发给对应的 {@code runSkill*} 方法，
+     * {@code attack2_stop}/{@code attack4_stop} 结束对应技能，{@code buff} 执行增益，
+     * {@code stop_ai}/{@code start_ai} 控制 AI，{@code stop} 结束技能并恢复 AI。
+     * 只有被识别并执行的指令返回 {@code true}；未知指令返回 {@code false} 且不改变实体状态。
+     */
+    @Override
+    default boolean handleSkillPayload(String skillName) {
+        @SuppressWarnings("unchecked")
+        T entity = (T) getEntity();
+        switch (skillName) {
+            case "attack" -> runSkill_1(entity);
+            case "attack1_1" -> runSkill_1_1(entity);
+            case "attack1_2" -> runSkill_1_2(entity);
+            case "attack1_3" -> runSkill_1_3(entity);
+            case "attack2" -> runSkill_2(entity);
+            case "attack2_stop" -> stopSkill_2(entity);
+            case "attack3" -> runSkill_3(entity);
+            case "attack3_1" -> runSkill_3_1(entity);
+            case "attack3_2" -> runSkill_3_2(entity);
+            case "attack4" -> runSkill_4(entity);
+            case "attack4_stop" -> stopSkill_4(entity);
+            case "attack5" -> runSkill_5(entity);
+            case "attack6" -> runSkill_6(entity);
+            case "attack7" -> runSkill_7(entity);
+            case "attack7_1" -> runSkill_7_1(entity);
+            case "buff" -> runBuff(entity);
+            case "stop_ai" -> entity.setNoAi(true);
+            case "start_ai" -> entity.setNoAi(false);
+            case "stop" -> {
+                setHasSkill(false);
+                entity.setNoAi(false);
+            }
+            default -> {
+                return false;
+            }
+        }
+        return true;
+    }
     default boolean canSkill(String skill) {
         if (!canSkill()) return false;
         return !getEntity().level().isClientSide() && !hasSkill() && getSkillCooldown(skill) == 0 && getEntity().getTarget() != null;
@@ -182,10 +233,10 @@ public interface GeneralEntity<T extends Mob> extends ModSkillEntityType, GeoEnt
     default void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>("main_controller", 0, this::mainController));
         controllers.add(new AnimationController<>( "skill_controller", 0,animTest -> {
-                    if (GeoAnimationUtil.consumeFinishedTriggeredAnimation(animTest)) {
+                    if (GeoAnimationState.consumeFinishedTriggeredAnimation(animTest)) {
                         ClientPlayNetworking.send(new SkillPayload("stop", getEntity().getId()));
                     }
-                    return GeoAnimationUtil.playTriggeredAnimationOrStop(animTest);
+                    return GeoAnimationState.playTriggeredAnimationOrStop(animTest);
                 })
                         .receiveTriggeredAnimations()
                         .triggerableAnim("attack", ATTACK_ANIM)
@@ -230,7 +281,7 @@ public interface GeneralEntity<T extends Mob> extends ModSkillEntityType, GeoEnt
         );
     }
     default PlayState mainController(AnimationTest<?> event) {
-        if (this.hasSkill() && !GeoAnimationUtil.hasRecentlyFinishedTriggeredAnimation(getEntity())) {
+        if (this.hasSkill() && !GeoAnimationState.hasRecentlyFinishedTriggeredAnimation(getEntity())) {
             return PlayState.CONTINUE;
         }
         return event.isMoving() ? event.setAndContinue(WALK_ANIM) : event.setAndContinue(IDLE_ANIM);

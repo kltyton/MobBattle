@@ -6,7 +6,7 @@ import com.kltyton.mob_battle.config.MobBattleConfig;
 import com.kltyton.mob_battle.enchantment.ModEnchantments;
 import com.kltyton.mob_battle.items.ModItems;
 import com.kltyton.mob_battle.items.ModMaterial;
-import com.kltyton.mob_battle.items.misc.BaseItems;
+import com.kltyton.mob_battle.items.registry.BaseMaterialItems;
 import net.fabricmc.fabric.api.creativetab.v1.FabricCreativeModeTab;
 import net.fabricmc.fabric.api.creativetab.v1.CreativeModeTabEvents;
 import net.minecraft.core.HolderLookup;
@@ -427,7 +427,7 @@ public class ModItemGroups {
     }
 
     private static Item baseItem(String id) {
-        return BaseItems.ITEMS.get(id);
+        return BaseMaterialItems.ITEMS.get(id);
     }
 
     private static SpawnEggItem spawnEgg(String id) {

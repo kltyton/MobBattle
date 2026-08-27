@@ -2,7 +2,7 @@ package com.kltyton.mob_battle.entity.skull;
 
 import com.kltyton.mob_battle.entity.ModSkillEntityType;
 import com.kltyton.mob_battle.entity.OwnedSummon;
-import com.kltyton.mob_battle.utils.EntityUtil;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
 import net.minecraft.world.entity.EntityReference;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.OwnableEntity;
@@ -18,7 +18,7 @@ public interface IModSkullEntity extends OwnableEntity, ModSkillEntityType, Owne
         return this.getOwner();
     }
     default void killSlave() {
-        int count = EntityUtil.getNearbyEntityCount((LivingEntity) this, LivingEntity.class, IModSkullEntity.class, 100);
+        int count = EntityQueries.getNearbyEntityCount((LivingEntity) this, LivingEntity.class, IModSkullEntity.class, 100);
         if (count > 60) {
             ((LivingEntity) this).discard();
         }

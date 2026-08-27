@@ -4,10 +4,11 @@ import com.kltyton.mob_battle.Mob_battle;
 import com.kltyton.mob_battle.config.MobBattleConfig;
 import com.kltyton.mob_battle.entity.ModSkillEntityType;
 import com.kltyton.mob_battle.entity.deepcreature.goal.DeepCreatureEntityNavigation;
+import com.kltyton.mob_battle.entity.deepcreature.skill.Skill;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
-import com.kltyton.mob_battle.utils.DeathAnimationUtil;
-import com.kltyton.mob_battle.utils.EntityUtil;
-import com.kltyton.mob_battle.utils.GeoAnimationUtil;
+import com.kltyton.mob_battle.animation.death.DeathAnimationState;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
+import com.kltyton.mob_battle.client.animation.gecko.GeoAnimationState;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.core.Holder;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
@@ -72,7 +73,7 @@ public class DeepCreatureEntity extends Monster implements GeoEntity, ModSkillEn
     public static final EntityDataAccessor<Boolean> HAS_SKILL = SynchedEntityData.defineId(DeepCreatureEntity.class, EntityDataSerializers.BOOLEAN);
     public static final EntityDataAccessor<Integer> SKILL_COOLDOWN = SynchedEntityData.defineId(DeepCreatureEntity.class, EntityDataSerializers.INT);
     public static final EntityDataAccessor<Integer> GRAB_TARGET_ID = SynchedEntityData.defineId(DeepCreatureEntity.class, EntityDataSerializers.INT);
-    private DeathAnimationUtil.FrozenPose deathFrozenPose;
+    private DeathAnimationState.FrozenPose deathFrozenPose;
     @Override
     public boolean canBeAffected(MobEffectInstance effect) {
         Holder<MobEffect> effectType = effect.getEffect();
@@ -168,12 +169,12 @@ public class DeepCreatureEntity extends Monster implements GeoEntity, ModSkillEn
             }
         }).receiveTriggeredAnimations().triggerableAnim("death", DEAD_ANIM));
         controllers.add(new AnimationController<>("skill_controller",animTest -> {
-            if (GeoAnimationUtil.consumeFinishedTriggeredAnimation(animTest)) {
+            if (GeoAnimationState.consumeFinishedTriggeredAnimation(animTest)) {
                 ClientPlayNetworking.send(new SkillPayload(
                         "stop", this.getId()
                 ));
             }
-            return GeoAnimationUtil.playTriggeredAnimationOrStop(animTest);
+            return GeoAnimationState.playTriggeredAnimationOrStop(animTest);
         }).receiveTriggeredAnimations().setSoundKeyframeHandler(s -> {
             Player player = ClientUtil.getClientPlayer();
             if ("minecraft:entity.polar_bear.warning".equals(s.keyframeData().getSound())) {
@@ -320,7 +321,7 @@ public class DeepCreatureEntity extends Monster implements GeoEntity, ModSkillEn
         }
         if (health <= 0.0F) {
             boolean firstDeathFrame = this.deathFrozenPose == null;
-            this.deathFrozenPose = DeathAnimationUtil.captureIfNeeded(this, this.deathFrozenPose);
+            this.deathFrozenPose = DeathAnimationState.captureIfNeeded(this, this.deathFrozenPose);
             super.setHealth(0.1F);
             this.setNoAi(true);
             if (firstDeathFrame) {
@@ -341,12 +342,12 @@ public class DeepCreatureEntity extends Monster implements GeoEntity, ModSkillEn
             ClientPlayNetworking.send(new SkillPayload(
                     "stop_ai", this.getId()
             ));
-            if (GeoAnimationUtil.consumeFinishedTriggeredAnimation(state)) {
+            if (GeoAnimationState.consumeFinishedTriggeredAnimation(state)) {
                 ClientPlayNetworking.send(new SkillPayload(
                         "kill", this.getId()
                 ));
             }
-            return GeoAnimationUtil.playTriggeredAnimationOrStop(state);
+            return GeoAnimationState.playTriggeredAnimationOrStop(state);
         }
         // 当实体刚生成时播放spawn动画
         if (this.tickCount < 220 && !this.isSpawnAnimEnd()) {
@@ -376,7 +377,7 @@ public class DeepCreatureEntity extends Monster implements GeoEntity, ModSkillEn
         super.tick();
         if (!this.level().isClientSide()) {
             if (this.deathFrozenPose != null) {
-                DeathAnimationUtil.freeze(this, this.deathFrozenPose);
+                DeathAnimationState.freeze(this, this.deathFrozenPose);
                 return;
             }
 
@@ -434,7 +435,7 @@ public class DeepCreatureEntity extends Monster implements GeoEntity, ModSkillEn
                 // 4. 撞击检测：以当前碰撞盒稍扩大一点
                 AABB hitBox = this.getBoundingBox().inflate(8);
                 List<LivingEntity> list = level().getEntities(this, hitBox,
-                                e -> e instanceof LivingEntity living && EntityUtil.isValidCombatTarget(this, living))
+                                e -> e instanceof LivingEntity living && EntityQueries.isValidCombatTarget(this, living))
                         .stream()
                         .map(e -> (LivingEntity) e)
                         .toList();
@@ -635,5 +636,59 @@ public class DeepCreatureEntity extends Monster implements GeoEntity, ModSkillEn
     public boolean canSkill() {
         if (!ModSkillEntityType.canSkill(this)) return false;
         return this.isSpawnAnimEnd() && !hasSkill() && getSkillCooldown() == 0;
+    }
+
+    /**
+     * 处理已经通过服务端边界校验的技能关键帧指令。
+     *
+     * <p>指令字符串、动作调用与状态副作用与 ServerPlayNetwork 中本实体的
+     * 分发分支保持逐字节一致；识别成功返回 true，未识别返回 false 且不改变状态。
+     *
+     * @param skillName 兼容现有网络协议的技能字符串
+     * @return 指令是否被识别并处理
+     */
+    @Override
+    public boolean handleSkillPayload(String skillName) {
+        switch (skillName) {
+            case "roar" -> Skill.runRoarSkill(this);
+            case "earthquake" -> Skill.runEarthquake(this);
+            case "smash" -> Skill.runSmash(this);
+            case "side" -> Skill.runSideSkill(this);
+            case "sonic_boom" -> Skill.runSonicBoom(this);
+            case "charge" -> Skill.runCharge(this);
+            case "stop_ai" -> this.setNoAi(true);
+            case "start_ai" -> this.setNoAi(false);
+            case "smash_ground_s" -> {
+                this.setNoAi(true);
+                Skill.runSmashGround(this, 10, 0.5, 1.0, 0.25, 3.0, 0.15);
+            }
+            case "smash_ground_xl" -> {
+                this.setNoAi(true);
+                Skill.runSmashGround(this, 18, 0.5, 1.5, 0.2, 3.5, 0.1);
+            }
+            case "kill" -> this.remove(Entity.RemovalReason.KILLED);
+            case "catch" -> Skill.runCatch(this);
+            case "catch_damage" -> Skill.runCatchDamage(this);
+            case "catch_end" -> Skill.runCatchEnd(this);
+            case "stop_run_catch" -> Skill.stopRunCatch(this);
+            case "damage" -> Skill.runDamage(this);
+            case "stop" -> {
+                this.setHasSkill(false);
+                this.setNoAi(false);
+            }
+            default -> {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * 深渊生物死亡动画会把生命值固定为 0.1，因此不能只依赖
+     * {@link #isDeadOrDying()} 判断死亡收尾阶段。
+     */
+    @Override
+    public boolean isSkillDeathSequenceActive() {
+        return this.deathFrozenPose != null;
     }
 }

@@ -1,6 +1,6 @@
 package com.kltyton.mob_battle.effect.harmful;
 
-import com.kltyton.mob_battle.utils.EntityUtil;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
@@ -60,7 +60,7 @@ public class InsectBiteEffect extends MobEffect {
             );
 
             if (warden instanceof Warden) {
-                warden.setPos(EntityUtil.findSafeSpawnPosition(world, warden, pos.getCenter()).orElse(pos.getCenter()));
+                warden.setPos(EntityQueries.findSafeSpawnPosition(world, warden, pos.getCenter()).orElse(pos.getCenter()));
                 setupWardenAttributes((Warden) warden);
                 ((Mob)warden).setTarget(entity); // 设置攻击目标
             }

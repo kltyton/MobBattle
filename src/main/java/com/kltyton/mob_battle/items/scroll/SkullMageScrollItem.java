@@ -3,7 +3,7 @@ package com.kltyton.mob_battle.items.scroll;
 import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.entity.littleperson.skillentity.SkillProjectileEntity;
 import com.kltyton.mob_battle.entity.skull.mage.NewSkullMageEntity;
-import com.kltyton.mob_battle.utils.EntityUtil;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.InteractionHand;
@@ -27,8 +27,8 @@ public class SkullMageScrollItem extends Item {
         if (!(world instanceof ServerLevel serverWorld)) {
             return InteractionResult.SUCCESS;
         }
-        LivingEntity target = EntityUtil.getClosestNearbyEntity(user, LivingEntity.class, 40.0D, EntityUtil.TeamFilter.EXCLUDE_TEAM,
-                living -> EntityUtil.isValidSummonCombatTarget(user, user, living), null);
+        LivingEntity target = EntityQueries.getClosestNearbyEntity(user, LivingEntity.class, 40.0D, EntityQueries.TeamFilter.EXCLUDE_TEAM,
+                living -> EntityQueries.isValidSummonCombatTarget(user, user, living), null);
         shootSkullHead(serverWorld, user);
         NewSkullMageEntity.summonSkeletons(user, target, user.position(), 2, 2);
         user.playSound(SoundEvents.WITHER_SHOOT, 1.0F, 1.0F);

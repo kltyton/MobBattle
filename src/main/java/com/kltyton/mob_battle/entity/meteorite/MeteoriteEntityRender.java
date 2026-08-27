@@ -1,6 +1,6 @@
 package com.kltyton.mob_battle.entity.meteorite;
 
-import com.kltyton.mob_battle.client.render.SubmitRenderUtil;
+import com.kltyton.mob_battle.client.render.RenderSubmission;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.fabricmc.api.EnvType;
@@ -33,7 +33,7 @@ public class MeteoriteEntityRender<T extends MeteoriteEntity> extends EntityRend
         float rotation = state.ageInTicks * 5.0F;
         matrices.mulPose(Axis.YP.rotationDegrees(rotation));
         matrices.mulPose(Axis.XP.rotationDegrees(rotation * 0.5F));
-        SubmitRenderUtil.submitBlock(this.blockModelResolver, this.blockRenderState, Blocks.MAGMA_BLOCK.defaultBlockState(),
+        RenderSubmission.submitBlock(this.blockModelResolver, this.blockRenderState, Blocks.MAGMA_BLOCK.defaultBlockState(),
                 matrices, renderTasks, state.lightCoords, state.outlineColor);
         matrices.popPose();
         super.submit(state, matrices, renderTasks, cameraState);

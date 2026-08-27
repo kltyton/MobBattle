@@ -1,7 +1,7 @@
 package com.kltyton.mob_battle.entity.witherskeletonking.skill;
 
 import com.kltyton.mob_battle.effect.ModEffects;
-import com.kltyton.mob_battle.utils.EntityUtil;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.EntityTypeTags;
@@ -54,7 +54,7 @@ public class WitherSkullKingEntity extends WitherSkull {
         if (this.level() instanceof ServerLevel serverWorld) {
             Entity var8 = entityHitResult.getEntity();
             boolean bl;
-            if (var8 instanceof LivingEntity living && !EntityUtil.isValidSummonCombatTarget(this, this.getOwner(), living)) {
+            if (var8 instanceof LivingEntity living && !EntityQueries.isValidSummonCombatTarget(this, this.getOwner(), living)) {
                 return;
             }
             if (this.getOwner() instanceof LivingEntity livingEntity) {
@@ -80,7 +80,7 @@ public class WitherSkullKingEntity extends WitherSkull {
         if (type == HitResult.Type.ENTITY) {
             EntityHitResult entityHitResult = (EntityHitResult)hitResult;
             Entity entity = entityHitResult.getEntity();
-            if (entity instanceof LivingEntity living && !EntityUtil.isValidSummonCombatTarget(this, this.getOwner(), living)) {
+            if (entity instanceof LivingEntity living && !EntityQueries.isValidSummonCombatTarget(this, this.getOwner(), living)) {
                 return;
             }
             if (entity.typeHolder().is(EntityTypeTags.REDIRECTABLE_PROJECTILE) && entity instanceof Projectile projectileEntity) {
@@ -101,7 +101,7 @@ public class WitherSkullKingEntity extends WitherSkull {
     protected void onHit(HitResult hitResult) {
         if (hitResult instanceof EntityHitResult entityHitResult
                 && entityHitResult.getEntity() instanceof LivingEntity living
-                && !EntityUtil.isValidSummonCombatTarget(this, this.getOwner(), living)) {
+                && !EntityQueries.isValidSummonCombatTarget(this, this.getOwner(), living)) {
             return;
         }
         this.onCollisionBase(hitResult);

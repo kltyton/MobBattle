@@ -9,10 +9,10 @@ import com.kltyton.mob_battle.entity.accessor.BigBossMoveControl;
 import com.kltyton.mob_battle.entity.accessor.BigBossNavigation;
 import com.kltyton.mob_battle.entity.irongolem.ModBaseIronGolemEntity;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
-import com.kltyton.mob_battle.utils.CombatEffectUtil;
-import com.kltyton.mob_battle.utils.DeathAnimationUtil;
-import com.kltyton.mob_battle.utils.EntityUtil;
-import com.kltyton.mob_battle.utils.GeoAnimationUtil;
+import com.kltyton.mob_battle.combat.effect.CombatEffectApplier;
+import com.kltyton.mob_battle.animation.death.DeathAnimationState;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
+import com.kltyton.mob_battle.client.animation.gecko.GeoAnimationState;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.network.chat.Component;
@@ -92,7 +92,7 @@ public class HulkbusterEntity extends IronGolem implements GeoEntity, ModBaseIro
     private final Set<Integer> punchHitEntities = new HashSet<>();
     private boolean punching;
     private int deathAnimationTicks;
-    private DeathAnimationUtil.FrozenPose deathFrozenPose;
+    private DeathAnimationState.FrozenPose deathFrozenPose;
     @Override
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
         super.defineSynchedData(builder);
@@ -221,7 +221,7 @@ public class HulkbusterEntity extends IronGolem implements GeoEntity, ModBaseIro
 
             if (target instanceof LivingEntity livingEntity) {
                 itemStack.hurtEnemy(livingEntity, this);
-                CombatEffectUtil.addStackingArmorPiercing(livingEntity, this);
+                CombatEffectApplier.addStackingArmorPiercing(livingEntity, this);
             }
 
             EnchantmentHelper.doPostAttackEffects(world, target, damageSource);
@@ -381,9 +381,9 @@ public class HulkbusterEntity extends IronGolem implements GeoEntity, ModBaseIro
         this.targetSelector.addGoal(1, new DefendVillageTargetGoal(this));
         this.targetSelector.addGoal(2, new HurtByTargetGoal(this));
         this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, Player.class, 10, true, false,
-                (entity, world) -> this.isAngryAt(entity, world) && EntityUtil.isValidCombatTarget(this, entity)));
+                (entity, world) -> this.isAngryAt(entity, world) && EntityQueries.isValidCombatTarget(this, entity)));
         this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, Mob.class, 5, false, false,
-                (entity, world) -> entity instanceof Enemy && EntityUtil.isValidCombatTarget(this, entity)));
+                (entity, world) -> entity instanceof Enemy && EntityQueries.isValidCombatTarget(this, entity)));
         this.targetSelector.addGoal(4, new ResetUniversalAngerTargetGoal<>(this, false));
     }
     protected static final RawAnimation IDEA_ANIM = RawAnimation.begin().thenLoop("idle");
@@ -399,13 +399,13 @@ public class HulkbusterEntity extends IronGolem implements GeoEntity, ModBaseIro
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>("main_controller", this::animationController));
         controllers.add(new AnimationController<>("skill_controller", animTest -> {
-            if (GeoAnimationUtil.consumeFinishedTriggeredAnimation(animTest)) {
+            if (GeoAnimationState.consumeFinishedTriggeredAnimation(animTest)) {
                 ClientPlayNetworking.send(new SkillPayload(
                         "stop", this.getId()
                 ));
                 animTest.renderState().addGeckolibData(HulkbusterEntityRenderer.SYNC_CATCH, false);
             }
-            return GeoAnimationUtil.playTriggeredAnimationOrStop(animTest);
+            return GeoAnimationState.playTriggeredAnimationOrStop(animTest);
         })
                 .receiveTriggeredAnimations()
                 .triggerableAnim("attack", ATTACK_ANIM)
@@ -499,7 +499,7 @@ public class HulkbusterEntity extends IronGolem implements GeoEntity, ModBaseIro
         this.hurtMarked = true;
         AABB box = this.getBoundingBox().inflate(1.0D);
         for (LivingEntity target : world.getEntitiesOfClass(LivingEntity.class, box,
-                living -> EntityUtil.isValidCombatTarget(this, living))) {
+                living -> EntityQueries.isValidCombatTarget(this, living))) {
             if (this.punchHitEntities.add(target.getId())) {
                 this.tryAttackBaseDamage(world, target, 300.0F);
             }
@@ -519,7 +519,7 @@ public class HulkbusterEntity extends IronGolem implements GeoEntity, ModBaseIro
     }
 
     private void startDeathAnimation() {
-        this.deathFrozenPose = DeathAnimationUtil.capture(this);
+        this.deathFrozenPose = DeathAnimationState.capture(this);
         this.setHealth(1.0F);
         this.setNoAi(true);
         this.setHasSkill(true);
@@ -529,11 +529,43 @@ public class HulkbusterEntity extends IronGolem implements GeoEntity, ModBaseIro
 
     private void tickDeathAnimation() {
         this.setHealth(1.0F);
-        DeathAnimationUtil.freeze(this, this.deathFrozenPose);
+        DeathAnimationState.freeze(this, this.deathFrozenPose);
         this.deathAnimationTicks--;
         if (this.deathAnimationTicks <= 0) {
             this.remove(Entity.RemovalReason.KILLED);
         }
+    }
+
+    /**
+     * 处理已经通过服务端边界校验的技能关键帧指令。
+     *
+     * <p>指令字符串、动作调用与状态副作用与 ServerPlayNetwork 中本实体的
+     * 分发分支保持逐字节一致；识别成功返回 true，未识别返回 false 且不改变状态。
+     *
+     * @param skillName 兼容现有网络协议的技能字符串
+     * @return 指令是否被识别并处理
+     */
+    @Override
+    public boolean handleSkillPayload(String skillName) {
+        switch (skillName) {
+            case "attack" -> HulkbusterEntitySkill.runAttackSkill(this);
+            case "super_attack" -> HulkbusterEntitySkill.runSuperAttackSkill(this);
+            case "mini_attack" -> HulkbusterEntitySkill.runMiniAttackSkill(this);
+            case "max_attack" -> HulkbusterEntitySkill.runMaxAttackSkill(this);
+            case "clap_hands" -> HulkbusterEntitySkill.runClapHandsSkill(this);
+            case "punch" -> HulkbusterEntitySkill.runPunchStartSkill(this);
+            case "punch_1" -> this.stopPunch();
+            case "stop_ai" -> this.setNoAi(true);
+            case "start_ai" -> this.setNoAi(false);
+            case "stop" -> {
+                this.setHasSkill(false);
+                this.setNoAi(false);
+            }
+            default -> {
+                return false;
+            }
+        }
+        return true;
     }
 }
 

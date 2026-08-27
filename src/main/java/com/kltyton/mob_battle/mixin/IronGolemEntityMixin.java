@@ -2,7 +2,7 @@ package com.kltyton.mob_battle.mixin;
 
 import com.kltyton.mob_battle.entity.irongolem.ModBaseIronGolemEntity;
 import com.kltyton.mob_battle.entity.villager.warriorvillager.WarriorVillager;
-import com.kltyton.mob_battle.utils.EntityUtil;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.Entity;
@@ -38,7 +38,7 @@ public abstract class IronGolemEntityMixin extends AbstractGolem implements Neut
                 && this.getRandom().nextInt(20) == 0
                 && entity instanceof Enemy
                 && entity instanceof LivingEntity living
-                && EntityUtil.isValidCombatTarget(this, living)) {
+                && EntityQueries.isValidCombatTarget(this, living)) {
             this.setTarget(living);
         }
     }

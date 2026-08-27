@@ -1,7 +1,7 @@
 package com.kltyton.mob_battle.entity.littleperson.skillentity;
 
 import com.kltyton.mob_battle.entity.ModEntities;
-import com.kltyton.mob_battle.utils.EntityUtil;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
 import com.geckolib.animatable.GeoEntity;
 import com.geckolib.animatable.instance.AnimatableInstanceCache;
 import com.geckolib.animatable.manager.AnimatableManager;
@@ -127,7 +127,7 @@ public class SkillProjectileEntity extends Projectile implements GeoEntity {
         Entity owner = this.getOwner();
         AABB box = this.getBoundingBox().inflate(0.45D);
         for (LivingEntity target : world.getEntitiesOfClass(LivingEntity.class, box,
-                living -> EntityUtil.isValidSummonCombatTarget(this, owner, living))) {
+                living -> EntityQueries.isValidSummonCombatTarget(this, owner, living))) {
             if (!this.hitEntities.add(target.getId())) {
                 continue;
             }
@@ -144,7 +144,7 @@ public class SkillProjectileEntity extends Projectile implements GeoEntity {
     }
 
     private void damageTarget(ServerLevel world, LivingEntity target, Entity owner) {
-        if (!EntityUtil.isValidSummonCombatTarget(this, owner, target)) {
+        if (!EntityQueries.isValidSummonCombatTarget(this, owner, target)) {
             return;
         }
         if (this.physicalDamage > 0.0F) {
@@ -173,7 +173,7 @@ public class SkillProjectileEntity extends Projectile implements GeoEntity {
         world.playSound(null, this.blockPosition(), SoundEvents.GENERIC_EXPLODE.value(), this.getSoundSource(), 1.2F, 0.9F);
         AABB box = this.getBoundingBox().inflate(this.explosionRadius);
         for (LivingEntity target : world.getEntitiesOfClass(LivingEntity.class, box,
-                living -> EntityUtil.isValidSummonCombatTarget(this, owner, living))) {
+                living -> EntityQueries.isValidSummonCombatTarget(this, owner, living))) {
             damageTarget(world, target, owner);
         }
         this.discard();

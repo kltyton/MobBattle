@@ -8,8 +8,8 @@ import com.kltyton.mob_battle.entity.accessor.BigBossNavigation;
 import com.kltyton.mob_battle.entity.skull.IModSkullEntity;
 import com.kltyton.mob_battle.entity.witherskeletonking.WitherSkeletonKingEntity;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
-import com.kltyton.mob_battle.utils.EntityUtil;
-import com.kltyton.mob_battle.utils.GeoAnimationUtil;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
+import com.kltyton.mob_battle.client.animation.gecko.GeoAnimationState;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -93,7 +93,7 @@ public class SkullKingEntity extends WitherSkeleton implements GeoEntity, IModSk
             if (!hasSkill()) {
                 this.setNoAi(false);
                 if (canSummonSkull()) performSummonSkull();
-                // 鍐峰嵈閫掑噺
+                // 冷却时间递减。
                 int cd = getSkillCooldown();
                 if (cd > 0) setSkillCooldown(cd - 1);
                 int superAttackCd = getSuperAttackSkillCooldown();
@@ -248,12 +248,39 @@ public class SkullKingEntity extends WitherSkeleton implements GeoEntity, IModSk
         return canSkill() && getSuperAttackSkillCooldown() == 0;
     }
     public boolean canSummonSkull() {
-        int count = EntityUtil.getNearbyEntityCount(this, LivingEntity.class, IModSkullEntity.class, 100);
+        int count = EntityQueries.getNearbyEntityCount(this, LivingEntity.class, IModSkullEntity.class, 100);
         return count < 60 && canSkill() && getSummonSkullCooldown() == 0;
     }
     public boolean canSkill() {
         if (!ModSkillEntityType.canSkill(this)) return false;
         return !this.level().isClientSide() && !hasSkill() && getSkillCooldown() == 0 && this.getTarget() != null;
+    }
+    /**
+     * 处理已经通过服务端边界校验的技能关键帧指令。
+     *
+     * <p>指令字符串、动作调用与状态副作用与 ServerPlayNetwork 中本实体的
+     * 分发分支保持逐字节一致；识别成功返回 true，未识别返回 false 且不改变状态。
+     *
+     * @param skillName 兼容现有网络协议的技能字符串
+     * @return 指令是否被识别并处理
+     */
+    @Override
+    public boolean handleSkillPayload(String skillName) {
+        switch (skillName) {
+            case "attack" -> SkullKingEntitySkill.runAttackSkill(this);
+            case "super_attack" -> SkullKingEntitySkill.runSuperAttackSkill(this);
+            case "summon_skull" -> SkullKingEntitySkill.runSummonSkullSkill(this);
+            case "stop_ai" -> this.setNoAi(true);
+            case "start_ai" -> this.setNoAi(false);
+            case "stop" -> {
+                this.setHasSkill(false);
+                this.setNoAi(false);
+            }
+            default -> {
+                return false;
+            }
+        }
+        return true;
     }
     protected static final RawAnimation IDEA_ANIM = RawAnimation.begin().thenLoop("idle");
     protected static final RawAnimation WALK_ANIM = RawAnimation.begin().thenLoop("walk");
@@ -264,12 +291,12 @@ public class SkullKingEntity extends WitherSkeleton implements GeoEntity, IModSk
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>("main_controller", 0,this::animationController));
         controllers.add(new AnimationController<>("skill_controller",animTest -> {
-            if (GeoAnimationUtil.consumeFinishedTriggeredAnimation(animTest)) {
+            if (GeoAnimationState.consumeFinishedTriggeredAnimation(animTest)) {
                 ClientPlayNetworking.send(new SkillPayload(
                         "stop", this.getId()
                 ));
             }
-            return GeoAnimationUtil.playTriggeredAnimationOrStop(animTest);
+            return GeoAnimationState.playTriggeredAnimationOrStop(animTest);
         })
                 .receiveTriggeredAnimations()
                 .triggerableAnim("attack", ATTACK_ANIM)

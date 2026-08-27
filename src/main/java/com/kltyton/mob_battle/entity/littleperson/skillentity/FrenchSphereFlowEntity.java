@@ -4,8 +4,8 @@ import com.kltyton.mob_battle.effect.ModEffects;
 import com.kltyton.mob_battle.entity.ModEntityAttributes;
 import com.kltyton.mob_battle.entity.littleperson.LittlePersonEntity;
 import com.kltyton.mob_battle.entity.littleperson.skillentity.base.BaseSkillLittlePersonEntity;
-import com.kltyton.mob_battle.utils.EntityUtil;
-import com.kltyton.mob_battle.utils.TaskSchedulerUtil;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
+import com.kltyton.mob_battle.event.scheduler.ServerTickScheduler;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -89,39 +89,39 @@ public class FrenchSphereFlowEntity extends BaseSkillLittlePersonEntity {
     }
     @Override
     public void runSkill_2(BaseSkillLittlePersonEntity entity) {
-        for (LivingEntity livingEntity : EntityUtil.getNearbyEntity(entity, LivingEntity.class, LittlePersonEntity.class, 10, true, EntityUtil.TeamFilter.ALL)) {
+        for (LivingEntity livingEntity : EntityQueries.getNearbyEntity(entity, LivingEntity.class, LittlePersonEntity.class, 10, true, EntityQueries.TeamFilter.ALL)) {
             livingEntity.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, 5 * 20, 19));
         }
     }
     @Override
     public void runSkill_3(BaseSkillLittlePersonEntity entity) {
-        for (LivingEntity livingEntity : EntityUtil.getNearbyEntity(entity, LivingEntity.class, LittlePersonEntity.class, 10, true, EntityUtil.TeamFilter.ALL)) {
+        for (LivingEntity livingEntity : EntityQueries.getNearbyEntity(entity, LivingEntity.class, LittlePersonEntity.class, 10, true, EntityQueries.TeamFilter.ALL)) {
             livingEntity.heal(200f);
         }
     }
     @Override
     public void runSkill_4(BaseSkillLittlePersonEntity entity) {
-        for (LivingEntity livingEntity : EntityUtil.getNearbyEntity(entity, LivingEntity.class, Object.class, 10, false, EntityUtil.TeamFilter.EXCLUDE_TEAM)) {
+        for (LivingEntity livingEntity : EntityQueries.getNearbyEntity(entity, LivingEntity.class, Object.class, 10, false, EntityQueries.TeamFilter.EXCLUDE_TEAM)) {
             livingEntity.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 5 * 20, 9));
         }
     }
     @Override
     public void runSkill_5(BaseSkillLittlePersonEntity entity) {
-        for (LivingEntity livingEntity : EntityUtil.getNearbyEntity(entity, LivingEntity.class, Object.class, 10, false, EntityUtil.TeamFilter.EXCLUDE_TEAM)) {
+        for (LivingEntity livingEntity : EntityQueries.getNearbyEntity(entity, LivingEntity.class, Object.class, 10, false, EntityQueries.TeamFilter.EXCLUDE_TEAM)) {
             livingEntity.addEffect(new MobEffectInstance(ModEffects.ARMOR_PIERCING_ENTRY, 10 * 20, 1));
         }
     }
     @Override
     public void runSkill_6(BaseSkillLittlePersonEntity entity) {
-        for (LivingEntity livingEntity : EntityUtil.getNearbyEntity(entity, LivingEntity.class, Object.class, 10, false, EntityUtil.TeamFilter.EXCLUDE_TEAM)) {
+        for (LivingEntity livingEntity : EntityQueries.getNearbyEntity(entity, LivingEntity.class, Object.class, 10, false, EntityQueries.TeamFilter.EXCLUDE_TEAM)) {
             livingEntity.addEffect(new MobEffectInstance(ModEffects.ARMOR_PIERCING_ENTRY, 10 * 20, 2));
             livingEntity.addEffect(new MobEffectInstance(ModEffects.STUN_ENTRY, 20, 0));
         }
-        for (LivingEntity livingEntity : EntityUtil.getNearbyEntity(entity, LivingEntity.class, LittlePersonEntity.class, 10, true, EntityUtil.TeamFilter.ONLY_TEAM)) {
+        for (LivingEntity livingEntity : EntityQueries.getNearbyEntity(entity, LivingEntity.class, LittlePersonEntity.class, 10, true, EntityQueries.TeamFilter.ONLY_TEAM)) {
             livingEntity.addEffect(new MobEffectInstance(MobEffects.RESISTANCE, 20 * 20, 1));
             livingEntity.heal(100f);
         }
-        TaskSchedulerUtil.runLater(40, () -> {
+        ServerTickScheduler.schedule(entity.level().getServer(), 40, () -> {
             if (!(entity.level() instanceof ServerLevel world) || entity.isRemoved()) {
                 return;
             }

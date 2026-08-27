@@ -1,6 +1,6 @@
 package com.kltyton.mob_battle.entity.irongolem.hulkbuster;
 
-import com.kltyton.mob_battle.client.render.GeoRenderUtil;
+import com.kltyton.mob_battle.client.render.GeoRenderTransforms;
 import com.kltyton.mob_battle.network.packet.HulkbusterEntityPayload;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.renderer.SubmitNodeCollector;
@@ -28,7 +28,7 @@ public class HulkbusterEntityRenderer<R extends LivingEntityRenderState & GeoRen
 
     @Override
     public void adjustModelBonesForRender(RenderPassInfo<R> renderPassInfo, BoneSnapshots snapshots) {
-        GeoRenderUtil.applyHeadRotation(renderPassInfo, snapshots, "Head", false);
+        GeoRenderTransforms.applyHeadRotation(renderPassInfo, snapshots, "Head", false);
 
         Boolean syncCatch = renderPassInfo.renderState().getOrDefaultGeckolibData(SYNC_CATCH, false);
         snapshots.ifPresent("yan", snapshot -> {

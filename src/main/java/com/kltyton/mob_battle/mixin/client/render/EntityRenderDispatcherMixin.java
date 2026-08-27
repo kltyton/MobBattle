@@ -5,7 +5,7 @@ import com.kltyton.mob_battle.accessor.IModEntityRenderState;
 import com.kltyton.mob_battle.config.MobBattleConfig;
 import com.kltyton.mob_battle.items.ModItems;
 import com.kltyton.mob_battle.items.ModMaterial;
-import com.kltyton.mob_battle.utils.ArmorUtil;
+import com.kltyton.mob_battle.items.armor.support.ArmorSetRules;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
@@ -164,9 +164,9 @@ public abstract class EntityRenderDispatcherMixin {
 
         Item markerItem = null;
         int markerMask = ((IModEntityRenderState) state).getCompressedArmorMarkerType();
-        if ((markerMask & NETHERITE_MARKER_MASK) != 0 && ArmorUtil.hasFullArmor(player, ModMaterial.COMPRESSED_NETHERITE_ARMOR_INSTANCE)) {
+        if ((markerMask & NETHERITE_MARKER_MASK) != 0 && ArmorSetRules.hasFullArmor(player, ModMaterial.COMPRESSED_NETHERITE_ARMOR_INSTANCE)) {
             markerItem = ModItems.COMPRESSED_NETHERITE_INGOT;
-        } else if ((markerMask & DIAMOND_MARKER_MASK) != 0 && ArmorUtil.hasFullArmor(player, ModMaterial.COMPRESSED_DIAMOND_ARMOR_INSTANCE)) {
+        } else if ((markerMask & DIAMOND_MARKER_MASK) != 0 && ArmorSetRules.hasFullArmor(player, ModMaterial.COMPRESSED_DIAMOND_ARMOR_INSTANCE)) {
             markerItem = ModItems.COMPRESSED_DIAMOND;
         }
         if (markerItem == null) {

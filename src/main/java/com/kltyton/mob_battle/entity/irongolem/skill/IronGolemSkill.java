@@ -1,7 +1,7 @@
 package com.kltyton.mob_battle.entity.irongolem.skill;
 
 import com.kltyton.mob_battle.entity.irongolem.VillagerIronGolemEntity;
-import com.kltyton.mob_battle.utils.EntityUtil;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
@@ -21,7 +21,7 @@ public class IronGolemSkill {
         if (villagerIronGolemEntity.getTarget() != null && villagerIronGolemEntity.tryAttackBase((ServerLevel) world, villagerIronGolemEntity.getTarget(), 2)) {
             AABB damageBox = villagerIronGolemEntity.getBoundingBox().inflate(range, range, range);
             world.getEntities(villagerIronGolemEntity, damageBox).stream()
-                    .filter(entity -> entity instanceof LivingEntity living && EntityUtil.isValidCombatTarget(villagerIronGolemEntity, living))
+                    .filter(entity -> entity instanceof LivingEntity living && EntityQueries.isValidCombatTarget(villagerIronGolemEntity, living))
                     .filter(entity -> entity.distanceToSqr(villagerIronGolemEntity) <= range * range)
                     .forEach(entity -> {
                         if (entity != villagerIronGolemEntity.getTarget()) {

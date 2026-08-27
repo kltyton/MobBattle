@@ -5,7 +5,7 @@ import com.kltyton.mob_battle.accessor.IEffectMarker;
 import com.kltyton.mob_battle.config.MobBattleConfig;
 import com.kltyton.mob_battle.effect.ModEffects;
 import com.kltyton.mob_battle.items.ModMaterial;
-import com.kltyton.mob_battle.utils.ArmorUtil;
+import com.kltyton.mob_battle.items.armor.support.ArmorSetRules;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -132,7 +132,7 @@ public abstract class LivingEntityMarkerMixin implements IEffectMarker {
     @Unique
     private static void mobBattle$removeInvalidCompressedCopperCharge(LivingEntity entity) {
         if (!entity.hasEffect(ModEffects.COMPRESSED_COPPER_CHARGED_ENTRY)
-                || ArmorUtil.hasFullArmor(entity, ModMaterial.COMPRESSED_COPPER_ARMOR_INSTANCE)) {
+                || ArmorSetRules.hasFullArmor(entity, ModMaterial.COMPRESSED_COPPER_ARMOR_INSTANCE)) {
             return;
         }
 

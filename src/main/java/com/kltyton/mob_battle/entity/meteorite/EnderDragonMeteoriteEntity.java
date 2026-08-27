@@ -3,8 +3,8 @@ package com.kltyton.mob_battle.entity.meteorite;
 import com.kltyton.mob_battle.effect.ModEffects;
 import com.kltyton.mob_battle.entity.customfireball.CustomFireballEntity;
 import com.kltyton.mob_battle.sounds.ModSounds;
-import com.kltyton.mob_battle.utils.EntityUtil;
-import com.kltyton.mob_battle.utils.TaskSchedulerUtil;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
+import com.kltyton.mob_battle.event.scheduler.ServerTickScheduler;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.particles.PowerParticleOption;
 import net.minecraft.server.level.ServerLevel;
@@ -58,7 +58,7 @@ public class EnderDragonMeteoriteEntity extends MeteoriteEntity implements GeoEn
 
         for (int step = 0; step < totalSteps; step++) {
             int finalStep = step;
-            TaskSchedulerUtil.runLater(step, () -> {
+            ServerTickScheduler.schedule(world.getServer(), step, () -> {
                 if (world.isClientSide()) return;
 
                 double progress = (double) finalStep / totalSteps;
@@ -126,7 +126,7 @@ public class EnderDragonMeteoriteEntity extends MeteoriteEntity implements GeoEn
             if (e instanceof LivingEntity living && !hitEntities.contains(e.getId())) {
                 double dist = Math.sqrt(e.distanceToSqr(center.x, e.getY(), center.z));
                 if (Math.abs(dist - radius) < thickness) {
-                    if (!EntityUtil.isValidSummonCombatTarget(this, owner, living)) continue;
+                    if (!EntityQueries.isValidSummonCombatTarget(this, owner, living)) continue;
 
                     living.hurtServer(world, this.damageSources().magic(), 40.0F);
                     living.addEffect(new MobEffectInstance(ModEffects.HEART_EATER_ENTRY, 100, 7));

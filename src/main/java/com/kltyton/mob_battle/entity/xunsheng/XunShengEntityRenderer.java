@@ -1,6 +1,6 @@
 package com.kltyton.mob_battle.entity.xunsheng;
 
-import com.kltyton.mob_battle.client.render.GeoRenderUtil;
+import com.kltyton.mob_battle.client.render.GeoRenderTransforms;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import com.geckolib.renderer.GeoEntityRenderer;
@@ -15,6 +15,6 @@ public class XunShengEntityRenderer<R extends LivingEntityRenderState & GeoRende
 
     @Override
     public void adjustModelBonesForRender(RenderPassInfo<R> renderPassInfo, BoneSnapshots snapshots) {
-        GeoRenderUtil.applyHeadRotation(renderPassInfo, snapshots, "Head", true);
+        GeoRenderTransforms.applyHeadRotation(renderPassInfo, snapshots, "Head", true);
     }
 }

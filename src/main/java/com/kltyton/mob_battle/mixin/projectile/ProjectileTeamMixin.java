@@ -1,6 +1,6 @@
 package com.kltyton.mob_battle.mixin.projectile;
 
-import com.kltyton.mob_battle.utils.EntityUtil;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
 import com.kltyton.mob_battle.event.team.TeamFightManager;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -27,7 +27,7 @@ public abstract class ProjectileTeamMixin {
         if (entity instanceof LivingEntity living
                 && (owner.isAlliedTo(living)
                 || living.isAlliedTo(owner)
-                || EntityUtil.shouldBlockOwnedSummonDamage(projectile, living))) {
+                || EntityQueries.shouldBlockOwnedSummonDamage(projectile, living))) {
             cir.setReturnValue(false);
         }
     }

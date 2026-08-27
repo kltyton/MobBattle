@@ -1,6 +1,6 @@
 package com.kltyton.mob_battle.entity.vindicatorgeneral;
 
-import com.kltyton.mob_battle.utils.EntityUtil;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
@@ -109,7 +109,7 @@ public class VindicatorGeneralAxeEntity extends Projectile implements GeoEntity 
         }
         AABB box = this.getBoundingBox().inflate(0.85D);
         for (LivingEntity target : world.getEntitiesOfClass(LivingEntity.class, box,
-                living -> EntityUtil.isValidCombatTarget(vindicatorGeneral, living))) {
+                living -> EntityQueries.isValidCombatTarget(vindicatorGeneral, living))) {
             target.hurtServer(world, this.damageSources().mobProjectile(this, vindicatorGeneral), 280.0F);
             startReturning();
             return;

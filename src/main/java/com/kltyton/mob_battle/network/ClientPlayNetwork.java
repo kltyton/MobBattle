@@ -1,140 +1,36 @@
 package com.kltyton.mob_battle.network;
 
-import com.kltyton.mob_battle.Mob_battle;
-import com.kltyton.mob_battle.accessor.ILead;
-import com.kltyton.mob_battle.animation.ModPlayerAnimationClientHandler;
-import com.kltyton.mob_battle.bossbar.CustomBossBarClientState;
-import com.kltyton.mob_battle.client.PalMoreClientBridge;
-import com.kltyton.mob_battle.client.ParticleStormClientBridge;
-import com.kltyton.mob_battle.config.whitelist.ClientPermissionState;
-import com.kltyton.mob_battle.items.itemgroup.ClientTagManager;
-import com.kltyton.mob_battle.network.packet.*;
-import com.kltyton.mob_battle.sounds.bgm.ClientBgmManager;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.minecraft.client.Minecraft;
-import net.minecraft.resources.Identifier;
-import net.minecraft.world.entity.Avatar;
-import net.minecraft.world.entity.Entity;
+import com.kltyton.mob_battle.network.receiver.client.ClientAnimationReceivers;
+import com.kltyton.mob_battle.network.receiver.client.ClientBossBarReceiver;
+import com.kltyton.mob_battle.network.receiver.client.ClientEffectBridgeReceiver;
+import com.kltyton.mob_battle.network.receiver.client.ClientEntityStateReceivers;
+import com.kltyton.mob_battle.network.receiver.client.ClientPerspectiveSyncReceiver;
+import com.kltyton.mob_battle.network.receiver.client.ClientSoundReceiver;
+import com.kltyton.mob_battle.network.receiver.client.ClientStateSyncReceivers;
 
-public class ClientPlayNetwork {
+/**
+ * 客户端网络接收器兼容性聚合入口。
+ *
+ * <p>仅负责按固定顺序注册全部 9 个客户端接收器，具体处理逻辑已按职责拆分到
+ * {@code receiver.client} 包下的独立接收器类中。注册顺序必须与原实现保持一致，
+ * 不得随意调整，以免破坏既有的载荷注册顺序。</p>
+ */
+public final class ClientPlayNetwork {
+    private ClientPlayNetwork() {
+    }
+
+    /**
+     * 按原注册顺序聚合注册全部 9 个客户端接收器。
+     */
     public static void init() {
-        ClientPlayNetworking.registerGlobalReceiver(SoundPayload.ID, (payload, context)  -> {
-            String soundName = payload.soundNmae();
-            float volume = payload.volume();
-            Minecraft client = context.client();
-            client.execute(() -> {
-                if ("fade_out".equals(soundName)) {
-                    // 收到淡出指令
-                    if (ClientBgmManager.forcedMusicId != null && !ClientBgmManager.isFadingOut) {
-                        ClientBgmManager.startFadeOut(ClientBgmManager.forcedMusicId, ClientBgmManager.forcedVolume);
-                    }
-                    ClientBgmManager.forcedMusicId = null;
-                    ClientBgmManager.forcedVolume = 0f;
-                } else {
-                    // 收到正常播放指令
-                    Identifier id = Identifier.parse(soundName);
-
-                    // 如果正在淡出且是同一首音乐，则开始淡入恢复
-                    if (ClientBgmManager.isFadingOut &&
-                            ClientBgmManager.fadingOutMusicId != null &&
-                            ClientBgmManager.fadingOutMusicId.equals(id)) {
-                        ClientBgmManager.startFadeIn(id, volume);
-                    } else {
-                        // 全新播放或切换音乐
-                        ClientBgmManager.resetAll();
-                        ClientBgmManager.forcedMusicId = id;
-                        ClientBgmManager.forcedVolume = volume;
-                    }
-                }
-            });
-        });
-        ClientPlayNetworking.registerGlobalReceiver(ItemGroupPayload.ID, (payload, context) -> {
-            Minecraft client = context.client();
-            boolean isOpen = payload.isOpen();
-            client.execute(() -> ClientTagManager.isShen = isOpen);
-        });
-        ClientPlayNetworking.registerGlobalReceiver(ILeadUpdatePayload.ID, (payload, context) -> {
-            Minecraft client = context.client();
-            Entity entity = client.level.getEntity(payload.entityId());
-            int iLead_1 = payload.iLead_1();
-            int iLead_2 = payload.iLead_2();
-            client.execute(() -> {
-                if (entity != null) {
-                    if (iLead_1 != 3) ((ILead) entity).setIsUniversalLeadEnyity(iLead_1 == 1);
-                    if (iLead_2 != 3) ((ILead) entity).setIsInvisibleUniversalLeadEnyity(iLead_2 == 1);
-                }
-            });
-        });
-        ClientPlayNetworking.registerGlobalReceiver(PlayerSkillUtilPayload.ID, (payload, context) -> {
-            Minecraft client = context.client();
-            client.execute(() -> {
-                if (client.player != null) {
-                    switch (payload.name()) {
-/*                        case "setPerson_1" -> client.options.setPerspective(Perspective.FIRST_PERSON);
-                        case "setPerson_2" -> client.options.setPerspective(Perspective.THIRD_PERSON_BACK);
-                        case "setPerson_3" -> client.options.setPerspective(Perspective.THIRD_PERSON_FRONT);*/
-                    }
-                }
-            });
-        });
-        ClientPlayNetworking.registerGlobalReceiver(PermissionPayload.ID, (payload, context) -> {
-            Minecraft client = context.client();
-            boolean isWhitelisted = payload.isWhitelisted();
-            client.execute(() -> {
-                ClientPermissionState.setWhitelisted(isWhitelisted);
-            });
-        });
-        ClientPlayNetworking.registerGlobalReceiver(CustomBossBarPayload.ID, (payload, context) -> {
-            Minecraft client = context.client();
-            client.execute(() -> {
-                if (payload.visible()) {
-                    CustomBossBarClientState.set(payload.bossBarUuid(), payload.styleId());
-                } else {
-                    CustomBossBarClientState.remove(payload.bossBarUuid());
-                }
-            });
-        });
-        // 收到同步包后，在客户端当前维度中找到目标玩家并操作其动画控制器。
-        ClientPlayNetworking.registerGlobalReceiver(PlayerAnimationPayload.ID, (payload, context) -> {
-            Minecraft client = context.client();
-            client.execute(() -> {
-                if (client.level == null) {
-                    return;
-                }
-
-                Entity entity = client.level.getEntity(payload.avatarEntityId());
-                if (entity instanceof Avatar avatar) {
-                    if (payload.stop()) {
-                        ModPlayerAnimationClientHandler.stop(avatar);
-                    } else {
-                        ModPlayerAnimationClientHandler.play(avatar, payload.animationId());
-                    }
-                }
-            });
-        });
-        ClientPlayNetworking.registerGlobalReceiver(PalMorePlayerAnimationPayload.ID, (payload, context) -> {
-            Minecraft client = context.client();
-            client.execute(() -> {
-                if (client.level == null) {
-                    return;
-                }
-                Entity entity = client.level.getEntity(payload.avatarEntityId());
-                try {
-                    PalMoreClientBridge.playKnifeAnimation(entity, payload.animationId());
-                } catch (LinkageError error) {
-                    Mob_battle.LOGGER.warn("PALMR 客户端桥接未加载，无法播放动画：{}", payload.animationId(), error);
-                }
-            });
-        });
-        ClientPlayNetworking.registerGlobalReceiver(ParticleStormEmitterPayload.ID, (payload, context) -> {
-            Minecraft client = context.client();
-            client.execute(() -> {
-                try {
-                    ParticleStormClientBridge.spawnEmitter(payload.particleId(), payload.pos(), payload.entityId());
-                } catch (LinkageError error) {
-                    Mob_battle.LOGGER.warn("ParticleStorm 客户端桥接未加载，无法生成粒子：{}", payload.particleId(), error);
-                }
-            });
-        });
+        ClientSoundReceiver.registerSound();
+        ClientStateSyncReceivers.registerItemGroup();
+        ClientEntityStateReceivers.registerILeadUpdate();
+        ClientPerspectiveSyncReceiver.registerPlayerSkillUtil();
+        ClientStateSyncReceivers.registerPermission();
+        ClientBossBarReceiver.registerCustomBossBar();
+        ClientAnimationReceivers.registerPlayerAnimation();
+        ClientAnimationReceivers.registerPalMorePlayerAnimation();
+        ClientEffectBridgeReceiver.registerParticleStormEmitter();
     }
 }

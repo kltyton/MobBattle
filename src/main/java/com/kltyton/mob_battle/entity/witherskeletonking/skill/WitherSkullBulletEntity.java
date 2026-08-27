@@ -4,7 +4,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.Lists;
 import com.kltyton.mob_battle.effect.ModEffects;
 import com.kltyton.mob_battle.entity.ModEntities;
-import com.kltyton.mob_battle.utils.EntityUtil;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.UUIDUtil;
@@ -282,7 +282,7 @@ public class WitherSkullBulletEntity extends Projectile {
 
     @Override
     public boolean canHitEntity(Entity entity) {
-        if (entity instanceof LivingEntity living && !EntityUtil.isValidSummonCombatTarget(this, this.getOwner(), living)) {
+        if (entity instanceof LivingEntity living && !EntityQueries.isValidSummonCombatTarget(this, this.getOwner(), living)) {
             return false;
         }
         return super.canHitEntity(entity) && !entity.noPhysics;
@@ -309,7 +309,7 @@ public class WitherSkullBulletEntity extends Projectile {
         super.onHitEntity(result);
         Entity victim   = result.getEntity();
         Entity owner    = this.getOwner();
-        if (victim instanceof LivingEntity living && !EntityUtil.isValidSummonCombatTarget(this, owner, living)) {
+        if (victim instanceof LivingEntity living && !EntityQueries.isValidSummonCombatTarget(this, owner, living)) {
             return;
         }
         LivingEntity attacker = owner instanceof LivingEntity ? (LivingEntity) owner : null;

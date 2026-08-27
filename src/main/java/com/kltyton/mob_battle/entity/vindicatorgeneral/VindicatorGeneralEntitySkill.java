@@ -1,7 +1,7 @@
 package com.kltyton.mob_battle.entity.vindicatorgeneral;
 
 import com.kltyton.mob_battle.entity.ModEntities;
-import com.kltyton.mob_battle.utils.EntityUtil;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.LivingEntity;
@@ -16,7 +16,7 @@ public class VindicatorGeneralEntitySkill {
         if (vindicatorGeneralEntity.tryAttackBase((ServerLevel)world, vindicatorGeneralEntity.getTarget())) {
             AABB damageBox = vindicatorGeneralEntity.getBoundingBox().inflate(range, range, range);
             world.getEntities(vindicatorGeneralEntity, damageBox).stream()
-                    .filter(entity -> entity instanceof LivingEntity living && EntityUtil.isValidCombatTarget(vindicatorGeneralEntity, living))
+                    .filter(entity -> entity instanceof LivingEntity living && EntityQueries.isValidCombatTarget(vindicatorGeneralEntity, living))
                     .filter(entity -> entity.distanceToSqr(vindicatorGeneralEntity) <= range * range)
                     .forEach(entity -> {
                         if (entity != vindicatorGeneralEntity.getTarget()) {
@@ -30,7 +30,7 @@ public class VindicatorGeneralEntitySkill {
         Level world = vindicatorGeneralEntity.level();
         AABB damageBox = vindicatorGeneralEntity.getBoundingBox().inflate(range, range, range);
         world.getEntities(vindicatorGeneralEntity, damageBox).stream()
-                .filter(entity -> entity instanceof LivingEntity living && EntityUtil.isValidCombatTarget(vindicatorGeneralEntity, living))
+                .filter(entity -> entity instanceof LivingEntity living && EntityQueries.isValidCombatTarget(vindicatorGeneralEntity, living))
                 .filter(entity -> entity.distanceToSqr(vindicatorGeneralEntity) <= range * range)
                 .forEach(entity -> {
                     float attackDamage = 320.0f;
@@ -43,7 +43,7 @@ public class VindicatorGeneralEntitySkill {
         Level world = vindicatorGeneralEntity.level();
         AABB damageBox = vindicatorGeneralEntity.getBoundingBox().inflate(range, range, range);
         world.getEntities(vindicatorGeneralEntity, damageBox).stream()
-                .filter(entity -> entity instanceof LivingEntity living && EntityUtil.isValidCombatTarget(vindicatorGeneralEntity, living))
+                .filter(entity -> entity instanceof LivingEntity living && EntityQueries.isValidCombatTarget(vindicatorGeneralEntity, living))
                 .filter(entity -> entity.distanceToSqr(vindicatorGeneralEntity) <= range * range)
                 .forEach(entity -> {
                     entity.hurtServer((ServerLevel) world, entity.damageSources().mobAttack(vindicatorGeneralEntity), 200);
@@ -55,7 +55,7 @@ public class VindicatorGeneralEntitySkill {
         Level world = vindicatorGeneralEntity.level();
         AABB damageBox = vindicatorGeneralEntity.getBoundingBox().inflate(range, range, range);
         world.getEntities(vindicatorGeneralEntity, damageBox).stream()
-                .filter(entity -> entity instanceof LivingEntity living && EntityUtil.isValidCombatTarget(vindicatorGeneralEntity, living))
+                .filter(entity -> entity instanceof LivingEntity living && EntityQueries.isValidCombatTarget(vindicatorGeneralEntity, living))
                 .filter(entity -> entity.distanceToSqr(vindicatorGeneralEntity) <= range * range)
                 .forEach(entity -> {
                     float attackDamage = 350.0f;
@@ -67,7 +67,7 @@ public class VindicatorGeneralEntitySkill {
         Level world = vindicatorGeneralEntity.level();
         AABB damageBox = vindicatorGeneralEntity.getBoundingBox().inflate(range, range, range);
         world.getEntities(vindicatorGeneralEntity, damageBox).stream()
-                .filter(entity -> entity instanceof LivingEntity living && EntityUtil.isValidCombatTarget(vindicatorGeneralEntity, living))
+                .filter(entity -> entity instanceof LivingEntity living && EntityQueries.isValidCombatTarget(vindicatorGeneralEntity, living))
                 .filter(entity -> entity.distanceToSqr(vindicatorGeneralEntity) <= range * range)
                 .forEach(entity -> {
                     float attackDamage = 200.0f;
@@ -79,7 +79,7 @@ public class VindicatorGeneralEntitySkill {
         Level world = vindicatorGeneralEntity.level();
         AABB damageBox = vindicatorGeneralEntity.getBoundingBox().inflate(range, range, range);
         world.getEntities(vindicatorGeneralEntity, damageBox).stream()
-                .filter(entity -> entity instanceof LivingEntity living && EntityUtil.isValidCombatTarget(vindicatorGeneralEntity, living))
+                .filter(entity -> entity instanceof LivingEntity living && EntityQueries.isValidCombatTarget(vindicatorGeneralEntity, living))
                 .filter(entity -> entity.distanceToSqr(vindicatorGeneralEntity) <= range * range)
                 .forEach(entity -> {
                     float attackDamage = 280.0f;
@@ -106,7 +106,7 @@ public class VindicatorGeneralEntitySkill {
         }
         AABB damageBox = vindicatorGeneralEntity.getBoundingBox().inflate(1.0D);
         for (LivingEntity target : world.getEntitiesOfClass(LivingEntity.class, damageBox,
-                living -> EntityUtil.isValidCombatTarget(vindicatorGeneralEntity, living))) {
+                living -> EntityQueries.isValidCombatTarget(vindicatorGeneralEntity, living))) {
             vindicatorGeneralEntity.tryAttackBaseDamage(world, target, 220.0F);
         }
     }
@@ -117,7 +117,7 @@ public class VindicatorGeneralEntitySkill {
         }
         AABB damageBox = vindicatorGeneralEntity.getBoundingBox().inflate(6.0D);
         for (LivingEntity target : world.getEntitiesOfClass(LivingEntity.class, damageBox,
-                living -> EntityUtil.isValidCombatTarget(vindicatorGeneralEntity, living)
+                living -> EntityQueries.isValidCombatTarget(vindicatorGeneralEntity, living)
                         && living.distanceToSqr(vindicatorGeneralEntity) <= 36.0D)) {
             vindicatorGeneralEntity.tryAttackBaseDamage(world, target, 260.0F);
             target.knockback(4.0D, vindicatorGeneralEntity.getX() - target.getX(), vindicatorGeneralEntity.getZ() - target.getZ());

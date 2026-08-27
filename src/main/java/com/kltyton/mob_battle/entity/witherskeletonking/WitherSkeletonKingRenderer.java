@@ -1,7 +1,7 @@
 package com.kltyton.mob_battle.entity.witherskeletonking;
 
 import com.kltyton.mob_battle.client.render.ClientGeckoParticleEffects;
-import com.kltyton.mob_battle.client.render.GeoRenderUtil;
+import com.kltyton.mob_battle.client.render.GeoRenderTransforms;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
@@ -25,7 +25,7 @@ public class WitherSkeletonKingRenderer<R extends LivingEntityRenderState & GeoR
 
     @Override
     public void adjustModelBonesForRender(RenderPassInfo<R> renderPassInfo, BoneSnapshots snapshots) {
-        GeoRenderUtil.applyHeadRotation(renderPassInfo, snapshots, "Head", false);
+        GeoRenderTransforms.applyHeadRotation(renderPassInfo, snapshots, "Head", false);
 
         Boolean canHalo = renderPassInfo.renderState().getOrDefaultGeckolibData(CAN_HALO, false);
         snapshots.ifPresent("quan", snapshot -> {

@@ -7,7 +7,7 @@ import com.kltyton.mob_battle.entity.littleperson.skillentity.WitherSkeletonDogE
 import com.kltyton.mob_battle.entity.witherskeletonking.WitherSkeletonKingEntity;
 import com.kltyton.mob_battle.entity.witherskeletonking.summon.DualBladeWitherSkeletonEntity;
 import com.kltyton.mob_battle.entity.witherskeletonking.summon.ShieldAxeWitherSkeletonEntity;
-import com.kltyton.mob_battle.utils.EntityUtil;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -30,7 +30,7 @@ public class WitherSkeletonKingEntitySkill {
         if (witherSkeletonKingEntity.tryAttackBase2((ServerLevel)world, witherSkeletonKingEntity.getTarget())) {
             AABB damageBox = witherSkeletonKingEntity.getBoundingBox().inflate(range, range, range);
             world.getEntities(witherSkeletonKingEntity, damageBox).stream()
-                    .filter(entity -> entity instanceof LivingEntity living && EntityUtil.isValidCombatTarget(witherSkeletonKingEntity, living))
+                    .filter(entity -> entity instanceof LivingEntity living && EntityQueries.isValidCombatTarget(witherSkeletonKingEntity, living))
                     .filter(entity -> entity.distanceToSqr(witherSkeletonKingEntity) <= range * range)
                     .forEach(entity -> {
                         if (entity != witherSkeletonKingEntity.getTarget()) {
@@ -44,7 +44,7 @@ public class WitherSkeletonKingEntitySkill {
         Level world = witherSkeletonKingEntity.level();
         AABB damageBox = witherSkeletonKingEntity.getBoundingBox().inflate(range, range, range);
         world.getEntities(witherSkeletonKingEntity, damageBox).stream()
-                .filter(entity -> entity instanceof LivingEntity living && EntityUtil.isValidCombatTarget(witherSkeletonKingEntity, living))
+                .filter(entity -> entity instanceof LivingEntity living && EntityQueries.isValidCombatTarget(witherSkeletonKingEntity, living))
                 .filter(entity -> entity.distanceToSqr(witherSkeletonKingEntity) <= range * range)
                 .forEach(entity -> {
                     float attackDamage = 260.0f;
@@ -65,7 +65,7 @@ public class WitherSkeletonKingEntitySkill {
     }
     public static void runWitherSkullSkill(WitherSkeletonKingEntity king) {
         LivingEntity target = king.getTarget();
-        if (target == null || !EntityUtil.isValidCombatTarget(king, target)) return;
+        if (target == null || !EntityQueries.isValidCombatTarget(king, target)) return;
         Level world = king.level();
         if (!(world instanceof ServerLevel serverWorld)) return;
 
@@ -99,7 +99,7 @@ public class WitherSkeletonKingEntitySkill {
         world.getEntities(king, area).stream()
                 .filter(e -> e instanceof LivingEntity)
                 .map(e -> (LivingEntity) e)
-                .filter(e -> e.isAlive() && !EntityUtil.isCreativeOrSpectator(e))
+                .filter(e -> e.isAlive() && !EntityQueries.isCreativeOrSpectator(e))
                 .filter(e -> e.isAlliedTo(king))
                 .forEach(ally -> {
                     ally.addEffect(new MobEffectInstance(
@@ -197,7 +197,7 @@ public class WitherSkeletonKingEntitySkill {
         world.getEntities(king, area).stream()
                 .filter(e -> e instanceof LivingEntity)
                 .map(e -> (LivingEntity) e)
-                .filter(e -> e.isAlive() && !EntityUtil.isCreativeOrSpectator(e))
+                .filter(e -> e.isAlive() && !EntityQueries.isCreativeOrSpectator(e))
                 .filter(e -> e.isAlliedTo(king))
                 .forEach(ally -> {
                     ally.addEffect(new MobEffectInstance(
@@ -215,7 +215,7 @@ public class WitherSkeletonKingEntitySkill {
 
     public static void runThornSkill(WitherSkeletonKingEntity king) {
         LivingEntity target = king.getTarget();
-        if (target == null || !EntityUtil.isValidCombatTarget(king, target) || !(king.level() instanceof ServerLevel world)) {
+        if (target == null || !EntityQueries.isValidCombatTarget(king, target) || !(king.level() instanceof ServerLevel world)) {
             return;
         }
         Vec3 direction = target.position().subtract(king.position());
@@ -259,9 +259,9 @@ public class WitherSkeletonKingEntitySkill {
         }
         double angle = Math.PI * 2.0D * index / count;
         Vec3 desiredPos = king.position().add(Math.cos(angle) * 3.0D, 1.0D, Math.sin(angle) * 3.0D);
-        Vec3 pos = EntityUtil.findSafeSpawnPosition(world, summon, desiredPos).orElse(desiredPos);
+        Vec3 pos = EntityQueries.findSafeSpawnPosition(world, summon, desiredPos).orElse(desiredPos);
         summon.snapTo(pos.x, pos.y, pos.z, king.getYRot(), 0.0F);
-        EntityUtil.joinSameTeam(summon, king);
+        EntityQueries.joinSameTeam(summon, king);
         if (summon instanceof EnhancedWitherEntity enhancedWither) {
             enhancedWither.setSummonOwner(king);
         } else if (summon instanceof DualBladeWitherSkeletonEntity dualBlade) {
@@ -270,6 +270,11 @@ public class WitherSkeletonKingEntitySkill {
             shieldAxe.setSummonOwner(king);
         } else if (summon instanceof WitherSkeletonDogEntity dog) {
             dog.setSummonOwner(king);
+        }
+        // 召唤时把精锐召唤物（双刀/盾斧凋零骷髅）登记到国王的 UUID 集合，
+        // 供 hasLivingEliteSummons() 判定，替代原来的全世界实体遍历。
+        if (summon instanceof DualBladeWitherSkeletonEntity || summon instanceof ShieldAxeWitherSkeletonEntity) {
+            king.registerEliteSummon(summon.getUUID());
         }
         if (summon instanceof Mob mob) {
             mob.setTarget(king.getTarget());

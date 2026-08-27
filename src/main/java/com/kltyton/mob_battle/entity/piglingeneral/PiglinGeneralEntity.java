@@ -4,10 +4,10 @@ import com.kltyton.mob_battle.effect.ModEffects;
 import com.kltyton.mob_battle.entity.ModEntityAttributes;
 import com.kltyton.mob_battle.entity.general.GeneralEntity;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
-import com.kltyton.mob_battle.utils.CombatEffectUtil;
-import com.kltyton.mob_battle.utils.DeathAnimationUtil;
-import com.kltyton.mob_battle.utils.EntityUtil;
-import com.kltyton.mob_battle.utils.GeoAnimationUtil;
+import com.kltyton.mob_battle.combat.effect.CombatEffectApplier;
+import com.kltyton.mob_battle.animation.death.DeathAnimationState;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
+import com.kltyton.mob_battle.client.animation.gecko.GeoAnimationState;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -84,7 +84,7 @@ public class PiglinGeneralEntity extends AbstractPiglin implements GeneralEntity
     @Nullable
     private Vec3 swordEnergyPos;
 
-    private DeathAnimationUtil.FrozenPose deathFrozenPose;
+    private DeathAnimationState.FrozenPose deathFrozenPose;
 
     private int swordEnergyPosAge = -1000;
     private int pendingAttack7FollowUpTicks = -1;
@@ -105,7 +105,7 @@ public class PiglinGeneralEntity extends AbstractPiglin implements GeneralEntity
 
         this.targetSelector.addGoal(1, new HurtByTargetGoal(this));
         this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, LivingEntity.class, 10, true, false,
-                (target, world) -> EntityUtil.isValidCombatTarget(this, target) && !(target instanceof AbstractPiglin)));
+                (target, world) -> EntityQueries.isValidCombatTarget(this, target) && !(target instanceof AbstractPiglin)));
     }
 
     @Override
@@ -162,7 +162,7 @@ public class PiglinGeneralEntity extends AbstractPiglin implements GeneralEntity
     }
 
     private void startDeathAnimation() {
-        this.deathFrozenPose = DeathAnimationUtil.capture(this);
+        this.deathFrozenPose = DeathAnimationState.capture(this);
         this.setHealth(1.0F);
         this.setNoAi(true);
         this.setHasSkill(true);
@@ -173,7 +173,7 @@ public class PiglinGeneralEntity extends AbstractPiglin implements GeneralEntity
 
     private void tickDeathAnimation() {
         this.setHealth(1.0F);
-        DeathAnimationUtil.freeze(this, this.deathFrozenPose);
+        DeathAnimationState.freeze(this, this.deathFrozenPose);
         int ticks = getDeathAnimationTicks();
 
         if (ticks > 0) {
@@ -188,7 +188,7 @@ public class PiglinGeneralEntity extends AbstractPiglin implements GeneralEntity
     public boolean doHurtTarget(ServerLevel world, Entity target) {
         if (!(target instanceof LivingEntity living)
                 || living instanceof AbstractPiglin
-                || !EntityUtil.isValidCombatTarget(this, living)
+                || !EntityQueries.isValidCombatTarget(this, living)
                 || hasSkill()) {
             return false;
         }
@@ -262,7 +262,7 @@ public class PiglinGeneralEntity extends AbstractPiglin implements GeneralEntity
         }
 
         LivingEntity target = this.getTarget();
-        if (target == null || target instanceof AbstractPiglin || !EntityUtil.isValidCombatTarget(this, target)) {
+        if (target == null || target instanceof AbstractPiglin || !EntityQueries.isValidCombatTarget(this, target)) {
             stopRush();
             return;
         }
@@ -345,7 +345,7 @@ public class PiglinGeneralEntity extends AbstractPiglin implements GeneralEntity
     @Override
     public void runSkill_3(PiglinGeneralEntity entity) {
         LivingEntity target = this.getTarget();
-        if (target == null || !(this.level() instanceof ServerLevel world) || !EntityUtil.isValidCombatTarget(this, target)) {
+        if (target == null || !(this.level() instanceof ServerLevel world) || !EntityQueries.isValidCombatTarget(this, target)) {
             return;
         }
 
@@ -357,7 +357,7 @@ public class PiglinGeneralEntity extends AbstractPiglin implements GeneralEntity
     @Override
     public void runSkill_3_1(PiglinGeneralEntity entity) {
         LivingEntity target = this.getTarget();
-        if (target == null || !(this.level() instanceof ServerLevel world) || !EntityUtil.isValidCombatTarget(this, target)) {
+        if (target == null || !(this.level() instanceof ServerLevel world) || !EntityQueries.isValidCombatTarget(this, target)) {
             return;
         }
 
@@ -369,7 +369,7 @@ public class PiglinGeneralEntity extends AbstractPiglin implements GeneralEntity
     @Override
     public void runSkill_3_2(PiglinGeneralEntity entity) {
         LivingEntity target = this.getTarget();
-        if (target == null || !(this.level() instanceof ServerLevel world) || !EntityUtil.isValidCombatTarget(this, target)) {
+        if (target == null || !(this.level() instanceof ServerLevel world) || !EntityQueries.isValidCombatTarget(this, target)) {
             return;
         }
 
@@ -378,11 +378,11 @@ public class PiglinGeneralEntity extends AbstractPiglin implements GeneralEntity
 
     @Override
     public void runSkill_4(PiglinGeneralEntity entity) {
-        for (LivingEntity living : EntityUtil.getNearbyEntity(this, LivingEntity.class, 20.0D, true, EntityUtil.TeamFilter.ALL)) {
+        for (LivingEntity living : EntityQueries.getNearbyEntity(this, LivingEntity.class, 20.0D, true, EntityQueries.TeamFilter.ALL)) {
             if (living == this || living.isAlliedTo(this)) {
                 living.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, ATTACK4_DURATION, 4), this);
             } else {
-                CombatEffectUtil.addPigSpiritMark(living, this, STRONG_MARK_LAYERS, STRONG_MARK_DURATION);
+                CombatEffectApplier.addPigSpiritMark(living, this, STRONG_MARK_LAYERS, STRONG_MARK_DURATION);
             }
         }
     }
@@ -397,7 +397,7 @@ public class PiglinGeneralEntity extends AbstractPiglin implements GeneralEntity
         AABB box = new AABB(center.subtract(4.0D, 4.0D, 4.0D), center.add(4.0D, 4.0D, 4.0D));
 
         for (LivingEntity target : world.getEntitiesOfClass(LivingEntity.class, box,
-                target -> EntityUtil.isValidCombatTarget(this, target) && target.distanceToSqr(center) <= 16.0D)) {
+                target -> EntityQueries.isValidCombatTarget(this, target) && target.distanceToSqr(center) <= 16.0D)) {
             markedDamage(world, target, 320.0F, 50, ATTACK5_MARK_DURATION);
         }
     }
@@ -408,7 +408,7 @@ public class PiglinGeneralEntity extends AbstractPiglin implements GeneralEntity
             return;
         }
 
-        for (LivingEntity target : EntityUtil.getEntitiesInCone(this, LivingEntity.class, 5.0D, 85.0F, EntityUtil.TeamFilter.EXCLUDE_TEAM)) {
+        for (LivingEntity target : EntityQueries.getEntitiesInCone(this, LivingEntity.class, 5.0D, 85.0F, EntityQueries.TeamFilter.EXCLUDE_TEAM)) {
             markedDamage(world, target, 300.0F, STRONG_MARK_LAYERS, STRONG_MARK_DURATION);
         }
     }
@@ -446,11 +446,11 @@ public class PiglinGeneralEntity extends AbstractPiglin implements GeneralEntity
     }
 
     private void areaDamage(ServerLevel world, double radius, float damage, int markLayers, int markDurationTicks, boolean armorPiercing) {
-        List<LivingEntity> targets = EntityUtil.getNearbyEntity(this, LivingEntity.class, radius, false, EntityUtil.TeamFilter.EXCLUDE_TEAM);
+        List<LivingEntity> targets = EntityQueries.getNearbyEntity(this, LivingEntity.class, radius, false, EntityQueries.TeamFilter.EXCLUDE_TEAM);
 
         for (LivingEntity target : targets) {
             if (markedDamage(world, target, damage, markLayers, markDurationTicks) && armorPiercing) {
-                CombatEffectUtil.addStackingArmorPiercing(target, this);
+                CombatEffectApplier.addStackingArmorPiercing(target, this);
             }
         }
     }
@@ -463,7 +463,7 @@ public class PiglinGeneralEntity extends AbstractPiglin implements GeneralEntity
         boolean hit = target.hurtServer(world, source, damage * multiplier);
 
         if (hit && markLayers > 0) {
-            CombatEffectUtil.addPigSpiritMark(target, this, markLayers, markDurationTicks);
+            CombatEffectApplier.addPigSpiritMark(target, this, markLayers, markDurationTicks);
         }
 
         return hit;
@@ -625,11 +625,11 @@ public class PiglinGeneralEntity extends AbstractPiglin implements GeneralEntity
         controllers.add(new AnimationController<>("main_controller", 0, this::mainController));
 
         controllers.add(new AnimationController<>("skill_controller", 0, animTest -> {
-            if (GeoAnimationUtil.consumeFinishedTriggeredAnimation(animTest)) {
+            if (GeoAnimationState.consumeFinishedTriggeredAnimation(animTest)) {
                 ClientPlayNetworking.send(new SkillPayload("stop", this.getId()));
             }
 
-            return GeoAnimationUtil.playTriggeredAnimationOrStop(animTest);
+            return GeoAnimationState.playTriggeredAnimationOrStop(animTest);
         })
                 .receiveTriggeredAnimations()
                 .triggerableAnim("attack1_1", NORMAL_ATTACK_ANIM_1)
@@ -677,7 +677,7 @@ public class PiglinGeneralEntity extends AbstractPiglin implements GeneralEntity
             return event.setAndContinue(RUN_ANIM);
         }
 
-        if (hasSkill() && !GeoAnimationUtil.hasRecentlyFinishedTriggeredAnimation(this)) {
+        if (hasSkill() && !GeoAnimationState.hasRecentlyFinishedTriggeredAnimation(this)) {
             return PlayState.CONTINUE;
         }
 
@@ -702,7 +702,7 @@ public class PiglinGeneralEntity extends AbstractPiglin implements GeneralEntity
     public void setTarget(@Nullable LivingEntity target) {
         if (target instanceof AbstractPiglin
                 || target == this
-                || (target != null && !EntityUtil.isValidCombatTarget(this, target))) {
+                || (target != null && !EntityQueries.isValidCombatTarget(this, target))) {
             target = null;
         }
 
@@ -929,7 +929,7 @@ public class PiglinGeneralEntity extends AbstractPiglin implements GeneralEntity
             return target != null
                     && target.isAlive()
                     && !(target instanceof AbstractPiglin)
-                    && EntityUtil.isValidCombatTarget(this.mob, target);
+                    && EntityQueries.isValidCombatTarget(this.mob, target);
         }
     }
 }

@@ -5,9 +5,9 @@ import com.kltyton.mob_battle.entity.bullet.ITrueDamageProjectile;
 import com.kltyton.mob_battle.entity.skull.IModSkullEntity;
 import com.kltyton.mob_battle.entity.witherskeletonking.WitherSkeletonKingEntity;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
-import com.kltyton.mob_battle.utils.EntityUtil;
-import com.kltyton.mob_battle.utils.GeoAnimationUtil;
-import com.kltyton.mob_battle.utils.ModTrackedDataHandler;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
+import com.kltyton.mob_battle.client.animation.gecko.GeoAnimationState;
+import com.kltyton.mob_battle.entity.data.ModEntityDataSerializers;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -181,12 +181,12 @@ public class SkullMageEntity extends Skeleton implements GeoEntity, IModSkullEnt
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>("main_controller", 0,this::animationController));
         controllers.add(new AnimationController<>("skill_controller",animTest -> {
-            if (GeoAnimationUtil.consumeFinishedTriggeredAnimation(animTest)) {
+            if (GeoAnimationState.consumeFinishedTriggeredAnimation(animTest)) {
                 ClientPlayNetworking.send(new SkillPayload(
                         "stop", this.getId()
                 ));
             }
-            return GeoAnimationUtil.playTriggeredAnimationOrStop(animTest);
+            return GeoAnimationState.playTriggeredAnimationOrStop(animTest);
         })
                 .receiveTriggeredAnimations()
                 .triggerableAnim("attack", ATTACK_ANIM)
@@ -228,7 +228,7 @@ public class SkullMageEntity extends Skeleton implements GeoEntity, IModSkullEnt
     }
     @Override
     public void performRangedAttack(LivingEntity target, float pullProgress) {
-        if (!EntityUtil.isValidSummonCombatTarget(this, this.getOwner(), target)) {
+        if (!EntityQueries.isValidSummonCombatTarget(this, this.getOwner(), target)) {
             return;
         }
         if (canSkill()) {
@@ -245,6 +245,32 @@ public class SkullMageEntity extends Skeleton implements GeoEntity, IModSkullEnt
     public boolean canSkill() {
         if (!ModSkillEntityType.canSkill(this)) return false;
         return !this.level().isClientSide() && !hasSkill() && getSkillCooldown() == 0 && this.getTarget() != null;
+    }
+    /**
+     * 处理已经通过服务端边界校验的技能关键帧指令。
+     *
+     * <p>指令字符串、动作调用与状态副作用与 ServerPlayNetwork 中本实体的
+     * 分发分支保持逐字节一致；识别成功返回 true，未识别返回 false 且不改变状态。
+     *
+     * @param skillName 兼容现有网络协议的技能字符串
+     * @return 指令是否被识别并处理
+     */
+    @Override
+    public boolean handleSkillPayload(String skillName) {
+        switch (skillName) {
+            case "attack" -> SkullMageEntitySkill.runAttackSkill(this);
+            case "summon_skull" -> SkullMageEntitySkill.runSummonSkullSkill(this);
+            case "stop_ai" -> this.setNoAi(true);
+            case "start_ai" -> this.setNoAi(false);
+            case "stop" -> {
+                this.setHasSkill(false);
+                this.setNoAi(false);
+            }
+            default -> {
+                return false;
+            }
+        }
+        return true;
     }
     public static final EntityDataAccessor<Boolean> HAS_SKILL = SynchedEntityData.defineId(SkullMageEntity.class, EntityDataSerializers.BOOLEAN);
     public static final EntityDataAccessor<Integer> SKILL_COOLDOWN = SynchedEntityData.defineId(SkullMageEntity.class, EntityDataSerializers.INT);
@@ -285,7 +311,7 @@ public class SkullMageEntity extends Skeleton implements GeoEntity, IModSkullEnt
             SkullMageEntity.class, EntityDataSerializers.OPTIONAL_LIVING_ENTITY_REFERENCE
     );
     public static final EntityDataAccessor<Optional<EntityReference<UniquelyIdentifyable>>> MAGIC_PROJECTILE_ID =
-            SynchedEntityData.defineId(SkullMageEntity.class, ModTrackedDataHandler.ANY_ENTITY_LAZY_REFERENCE);
+            SynchedEntityData.defineId(SkullMageEntity.class, ModEntityDataSerializers.ANY_ENTITY_LAZY_REFERENCE);
     @Override
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
         super.defineSynchedData(builder);
@@ -326,7 +352,7 @@ public class SkullMageEntity extends Skeleton implements GeoEntity, IModSkullEnt
     }
     @Override
     public boolean canAttack(LivingEntity target) {
-        return EntityUtil.isValidSummonCombatTarget(this, this.getOwner(), target) && super.canAttack(target);
+        return EntityQueries.isValidSummonCombatTarget(this, this.getOwner(), target) && super.canAttack(target);
     }
     @Override
     public boolean isOwner(LivingEntity entity) {

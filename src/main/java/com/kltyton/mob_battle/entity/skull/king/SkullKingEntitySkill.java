@@ -4,7 +4,7 @@ import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.entity.skull.IModSkullEntity;
 import com.kltyton.mob_battle.entity.skull.archer.SkullArcherEntity;
 import com.kltyton.mob_battle.entity.skull.mage.SkullMageEntity;
-import com.kltyton.mob_battle.utils.EntityUtil;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.LivingEntity;
@@ -67,13 +67,13 @@ public class SkullKingEntitySkill {
 
                 SkullMageEntity skullEntity = ModEntities.SKULL_MAGE.create(serverWorld, EntitySpawnReason.MOB_SUMMONED);
                 if (skullEntity != null) {
-                    Vec3 safeSpawnPos = EntityUtil.findSafeSpawnPosition(serverWorld, skullEntity, summonPos).orElse(summonPos);
+                    Vec3 safeSpawnPos = EntityQueries.findSafeSpawnPosition(serverWorld, skullEntity, summonPos).orElse(summonPos);
                     skullEntity.snapTo(safeSpawnPos.x, safeSpawnPos.y, safeSpawnPos.z, king.getRandom().nextFloat() * 360.0F, 0.0F);
                     if (king.getTarget() != null) {
                         skullEntity.setTarget(king.getTarget());
                     }
                     skullEntity.setOwner(king);
-                    EntityUtil.joinSameTeam(skullEntity, king);
+                    EntityQueries.joinSameTeam(skullEntity, king);
                     serverWorld.addFreshEntity(skullEntity);
                 }
             }
@@ -85,13 +85,13 @@ public class SkullKingEntitySkill {
 
                 SkullArcherEntity skullEntity = ModEntities.SKULL_ARCHER.create(serverWorld, EntitySpawnReason.MOB_SUMMONED);
                 if (skullEntity != null) {
-                    Vec3 safeSpawnPos = EntityUtil.findSafeSpawnPosition(serverWorld, skullEntity, summonPos).orElse(summonPos);
+                    Vec3 safeSpawnPos = EntityQueries.findSafeSpawnPosition(serverWorld, skullEntity, summonPos).orElse(summonPos);
                     skullEntity.snapTo(safeSpawnPos.x, safeSpawnPos.y, safeSpawnPos.z, king.getRandom().nextFloat() * 360.0F, 0.0F);
                     if (king.getTarget() != null) {
                         skullEntity.setTarget(king.getTarget());
                     }
                     skullEntity.setOwner(king);
-                    EntityUtil.joinSameTeam(skullEntity, king);
+                    EntityQueries.joinSameTeam(skullEntity, king);
                     serverWorld.addFreshEntity(skullEntity);
                 }
             }

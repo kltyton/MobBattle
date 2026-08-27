@@ -1,33 +1,18 @@
 package com.kltyton.mob_battle;
 
-import com.kltyton.mob_battle.attributer.ModAttributer;
-import com.kltyton.mob_battle.block.ModBlockEntities;
-import com.kltyton.mob_battle.block.ModBlocks;
-import com.kltyton.mob_battle.client.screen.ModScreenHandlers;
-import com.kltyton.mob_battle.command.ModCommands;
-import com.kltyton.mob_battle.components.ModComponents;
-import com.kltyton.mob_battle.config.MobBattleConfig;
-import com.kltyton.mob_battle.effect.ModEffects;
-import com.kltyton.mob_battle.enchantment.ModEnchantments;
-import com.kltyton.mob_battle.entity.ModEntities;
-import com.kltyton.mob_battle.entity.ModEntityAttributes;
-import com.kltyton.mob_battle.entity.drone.DroneManager;
-import com.kltyton.mob_battle.entity.sensor.ModSensorTypes;
-import com.kltyton.mob_battle.event.ModEvents;
-import com.kltyton.mob_battle.event.SkillAiRecoveryEvent;
-import com.kltyton.mob_battle.items.ModItems;
-import com.kltyton.mob_battle.items.itemgroup.ModItemGroups;
-import com.kltyton.mob_battle.network.ModPackets;
-import com.kltyton.mob_battle.network.ServerPlayNetwork;
-import com.kltyton.mob_battle.recipe.ModRecipeTypes;
-import com.kltyton.mob_battle.sounds.ModSounds;
-import com.kltyton.mob_battle.sounds.bgm.ServerBgmManager;
-import com.kltyton.mob_battle.utils.ModTrackedDataHandler;
+import com.kltyton.mob_battle.bootstrap.MobBattleBootstrap;
 import net.fabricmc.api.ModInitializer;
 import net.minecraft.server.MinecraftServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * 模组主入口（Fabric ModInitializer 兼容入口）。
+ *
+ * <p>本类只保留 modid、日志与运行时常量，并把初始化一次性委托给
+ * {@link MobBattleBootstrap#initialize()}；全部注册与事件装配调用已移入引导类，
+ * 其执行顺序与原 onInitialize 完全一致。
+ */
 public class Mob_battle implements ModInitializer {
     public static final String MOD_ID = "mob_battle";
     public static final Logger LOGGER = LoggerFactory.getLogger(Mob_battle.class);
@@ -35,29 +20,6 @@ public class Mob_battle implements ModInitializer {
     public static MinecraftServer SERVER;
     @Override
     public void onInitialize() {
-        MobBattleConfig.init();
-        ModTrackedDataHandler.init();
-        ModSensorTypes.init();
-        ModEntityAttributes.init();
-        ModComponents.init();
-        ModEffects.init();
-        ModItems.init();
-        ModRecipeTypes.init();
-        ModEnchantments.init();
-        ModCommands.init();
-        ModEvents.init();
-        ModEntities.init();
-        ModBlocks.init();
-        ModBlockEntities.init();
-        ModAttributer.init();
-        ModPackets.init();
-        ServerPlayNetwork.init();
-        ModSounds.init();
-        ServerBgmManager.init();
-        DroneManager.init();
-        ModItemGroups.init();
-        //ClearItemEvent.init();
-        SkillAiRecoveryEvent.init();
-        ModScreenHandlers.init();
+        MobBattleBootstrap.initialize();
     }
 }

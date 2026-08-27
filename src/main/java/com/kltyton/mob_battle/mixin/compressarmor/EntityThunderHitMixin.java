@@ -2,7 +2,7 @@ package com.kltyton.mob_battle.mixin.compressarmor;
 
 import com.kltyton.mob_battle.effect.ModEffects;
 import com.kltyton.mob_battle.items.ModMaterial;
-import com.kltyton.mob_battle.utils.ArmorUtil;
+import com.kltyton.mob_battle.items.armor.support.ArmorSetRules;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
@@ -20,7 +20,7 @@ public class EntityThunderHitMixin {
         if (!((Object) this instanceof LivingEntity living)) {
             return;
         }
-        if (!ArmorUtil.hasFullArmor(living, ModMaterial.COMPRESSED_COPPER_ARMOR_INSTANCE)) {
+        if (!ArmorSetRules.hasFullArmor(living, ModMaterial.COMPRESSED_COPPER_ARMOR_INSTANCE)) {
             return;
         }
 

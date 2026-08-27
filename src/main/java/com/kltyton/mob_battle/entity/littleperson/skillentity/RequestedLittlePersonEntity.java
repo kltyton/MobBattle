@@ -7,8 +7,8 @@ import com.kltyton.mob_battle.entity.ModEntityAttributes;
 import com.kltyton.mob_battle.entity.littleperson.militia.LittlePersonMilitiaEntity;
 import com.kltyton.mob_battle.entity.littleperson.skillentity.base.BaseSkillLittlePersonEntity;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
-import com.kltyton.mob_battle.utils.EntityUtil;
-import com.kltyton.mob_battle.utils.GeoAnimationUtil;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
+import com.kltyton.mob_battle.client.animation.gecko.GeoAnimationState;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -61,14 +61,14 @@ public abstract class RequestedLittlePersonEntity extends BaseSkillLittlePersonE
     protected int lifeTicks = -1;
 
     private final AnimationController<?> requestedSkillController = new AnimationController<>("skill_controller", 0, animTest -> {
-        if (GeoAnimationUtil.consumeFinishedTriggeredAnimation(animTest)) {
+        if (GeoAnimationState.consumeFinishedTriggeredAnimation(animTest)) {
             ClientPlayNetworking.send(new SkillPayload("stop", this.getId()));
-            if (GeoAnimationUtil.isLastFinishedAnimation(animTest, DIE_ANIM)
-                    || GeoAnimationUtil.isLastFinishedAnimation(animTest, DEATH_ANIM)) {
+            if (GeoAnimationState.isLastFinishedAnimation(animTest, DIE_ANIM)
+                    || GeoAnimationState.isLastFinishedAnimation(animTest, DEATH_ANIM)) {
                 ClientPlayNetworking.send(new SkillPayload("die", this.getId()));
             }
         }
-        return GeoAnimationUtil.playTriggeredAnimationOrStop(animTest);
+        return GeoAnimationState.playTriggeredAnimationOrStop(animTest);
     })
             .receiveTriggeredAnimations()
             .triggerableAnim("attack", ATTACK_ANIM)
@@ -143,7 +143,7 @@ public abstract class RequestedLittlePersonEntity extends BaseSkillLittlePersonE
 
     @Override
     public PlayState mainController(final AnimationTest<LittlePersonMilitiaEntity> event) {
-        if (this.hasSkill() && !GeoAnimationUtil.hasRecentlyFinishedTriggeredAnimation(this)) {
+        if (this.hasSkill() && !GeoAnimationState.hasRecentlyFinishedTriggeredAnimation(this)) {
             return PlayState.CONTINUE;
         }
         if (event.isMoving()) {
@@ -250,6 +250,15 @@ public abstract class RequestedLittlePersonEntity extends BaseSkillLittlePersonE
         this.triggerAnim("skill_controller", animation);
     }
 
+    /**
+     * 服务端技能指令分发契约（按需小人物实体）。
+     *
+     * <p>在基类契约的基础上追加普攻指令：{@code attack} 执行普攻，
+     * {@code attack_1}~{@code attack_5} 执行普攻变体；{@code attackN[_phase]} 仍按
+     * {@code N[_phase]} 解析后交给 {@code runSkill(int, int)}。通用指令
+     * （{@code stop_ai}/{@code start_ai}/{@code die}/{@code stop}）行为与基类一致。
+     * 未识别指令返回 {@code false} 且不改变实体状态。
+     */
     @Override
     public boolean handleSkillPayload(String skillName) {
         switch (skillName) {
@@ -420,7 +429,7 @@ public abstract class RequestedLittlePersonEntity extends BaseSkillLittlePersonE
     }
 
     protected void areaDamage(double radius, float physicalDamage, float magicDamage) {
-        for (LivingEntity target : EntityUtil.getNearbyEntity(this, LivingEntity.class, radius, false, EntityUtil.TeamFilter.EXCLUDE_TEAM)) {
+        for (LivingEntity target : EntityQueries.getNearbyEntity(this, LivingEntity.class, radius, false, EntityQueries.TeamFilter.EXCLUDE_TEAM)) {
             if (!isValidSummonTarget(target)) {
                 continue;
             }
@@ -430,7 +439,7 @@ public abstract class RequestedLittlePersonEntity extends BaseSkillLittlePersonE
     }
 
     protected void coneDamage(double radius, float arcDegrees, float physicalDamage, float magicDamage) {
-        for (LivingEntity target : EntityUtil.getEntitiesInCone(this, LivingEntity.class, radius, arcDegrees, EntityUtil.TeamFilter.EXCLUDE_TEAM)) {
+        for (LivingEntity target : EntityQueries.getEntitiesInCone(this, LivingEntity.class, radius, arcDegrees, EntityQueries.TeamFilter.EXCLUDE_TEAM)) {
             if (!isValidSummonTarget(target)) {
                 continue;
             }
@@ -467,7 +476,7 @@ public abstract class RequestedLittlePersonEntity extends BaseSkillLittlePersonE
     }
 
     protected void pullNearbyTargets(double radius, double distance) {
-        for (LivingEntity target : EntityUtil.getNearbyEntity(this, LivingEntity.class, radius, false, EntityUtil.TeamFilter.EXCLUDE_TEAM)) {
+        for (LivingEntity target : EntityQueries.getNearbyEntity(this, LivingEntity.class, radius, false, EntityQueries.TeamFilter.EXCLUDE_TEAM)) {
             if (!isValidSummonTarget(target)) {
                 continue;
             }
@@ -481,7 +490,7 @@ public abstract class RequestedLittlePersonEntity extends BaseSkillLittlePersonE
     }
 
     protected List<LivingEntity> nearestTargets(double radius, int limit) {
-        return EntityUtil.getNearbyEntity(this, LivingEntity.class, radius, false, EntityUtil.TeamFilter.EXCLUDE_TEAM)
+        return EntityQueries.getNearbyEntity(this, LivingEntity.class, radius, false, EntityQueries.TeamFilter.EXCLUDE_TEAM)
                 .stream()
                 .filter(this::isValidSummonTarget)
                 .sorted(Comparator.comparingDouble(this::distanceToSqr))

@@ -1,6 +1,6 @@
 package com.kltyton.mob_battle.entity.ai.goal;
 
-import com.kltyton.mob_battle.utils.EntityUtil;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.EnumSet;
@@ -33,7 +33,7 @@ public class GeneralProtectionVillagerGoal extends TargetGoal {
         ServerLevel serverWorld = getServerLevel(this.golem);
         List<LivingEntity> list = serverWorld.getEntitiesOfClass(LivingEntity.class, box,
                 living -> isProtectedVillager(living) && this.targetPredicate.test(serverWorld, this.golem, living));
-        List<LivingEntity> list2 = EntityUtil.getNearbyEntity(this.golem, LivingEntity.class, Object.class, box, false, EntityUtil.TeamFilter.EXCLUDE_TEAM, this.targetPredicate);
+        List<LivingEntity> list2 = EntityQueries.getNearbyEntity(this.golem, LivingEntity.class, Object.class, box, false, EntityQueries.TeamFilter.EXCLUDE_TEAM, this.targetPredicate);
 
         for (LivingEntity livingEntity : list) {
             for (LivingEntity playerEntity : list2) {

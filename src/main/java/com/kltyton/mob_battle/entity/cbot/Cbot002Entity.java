@@ -4,8 +4,8 @@ import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.entity.ModEntityAttributes;
 import com.kltyton.mob_battle.entity.general.GeneralEntity;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
-import com.kltyton.mob_battle.utils.EntityUtil;
-import com.kltyton.mob_battle.utils.GeoAnimationUtil;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
+import com.kltyton.mob_battle.client.animation.gecko.GeoAnimationState;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -58,7 +58,7 @@ public class Cbot002Entity extends Monster implements GeneralEntity<Cbot002Entit
         this.goalSelector.addGoal(8, new LookAtPlayerGoal(this, LivingEntity.class, 8.0F));
         this.targetSelector.addGoal(1, new HurtByTargetGoal(this));
         this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, LivingEntity.class, 10, true, false,
-                (entity, world) -> entity instanceof LivingEntity living && EntityUtil.isValidCombatTarget(this, living)));
+                (entity, world) -> entity instanceof LivingEntity living && EntityQueries.isValidCombatTarget(this, living)));
     }
 
     @Override
@@ -87,7 +87,7 @@ public class Cbot002Entity extends Monster implements GeneralEntity<Cbot002Entit
             return;
         }
         LivingEntity target = this.getTarget();
-        if (target == null || !EntityUtil.isValidCombatTarget(this, target)) {
+        if (target == null || !EntityQueries.isValidCombatTarget(this, target)) {
             return;
         }
         this.getLookControl().setLookAt(target, 30.0F, 30.0F);
@@ -102,7 +102,7 @@ public class Cbot002Entity extends Monster implements GeneralEntity<Cbot002Entit
 
     @Override
     public boolean doHurtTarget(ServerLevel world, Entity target) {
-        if (!(target instanceof LivingEntity living) || !EntityUtil.isValidCombatTarget(this, living) || hasSkill()) {
+        if (!(target instanceof LivingEntity living) || !EntityQueries.isValidCombatTarget(this, living) || hasSkill()) {
             return false;
         }
         if (canSkill("attack4") && this.distanceTo(living) <= 18.0D) {
@@ -160,7 +160,7 @@ public class Cbot002Entity extends Monster implements GeneralEntity<Cbot002Entit
             return;
         }
         LivingEntity target = this.getTarget();
-        if (target == null || !EntityUtil.isValidCombatTarget(this, target)) {
+        if (target == null || !EntityQueries.isValidCombatTarget(this, target)) {
             return;
         }
         if (mode == 2) {
@@ -298,10 +298,10 @@ public class Cbot002Entity extends Monster implements GeneralEntity<Cbot002Entit
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>("main_controller", 0, this::mainController));
         controllers.add(new AnimationController<>("skill_controller", 0, animTest -> {
-            if (GeoAnimationUtil.consumeFinishedTriggeredAnimation(animTest)) {
+            if (GeoAnimationState.consumeFinishedTriggeredAnimation(animTest)) {
                 ClientPlayNetworking.send(new SkillPayload("stop", this.getId()));
             }
-            return GeoAnimationUtil.playTriggeredAnimationOrStop(animTest);
+            return GeoAnimationState.playTriggeredAnimationOrStop(animTest);
         })
                 .receiveTriggeredAnimations()
                 .triggerableAnim("attack2", ATTACK_ANIM_2)
@@ -325,7 +325,7 @@ public class Cbot002Entity extends Monster implements GeneralEntity<Cbot002Entit
 
     @Override
     public PlayState mainController(AnimationTest<?> state) {
-        if (this.hasSkill() && !GeoAnimationUtil.hasRecentlyFinishedTriggeredAnimation(this)) {
+        if (this.hasSkill() && !GeoAnimationState.hasRecentlyFinishedTriggeredAnimation(this)) {
             return PlayState.CONTINUE;
         }
         return state.isMoving() ? state.setAndContinue(WALK_ANIM) : state.setAndContinue(IDLE_ANIM);

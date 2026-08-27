@@ -1,6 +1,9 @@
 package com.kltyton.mob_battle.datagen.server.tag;
 
+import com.kltyton.mob_battle.Mob_battle;
 import com.kltyton.mob_battle.items.ModItems;
+import com.kltyton.mob_battle.items.registry.BaseMaterialItems;
+import com.kltyton.mob_battle.tags.ModTags;
 import net.fabricmc.fabric.api.datagen.v1.FabricPackOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagsProvider;
 import net.minecraft.core.HolderLookup;
@@ -9,9 +12,11 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
 import java.util.concurrent.CompletableFuture;
 
 public class ModItemTagGenerator extends FabricTagsProvider.ItemTagsProvider {
+    private static final TagKey<Item> ENCHANTABLE_ARMOR = TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "enchantable/armor"));
     private static final TagKey<Item> ENCHANTABLE_HEAD_ARMOR = TagKey.create(Registries.ITEM, Identifier.withDefaultNamespace("enchantable/head_armor"));
     private static final TagKey<Item> ENCHANTABLE_CHEST_ARMOR = TagKey.create(Registries.ITEM, Identifier.withDefaultNamespace("enchantable/chest_armor"));
     private static final TagKey<Item> ENCHANTABLE_LEG_ARMOR = TagKey.create(Registries.ITEM, Identifier.withDefaultNamespace("enchantable/leg_armor"));
@@ -99,6 +104,16 @@ public class ModItemTagGenerator extends FabricTagsProvider.ItemTagsProvider {
                 ModItems.COMPRESSED_DIAMOND_BOOTS,
                 ModItems.COMPRESSED_NETHERITE_BOOTS
         );
+        // 手写 mob_battle:tags/item/enchantable/armor.json 的等价生成(含原版四件护甲标签与 air)。
+        valueLookupBuilder(ENCHANTABLE_ARMOR)
+                .addTag(ENCHANTABLE_FOOT_ARMOR)
+                .addTag(ENCHANTABLE_LEG_ARMOR)
+                .addTag(ENCHANTABLE_CHEST_ARMOR)
+                .addTag(ENCHANTABLE_HEAD_ARMOR)
+                .add(Items.AIR);
+        // 手写 mob_battle:tags/item/iron_gold_repairable.json 的等价生成。
+        valueLookupBuilder(ModTags.IRON_GOLD_REPAIRABLE)
+                .add(BaseMaterialItems.ITEMS.get("iron_gold"));
         valueLookupBuilder(ItemTags.PIGLIN_LOVED).add(
                 ModItems.COMPRESSED_GOLD_HELMET,
                 ModItems.COMPRESSED_GOLD_CHESTPLATE,

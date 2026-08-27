@@ -3,7 +3,7 @@ package com.kltyton.mob_battle.entity.silverfish.silverfish;
 import com.kltyton.mob_battle.effect.ModEffects;
 import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.entity.ModEntityAttributes;
-import com.kltyton.mob_battle.entity.misc.PoisonousBeachEntity;
+import com.kltyton.mob_battle.entity.hazard.PoisonousBeachEntity;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.AreaEffectCloud;

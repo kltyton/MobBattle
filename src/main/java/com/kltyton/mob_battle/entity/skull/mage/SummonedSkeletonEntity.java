@@ -1,7 +1,7 @@
 package com.kltyton.mob_battle.entity.skull.mage;
 
 import com.kltyton.mob_battle.entity.OwnedSummon;
-import com.kltyton.mob_battle.utils.EntityUtil;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -43,7 +43,7 @@ public class SummonedSkeletonEntity extends Skeleton implements OwnedSummon {
     public void setSummonOwner(@Nullable LivingEntity owner) {
         this.entityData.set(OWNER, Optional.ofNullable(owner).map(EntityReference::of));
         if (owner != null) {
-            EntityUtil.joinSameTeam(this, owner);
+            EntityQueries.joinSameTeam(this, owner);
         }
     }
 
@@ -57,12 +57,12 @@ public class SummonedSkeletonEntity extends Skeleton implements OwnedSummon {
 
     @Override
     public boolean canAttack(LivingEntity target) {
-        return EntityUtil.isValidSummonCombatTarget(this, getSummonOwner(), target) && super.canAttack(target);
+        return EntityQueries.isValidSummonCombatTarget(this, getSummonOwner(), target) && super.canAttack(target);
     }
 
     @Override
     public void setTarget(@Nullable LivingEntity target) {
-        super.setTarget(target != null && !EntityUtil.isValidSummonCombatTarget(this, getSummonOwner(), target) ? null : target);
+        super.setTarget(target != null && !EntityQueries.isValidSummonCombatTarget(this, getSummonOwner(), target) ? null : target);
     }
 
     @Override
@@ -88,7 +88,7 @@ public class SummonedSkeletonEntity extends Skeleton implements OwnedSummon {
     }
 
     private boolean trySetOwnerTarget(@Nullable LivingEntity target) {
-        if (target != null && EntityUtil.isValidSummonCombatTarget(this, getSummonOwner(), target)) {
+        if (target != null && EntityQueries.isValidSummonCombatTarget(this, getSummonOwner(), target)) {
             this.setTarget(target);
             return true;
         }

@@ -5,7 +5,7 @@ import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.entity.littleperson.guard.LittlePersonGuardEntity;
 import com.kltyton.mob_battle.entity.littleperson.king.LittlePersonKingEntity;
 import com.kltyton.mob_battle.entity.littleperson.skillentity.requested.EliteLittlePersonGuardEntity;
-import com.kltyton.mob_battle.utils.EntityUtil;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
@@ -26,7 +26,7 @@ public class LittlePersonKingSkill {
     public static void runSkill_3(LittlePersonKingEntity littlePersonKingEntity) {
         if (littlePersonKingEntity.level().isClientSide()) return;
         ServerLevel serverWorld = (ServerLevel) littlePersonKingEntity.level();
-        // 鏍规嵁鍥界帇鏈濆悜璁＄畻鍓嶆柟绾?鏍肩殑浣嶇疆
+        // 根据国王朝向计算前方约 7 格的位置。
         Vec3 look = littlePersonKingEntity.getViewVector(1.0F).normalize().scale(2.0);
         Vec3 lightningPos = littlePersonKingEntity.getEyePosition().add(look);
 
@@ -58,7 +58,7 @@ public class LittlePersonKingSkill {
         if (littlePersonKingEntity.getTarget() != null) {
             guard.setTarget(littlePersonKingEntity.getTarget());
         }
-        guard.setPos(EntityUtil.findSafeSpawnPosition(serverWorld, guard, spawnPos.getCenter()).orElse(spawnPos.getCenter()));
+        guard.setPos(EntityQueries.findSafeSpawnPosition(serverWorld, guard, spawnPos.getCenter()).orElse(spawnPos.getCenter()));
         serverWorld.addFreshEntity(guard);
         serverWorld.sendParticles(ParticleTypes.POOF,
                 guard.getX(), guard.getY() + 1.0D, guard.getZ(),
@@ -70,7 +70,7 @@ public class LittlePersonKingSkill {
         Vec3 kingPos = littlePersonKingEntity.position();
         double radius = 3.0;
         for (int i = 0; i < count; i++) {
-            // 鍦ㄥ浗鐜嬪懆鍥撮殢鏈虹敓鎴愪竴涓綅缃紙姘村钩3鏍硷紝鍨傜洿卤1鏍硷級
+            // 在国王周围 1 至 3 格水平半径内选择位置，Y 为当前高度或上方 1 格。
             double angle = serverWorld.getRandom().nextDouble() * Math.PI * 2;
             double distance = 1.0 + serverWorld.getRandom().nextDouble() * (radius - 1.0);
             double x = kingPos.x + Math.cos(angle) * distance;
@@ -84,7 +84,7 @@ public class LittlePersonKingSkill {
             littlePersonGuard.finalizeSpawn(serverWorld, serverWorld.getCurrentDifficultyAt(spawnPos), EntitySpawnReason.EVENT, null);
             littlePersonGuard.setLife(1200);
             littlePersonGuard.setSummonOwner(littlePersonKingEntity);
-            littlePersonGuard.setPos(EntityUtil.findSafeSpawnPosition(serverWorld, littlePersonGuard, spawnPos.getCenter()).orElse(spawnPos.getCenter()));
+            littlePersonGuard.setPos(EntityQueries.findSafeSpawnPosition(serverWorld, littlePersonGuard, spawnPos.getCenter()).orElse(spawnPos.getCenter()));
             serverWorld.addFreshEntity(littlePersonGuard);
         }
         serverWorld.sendParticles(ParticleTypes.POOF,
@@ -97,7 +97,7 @@ public class LittlePersonKingSkill {
                 entity.getBoundingBox().inflate(radius),
                 p -> p.isAlive() &&
                         entity.distanceTo(p) <= radius &&
-                        EntityUtil.isValidSummonCombatTarget(entity, entity, p)
+                        EntityQueries.isValidSummonCombatTarget(entity, entity, p)
         );
     }
     public static List<LittlePersonGuardEntity> getNearbyLittlePersonGuardEntity(LittlePersonKingEntity entity, double radius) {

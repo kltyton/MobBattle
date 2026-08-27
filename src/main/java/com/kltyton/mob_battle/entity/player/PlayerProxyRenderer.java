@@ -2,7 +2,7 @@ package com.kltyton.mob_battle.entity.player;
 
 import com.kltyton.mob_battle.effect.ModEffects;
 import com.kltyton.mob_battle.items.ModMaterial;
-import com.kltyton.mob_battle.utils.ArmorUtil;
+import com.kltyton.mob_battle.items.armor.support.ArmorSetRules;
 import com.geckolib.animatable.GeoAnimatable;
 import com.geckolib.renderer.base.GeoRenderState;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -58,7 +58,7 @@ public class PlayerProxyRenderer<T extends Player & GeoAnimatable, R extends Ava
 
     private static boolean hasCompressedCopperPower(AbstractClientPlayer player) {
         return player.hasEffect(ModEffects.COMPRESSED_COPPER_CHARGED_ENTRY)
-                && ArmorUtil.hasFullArmor(player, ModMaterial.COMPRESSED_COPPER_ARMOR_INSTANCE);
+                && ArmorSetRules.hasFullArmor(player, ModMaterial.COMPRESSED_COPPER_ARMOR_INSTANCE);
     }
 
     @Override

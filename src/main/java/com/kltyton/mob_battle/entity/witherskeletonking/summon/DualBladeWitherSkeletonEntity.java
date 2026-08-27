@@ -4,8 +4,8 @@ import com.kltyton.mob_battle.entity.ModEntityAttributes;
 import com.kltyton.mob_battle.entity.ModSkillEntityType;
 import com.kltyton.mob_battle.entity.OwnedSummon;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
-import com.kltyton.mob_battle.utils.EntityUtil;
-import com.kltyton.mob_battle.utils.GeoAnimationUtil;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
+import com.kltyton.mob_battle.client.animation.gecko.GeoAnimationState;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -71,7 +71,7 @@ public class DualBladeWitherSkeletonEntity extends WitherSkeleton implements Geo
     public void setSummonOwner(@Nullable LivingEntity summonOwner) {
         this.summonOwner = summonOwner;
         if (summonOwner != null) {
-            EntityUtil.joinSameTeam(this, summonOwner);
+            EntityQueries.joinSameTeam(this, summonOwner);
         }
     }
 
@@ -82,7 +82,7 @@ public class DualBladeWitherSkeletonEntity extends WitherSkeleton implements Geo
     }
 
     private boolean isValidSummonTarget(LivingEntity target) {
-        return EntityUtil.isValidSummonCombatTarget(this, this.summonOwner, target);
+        return EntityQueries.isValidSummonCombatTarget(this, this.summonOwner, target);
     }
 
     @Override
@@ -110,7 +110,7 @@ public class DualBladeWitherSkeletonEntity extends WitherSkeleton implements Geo
     @Override
     public boolean doHurtTarget(ServerLevel world, Entity target) {
         if (!(target instanceof LivingEntity living)
-                || !EntityUtil.isValidCombatTarget(this, living)
+                || !EntityQueries.isValidCombatTarget(this, living)
                 || !isValidSummonTarget(living)
                 || hasSkill()
                 || this.birthTicks > 0
@@ -127,6 +127,16 @@ public class DualBladeWitherSkeletonEntity extends WitherSkeleton implements Geo
         this.triggerAnim("skill_controller", "attack" + attack);
     }
 
+    /**
+     * 处理已经通过服务端边界校验的技能关键帧指令。
+     *
+     * <p>指令字符串、动作调用与状态副作用与 ServerPlayNetwork 中本实体的
+     * 分发分支保持逐字节一致；识别成功返回 true，未识别返回 false 且不改变状态。
+     *
+     * @param skillName 兼容现有网络协议的技能字符串
+     * @return 指令是否被识别并处理
+     */
+    @Override
     public boolean handleSkillPayload(String skillName) {
         switch (skillName) {
             case "attack1" -> damageTarget(100.0F);
@@ -157,7 +167,7 @@ public class DualBladeWitherSkeletonEntity extends WitherSkeleton implements Geo
         if (!(this.level() instanceof ServerLevel world)) {
             return;
         }
-        for (LivingEntity target : EntityUtil.getNearbyEntity(this, LivingEntity.class, radius, false, EntityUtil.TeamFilter.EXCLUDE_TEAM)) {
+        for (LivingEntity target : EntityQueries.getNearbyEntity(this, LivingEntity.class, radius, false, EntityQueries.TeamFilter.EXCLUDE_TEAM)) {
             if (!isValidSummonTarget(target)) {
                 continue;
             }
@@ -169,10 +179,10 @@ public class DualBladeWitherSkeletonEntity extends WitherSkeleton implements Geo
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>("main_controller", 0, this::mainController));
         controllers.add(new AnimationController<>("skill_controller", 0, animTest -> {
-            if (GeoAnimationUtil.consumeFinishedTriggeredAnimation(animTest)) {
+            if (GeoAnimationState.consumeFinishedTriggeredAnimation(animTest)) {
                 ClientPlayNetworking.send(new SkillPayload("stop", this.getId()));
             }
-            return GeoAnimationUtil.playTriggeredAnimationOrStop(animTest);
+            return GeoAnimationState.playTriggeredAnimationOrStop(animTest);
         })
                 .receiveTriggeredAnimations()
                 .triggerableAnim("attack1", ATTACK_1_ANIM)
@@ -198,7 +208,7 @@ public class DualBladeWitherSkeletonEntity extends WitherSkeleton implements Geo
         if (this.birthTicks > 0) {
             return state.setAndContinue(BIRTH_ANIM);
         }
-        if (this.hasSkill() && !GeoAnimationUtil.hasRecentlyFinishedTriggeredAnimation(this)) {
+        if (this.hasSkill() && !GeoAnimationState.hasRecentlyFinishedTriggeredAnimation(this)) {
             return PlayState.CONTINUE;
         }
         if (state.isMoving()) {

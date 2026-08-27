@@ -1,6 +1,6 @@
 package com.kltyton.mob_battle.entity.enhancedwither;
 
-import com.kltyton.mob_battle.utils.EntityUtil;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
@@ -37,7 +37,7 @@ public class EnhancedWitherSkullEntity extends WitherSkull {
 
     @Override
     public boolean canHitEntity(Entity entity) {
-        if (entity instanceof LivingEntity living && !EntityUtil.isValidSummonCombatTarget(this, this.getOwner(), living)) {
+        if (entity instanceof LivingEntity living && !EntityQueries.isValidSummonCombatTarget(this, this.getOwner(), living)) {
             return false;
         }
         return super.canHitEntity(entity);
@@ -60,7 +60,7 @@ public class EnhancedWitherSkullEntity extends WitherSkull {
 
         if (hitResult instanceof EntityHitResult entityHit
                 && entityHit.getEntity() instanceof LivingEntity directTarget
-                && EntityUtil.isValidSummonCombatTarget(this, owner, directTarget)) {
+                && EntityQueries.isValidSummonCombatTarget(this, owner, directTarget)) {
             targets.add(directTarget);
         }
 
@@ -71,7 +71,7 @@ public class EnhancedWitherSkullEntity extends WitherSkull {
         );
         targets.addAll(world.getEntitiesOfClass(LivingEntity.class, damageBox,
                 target -> target.distanceToSqr(center) <= DAMAGE_RADIUS * DAMAGE_RADIUS
-                        && EntityUtil.isValidSummonCombatTarget(this, owner, target)));
+                        && EntityQueries.isValidSummonCombatTarget(this, owner, target)));
 
         for (LivingEntity target : targets) {
             applyEnhancedDamage(world, target, livingOwner);

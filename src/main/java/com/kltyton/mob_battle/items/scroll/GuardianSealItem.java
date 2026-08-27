@@ -2,7 +2,7 @@ package com.kltyton.mob_battle.items.scroll;
 
 import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.entity.skull.king.SkullKingEntity;
-import com.kltyton.mob_battle.utils.EntityUtil;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
@@ -59,7 +59,7 @@ public class GuardianSealItem extends Item {
             skeleton.setHealth(1000.0f);
             world.addFreshEntity(skeleton);
             // 队伍尝试
-            EntityUtil.joinSameTeam(skeleton, user);
+            EntityQueries.joinSameTeam(skeleton, user);
         }
     }
 }

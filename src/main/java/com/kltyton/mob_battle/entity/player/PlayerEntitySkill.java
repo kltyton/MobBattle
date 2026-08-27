@@ -3,7 +3,7 @@ package com.kltyton.mob_battle.entity.player;
 import com.kltyton.mob_battle.Mob_battle;
 import com.kltyton.mob_battle.effect.ModEffects;
 import com.kltyton.mob_battle.event.DataTrackersEvent;
-import com.kltyton.mob_battle.utils.EntityUtil;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
@@ -34,7 +34,7 @@ public class PlayerEntitySkill {
                 && target.isAlive()
                 && target != player
                 && !target.getUUID().equals(player.getUUID())
-                && !EntityUtil.isCreativeOrSpectator(target);
+                && !EntityQueries.isCreativeOrSpectator(target);
     }
 
     public static void clearJumpSkillGravityModifier(LivingEntity entity) {
@@ -53,14 +53,14 @@ public class PlayerEntitySkill {
         player.getEntityData().set(DataTrackersEvent.HAS_SKILL, false);
     }
     public static void runAttackSkill(ServerPlayer player) {
-        EntityUtil.getNearbyEntity(player, LivingEntity.class, 8, false, EntityUtil.TeamFilter.EXCLUDE_TEAM).forEach(livingEntity -> {
+        EntityQueries.getNearbyEntity(player, LivingEntity.class, 8, false, EntityQueries.TeamFilter.EXCLUDE_TEAM).forEach(livingEntity -> {
             if (!isValidSkillTarget(player, livingEntity)) return;
             livingEntity.hurtServer(player.level(), player.damageSources().playerAttack(player), 130);
             livingEntity.knockback(1.5, player.getX() - livingEntity.getX(), player.getZ() - livingEntity.getZ());
         });
     }
     public static void runAttackSkill_2(ServerPlayer player) {
-        EntityUtil.getNearbyEntity(player, LivingEntity.class, 8, false, EntityUtil.TeamFilter.EXCLUDE_TEAM).forEach(livingEntity -> {
+        EntityQueries.getNearbyEntity(player, LivingEntity.class, 8, false, EntityQueries.TeamFilter.EXCLUDE_TEAM).forEach(livingEntity -> {
             if (!isValidSkillTarget(player, livingEntity)) return;
             livingEntity.hurtServer(player.level(), player.damageSources().playerAttack(player), 150);
             livingEntity.knockback(1.5, player.getX() - livingEntity.getX(), player.getZ() - livingEntity.getZ());
@@ -72,14 +72,14 @@ public class PlayerEntitySkill {
 
 
     public static void runUpperHookSkill(ServerPlayer player) {
-        EntityUtil.getNearbyEntity(player, LivingEntity.class, 8, false, EntityUtil.TeamFilter.EXCLUDE_TEAM).forEach(livingEntity -> {
+        EntityQueries.getNearbyEntity(player, LivingEntity.class, 8, false, EntityQueries.TeamFilter.EXCLUDE_TEAM).forEach(livingEntity -> {
             if (!isValidSkillTarget(player, livingEntity)) return;
             livingEntity.hurtServer(player.level(), player.damageSources().playerAttack(player), 160);
             livingEntity.knockback(1.5, player.getX() - livingEntity.getX(), player.getZ() - livingEntity.getZ());
         });
     }
     public static void runTopKneeSkill(ServerPlayer player) {
-        LivingEntity livingEntity = EntityUtil.getClosestNearbyEntity(player, LivingEntity.class, 8, EntityUtil.TeamFilter.EXCLUDE_TEAM);
+        LivingEntity livingEntity = EntityQueries.getClosestNearbyEntity(player, LivingEntity.class, 8, EntityQueries.TeamFilter.EXCLUDE_TEAM);
         if (isValidSkillTarget(player, livingEntity)) {
             livingEntity.hurtServer(player.level(), player.damageSources().playerAttack(player), 120);
             livingEntity.addEffect(new MobEffectInstance(ModEffects.STUN_ENTRY, 2 * 20));
@@ -109,7 +109,7 @@ public class PlayerEntitySkill {
 
 
     public static void runLeftWhipSkill(ServerPlayer player) {
-        LivingEntity livingEntity = EntityUtil.getClosestNearbyEntity(player, LivingEntity.class, 8, EntityUtil.TeamFilter.EXCLUDE_TEAM);
+        LivingEntity livingEntity = EntityQueries.getClosestNearbyEntity(player, LivingEntity.class, 8, EntityQueries.TeamFilter.EXCLUDE_TEAM);
         if (isValidSkillTarget(player, livingEntity)) {
             livingEntity.hurtServer(player.level(), player.damageSources().playerAttack(player), 120);
             livingEntity.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 5 * 20, 4));
@@ -140,7 +140,7 @@ public class PlayerEntitySkill {
         ServerLevel world = player.level();
         ((IPlayerSkillAccessor)player).mobBattle$setCanMove(false);
         // 8 格范围搜索
-        EntityUtil.getNearbyEntity(player, LivingEntity.class, 8, false, EntityUtil.TeamFilter.EXCLUDE_TEAM).forEach(target -> {
+        EntityQueries.getNearbyEntity(player, LivingEntity.class, 8, false, EntityQueries.TeamFilter.EXCLUDE_TEAM).forEach(target -> {
             // 1. 造成 350 点巨额伤害
             if (!isValidSkillTarget(player, target)) return;
             target.hurtServer(world, player.damageSources().playerAttack(player), 300f);
@@ -165,7 +165,7 @@ public class PlayerEntitySkill {
         }
     }
     public static void runRunCollisionSkill(ServerPlayer player) {
-        EntityUtil.getNearbyEntity(player, LivingEntity.class, 8, false, EntityUtil.TeamFilter.EXCLUDE_TEAM).forEach(livingEntity -> {
+        EntityQueries.getNearbyEntity(player, LivingEntity.class, 8, false, EntityQueries.TeamFilter.EXCLUDE_TEAM).forEach(livingEntity -> {
             if (isValidSkillTarget(player, livingEntity)) {
                 livingEntity.hurtServer(player.level(), player.damageSources().playerAttack(player), 210);
                 livingEntity.addEffect(new MobEffectInstance(ModEffects.STUN_ENTRY, 2 * 20));
@@ -187,7 +187,7 @@ public class PlayerEntitySkill {
     }
     public static void runScraping(ServerPlayer player) {
         // 1. 寻找 8 格内最近的实体
-        LivingEntity target = EntityUtil.getClosestNearbyEntity(player, LivingEntity.class, 8, EntityUtil.TeamFilter.EXCLUDE_TEAM);
+        LivingEntity target = EntityQueries.getClosestNearbyEntity(player, LivingEntity.class, 8, EntityQueries.TeamFilter.EXCLUDE_TEAM);
         if (isValidSkillTarget(player, target)) {
             ((IPlayerSkillAccessor)player).mobBattle$setGrabbedEntity(target);
             ((GeoEntity)player).triggerAnim("attack_controller", "yes_scraping");

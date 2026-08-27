@@ -1,6 +1,6 @@
 package com.kltyton.mob_battle.entity.littleperson.skillentity.requested;
 
-import com.kltyton.mob_battle.utils.EntityUtil;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -64,14 +64,14 @@ public class LittlePersonMedicEntity extends RequestedTaskLittlePersonEntity {
     }
 
     private LivingEntity findHealTarget() {
-        return EntityUtil.getNearbyEntity(this, LivingEntity.class, HEAL_SEARCH_RANGE, false, EntityUtil.TeamFilter.ALL).stream()
+        return EntityQueries.getNearbyEntity(this, LivingEntity.class, HEAL_SEARCH_RANGE, false, EntityQueries.TeamFilter.ALL).stream()
                 .filter(this::isHealableAlly)
                 .min(Comparator.comparingDouble(this::distanceToSqr))
                 .orElse(null);
     }
 
     private LivingEntity findNearbyThreat() {
-        return EntityUtil.getNearbyEntity(this, LivingEntity.class, THREAT_RANGE, false, EntityUtil.TeamFilter.ALL).stream()
+        return EntityQueries.getNearbyEntity(this, LivingEntity.class, THREAT_RANGE, false, EntityQueries.TeamFilter.ALL).stream()
                 .filter(this::isValidSummonTarget)
                 .min(Comparator.comparingDouble(this::distanceToSqr))
                 .orElse(null);
@@ -94,11 +94,11 @@ public class LittlePersonMedicEntity extends RequestedTaskLittlePersonEntity {
         if (entity == null || entity == this || entity instanceof LittlePersonMedicEntity || !entity.isAlive()) {
             return false;
         }
-        if (entity.getHealth() >= entity.getMaxHealth() || EntityUtil.isValidCombatTarget(this, entity)) {
+        if (entity.getHealth() >= entity.getMaxHealth() || EntityQueries.isValidCombatTarget(this, entity)) {
             return false;
         }
-        Entity owner = EntityUtil.getKnownOwner(this);
-        return entity.isAlliedTo(this) || this.isAlliedTo(entity) || EntityUtil.isFriendlyToSummon(this, owner, entity);
+        Entity owner = EntityQueries.getKnownOwner(this);
+        return entity.isAlliedTo(this) || this.isAlliedTo(entity) || EntityQueries.isFriendlyToSummon(this, owner, entity);
     }
 
     @Override

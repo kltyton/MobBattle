@@ -4,7 +4,7 @@ import com.kltyton.mob_battle.command.FriendlyDamageCommand;
 import com.kltyton.mob_battle.entity.bullet.ITrueDamageProjectile;
 import com.kltyton.mob_battle.entity.littleperson.archer.LittlePersonArcherEntity;
 import com.kltyton.mob_battle.entity.villager.militia.MilitiaArcherVillager;
-import com.kltyton.mob_battle.utils.EntityUtil;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageSources;
@@ -73,7 +73,7 @@ public abstract class PersistentProjectileEntityMixin extends Projectile{
             return;
         }
         if (owner != null && target instanceof LivingEntity living
-                && (owner.isAlliedTo(living) || living.isAlliedTo(owner) || EntityUtil.shouldBlockOwnedSummonDamage(owner, living))) {
+                && (owner.isAlliedTo(living) || living.isAlliedTo(owner) || EntityQueries.shouldBlockOwnedSummonDamage(owner, living))) {
             ci.cancel();
             return;
         }
@@ -81,7 +81,7 @@ public abstract class PersistentProjectileEntityMixin extends Projectile{
             if (!serverWorld.getGameRules().get(FriendlyDamageCommand.ENABLE_FRIENDLY_PROJECTILE_DAMAGE)) {
                 if (owner != null && target instanceof LivingEntity living) {
                     // 使用原版团队匹配逻辑（包含null安全处理）
-                    if (!EntityUtil.isValidSummonCombatTarget(projectile, owner, living)) {
+                    if (!EntityQueries.isValidSummonCombatTarget(projectile, owner, living)) {
                         ci.cancel(); // 取消同队成员的伤害
                     }
                 }
@@ -102,14 +102,14 @@ public abstract class PersistentProjectileEntityMixin extends Projectile{
             return;
         }
         if (owner != null && entity instanceof LivingEntity living
-                && (owner.isAlliedTo(living) || living.isAlliedTo(owner) || EntityUtil.shouldBlockOwnedSummonDamage(owner, living))) {
+                && (owner.isAlliedTo(living) || living.isAlliedTo(owner) || EntityQueries.shouldBlockOwnedSummonDamage(owner, living))) {
             cir.setReturnValue(false);
             return;
         }
         if (world instanceof ServerLevel serverWorld) {
             if (!serverWorld.getGameRules().get(FriendlyDamageCommand.ENABLE_FRIENDLY_PROJECTILE_DAMAGE)) {
                 if (owner != null && entity instanceof LivingEntity living) {
-                    if (!EntityUtil.isValidSummonCombatTarget(projectile, owner, living)) {
+                    if (!EntityQueries.isValidSummonCombatTarget(projectile, owner, living)) {
                         cir.setReturnValue(false);
                     }
                 }

@@ -41,7 +41,7 @@ import net.minecraft.world.phys.Vec3;
 @Mixin(EnderDragon.class)
 @Implements(@Interface(iface = EnderDragonAccessor.class, prefix = "custom$"))
 public abstract class EnderDragonEntityMixin extends Mob {
-    // ==================== 鏂板瀛楁锛堟斁鍦ㄧ被椤堕儴锛?====================
+    // 暗影龙联动状态。
     @Unique
     private static final EntityDataAccessor<Boolean> IS_SHADOW = SynchedEntityData.defineId(EnderDragon.class, EntityDataSerializers.BOOLEAN);
     @Unique
@@ -95,7 +95,7 @@ public abstract class EnderDragonEntityMixin extends Mob {
             skillManager.tick(serverWorld);
         }
     }
-    // ==================== 鏂板锛?0%琛€閲忓彫鍞?+ 澶嶆椿 + 姝讳骸鑱斿姩 ====================
+    // 半血暗影龙召唤、复活与死亡联动。
     @Inject(method = "aiStep", at = @At("TAIL"))
     private void manageShadowDragon(CallbackInfo ci) {
         EnderDragon self = (EnderDragon) (Object) this;
@@ -111,12 +111,12 @@ public abstract class EnderDragonEntityMixin extends Mob {
 
         float healthPercent = self.getHealth() / self.getMaxHealth();
 
-        // 棣栨鎺夊埌50%浠ヤ笅鍙敜
+        // 首次降至半血时召唤暗影龙。
         if (shadow == null && healthPercent <= 0.5F && shadowRespawnTime == -1L) {
             summonShadow(world, self);
         }
 
-        // 澶嶆椿璁℃椂鍣?
+        // 暗影龙死亡后按服务端游戏时间等待复活。
         if (shadowRespawnTime > 0 && world.getGameTime() >= shadowRespawnTime && shadow == null) {
             summonShadow(world, self);
             shadowRespawnTime = -1L;
@@ -138,7 +138,7 @@ public abstract class EnderDragonEntityMixin extends Mob {
         ((EnderDragonAccessor) newShadow).setShadow(true);
         world.addFreshEntity(newShadow);
         this.shadow = newShadow;
-        // 鐗规晥
+        // 同步播放召唤粒子和声音。
         world.sendParticles(ParticleTypes.EXPLOSION_EMITTER, newShadow.getX(), newShadow.getY() + 5, newShadow.getZ(), 1, 0, 0, 0, 0);
         world.playSound(null, newShadow.blockPosition(), SoundEvents.ENDER_DRAGON_GROWL, SoundSource.HOSTILE, 6.0F, 0.8F);
     }
@@ -150,31 +150,31 @@ public abstract class EnderDragonEntityMixin extends Mob {
         if (!(self.level() instanceof ServerLevel world)) return;
 
         if (skillManager != null && skillManager.isChargingRush()) {
-            // 妫€娴嬪ご閮?韬綋闄勮繎瀹炰綋锛堢被浼煎師鐗堢繀鑶€纰版挒锛屼絾鏇村己锛?
+            // 检测龙头和龙身附近实体，形成强化冲撞。
             AABB headBox = this.head.getBoundingBox().inflate(2.0, 1.5, 2.0);
             AABB bodyBox = this.body.getBoundingBox().inflate(3.0, 2.0, 3.0);
             if (world.getGameTime() > skillManager.rushEndTime) return;
             for (Entity entity : world.getEntities(self, headBox.minmax(bodyBox))) {
                 if (entity instanceof LivingEntity living && !entity.isSpectator() && living != self) {
                     if (living instanceof Player player && (player.isCreative() || player.isSpectator())) continue;
-                    if (living.isAlliedTo(self)) continue;  // 璺宠繃闃熷弸
-                    // 330鐐圭墿鐞嗕激瀹筹紙鐢╩obAttack鏉ユ簮锛?
+                    if (living.isAlliedTo(self)) continue;  // 跳过队友。
+                    // 使用生物近战伤害源造成 330 点物理伤害。
                     DamageSource source = self.damageSources().mobAttack(self);
                     living.hurtServer(world, source, 330.0F);
 
-                    // 鍑婚€€缈诲€嶏紙鍘熺増鍐叉挒鍑婚€€ 鈮?2~3锛岃繖閲岀炕鍊?鈮?4~6锛?
+                    // 提高水平击退与垂直抬升，强化冲撞反馈。
                     Vec3 knockDir = living.position().subtract(self.position()).normalize();
-                    living.push(knockDir.x * 1.2, 0.8, knockDir.z * 1.2); // y鍚戜笂鎶珮
+                    living.push(knockDir.x * 1.2, 0.8, knockDir.z * 1.2); // 向上抬升。
                     living.hurtMarked = true;
 
-                    // 澶辨槑3绉?
+                    // 施加 3 秒失明。
                     living.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, 60, 0));
 
-                    // 閾佺牕钀藉湴闊虫晥
+                    // 播放铁砧落地声作为命中反馈。
                     world.playSound(null, living.getX(), living.getY(), living.getZ(),
                             ModSounds.PLAYER_ATTACK_SOUND_EVENT, SoundSource.HOSTILE, 1.8F, 0.7F + world.getRandom().nextFloat() * 0.4F);
 
-                    // 鍙€夛細绮掑瓙鍐插嚮
+                    // 生成冲击粒子。
                     world.sendParticles(ParticleTypes.EXPLOSION, living.getX(), living.getY() + 1, living.getZ(), 8, 0.6, 0.6, 0.6, 0.1);
                     break;
                 }
@@ -182,9 +182,9 @@ public abstract class EnderDragonEntityMixin extends Mob {
         }
     }
     @Unique
-    private static final float SCALE = 1.5F;   // 灏哄鍊嶇巼锛屽彲鑷淇敼
+    private static final float SCALE = 1.5F;   // 统一尺寸倍率。
 
-    // ==================== 1. 琛€閲忔敼涓?50000 ====================
+    // 将最大生命值调整为 50000。
     @ModifyArg(
             method = "createAttributes",
             at = @At(
@@ -197,7 +197,7 @@ public abstract class EnderDragonEntityMixin extends Mob {
         return 50000.0;
     }
 
-    // ==================== 2. 鏁翠綋灏哄鏀惧ぇ 1.5 鍊嶏紙纰版挒绠卞畬缇庢斁澶э級 ====================
+    // 所有末影龙部件碰撞箱统一放大 1.5 倍。
     @Redirect(
             method = "<init>",
             at = @At(value = "NEW", target = "Lnet/minecraft/world/entity/boss/enderdragon/EnderDragonPart;")
@@ -206,7 +206,7 @@ public abstract class EnderDragonEntityMixin extends Mob {
         return new EnderDragonPart(owner, name, width * SCALE, height * SCALE);
     }
 
-    // ==================== 3. 瀵圭垎鐐镐激瀹?60% 鍏嶄激锛堝疄闄呭彧鎵垮彈40%锛?====================
+    // 爆炸伤害降低 60%，实际承受原伤害的 40%。
     @ModifyVariable(
             method = "hurt(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/boss/enderdragon/EnderDragonPart;Lnet/minecraft/world/damagesource/DamageSource;F)Z",
             at = @At("HEAD"),
@@ -219,13 +219,13 @@ public abstract class EnderDragonEntityMixin extends Mob {
         return amount;
     }
 
-    // ==================== 4. 缈呰唨灏栫鎸佺画绱壊绮掑瓙锛堟瘡 tick 鐢熸垚锛屾洿鏄庢樉锛?====================
+    // 客户端在双翼尖端持续生成紫色尾迹。
     @Inject(method = "aiStep", at = @At("TAIL"))
     private void addWingTipParticles(CallbackInfo ci) {
         EnderDragon dragon = (EnderDragon) (Object) this;
         if (dragon.isDeadOrDying()) return;
         if (dragon.level().isClientSide()) {
-            // 鍒嗗埆涓哄乏鍙崇繀鑶€鐢熸垚灏捐抗
+            // 分别为左右翅膀生成独立尾迹。
             EnderDragonPart[] parts = dragon.getSubEntities();
             if (parts.length > 7) {
                 spawnJetParticle(parts[7], true);
@@ -241,17 +241,17 @@ public abstract class EnderDragonEntityMixin extends Mob {
     private void spawnJetParticle(EnderDragonPart wing, boolean isLeft) {
         Level world = wing.level();
 
-        // 鑾峰彇褰撳墠浣嶇疆
+        // 获取当前翅膀位置。
         double curX = wing.getX();
-        double curY = wing.getY() + (wing.getBbHeight() / 2.0); // 浠庣繀鑶€涓儴鍠峰嚭
+        double curY = wing.getY() + (wing.getBbHeight() / 2.0); // 从翅膀中部发射。
         double curZ = wing.getZ();
 
-        // 鑾峰彇涓婁竴甯т綅缃紙濡傛灉鏄涓€娆℃墽琛屽垯鍒濆鍖栵級
+        // 首次执行使用当前位置，否则读取上一帧坐标。
         double prevX = isLeft ? (lastLeftWingX == 0 ? curX : lastLeftWingX) : (lastRightWingX == 0 ? curX : lastRightWingX);
         double prevY = isLeft ? (lastLeftWingY == 0 ? curY : lastLeftWingY) : (lastRightWingY == 0 ? curY : lastRightWingY);
         double prevZ = isLeft ? (lastLeftWingZ == 0 ? curZ : lastLeftWingZ) : (lastRightWingZ == 0 ? curZ : lastRightWingZ);
 
-        // 鎻掑€肩敓鎴愶細鍦ㄤ笂涓€甯у拰杩欎竴甯т箣闂村～婊＄矑瀛愶紝淇濊瘉楂橀€熺Щ鍔ㄤ笅灏捐抗涓嶆柇瑁?
+        // 在相邻帧位置之间插值，避免高速移动时尾迹断裂。
         int particlesPerTick = 8;
         for (int i = 0; i < particlesPerTick; i++) {
             float f = (float)i / (float)particlesPerTick;
@@ -259,16 +259,16 @@ public abstract class EnderDragonEntityMixin extends Mob {
             double y = prevY + (curY - prevY) * f;
             double z = prevZ + (curZ - prevZ) * f;
 
-            // 1. 鏍稿績娴撶儫鏁堟灉 (DRAGON_BREATH)
+            // 核心尾迹使用 DRAGON_BREATH 粒子。
             world.addParticle(
                     net.minecraft.core.particles.PowerParticleOption.create(ParticleTypes.DRAGON_BREATH, 1.0F),
                     x, y, z,
-                    (world.getRandom().nextDouble() - 0.5) * 0.1, // 绋嶅井鎶栧姩
+                    (world.getRandom().nextDouble() - 0.5) * 0.1, // 添加轻微横向抖动。
                     -0.02,
                     (world.getRandom().nextDouble() - 0.5) * 0.1
             );
 
-            // 2. 杈圭紭闂儊鏁堟灉 (REVERSE_PORTAL) - 鍙湁閮ㄥ垎绮掑瓙鐢熸垚杩欎釜锛屽鍔犲眰娆℃劅
+            // 少量 REVERSE_PORTAL 粒子形成边缘闪烁层次。
             if (world.getRandom().nextFloat() > 0.7f) {
                 world.addParticle(
                         ParticleTypes.REVERSE_PORTAL,
@@ -278,7 +278,7 @@ public abstract class EnderDragonEntityMixin extends Mob {
             }
         }
 
-        // 鏇存柊鍘嗗彶鍧愭爣
+        // 保存本帧坐标供下一帧插值。
         if (isLeft) {
             lastLeftWingX = curX; lastLeftWingY = curY; lastLeftWingZ = curZ;
         } else {
@@ -348,7 +348,7 @@ public abstract class EnderDragonEntityMixin extends Mob {
             return;
         }
         this.reallyHurt(world, source, amount);
-        // 淇濈暀鍘熺増姝讳骸鍒囩浉閫昏緫锛岄伩鍏嶇洿鎺ユ妸鏁村 Boss death sequence 寮勫潖
+        // 保留原版死亡阶段切换，避免破坏整套 Boss death sequence。
         if (self.getPhaseManager().getCurrentPhase() != null && self.isDeadOrDying() && self.getPhaseManager().getCurrentPhase().getPhase() != EnderDragonPhase.DYING) {
             self.setHealth(1.0F);
             self.getPhaseManager().setPhase(EnderDragonPhase.DYING);

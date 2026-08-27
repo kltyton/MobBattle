@@ -1,6 +1,6 @@
 package com.kltyton.mob_battle.mixin.raid;
 
-import com.kltyton.mob_battle.utils.EnchantmentUtil;
+import com.kltyton.mob_battle.enchantment.support.EnchantmentAccess;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Difficulty;
@@ -261,22 +261,22 @@ public abstract class RaidMixin {
     @Unique
     private ItemStack enchantedCrossbow(ServerLevel world) {
         ItemStack stack = new ItemStack(Items.CROSSBOW);
-        EnchantmentUtil.addEnchantment(world, stack, Enchantments.QUICK_CHARGE, 3);
-        EnchantmentUtil.addEnchantment(world, stack, Enchantments.POWER, 10);
+        EnchantmentAccess.addEnchantment(world, stack, Enchantments.QUICK_CHARGE, 3);
+        EnchantmentAccess.addEnchantment(world, stack, Enchantments.POWER, 10);
         return stack;
     }
 
     @Unique
     private ItemStack enchantedAxe(ServerLevel world) {
         ItemStack stack = new ItemStack(Items.IRON_AXE);
-        EnchantmentUtil.addEnchantment(world, stack, Enchantments.SHARPNESS, 10);
+        EnchantmentAccess.addEnchantment(world, stack, Enchantments.SHARPNESS, 10);
         return stack;
     }
 
     @Unique
     private ItemStack enchantedBow(ServerLevel world) {
         ItemStack stack = new ItemStack(Items.BOW);
-        EnchantmentUtil.addEnchantment(world, stack, Enchantments.POWER, 15);
+        EnchantmentAccess.addEnchantment(world, stack, Enchantments.POWER, 15);
         return stack;
     }
 }

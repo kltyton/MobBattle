@@ -1,6 +1,6 @@
 package com.kltyton.mob_battle.entity.cbot;
 
-import com.kltyton.mob_battle.utils.EntityUtil;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
@@ -65,7 +65,7 @@ public class CbotSnowballEntity extends Projectile {
         Entity owner = this.getOwner();
         AABB box = this.getBoundingBox().inflate(0.35D);
         for (LivingEntity target : ((ServerLevel) this.level()).getEntitiesOfClass(LivingEntity.class, box,
-                living -> EntityUtil.isValidSummonCombatTarget(this, owner, living))) {
+                living -> EntityQueries.isValidSummonCombatTarget(this, owner, living))) {
             Vec3 motionBeforeHit = target.getDeltaMovement();
             if (this.physicalDamage > 0.0F) {
                 target.invulnerableTime = 0;
