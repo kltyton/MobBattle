@@ -17,6 +17,11 @@ public class ModEntityTagGenerator extends FabricTagsProvider.EntityTypeTagsProv
 
     @Override
     protected void addTags(HolderLookup.Provider wrapperLookup) {
+        for (EntityType<?> type : com.kltyton.mob_battle.entity.registry.LittlePersonZombieEntityTypes.types().values()) {
+            valueLookupBuilder(EntityTypeTags.UNDEAD).add(type);
+            valueLookupBuilder(EntityTypeTags.ZOMBIES).add(type);
+            valueLookupBuilder(EntityTypeTags.BURN_IN_DAYLIGHT).add(type);
+        }
         valueLookupBuilder(ModTags.SILENCE_PHANTOM_CANNOT_ATTACK)
                 .add(EntityType.WARDEN)
                 .add(ModEntities.XUN_SHENG)

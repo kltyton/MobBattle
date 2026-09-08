@@ -7,7 +7,7 @@ import com.kltyton.mob_battle.entity.littleperson.LittlePersonEntity;
 import com.kltyton.mob_battle.entity.villager.warriorvillager.WarriorVillager;
 import com.kltyton.mob_battle.entity.support.EntityQueries;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
-import com.kltyton.mob_battle.client.animation.gecko.GeoAnimationState;
+import com.kltyton.mob_battle.client.animation.gecko.SkillAnimationPlayback;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -37,6 +37,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import com.geckolib.animatable.instance.AnimatableInstanceCache;
@@ -87,6 +89,16 @@ public class LittlePersonSoldierEntity extends Monster implements LittlePersonEn
         builder.define(HAS_SKILL, false);
         builder.define(SKILL_COOLDOWN, getCooldownTime());
         builder.define(IS_CHARGING, false);
+    }
+    @Override
+    public void readAdditionalSaveData(ValueInput input) {
+        super.readAdditionalSaveData(input);
+        setSkillCooldown(Math.max(0, input.getIntOr("SkillCooldown", getSkillCooldown())));
+    }
+    @Override
+    public void addAdditionalSaveData(ValueOutput output) {
+        super.addAdditionalSaveData(output);
+        output.putInt("SkillCooldown", getSkillCooldown());
     }
 
     @Override
@@ -258,9 +270,7 @@ public class LittlePersonSoldierEntity extends Monster implements LittlePersonEn
         AABB damageBox = this.getBoundingBox().inflate(0.5D, 0.2D, 0.5D);
         List<Entity> targets = this.level().getEntities(this, damageBox,
                 target -> target instanceof LivingEntity
-                        && target.isAlive()
-                        && target != this
-                        && !target.isAlliedTo(this));
+                        && EntityQueries.isValidCombatTarget(this, (LivingEntity) target));
 
         float damageAmount = (float) this.getAttributeValue(Attributes.ATTACK_DAMAGE);
         for (Entity target : targets) {
@@ -333,10 +343,10 @@ public class LittlePersonSoldierEntity extends Monster implements LittlePersonEn
         controllers.add(new AnimationController<>("main_controller", 0, this::mainController));
 
         controllers.add(new AnimationController<>("attack_controller", animTest -> {
-                    if (GeoAnimationState.consumeFinishedTriggeredAnimation(animTest)) {
+                    if (SkillAnimationPlayback.consumeFinishedTriggeredAnimation(animTest)) {
                         ClientPlayNetworking.send(new SkillPayload("stop", this.getId()));
                     }
-                    return GeoAnimationState.playTriggeredAnimationOrStop(animTest);
+                    return SkillAnimationPlayback.playTriggeredAnimationOrStop(animTest);
                 })
                         .receiveTriggeredAnimations()
                         .triggerableAnim("attack", ATTACK_ANIM)

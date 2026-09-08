@@ -6,7 +6,7 @@ import com.kltyton.mob_battle.entity.littleperson.militia.LittlePersonMilitiaEnt
 import com.kltyton.mob_battle.entity.littleperson.skillentity.base.BaseSkillLittlePersonEntity;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
 import com.kltyton.mob_battle.entity.support.EntityQueries;
-import com.kltyton.mob_battle.client.animation.gecko.GeoAnimationState;
+import com.kltyton.mob_battle.client.animation.gecko.SkillAnimationPlayback;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -37,6 +37,7 @@ import com.geckolib.animation.RawAnimation;
 import java.util.*;
 
 public class SexEntity extends BaseSkillLittlePersonEntity {
+    private static final double GRAB_RANGE = 3.0D;
     private static final EntityDataAccessor<Integer> GRABBED_ENTITY_ID = SynchedEntityData.defineId(SexEntity.class, EntityDataSerializers.INT);
     private final List<LivingEntity> knockedTargets = new ArrayList<>();
     protected static final RawAnimation RUN_ANIM = RawAnimation.begin().thenLoop("run");
@@ -109,16 +110,16 @@ public class SexEntity extends BaseSkillLittlePersonEntity {
         } else return event.setAndContinue(IDLE_ANIM);
     }
     public AnimationController<?> sexEntitySkillController = new AnimationController<>( "skill_controller", animTest -> {
-        if (GeoAnimationState.consumeFinishedTriggeredAnimation(animTest)) {
+        if (SkillAnimationPlayback.consumeFinishedTriggeredAnimation(animTest)) {
             ClientPlayNetworking.send(new SkillPayload("stop", this.getId()));
-            if (GeoAnimationState.isLastFinishedAnimation(animTest, DIE_ANIM)) {
+            if (animTest.isCurrentAnimation(DIE_ANIM)) {
                 this.deathTime = 400;
                 ClientPlayNetworking.send(new SkillPayload(
                         "die", this.getId()
                 ));
             }
         }
-        return GeoAnimationState.playTriggeredAnimationOrStop(animTest);
+        return SkillAnimationPlayback.playTriggeredAnimationOrStop(animTest);
     })
             .receiveTriggeredAnimations()
             .triggerableAnim("attack2", ATTACK_ANIM_2)
@@ -154,10 +155,6 @@ public class SexEntity extends BaseSkillLittlePersonEntity {
 
     @Override
     protected void tickDeath() {
-        if (!GeoAnimationState.hasEntityAnimation(this, "die")) {
-            super.tickDeath();
-            return;
-        }
         this.deathTime++;
         if (this.deathTime == 1 && !this.level().isClientSide()) {
             this.setNoAi(true);
@@ -315,7 +312,7 @@ public class SexEntity extends BaseSkillLittlePersonEntity {
     @Override
     public void runSkill_6(BaseSkillLittlePersonEntity entity) {
         if (this.level().isClientSide()) return;
-        LivingEntity target = EntityQueries.getClosestNearbyEntity(entity, LivingEntity.class, 5, EntityQueries.TeamFilter.EXCLUDE_TEAM);
+        LivingEntity target = EntityQueries.getClosestNearbyEntity(entity, LivingEntity.class, GRAB_RANGE, EntityQueries.TeamFilter.EXCLUDE_TEAM);
         // 2. 如果找到了目标，设置 ID
         if (target != null) {
             if (target instanceof LivingEntity livingEntity) {

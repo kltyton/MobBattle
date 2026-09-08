@@ -18,6 +18,7 @@ public class ModChineseLangProvider extends FabricLanguageProvider {
 
     @Override
     public void generateTranslations(HolderLookup.Provider registryLookup, TranslationBuilder translationBuilder) {
+        com.kltyton.mob_battle.datagen.client.lang.littleperson.ZombieLittlePersonTranslations.add(translationBuilder, true);
         translationBuilder.add("message.mob_battle.gold_bullet_mode", "金套弹种：%s");
         translationBuilder.add("message.mob_battle.missing_projectile_item", "缺少发射物品：%s");
         translationBuilder.add("message.mob_battle.armor_skill_cooling_down", "套装技能冷却中，还需等待 %s 秒");
@@ -48,6 +49,9 @@ public class ModChineseLangProvider extends FabricLanguageProvider {
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModBlocks.COMPRESSED_GOLD_BLOCK), "压缩金块");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModBlocks.COMPRESSED_DIAMOND_BLOCK), "压缩钻石块");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModBlocks.COMPRESSED_NETHERITE_BLOCK), "压缩下界合金块");
+        translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.ROASTED_CARROT), "烤胡萝卜");
+        translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.STRANGE_STEW), "诡异煲");
+        translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.BERRY_JUICE), "瓶装甜浆果汁");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.LOBSTER_MAIN_COURSE), "龙虾正餐");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.COOKED_HIGHBIRD_EGG), "烤高鸟蛋");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModEffects.SELF_DESTRUCT), "玉碎");
@@ -178,6 +182,8 @@ public class ModChineseLangProvider extends FabricLanguageProvider {
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModEffects.STUTTER), "卡顿");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModEffects.DECAY), "凋亡");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModEffects.LITTLE_PERSON_GUARDIANSHIP), "小人护佑");
+        translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModEffects.THICKET), "刺丛");
+        translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModEffects.IMBALANCE), "失衡");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.SMALL_BACKPACK), "小背包");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.BIG_BACKPACK), "大背包");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.LARGE_BACKPACK), "PM背包");
@@ -186,10 +192,16 @@ public class ModChineseLangProvider extends FabricLanguageProvider {
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.BLOOD_KNIFE), "血大刀");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.IRON_MAN_MISSILE_LAUNCHER), "铁人导弹发射器");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.LITTLE_PERSON_TOOL), "小人工具");
+        translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.LITTLE_PERSON_SHIELD), "小人盾牌");
+        translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.BIOCHEMICAL_BLADE), "生化刃");
+        translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.OBSIDIAN_BOAT), "黑曜石船");
+        translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.LITTLE_PERSON_HAMMER), "小人锤子");
+        translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.ICE_KNIFE), "冰刀");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.LITTLE_PERSON_SCEPTER), "小人权杖");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.LITTLE_STONE), "小石子");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.WOODEN_WHISTLE), "木哨子");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.ILLAGER_CURRENCY), "灾厄货币");
+        translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.ADVANCED_SMITHING_TEMPLATE), "高级锻造模板");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.NIBI), "尼币");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.NIBI_BAG), "一袋尼币");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.NIBI_BOX), "一箱尼币");
@@ -339,6 +351,8 @@ public class ModChineseLangProvider extends FabricLanguageProvider {
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModEntities.ICE_BOMB), "冰弹");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModEntities.ICE_FANGS), "冰人尖牙");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModEntities.NINJA_CLONE), "忍者分身");
+        translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModEntities.DIAMOND_GIANT), "钻石巨人");
+        translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.SPAWN_EGG_ITEMS.get("diamond_giant")), "钻石巨人刷怪蛋");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModEntities.MAGMA_LOBBER_BIG_FIREBALL), "火球");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModEntities.MAGMA_LOBSTER), "熔岩龙虾");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModEntities.LOBSTER), "龙虾");
@@ -357,6 +371,11 @@ public class ModChineseLangProvider extends FabricLanguageProvider {
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.WARRIOR_VILLAGER_SPAWN_EGG), "战士村民刷怪蛋");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.MILITIA_ARCHER_VILLAGER_SPAWN_EGG), "民兵弓手村民刷怪蛋");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.MILITIA_WARRIOR_VILLAGER_SPAWN_EGG), "民兵战士村民刷怪蛋");
+        translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.SPAWN_EGG_ITEMS.get("chuan_ren_gong")), "传仁工刷怪蛋");
+        translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.SPAWN_EGG_ITEMS.get("rough_white_zetsu")), "粗糙白绝刷怪蛋");
+        translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.SPAWN_EGG_ITEMS.get("wither_skeleton_villager")), "凋零骷髅村民刷怪蛋");
+        translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.SPAWN_EGG_ITEMS.get("piglin_villager")), "猪灵村民刷怪蛋");
+        translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.SPAWN_EGG_ITEMS.get("evoker_villager")), "唤魔者村民刷怪蛋");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.VILLAGER_KING_SPAWN_EGG), "村民国王刷怪蛋");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.BLUE_IRON_GOLEM_SPAWN_EGG), "蓝色铁傀儡刷怪蛋");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.IRON_GOLEM_SPAWN_EGG), "铁傀儡刷怪蛋");
@@ -396,6 +415,12 @@ public class ModChineseLangProvider extends FabricLanguageProvider {
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModEntities.WARRIOR_VILLAGER), "战士村民");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModEntities.MILITIA_ARCHER_VILLAGER), "民兵弓手村民");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModEntities.MILITIA_WARRIOR_VILLAGER), "民兵战士村民");
+        translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModEntities.CHUAN_REN_GONG), "传仁工");
+        translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModEntities.ROUGH_WHITE_ZETSU), "粗糙白绝");
+        translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModEntities.ICE_SOLDIER), "冰兵");
+        translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModEntities.WITHER_SKELETON_VILLAGER), "凋零骷髅村民");
+        translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModEntities.PIGLIN_VILLAGER), "猪灵村民");
+        translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModEntities.EVOKER_VILLAGER), "唤魔者村民");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModEntities.VILLAGER_KING_ENTITY), "村民国王");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModEntities.BLUE_IRON_GOLEM), "蓝色铁傀儡");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModEntities.SUGAR_MAN_SCORPION), "糖人蝎子");
@@ -411,6 +436,13 @@ public class ModChineseLangProvider extends FabricLanguageProvider {
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.METEORICORE_SWORD), "陨核剑");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.IRON_GOLD_SWORD), "铁金合金剑");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.VS_SNIPE), "V.S. 狙击枪");
+        translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.MONEY_GUN), "撒币枪");
+        translationBuilder.add("message.mob_battle.money_gun_mode_illager", "已切换为灾厄货币半自动模式");
+        translationBuilder.add("message.mob_battle.money_gun_mode_auto", "已切换为绿宝石全自动模式");
+        translationBuilder.add("message.mob_battle.money_gun_mode_shotgun", "已切换为绿宝石半自动散弹模式");
+        translationBuilder.add("message.mob_battle.money_gun_cooldown", "撒币枪冷却中，还需 %s 秒");
+        translationBuilder.add("message.mob_battle.money_gun_no_ammo", "撒币枪弹药不足");
+        translationBuilder.add("message.mob_battle.player_skill_cooldown", "技能正在冷却，还需 %s 秒");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.MUTUAL_ATTACK_STICK), "互击棍");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.MASTER_SCEPTER), "大师权杖");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.UNIVERSAL_LEAD), "万能栓绳");

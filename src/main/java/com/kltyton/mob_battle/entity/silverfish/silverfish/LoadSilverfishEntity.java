@@ -48,6 +48,7 @@ public class LoadSilverfishEntity extends CoalSilverfishEntity {
     public static AttributeSupplier.Builder createAttributes() {
         return Silverfish.createAttributes()
                 .add(Attributes.MAX_HEALTH, 1000.0D)
+                .add(Attributes.FOLLOW_RANGE, 40.0D)
                 .add(Attributes.ARMOR, 23.0D)
                 .add(Attributes.ARMOR_TOUGHNESS, 20.0D);
     }

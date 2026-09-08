@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "minecraft:item/copper_chestplate"
+    "layer0": "mob_battle:item/compressed_copper_chestplate"
   }
 }

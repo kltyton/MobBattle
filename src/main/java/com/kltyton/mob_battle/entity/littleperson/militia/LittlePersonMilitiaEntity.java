@@ -6,7 +6,7 @@ import com.kltyton.mob_battle.entity.OwnedSummon;
 import com.kltyton.mob_battle.entity.littleperson.LittlePersonEntity;
 import com.kltyton.mob_battle.entity.villager.warriorvillager.WarriorVillager;
 import com.kltyton.mob_battle.entity.support.EntityQueries;
-import com.kltyton.mob_battle.client.animation.gecko.GeoAnimationState;
+import com.kltyton.mob_battle.client.animation.gecko.SkillAnimationPlayback;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
@@ -43,6 +43,8 @@ public class LittlePersonMilitiaEntity extends Monster implements LittlePersonEn
     public String[] attackVariants;
     @Nullable
     private LivingEntity summonOwner;
+    @Nullable
+    private java.util.UUID zombieSummonOwnerId;
     public LittlePersonMilitiaEntity(EntityType<? extends Monster> entityType, Level world) {
         super(entityType, world);
     }
@@ -56,15 +58,21 @@ public class LittlePersonMilitiaEntity extends Monster implements LittlePersonEn
         this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, WarriorVillager.class, 10, true, false, this::canTargetAsSummon));
         this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, 10, true, false, this::canTargetAsSummon)); // 添加主动攻击玩家目标
         this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, Mob.class, 5, false, false,
-                (entity, world) -> entity instanceof Enemy && !(entity instanceof LittlePersonEntity) && canTargetAsSummon(entity, world)));
+                (entity, world) -> entity instanceof Enemy
+                        && (!(entity instanceof LittlePersonEntity)
+                            || entity instanceof com.kltyton.mob_battle.entity.littleperson.zombie.ZombieLittlePerson)
+                        && canTargetAsSummon(entity, world)));
     }
 
     private boolean canTargetAsSummon(LivingEntity target, ServerLevel world) {
-        return EntityQueries.isValidSummonCombatTarget(this, this.summonOwner, target);
+        return EntityQueries.isValidSummonCombatTarget(this, getSummonOwner(), target);
     }
 
     public void setSummonOwner(@Nullable LivingEntity summonOwner) {
         this.summonOwner = summonOwner;
+        if (this instanceof com.kltyton.mob_battle.entity.littleperson.zombie.ZombieLittlePerson) {
+            this.zombieSummonOwnerId = summonOwner == null ? null : summonOwner.getUUID();
+        }
         if (summonOwner != null) {
             EntityQueries.joinSameTeam(this, summonOwner);
         }
@@ -73,11 +81,33 @@ public class LittlePersonMilitiaEntity extends Monster implements LittlePersonEn
     @Nullable
     @Override
     public LivingEntity getSummonOwner() {
+        if (this.zombieSummonOwnerId != null && (this.summonOwner == null || this.summonOwner.isRemoved())
+                && this.level() instanceof ServerLevel level) {
+            this.summonOwner = level.getEntity(this.zombieSummonOwnerId) instanceof LivingEntity owner ? owner : null;
+        }
         return this.summonOwner;
     }
 
     protected boolean isValidSummonTarget(LivingEntity target) {
-        return EntityQueries.isValidSummonCombatTarget(this, this.summonOwner, target);
+        return EntityQueries.isValidSummonCombatTarget(this, getSummonOwner(), target);
+    }
+
+    /** 感染召唤物跨区块加载保留皇族归属；未感染小人继续沿用原有存档行为。 */
+    @Override
+    public void addAdditionalSaveData(net.minecraft.world.level.storage.ValueOutput output) {
+        super.addAdditionalSaveData(output);
+        if (this.zombieSummonOwnerId != null) {
+            output.store("ZombieSummonOwner", net.minecraft.core.UUIDUtil.CODEC, this.zombieSummonOwnerId);
+        }
+    }
+
+    @Override
+    public void readAdditionalSaveData(net.minecraft.world.level.storage.ValueInput input) {
+        super.readAdditionalSaveData(input);
+        if (this instanceof com.kltyton.mob_battle.entity.littleperson.zombie.ZombieLittlePerson) {
+            this.zombieSummonOwnerId = input.read("ZombieSummonOwner", net.minecraft.core.UUIDUtil.CODEC).orElse(null);
+            this.summonOwner = null;
+        }
     }
     public static AttributeSupplier.Builder createLittlePersonMilitiaAttributes() {
         return LittlePersonEntity.createLittlePersonAttributes()
@@ -171,7 +201,7 @@ public class LittlePersonMilitiaEntity extends Monster implements LittlePersonEn
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         // 主控制器：负责所有常规状态
         controllers.add(new AnimationController<>("main_controller", 0, this::mainController));
-        controllers.add(new AnimationController<>( "attack_controller", GeoAnimationState::playTriggeredAnimationOrStop)
+        controllers.add(new AnimationController<>( "attack_controller", SkillAnimationPlayback::playTriggeredAnimationOrStop)
                 .receiveTriggeredAnimations()
                 .triggerableAnim("attack", ATTACK_ANIM)
                 .triggerableAnim("attack_1", ATTACK_ANIM_VARIANT_1)

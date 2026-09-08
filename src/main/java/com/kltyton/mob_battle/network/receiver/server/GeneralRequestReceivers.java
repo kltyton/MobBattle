@@ -13,6 +13,7 @@ import com.kltyton.mob_battle.network.packet.SummonDronePayload;
 import com.kltyton.mob_battle.items.armor.support.ArmorSetRules;
 import com.kltyton.mob_battle.enchantment.support.EnchantmentAccess;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
@@ -51,6 +52,9 @@ import net.minecraft.world.item.enchantment.Enchantment;
  * 与 HEAD 的拒绝风格保持一致。
  */
 public final class GeneralRequestReceivers {
+    private static final int MIN_SUMMON_DRONE_MODE = 1;
+    private static final int MAX_SUMMON_DRONE_MODE = 3;
+
     private GeneralRequestReceivers() {
     }
 
@@ -88,9 +92,31 @@ public final class GeneralRequestReceivers {
                         return;
                     }
 
-                    EnchantmentAccess.addEnchantment(player, matchedStack, enchantment, level);
+                    tryAddEnchantment(player, matchedStack, enchantment, level);
                 }
         );
+    }
+
+    /**
+     * 只对当前服务器注册表中存在的附魔执行写入；客户端伪造的未知键直接拒绝。
+     *
+     * <p>返回值供 GameTest 锁定“未知键无异常且不修改物品”的边界行为。
+     */
+    static boolean tryAddEnchantment(
+            ServerPlayer player,
+            ItemStack stack,
+            ResourceKey<Enchantment> enchantment,
+            int level
+    ) {
+        if (enchantment == null) {
+            return false;
+        }
+        var enchantmentRegistry = player.registryAccess().lookupOrThrow(Registries.ENCHANTMENT);
+        if (enchantmentRegistry.get(enchantment).isEmpty()) {
+            return false;
+        }
+        EnchantmentAccess.addEnchantment(player, stack, enchantment, level);
+        return true;
     }
 
     /**
@@ -101,6 +127,9 @@ public final class GeneralRequestReceivers {
         ServerPlayNetworking.registerGlobalReceiver(SummonDronePayload.ID, (payload, context) -> {
             ServerPlayer player = context.player();
             int type = payload.mode();
+            if (!isKnownSummonDroneMode(type)) {
+                return;
+            }
             CombatLogSystem.logAction(player, "切换无人机模式 " + type);
             if (!ArmorSetRules.hasFullArmor(player, ModMaterial.IRON_GOLD_INSTANCE)) {
                 return;
@@ -109,6 +138,16 @@ public final class GeneralRequestReceivers {
             if (type == 2) DroneManager.handleAttackDroneMode(player);
             if (type == 3) DroneManager.handleTreatmentDroneMode(player);
         });
+    }
+
+    /**
+     * 验证无人机协议 mode，必须在日志和业务分派前执行。
+     *
+     * @param mode 客户端携带的模式编号
+     * @return 仅当编号属于现有兼容协议 1、2、3 时返回 true
+     */
+    static boolean isKnownSummonDroneMode(int mode) {
+        return mode >= MIN_SUMMON_DRONE_MODE && mode <= MAX_SUMMON_DRONE_MODE;
     }
 
     /**

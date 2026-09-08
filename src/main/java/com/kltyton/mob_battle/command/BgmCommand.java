@@ -19,7 +19,7 @@ public class BgmCommand {
     private static final SuggestionProvider<CommandSourceStack> MY_BGM_NAMES =
             (ctx, builder) -> {
                 // 1. 拿到所有已有分区名
-                ServerBgmManager.getAllZones()
+                ServerBgmManager.getAllZones(ctx.getSource().getServer())
                         .stream()
                         .map(BgmZone::name)
                         .forEach(builder::suggest);
@@ -87,7 +87,7 @@ public class BgmCommand {
                                         .suggests(MY_BGM_NAMES)
                                         .executes(ctx -> {
                                             String name = StringArgumentType.getString(ctx, "name");
-                                            BgmZone zone = ServerBgmManager.getZone(name);
+                                            BgmZone zone = ServerBgmManager.getZone(ctx.getSource().getServer(), name);
                                             if (zone == null) {
                                                 ctx.getSource().sendFailure(
                                                         Component.literal("没有这样的BGM分区: " + name));
@@ -100,7 +100,7 @@ public class BgmCommand {
                         /* ====== list ====== */
                         .then(Commands.literal("list")
                                 .executes(ctx -> {
-                                    var zones = ServerBgmManager.getAllZones();
+                                    var zones = ServerBgmManager.getAllZones(ctx.getSource().getServer());
                                     if (zones.isEmpty()) {
                                         ctx.getSource().sendSuccess(
                                                 () -> Component.literal("未定义BGM区域."), false);
@@ -120,7 +120,7 @@ public class BgmCommand {
                                                 .executes(ctx -> {
                                                     String name1 = StringArgumentType.getString(ctx, "name1");
                                                     String name2 = StringArgumentType.getString(ctx, "name2");
-                                                    boolean ok = ServerBgmManager.mergeZones(name1, name2);
+                                                    boolean ok = ServerBgmManager.mergeZones(ctx.getSource().getServer(), name1, name2);
                                                     if (ok) {
                                                         ctx.getSource().sendSuccess(
                                                                 () -> Component.literal("合并BGM分区: " + name2 + " 到 " + name1), true);

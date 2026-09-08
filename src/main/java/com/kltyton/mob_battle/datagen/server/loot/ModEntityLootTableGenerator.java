@@ -8,6 +8,8 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
+import net.minecraft.world.level.storage.loot.entries.NestedLootTable;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.storage.loot.predicates.LootItemKilledByPlayerCondition;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 import java.util.concurrent.CompletableFuture;
@@ -19,6 +21,53 @@ public class ModEntityLootTableGenerator extends FabricEntityLootSubProvider {
 
     @Override
     public void generate() {
+        com.kltyton.mob_battle.entity.registry.LittlePersonZombieEntityTypes.types().values().forEach(type ->
+                this.add(type, LootTable.lootTable().withPool(LootPool.lootPool()
+                        .add(NestedLootTable.lootTableReference(EntityType.ZOMBIE.getDefaultLootTable().orElseThrow())))));
+        this.add(ModEntities.DIAMOND_GIANT, LootTable.lootTable());
+        this.add(ModEntities.CHUAN_REN_GONG, LootTable.lootTable());
+        this.add(ModEntities.ICE_SOLDIER, LootTable.lootTable());
+        this.add(
+                ModEntities.ICE_MAN,
+                LootTable.lootTable().withPool(
+                        LootPool.lootPool()
+                                .setRolls(ConstantValue.exactly(1))
+                                .add(LootItem.lootTableItem(ModItems.ICE_KNIFE))
+                )
+        );
+        this.add(
+                ModEntities.HUMAN_SHIELD,
+                LootTable.lootTable().withPool(
+                        LootPool.lootPool()
+                                .setRolls(ConstantValue.exactly(1))
+                                .add(LootItem.lootTableItem(ModItems.LITTLE_PERSON_SHIELD))
+                )
+        );
+        this.add(
+                ModEntities.HUMAN_HAMMER,
+                LootTable.lootTable().withPool(
+                        LootPool.lootPool()
+                                .setRolls(ConstantValue.exactly(1))
+                                .add(LootItem.lootTableItem(ModItems.LITTLE_PERSON_HAMMER))
+                )
+        );
+        this.add(
+                ModEntities.CYBORG,
+                LootTable.lootTable().withPool(
+                        LootPool.lootPool()
+                                .setRolls(ConstantValue.exactly(1))
+                                .add(LootItem.lootTableItem(ModItems.BIOCHEMICAL_BLADE))
+                )
+        );
+        this.add(
+                ModEntities.ROUGH_WHITE_ZETSU,
+                LootTable.lootTable().withPool(
+                        LootPool.lootPool()
+                                .setRolls(ConstantValue.exactly(1))
+                                .add(NestedLootTable.lootTableReference(
+                                        EntityType.ZOMBIE.getDefaultLootTable().orElseThrow()))
+                )
+        );
         this.add(
                 ModEntities.LOBSTER,
                 LootTable.lootTable().withPool(

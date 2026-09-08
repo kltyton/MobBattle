@@ -38,6 +38,8 @@ public class ModEffects {
     public static DecayEffect DECAY;
     public static LittlePersonGuardianshipEffect LITTLE_PERSON_GUARDIANSHIP;
     public static CompressedCopperChargedEffect COMPRESSED_COPPER_CHARGED;
+    public static ThicketEffect THICKET;
+    public static ImbalanceEffect IMBALANCE;
 
     public static Holder<MobEffect> STUN_ENTRY;
     public static Holder<MobEffect> INSECT_BITE_ENTRY;
@@ -66,6 +68,8 @@ public class ModEffects {
     public static Holder<MobEffect> DECAY_ENTRY;
     public static Holder<MobEffect> LITTLE_PERSON_GUARDIANSHIP_ENTRY;
     public static Holder<MobEffect> COMPRESSED_COPPER_CHARGED_ENTRY;
+    public static Holder<MobEffect> THICKET_ENTRY;
+    public static Holder<MobEffect> IMBALANCE_ENTRY;
 
     public static void init() {
         INSECT_BITE = register("insect_bite", new InsectBiteEffect());
@@ -95,6 +99,8 @@ public class ModEffects {
         DECAY = register("decay", new DecayEffect());
         LITTLE_PERSON_GUARDIANSHIP = register("little_person_guardianship", new LittlePersonGuardianshipEffect());
         COMPRESSED_COPPER_CHARGED = register("compressed_copper_charged", new CompressedCopperChargedEffect());
+        THICKET = register("thicket", new ThicketEffect());
+        IMBALANCE = register("imbalance", new ImbalanceEffect());
 
         INSECT_BITE_ENTRY = getEntry("insect_bite");
         PRO_INSECT_BITE_ENTRY = getEntry("pro_insect_bite");
@@ -123,6 +129,8 @@ public class ModEffects {
         DECAY_ENTRY = getEntry("decay");
         LITTLE_PERSON_GUARDIANSHIP_ENTRY = getEntry("little_person_guardianship");
         COMPRESSED_COPPER_CHARGED_ENTRY = getEntry("compressed_copper_charged");
+        THICKET_ENTRY = getEntry("thicket");
+        IMBALANCE_ENTRY = getEntry("imbalance");
     }
 
     private static <T extends MobEffect> T register(String id, T effect) {

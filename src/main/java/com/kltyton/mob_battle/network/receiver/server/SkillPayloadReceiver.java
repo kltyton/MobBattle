@@ -4,7 +4,9 @@ import com.kltyton.mob_battle.Mob_battle;
 import com.kltyton.mob_battle.command.CombatLogSystem;
 import com.kltyton.mob_battle.config.MobBattleConfig;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
 import com.kltyton.mob_battle.skill.api.SkillEntity;
+import com.kltyton.mob_battle.skill.server.SkillCommandLedger;
 import com.kltyton.mob_battle.skill.server.SkillRequestPolicy;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -25,11 +27,15 @@ import net.minecraft.world.entity.Mob;
  *   <li>实体必须实现 {@link SkillEntity}，未迁移或类型不符的实体一律拒绝；</li>
  *   <li>发送方必须正在跟踪目标实体（{@link PlayerLookup#tracking}），
  *       防止客户端仅凭 entityId 驱动同维度任意实体；</li>
+ *   <li>若实体存在已知的玩家 owner，发送方必须是该 owner；无 owner 或非玩家 owner
+ *       的自然怪仍保持 tracking 兼容行为；</li>
  *   <li>策略 {@link SkillRequestPolicy} 要求实体处于服务端已启动的技能流程
  *       （{@code hasSkill()}），或对 {@code kill}/{@code die} 死亡收尾指令
  *       处于死亡/濒死状态；{@code spawn} 出生收尾指令仅当实体自身通过
  *       {@link SkillEntity#canAcceptSpawnCommand()} 声明当前处于服务端出生流程时
  *       才放行；</li>
+ *   <li>影响命令由 {@link SkillCommandLedger} 在每个活动技能会话内按命令字符串只消费一次，
+ *       生命周期命令不占用该账本；</li>
  *   <li>命令格式（非空、长度上限、字符集）与上述状态一起由策略裁决。</li>
  * </ol>
  *
@@ -62,9 +68,15 @@ public final class SkillPayloadReceiver {
             return;
         }
 
+        var server = player.level().getServer();
+        SkillCommandLedger.observeSession(server, entity, skill.hasSkill());
         boolean senderTracks = PlayerLookup.tracking(entity).contains(player);
+        var knownPlayerOwner = EntityQueries.getKnownPlayerOwner(entity);
+        boolean senderIsKnownPlayerOwner = knownPlayerOwner == null
+                || knownPlayerOwner.getUUID().equals(player.getUUID());
         SkillRequestPolicy.Result result = SkillRequestPolicy.decide(
                 senderTracks,
+                senderIsKnownPlayerOwner,
                 skill.hasSkill(),
                 isDeadOrDying(entity, skill),
                 skill.canAcceptSpawnCommand(),
@@ -76,11 +88,38 @@ public final class SkillPayloadReceiver {
             return;
         }
 
-        CombatLogSystem.logAction(entity, "触发技能事件 " + payload.skillName());
-        if (!skill.handleSkillPayload(payload.skillName())) {
+        boolean impactCommand = !SkillRequestPolicy.isLifecycleCommand(payload.skillName());
+        if (impactCommand && !SkillCommandLedger.consumeImpactCommand(server, entity, payload.skillName())) {
+            logRejected(player, payload, entity, "COMMAND_ALREADY_CONSUMED");
+            logSkillPayloadState("after", player, payload, entity);
+            return;
+        }
+
+        boolean handled = handleSkillCommand(skill, payload.skillName(),
+                () -> CombatLogSystem.logAction(entity, "触发技能事件 " + payload.skillName()));
+        if (!handled) {
+            if (impactCommand) {
+                SkillCommandLedger.releaseImpactCommand(server, entity, payload.skillName());
+            }
             logRejected(player, payload, entity, "UNRECOGNIZED");
+        } else {
+            SkillCommandLedger.observeSession(server, entity, skill.hasSkill());
+            if (SkillRequestPolicy.endsSkillSession(payload.skillName())) {
+                SkillCommandLedger.clearEntity(server, entity);
+            }
         }
         logSkillPayloadState("after", player, payload, entity);
+    }
+
+    /**
+     * 先让实体确认指令，再执行成功后的战斗日志；未知指令不产生日志。
+     */
+    static boolean handleSkillCommand(SkillEntity skill, String command, Runnable onHandled) {
+        boolean handled = skill.handleSkillPayload(command);
+        if (handled) {
+            onHandled.run();
+        }
+        return handled;
     }
 
     /**

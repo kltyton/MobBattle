@@ -2,7 +2,7 @@ package com.kltyton.mob_battle.entity.littleperson.skillentity;
 
 import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.entity.littleperson.militia.LittlePersonMilitiaEntity;
-import com.kltyton.mob_battle.client.animation.gecko.GeoAnimationState;
+import com.kltyton.mob_battle.client.animation.gecko.SkillAnimationPlayback;
 import com.geckolib.animation.RawAnimation;
 import com.geckolib.animation.object.PlayState;
 import com.geckolib.animation.state.AnimationTest;
@@ -22,6 +22,11 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
 public class IceManEntity extends RequestedLittlePersonEntity {
+    @Override
+    public String getDeathAnimationName() {
+        return "die";
+    }
+
     private static final RawAnimation ICE_ATTACK_ANIM_2 = RawAnimation.begin().thenPlay("attack2_1");
     private static final RawAnimation ICE_RUN_ANIM = RawAnimation.begin().thenLoop("walk");
     private final List<Integer> iceBombIds = new ArrayList<>();
@@ -50,7 +55,7 @@ public class IceManEntity extends RequestedLittlePersonEntity {
 
     @Override
     public PlayState mainController(AnimationTest<LittlePersonMilitiaEntity> event) {
-        if (this.hasSkill() && !GeoAnimationState.hasRecentlyFinishedTriggeredAnimation(this)) {
+        if (this.hasSkill() && SkillAnimationPlayback.hasActiveSkill(event)) {
             return PlayState.CONTINUE;
         }
         if (event.isMoving()) {

@@ -20,7 +20,8 @@ public class SkullKingEntitySkill {
             AABB damageBox = witherSkeletonKingEntity.getBoundingBox().inflate(range, range, range);
             world.getEntities(witherSkeletonKingEntity, damageBox).stream()
                     .filter(entity -> entity instanceof LivingEntity)
-                    .filter(entity -> !entity.isAlliedTo(witherSkeletonKingEntity))
+                    .filter(entity -> EntityQueries.isValidCombatTarget(
+                            witherSkeletonKingEntity, (LivingEntity) entity))
                     .filter(entity -> !entity.isSpectator() && entity.isAlive())
                     .filter(entity -> entity.distanceToSqr(witherSkeletonKingEntity) <= range * range)
                     .forEach(entity -> {
@@ -40,7 +41,8 @@ public class SkullKingEntitySkill {
         AABB damageBox = witherSkeletonKingEntity.getBoundingBox().inflate(range, range, range);
         world.getEntities(witherSkeletonKingEntity, damageBox).stream()
                 .filter(entity -> entity instanceof LivingEntity)
-                .filter(entity -> !entity.isAlliedTo(witherSkeletonKingEntity))
+                .filter(entity -> EntityQueries.isValidCombatTarget(
+                        witherSkeletonKingEntity, (LivingEntity) entity))
                 .filter(entity -> !entity.isSpectator() && entity.isAlive())
                 .filter(entity -> entity.distanceToSqr(witherSkeletonKingEntity) <= range * range)
                 .forEach(entity -> {

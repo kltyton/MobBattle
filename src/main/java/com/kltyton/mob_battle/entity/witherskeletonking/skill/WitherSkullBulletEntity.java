@@ -1,21 +1,11 @@
 package com.kltyton.mob_battle.entity.witherskeletonking.skill;
 
-import com.google.common.base.MoreObjects;
-import com.google.common.collect.Lists;
 import com.kltyton.mob_battle.effect.ModEffects;
 import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.entity.support.EntityQueries;
-import net.minecraft.core.BlockPos;
+import com.kltyton.mob_battle.entity.witherskeletonking.WitherSkeletonKingEntity;
 import net.minecraft.core.Direction;
-import net.minecraft.core.UUIDUtil;
-import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
-import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.Mth;
-import net.minecraft.world.Difficulty;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -24,362 +14,86 @@ import net.minecraft.world.entity.EntityReference;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.projectile.Projectile;
-import net.minecraft.world.entity.projectile.ProjectileUtil;
+import net.minecraft.world.entity.projectile.ShulkerBullet;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.gameevent.GameEvent;
-import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
-import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
-import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
-
-public class WitherSkullBulletEntity extends Projectile {
-    @Nullable
-    private EntityReference<Entity> target;
-    @Nullable
-    private Direction direction;
-    private int stepCount;
-    private double targetX;
-    private double targetY;
-    private double targetZ;
-
+/** 复用原版追踪弹的运动与存档，保留凋零骷髅王的重锁目标和复合伤害。 */
+public class WitherSkullBulletEntity extends ShulkerBullet {
     public WitherSkullBulletEntity(EntityType<? extends WitherSkullBulletEntity> entityType, Level world) {
         super(entityType, world);
-        this.noPhysics = true;
     }
 
     public WitherSkullBulletEntity(Level world, LivingEntity owner, Entity target, Direction.Axis axis) {
         this(ModEntities.WITHER_SKULL_BULLET_ENTITY, world);
-        this.setOwner(owner);
-        Vec3 vec3d = owner.getBoundingBox().getCenter();
-        this.snapTo(vec3d.x, vec3d.y, vec3d.z, this.getYRot(), this.getXRot());
-        this.target = EntityReference.of(target);
-        this.direction = Direction.UP;
-        this.changeTargetDirection(axis, target);
-    }
-
-    @Override
-    public SoundSource getSoundSource() {
-        return SoundSource.HOSTILE;
-    }
-
-    @Override
-    protected void addAdditionalSaveData(ValueOutput view) {
-        super.addAdditionalSaveData(view);
-        if (this.target != null) {
-            view.store("Target", UUIDUtil.CODEC, this.target.getUUID());
-        }
-
-        view.storeNullable("Dir", Direction.LEGACY_ID_CODEC, this.direction);
-        view.putInt("Steps", this.stepCount);
-        view.putDouble("TXD", this.targetX);
-        view.putDouble("TYD", this.targetY);
-        view.putDouble("TZD", this.targetZ);
-    }
-
-    @Override
-    protected void readAdditionalSaveData(ValueInput view) {
-        super.readAdditionalSaveData(view);
-        this.stepCount = view.getIntOr("Steps", 0);
-        this.targetX = view.getDoubleOr("TXD", 0.0);
-        this.targetY = view.getDoubleOr("TYD", 0.0);
-        this.targetZ = view.getDoubleOr("TZD", 0.0);
-        this.direction = view.read("Dir", Direction.LEGACY_ID_CODEC).orElse(null);
-
-        // 防御性读取：只有当 NBT 包含 Target 时才尝试恢复引用
-        if (view.contains("Target")) {
-            try {
-                this.target = EntityReference.read(view, "Target");
-            } catch (Exception e) {
-                this.target = null; // 如果数据格式损坏，直接重置
-            }
-        } else {
-            this.target = null;
-        }
-    }
-
-    @Override
-    protected void defineSynchedData(SynchedEntityData.Builder builder) {
-    }
-
-    @Nullable
-    private Direction getProjectileDirection() {
-        return this.direction;
-    }
-
-    private void setDirection(@Nullable Direction direction) {
-        this.direction = direction;
-    }
-
-    private void changeTargetDirection(@Nullable Direction.Axis axis, @Nullable Entity target) {
-        double d = 0.5;
-        BlockPos blockPos;
-        if (target == null) {
-            blockPos = this.blockPosition().below();
-        } else {
-            d = target.getBbHeight() * 0.5;
-            blockPos = BlockPos.containing(target.getX(), target.getY() + d, target.getZ());
-        }
-
-        double e = blockPos.getX() + 0.5;
-        double f = blockPos.getY() + d;
-        double g = blockPos.getZ() + 0.5;
-        Direction direction = null;
-        if (!blockPos.closerToCenterThan(this.position(), 2.0)) {
-            BlockPos blockPos2 = this.blockPosition();
-            List<Direction> list = Lists.newArrayList();
-            if (axis != Direction.Axis.X) {
-                if (blockPos2.getX() < blockPos.getX() && this.level().isEmptyBlock(blockPos2.east())) {
-                    list.add(Direction.EAST);
-                } else if (blockPos2.getX() > blockPos.getX() && this.level().isEmptyBlock(blockPos2.west())) {
-                    list.add(Direction.WEST);
-                }
-            }
-
-            if (axis != Direction.Axis.Y) {
-                if (blockPos2.getY() < blockPos.getY() && this.level().isEmptyBlock(blockPos2.above())) {
-                    list.add(Direction.UP);
-                } else if (blockPos2.getY() > blockPos.getY() && this.level().isEmptyBlock(blockPos2.below())) {
-                    list.add(Direction.DOWN);
-                }
-            }
-
-            if (axis != Direction.Axis.Z) {
-                if (blockPos2.getZ() < blockPos.getZ() && this.level().isEmptyBlock(blockPos2.south())) {
-                    list.add(Direction.SOUTH);
-                } else if (blockPos2.getZ() > blockPos.getZ() && this.level().isEmptyBlock(blockPos2.north())) {
-                    list.add(Direction.NORTH);
-                }
-            }
-
-            direction = Direction.getRandom(this.random);
-            if (list.isEmpty()) {
-                for (int i = 5; !this.level().isEmptyBlock(blockPos2.relative(direction)) && i > 0; i--) {
-                    direction = Direction.getRandom(this.random);
-                }
-            } else {
-                direction = list.get(this.random.nextInt(list.size()));
-            }
-
-            e = this.getX() + direction.getStepX();
-            f = this.getY() + direction.getStepY();
-            g = this.getZ() + direction.getStepZ();
-        }
-
-        this.setDirection(direction);
-        double h = e - this.getX();
-        double j = f - this.getY();
-        double k = g - this.getZ();
-        double l = Math.sqrt(h * h + j * j + k * k);
-        if (l == 0.0) {
-            this.targetX = 0.0;
-            this.targetY = 0.0;
-            this.targetZ = 0.0;
-        } else {
-            this.targetX = h / l * 0.15;
-            this.targetY = j / l * 0.15;
-            this.targetZ = k / l * 0.15;
-        }
-
-        this.hurtMarked = true;
-        this.stepCount = 10 + this.random.nextInt(5) * 10;
-    }
-
-    @Override
-    public void checkDespawn() {
-        if (this.level().getDifficulty() == Difficulty.PEACEFUL) {
-            this.discard();
-        }
-    }
-
-    @Override
-    protected double getDefaultGravity() {
-        return 0.04;
+        setOwner(owner);
+        Vec3 origin = owner.getBoundingBox().getCenter();
+        snapTo(origin.x, origin.y, origin.z, getYRot(), getXRot());
+        this.finalTarget = EntityReference.of(target);
+        this.currentMoveDirection = Direction.UP;
+        this.selectNextMoveDirection(axis, target);
     }
 
     @Override
     public void tick() {
+        if (!level().isClientSide()) {
+            Entity target = EntityReference.getEntity(this.finalTarget, level());
+            if (target == null || !target.isAlive()
+                    || (target instanceof Player player && (player.isSpectator() || player.isCreative()))) {
+                Entity replacement = findReplacementTarget();
+                this.finalTarget = EntityReference.of(replacement);
+                if (replacement != null) {
+                    this.selectNextMoveDirection(this.currentMoveDirection == null ? null : this.currentMoveDirection.getAxis(), replacement);
+                }
+            }
+        }
         super.tick();
-        Entity entity = null;
-
-        if (!this.level().isClientSide() && this.target != null) {
-            try {
-                // 包装解析过程，防止内部 Optional.of(null) 崩溃
-                entity = EntityReference.get(this.target, this.level(), Entity.class);
-            } catch (NullPointerException | IllegalArgumentException e) {
-                // 如果解析失败，说明引用已失效
-                this.target = null;
-            }
-        }
-
-        HitResult hitResult = null;
-        if (!this.level().isClientSide()) {
-            // 如果 entity 依然为 null，说明目标可能被移除或从未找到
-            if (entity == null || !entity.isAlive() || (entity instanceof Player p && (p.isSpectator() || p.isCreative()))) {
-                this.target = null; // 清除无效引用
-                this.applyGravity();
-            } else {
-                // 原有的追踪逻辑...
-                this.targetX = Mth.clamp(this.targetX * 1.025, -1.0, 1.0);
-                this.targetY = Mth.clamp(this.targetY * 1.025, -1.0, 1.0);
-                this.targetZ = Mth.clamp(this.targetZ * 1.025, -1.0, 1.0);
-                Vec3 v = this.getDeltaMovement();
-                this.setDeltaMovement(v.add((this.targetX - v.x) * 0.2, (this.targetY - v.y) * 0.2, (this.targetZ - v.z) * 0.2));
-            }
-
-            hitResult = ProjectileUtil.getHitResultOnMoveVector(this, this::canHitEntity);
-        }
-
-        Vec3 vec3d = this.getDeltaMovement();
-        this.setPos(this.position().add(vec3d));
-        this.applyEffectsFromBlocks();
-        if (this.portalProcess != null && this.portalProcess.isInsidePortalThisTick()) {
-            this.handlePortal();
-        }
-
-        if (hitResult != null && this.isAlive() && hitResult.getType() != HitResult.Type.MISS) {
-            this.hitTargetOrDeflectSelf(hitResult);
-        }
-
-        ProjectileUtil.rotateTowardsMovement(this, 0.5F);
-        if (this.level().isClientSide()) {
-            this.level().addParticle(ParticleTypes.END_ROD, this.getX() - vec3d.x, this.getY() - vec3d.y + 0.15, this.getZ() - vec3d.z, 0.0, 0.0, 0.0);
-        } else if (entity != null) {
-            if (this.stepCount > 0) {
-                this.stepCount--;
-                if (this.stepCount == 0) {
-                    this.changeTargetDirection(this.direction == null ? null : this.direction.getAxis(), entity);
-                }
-            }
-
-            if (this.direction != null) {
-                BlockPos blockPos = this.blockPosition();
-                Direction.Axis axis = this.direction.getAxis();
-                if (this.level().loadedAndEntityCanStandOn(blockPos.relative(this.direction), this)) {
-                    this.changeTargetDirection(axis, entity);
-                } else {
-                    BlockPos blockPos2 = entity.blockPosition();
-                    if (axis == Direction.Axis.X && blockPos.getX() == blockPos2.getX()
-                            || axis == Direction.Axis.Z && blockPos.getZ() == blockPos2.getZ()
-                            || axis == Direction.Axis.Y && blockPos.getY() == blockPos2.getY()) {
-                        this.changeTargetDirection(axis, entity);
-                    }
-                }
-            }
-        }
     }
 
-    @Override
-    protected boolean isAffectedByBlocks() {
-        return !this.isRemoved();
+    /** 只为凋零骷髅王发射的锁定头重选目标；没有合法候选时交给原版下坠。 */
+    private @Nullable Entity findReplacementTarget() {
+        if (!(getOwner() instanceof WitherSkeletonKingEntity king)) {
+            return null;
+        }
+        return EntityQueries.getClosestNearbyEntity(king, LivingEntity.class, 64.0D, EntityQueries.TeamFilter.EXCLUDE_TEAM);
     }
 
     @Override
     public boolean canHitEntity(Entity entity) {
-        if (entity instanceof LivingEntity living && !EntityQueries.isValidSummonCombatTarget(this, this.getOwner(), living)) {
+        if (entity instanceof LivingEntity living && !EntityQueries.isValidSummonCombatTarget(this, getOwner(), living)) {
             return false;
         }
-        return super.canHitEntity(entity) && !entity.noPhysics;
+        return super.canHitEntity(entity);
     }
 
-    @Override
-    public boolean isOnFire() {
-        return false;
-    }
-
-    @Override
-    public boolean shouldRenderAtSqrDistance(double distance) {
-        return distance < 16384.0;
-    }
-
-    @Override
-    public float getLightLevelDependentMagicValue() {
-        return 1.0F;
-    }
-
-    /* 命中实体 → 伤害 + 漂浮效果 */
     @Override
     protected void onHitEntity(EntityHitResult result) {
-        super.onHitEntity(result);
-        Entity victim   = result.getEntity();
-        Entity owner    = this.getOwner();
+        // 三次伤害保留原有顺序和无敌帧裁决，不调用原版实体命中的伤害与漂浮逻辑。
+        Entity victim = result.getEntity();
+        Entity owner = getOwner();
         if (victim instanceof LivingEntity living && !EntityQueries.isValidSummonCombatTarget(this, owner, living)) {
             return;
         }
-        LivingEntity attacker = owner instanceof LivingEntity ? (LivingEntity) owner : null;
-
-        DamageSource explosionSrc = this.damageSources().explosion(this, attacker);
-        DamageSource projectileSrc = this.damageSources().mobProjectile(this, attacker);
-        DamageSource indirectMagicSrc = this.damageSources().indirectMagic(this, attacker);
-        boolean damaged  = victim.hurtOrSimulate(explosionSrc, 200.0F);
-        victim.hurtOrSimulate(projectileSrc, 100.0F);
-        victim.hurtOrSimulate(indirectMagicSrc, 30.0F);
-
+        LivingEntity attacker = owner instanceof LivingEntity living ? living : null;
+        DamageSource explosion = damageSources().explosion(this, attacker);
+        DamageSource projectile = damageSources().mobProjectile(this, attacker);
+        DamageSource magic = damageSources().indirectMagic(this, attacker);
+        boolean damaged = victim.hurtOrSimulate(explosion, 200.0F);
+        victim.hurtOrSimulate(projectile, 100.0F);
+        victim.hurtOrSimulate(magic, 30.0F);
         if (damaged) {
-            if (this.level() instanceof ServerLevel sw) {
-                EnchantmentHelper.doPostAttackEffects(sw, victim, explosionSrc);
-                EnchantmentHelper.doPostAttackEffects(sw, victim, projectileSrc);
-                EnchantmentHelper.doPostAttackEffects(sw, victim, indirectMagicSrc);
+            if (level() instanceof ServerLevel serverWorld) {
+                EnchantmentHelper.doPostAttackEffects(serverWorld, victim, explosion);
+                EnchantmentHelper.doPostAttackEffects(serverWorld, victim, projectile);
+                EnchantmentHelper.doPostAttackEffects(serverWorld, victim, magic);
             }
-            if (victim instanceof LivingEntity lv) {
-                lv.addEffect(
-                        new MobEffectInstance(MobEffects.NAUSEA, 60, 4), /* 200 tick = 10 s */
-                        MoreObjects.firstNonNull(owner, this));
-                lv.addEffect(
-                        new MobEffectInstance(ModEffects.DECAY_ENTRY, 3 * 20, 0),
-                        MoreObjects.firstNonNull(owner, this));
+            if (victim instanceof LivingEntity living) {
+                living.addEffect(new MobEffectInstance(MobEffects.NAUSEA, 60, 4), owner != null ? owner : this);
+                living.addEffect(new MobEffectInstance(ModEffects.DECAY_ENTRY, 3 * 20, 0), owner != null ? owner : this);
             }
         }
-    }
-
-    @Override
-    protected void onHitBlock(BlockHitResult blockHitResult) {
-        super.onHitBlock(blockHitResult);
-        ((ServerLevel)this.level()).sendParticles(ParticleTypes.EXPLOSION, this.getX(), this.getY(), this.getZ(), 2, 0.2, 0.2, 0.2, 0.0);
-        this.playSound(SoundEvents.SHULKER_BULLET_HIT, 1.0F, 1.0F);
-    }
-
-    private void destroy() {
-        this.discard();
-        this.level().gameEvent(GameEvent.ENTITY_DAMAGE, this.position(), GameEvent.Context.of(this));
-    }
-
-    @Override
-    protected void onHit(HitResult hitResult) {
-        super.onHit(hitResult);
-        this.destroy();
-    }
-
-    @Override
-    public boolean isPickable() {
-        return true;
-    }
-
-    @Override
-    public boolean hurtClient(DamageSource source) {
-        return true;
-    }
-
-    @Override
-    public boolean hurtServer(ServerLevel world, DamageSource source, float amount) {
-        this.playSound(SoundEvents.SHULKER_BULLET_HURT, 1.0F, 1.0F);
-        world.sendParticles(ParticleTypes.CRIT, this.getX(), this.getY(), this.getZ(), 15, 0.2, 0.2, 0.2, 0.0);
-        this.destroy();
-        return true;
-    }
-
-    @Override
-    public void recreateFromPacket(ClientboundAddEntityPacket packet) {
-        super.recreateFromPacket(packet);
-        double d = packet.getMovement().x;
-        double e = packet.getMovement().y;
-        double f = packet.getMovement().z;
-        this.setDeltaMovement(d, e, f);
     }
 }

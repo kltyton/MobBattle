@@ -6,7 +6,7 @@ import com.kltyton.mob_battle.entity.general.GeneralEntity;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
 import com.kltyton.mob_battle.sounds.ModSounds;
 import com.kltyton.mob_battle.entity.support.EntityQueries;
-import com.kltyton.mob_battle.client.animation.gecko.GeoAnimationState;
+import com.kltyton.mob_battle.client.animation.gecko.SkillAnimationPlayback;
 import com.kltyton.mob_battle.event.scheduler.ServerTickScheduler;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -28,6 +28,8 @@ import net.minecraft.world.entity.monster.Silverfish;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import com.geckolib.animatable.instance.AnimatableInstanceCache;
 import com.geckolib.animatable.manager.AnimatableManager;
 import com.geckolib.animation.AnimationController;
@@ -45,6 +47,16 @@ public class LongWhipSilverfishEntity extends Silverfish implements GeneralEntit
         super(entityType, world);
         this.setHasSkill(false);
         this.setNoAi(false);
+    }
+    @Override
+    public void readAdditionalSaveData(ValueInput input) {
+        super.readAdditionalSaveData(input);
+        GeneralEntity.super.readSkillCooldowns(input);
+    }
+    @Override
+    public void addAdditionalSaveData(ValueOutput output) {
+        super.addAdditionalSaveData(output);
+        GeneralEntity.super.writeSkillCooldowns(output);
     }
 
     @Override
@@ -220,10 +232,10 @@ public class LongWhipSilverfishEntity extends Silverfish implements GeneralEntit
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>("main_controller", 0, this::mainController));
         controllers.add(new AnimationController<>( "skill_controller", animTest -> {
-                    if (GeoAnimationState.consumeFinishedTriggeredAnimation(animTest)) {
+                    if (SkillAnimationPlayback.consumeFinishedTriggeredAnimation(animTest)) {
                         ClientPlayNetworking.send(new SkillPayload("stop", this.getId()));
                     }
-                    return GeoAnimationState.playTriggeredAnimationOrStop(animTest);
+                    return SkillAnimationPlayback.playTriggeredAnimationOrStop(animTest);
                 })
                         .receiveTriggeredAnimations()
                         .triggerableAnim("attack2_1", ATTACK_ANIM_2_1)
@@ -267,7 +279,7 @@ public class LongWhipSilverfishEntity extends Silverfish implements GeneralEntit
     }
     @Override
     public PlayState mainController(AnimationTest<?> event) {
-        if (this.hasSkill() && !GeoAnimationState.hasRecentlyFinishedTriggeredAnimation(this)) {
+        if (this.hasSkill() && SkillAnimationPlayback.hasActiveSkill(event)) {
             return PlayState.CONTINUE;
         }
         if (event.isMoving()) {
@@ -330,6 +342,7 @@ public class LongWhipSilverfishEntity extends Silverfish implements GeneralEntit
         return Silverfish.createAttributes()
                 .add(Attributes.MAX_HEALTH, 3500.0)
                 .add(Attributes.ATTACK_DAMAGE, 150.0)
+                .add(Attributes.FOLLOW_RANGE, 40.0D)
                 .add(Attributes.KNOCKBACK_RESISTANCE, 0.8)
                 .add(ModEntityAttributes.DAMAGE_REDUCTION, 0.72);
     }

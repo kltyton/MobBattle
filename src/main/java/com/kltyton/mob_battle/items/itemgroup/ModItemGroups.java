@@ -168,7 +168,12 @@ public class ModItemGroups {
                 spawnEgg("chest_golem"),
                 spawnEgg("strong_min"),
                 spawnEgg("flower_fairy"),
+                spawnEgg("chuan_ren_gong"),
+                spawnEgg("rough_white_zetsu"),
                 ModItems.LITTLE_PERSON_CIVILIAN_SPAWN_EGG,
+                spawnEgg("wither_skeleton_villager"),
+                spawnEgg("piglin_villager"),
+                spawnEgg("evoker_villager"),
                 spawnEgg("little_person_worker"),
                 ModItems.LITTLE_PERSON_MILITIA_SPAWN_EGG,
                 ModItems.LITTLE_PERSON_ARCHER_SPAWN_EGG,
@@ -219,7 +224,8 @@ public class ModItemGroups {
                 spawnEgg("little_person_medic"),
                 spawnEgg("little_person_general"),
                 spawnEgg("macro_samurai"),
-                spawnEgg("wither_skeleton_dog")
+                spawnEgg("wither_skeleton_dog"),
+                spawnEgg("diamond_giant")
         );
     }
 
@@ -299,6 +305,12 @@ public class ModItemGroups {
                 ModItems.COMPRESSED_NETHERITE_SWORD,
                 ModItems.ICE_BOW,
                 ModItems.VS_SNIPE,
+                ModItems.MONEY_GUN,
+                ModItems.LITTLE_PERSON_SHIELD,
+                ModItems.BIOCHEMICAL_BLADE,
+                ModItems.OBSIDIAN_BOAT,
+                ModItems.LITTLE_PERSON_HAMMER,
+                ModItems.ICE_KNIFE,
                 ModItems.PIGLIN_CANNON,
                 ModItems.LITTLE_PERSON_TOOL,
                 ModItems.ICE_ARROW_ITEM,
@@ -314,6 +326,9 @@ public class ModItemGroups {
     private static void addFood(CreativeModeTab.Output entries) {
         addEntries(entries,
                 ModItems.THOUSAND_BLOSSOMED_IMMORTAL_FRUIT,
+                ModItems.ROASTED_CARROT,
+                ModItems.STRANGE_STEW,
+                ModItems.BERRY_JUICE,
                 ModItems.LOBSTER,
                 ModItems.MAGMA_LOBSTER,
                 ModItems.BURST_OBSIDIAN_LOBSTER,
@@ -344,6 +359,7 @@ public class ModItemGroups {
                 ModItems.COMPRESSED_NETHERITE_INGOT,
                 ModItems.COMPRESSED_REDSTONE,
                 ModItems.COMPRESSED_LAPIS_LAZULI,
+                ModItems.ADVANCED_SMITHING_TEMPLATE,
                 ModItems.ILLAGER_CURRENCY,
                 ModItems.NIBI,
                 ModItems.NIBI_BAG,

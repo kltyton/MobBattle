@@ -1,6 +1,7 @@
 package com.kltyton.mob_battle.client;
 
 import com.geckolib.animatable.GeoAnimatable;
+import com.kltyton.mob_battle.client.lifecycle.ClientLevelLifecycleState;
 import com.kltyton.mob_battle.entity.player.IGeoEntityAnimationTickInvoker;
 import com.kltyton.mob_battle.entity.player.IPlayerEntityAccessor;
 import com.kltyton.mob_battle.entity.player.IPlayerSkillAccessor;
@@ -42,8 +43,9 @@ public final class ClientGeckoAnimationTicker {
     private static final Set<Entity> ANIMATION_CANDIDATES =
             Collections.newSetFromMap(new IdentityHashMap<>());
 
-    /** 上次 tick 观察到的客户端世界；世界切换或断开时用于整体清空候选集合。 */
-    private static ClientLevel lastClientLevel;
+    /** 客户端世界生命周期状态；负责区分首次绑定、切换世界与断开。 */
+    private static final ClientLevelLifecycleState<ClientLevel> LEVEL_STATE =
+            new ClientLevelLifecycleState<>();
 
     private ClientGeckoAnimationTicker() {
     }
@@ -127,10 +129,7 @@ public final class ClientGeckoAnimationTicker {
      * 确保旧世界的实体不会被新世界的 tick 遍历到。
      */
     private static void refreshLevelContext(ClientLevel currentLevel) {
-        if (lastClientLevel != currentLevel) {
-            lastClientLevel = currentLevel;
-            ANIMATION_CANDIDATES.clear();
-        }
+        LEVEL_STATE.observe(currentLevel, ANIMATION_CANDIDATES::clear);
     }
 
     private static void tickPlayerIfNeeded(Minecraft client) {

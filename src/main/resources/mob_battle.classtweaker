@@ -1,4 +1,8 @@
 classTweaker v2 official
+# 两种自定义追踪弹通过原版 ShulkerBullet 保留 Target/Dir/Steps/TXD/TYD/TZD；公开 API 不提供重锁与自定义 EntityType 初始化。
+accessible field net/minecraft/world/entity/projectile/ShulkerBullet finalTarget Lnet/minecraft/world/entity/EntityReference;
+accessible field net/minecraft/world/entity/projectile/ShulkerBullet currentMoveDirection Lnet/minecraft/core/Direction;
+accessible method net/minecraft/world/entity/projectile/ShulkerBullet selectNextMoveDirection (Lnet/minecraft/core/Direction$Axis;Lnet/minecraft/world/entity/Entity;)V
 accessible method net/minecraft/world/entity/projectile/Projectile canHitEntity (Lnet/minecraft/world/entity/Entity;)Z
 accessible method net/minecraft/world/entity/monster/warden/Warden syncClientAngerLevel ()V
 accessible field net/minecraft/world/entity/Entity entityData Lnet/minecraft/network/syncher/SynchedEntityData;

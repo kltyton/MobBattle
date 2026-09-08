@@ -77,7 +77,6 @@ public class Xbot002Entity extends RequestedTaskLittlePersonEntity {
             case 3 -> {
                 damageTarget(100.0F, 0.0F);
                 knockTargetLikeIronGolem(1.4D);
-                this.addEffect(new MobEffectInstance(ModEffects.ARMOR_PIERCING_ENTRY, 3 * 20, 4), this);
             }
             case 4 -> {
                 lungeTowardTarget(1.8D, 1.45D);

@@ -2,6 +2,7 @@ package com.kltyton.mob_battle.entity.littleperson.civilian;
 
 import com.google.common.collect.ImmutableList;
 import com.kltyton.mob_battle.entity.littleperson.LittlePersonEntity;
+import com.kltyton.mob_battle.entity.villager.trading.NoHeroDiscountVillager;
 import com.kltyton.mob_battle.entity.sensor.ModSensorTypes;
 import com.kltyton.mob_battle.items.ModItems;
 import java.util.ArrayList;
@@ -51,11 +52,15 @@ import com.geckolib.animation.object.PlayState;
 import com.geckolib.animation.RawAnimation;
 import com.geckolib.util.GeckoLibUtil;
 
-public class LittlePersonCivilianEntity extends Villager implements LittlePersonEntity {
+public class LittlePersonCivilianEntity extends Villager implements LittlePersonEntity, NoHeroDiscountVillager {
     private static final String NEXT_RESTOCK_TIME_KEY = "MobBattleNextLittlePersonRestock";
     private static final long DAY_TICKS = 24000L;
     private static final int TRADE_COUNT = 2;
-    private static final List<LittlePersonTradeFactory> TRADE_POOL = List.of(
+    /**
+     * 在物品注册完成后再解析 ModItems 字段，避免实体类型静态初始化早于物品注册时捕获空引用。
+     */
+    private static List<LittlePersonTradeFactory> tradePool() {
+        return List.of(
             offerTrade(Blocks.HAY_BLOCK, 6, ModItems.NIBI_BAG, 1, 3),
             offerTrade(ModItems.NIBI, 2, ModItems.LITTLE_PERSON_TOOL, 1, 3),
             offerTrade(ModItems.NIBI, 1, Items.GLOWSTONE, 1, 9),
@@ -74,6 +79,7 @@ public class LittlePersonCivilianEntity extends Villager implements LittlePerson
             offerTrade(ModItems.NIBI, 1, Blocks.POPPY, 1, 3),
             offerTrade(ModItems.NIBI, 1, Blocks.CORNFLOWER, 1, 3),
             offerTrade(Blocks.STONE, 64, ModItems.NIBI, 1, 6),
+            offerTrade(Items.PUMPKIN_SEEDS, 64, ModItems.NIBI, 1, 6),
             offerTrade(Items.EMERALD, 2, ModItems.NIBI, 1, 6),
             offerTrade(ModItems.NIBI_BAG, 3, Items.EMERALD, 1, 3),
             offerTrade(ModItems.NIBI, 10, ModItems.SMALL_BACKPACK, 1, 2),
@@ -88,7 +94,20 @@ public class LittlePersonCivilianEntity extends Villager implements LittlePerson
             offerTrade(ModItems.NIBI_BAG, 2, Items.DIAMOND, 1, 2),
             enchantedBookTrade(Enchantments.MENDING, 1),
             enchantedBookTrade(Enchantments.UNBREAKING, 3)
-    );
+        );
+    }
+    /**
+     * 按固定声明顺序创建完整交易池，供同包契约测试验证交易定义；生产交易仍由
+     * {@link #updateTrades(ServerLevel)} 随机抽取两个交易。
+     */
+    static MerchantOffers createTradePool(ServerLevel level) {
+        MerchantOffers offers = new MerchantOffers();
+        for (LittlePersonTradeFactory tradeFactory : tradePool()) {
+            offers.add(tradeFactory.create(level));
+        }
+        return offers;
+    }
+
     private static final ImmutableList<SensorType<? extends Sensor<? super Villager>>> SENSORS = ImmutableList.of(
             SensorType.NEAREST_LIVING_ENTITIES,
             SensorType.NEAREST_PLAYERS,
@@ -186,7 +205,7 @@ public class LittlePersonCivilianEntity extends Villager implements LittlePerson
             return;
         }
 
-        List<LittlePersonTradeFactory> pool = new ArrayList<>(TRADE_POOL);
+        List<LittlePersonTradeFactory> pool = new ArrayList<>(tradePool());
         for (int i = 0; i < TRADE_COUNT && !pool.isEmpty(); i++) {
             offers.add(pool.remove(this.random.nextInt(pool.size())).create(level));
         }

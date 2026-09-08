@@ -26,6 +26,12 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 public class AngelCyborgEntity extends RequestedLittlePersonEntity {
+    @Override
+    public String getDeathAnimationName() {
+        return "die";
+    }
+
+    private static final double GRAB_RANGE = 3.0D;
     private final ServerBossEvent bossBar = new ServerBossEvent(
             java.util.UUID.randomUUID(),
             this.getDisplayName(),
@@ -91,6 +97,9 @@ public class AngelCyborgEntity extends RequestedLittlePersonEntity {
 
     @Override
     protected double skillRange(String skillName) {
+        if ("attack7".equals(skillName)) {
+            return GRAB_RANGE;
+        }
         return "attack8".equals(skillName) ? 18.0D : 8.0D;
     }
 

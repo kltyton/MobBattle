@@ -1,6 +1,5 @@
 package com.kltyton.mob_battle.event.golem;
 
-import com.kltyton.mob_battle.Mob_battle;
 import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.entity.golem.ChestGolemEntity;
 import com.kltyton.mob_battle.event.scheduler.ServerTickScheduler;
@@ -16,6 +15,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import java.util.UUID;
 
 public final class ChestGolemBuildEvent {
     private ChestGolemBuildEvent() {
@@ -29,9 +29,11 @@ public final class ChestGolemBuildEvent {
 
             BlockPos clickedPos = hitResult.getBlockPos();
             BlockPos placedPos = clickedPos.relative(hitResult.getDirection());
+            UUID playerId = player.getUUID();
             ServerTickScheduler.schedule(level.getServer(), 1, () -> {
-                if (!trySpawn(level, placedPos, player instanceof ServerPlayer serverPlayer ? serverPlayer : null)) {
-                    trySpawn(level, clickedPos, player instanceof ServerPlayer serverPlayer ? serverPlayer : null);
+                ServerPlayer currentPlayer = level.getServer().getPlayerList().getPlayer(playerId);
+                if (!trySpawn(level, placedPos, currentPlayer)) {
+                    trySpawn(level, clickedPos, currentPlayer);
                 }
             });
             return InteractionResult.PASS;
@@ -69,6 +71,9 @@ public final class ChestGolemBuildEvent {
         clear(level, armB);
 
         golem.setPlayerCreated(true);
+        if (player != null) {
+            golem.setSummonOwner(player);
+        }
         golem.snapTo(topPos.getX() + 0.5D, topPos.getY() + 0.05D, topPos.getZ() + 0.5D, 0.0F, 0.0F);
         golem.finalizeSpawn(level, level.getCurrentDifficultyAt(golem.blockPosition()), EntitySpawnReason.TRIGGERED, null);
         level.addFreshEntity(golem);
@@ -83,7 +88,6 @@ public final class ChestGolemBuildEvent {
         return level.getBlockState(pos).is(Blocks.OAK_PLANKS);
     }
     private static boolean isVines(ServerLevel level, BlockPos pos) {
-        Mob_battle.LOGGER.info(level.getBlockState(pos).toString());
         return level.getBlockState(pos).is(Blocks.VINE);
     }
 

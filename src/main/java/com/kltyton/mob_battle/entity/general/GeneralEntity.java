@@ -4,11 +4,13 @@ import com.kltyton.mob_battle.Mob_battle;
 import com.kltyton.mob_battle.config.MobBattleConfig;
 import com.kltyton.mob_battle.entity.ModSkillEntityType;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
-import com.kltyton.mob_battle.client.animation.gecko.GeoAnimationState;
+import com.kltyton.mob_battle.client.animation.gecko.SkillAnimationPlayback;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import com.geckolib.animatable.GeoEntity;
 import com.geckolib.animatable.manager.AnimatableManager;
 import com.geckolib.animation.AnimationController;
@@ -63,6 +65,20 @@ public interface GeneralEntity<T extends Mob> extends ModSkillEntityType, GeoEnt
     }
     default void setSkillCooldown5(int skillCooldown5) {
         getEntity().getEntityData().set(getCooldownKey5(), skillCooldown5);
+    }
+    default void readSkillCooldowns(ValueInput input) {
+        setSkillCooldown1(Math.max(-1, input.getIntOr("SkillCooldown1", getSkillCooldown1())));
+        setSkillCooldown2(Math.max(-1, input.getIntOr("SkillCooldown2", getSkillCooldown2())));
+        setSkillCooldown3(Math.max(-1, input.getIntOr("SkillCooldown3", getSkillCooldown3())));
+        setSkillCooldown4(Math.max(-1, input.getIntOr("SkillCooldown4", getSkillCooldown4())));
+        setSkillCooldown5(Math.max(-1, input.getIntOr("SkillCooldown5", getSkillCooldown5())));
+    }
+    default void writeSkillCooldowns(ValueOutput output) {
+        output.putInt("SkillCooldown1", getSkillCooldown1());
+        output.putInt("SkillCooldown2", getSkillCooldown2());
+        output.putInt("SkillCooldown3", getSkillCooldown3());
+        output.putInt("SkillCooldown4", getSkillCooldown4());
+        output.putInt("SkillCooldown5", getSkillCooldown5());
     }
     default int getMaxSkillCooldown_1() {
         return -1;
@@ -233,10 +249,10 @@ public interface GeneralEntity<T extends Mob> extends ModSkillEntityType, GeoEnt
     default void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>("main_controller", 0, this::mainController));
         controllers.add(new AnimationController<>( "skill_controller", 0,animTest -> {
-                    if (GeoAnimationState.consumeFinishedTriggeredAnimation(animTest)) {
+                    if (SkillAnimationPlayback.consumeFinishedTriggeredAnimation(animTest)) {
                         ClientPlayNetworking.send(new SkillPayload("stop", getEntity().getId()));
                     }
-                    return GeoAnimationState.playTriggeredAnimationOrStop(animTest);
+                    return SkillAnimationPlayback.playTriggeredAnimationOrStop(animTest);
                 })
                         .receiveTriggeredAnimations()
                         .triggerableAnim("attack", ATTACK_ANIM)
@@ -281,7 +297,7 @@ public interface GeneralEntity<T extends Mob> extends ModSkillEntityType, GeoEnt
         );
     }
     default PlayState mainController(AnimationTest<?> event) {
-        if (this.hasSkill() && !GeoAnimationState.hasRecentlyFinishedTriggeredAnimation(getEntity())) {
+        if (this.hasSkill() && SkillAnimationPlayback.hasActiveSkill(event)) {
             return PlayState.CONTINUE;
         }
         return event.isMoving() ? event.setAndContinue(WALK_ANIM) : event.setAndContinue(IDLE_ANIM);

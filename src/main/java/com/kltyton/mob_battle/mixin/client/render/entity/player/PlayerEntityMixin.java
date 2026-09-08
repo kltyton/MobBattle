@@ -7,15 +7,18 @@ import com.kltyton.mob_battle.entity.player.IPlayerSkillAccessor;
 import com.kltyton.mob_battle.entity.player.PlayerEntitySkill;
 import com.kltyton.mob_battle.event.DataTrackersEvent;
 import com.kltyton.mob_battle.network.packet.PlayerSkillUtilPayload;
+import com.kltyton.mob_battle.skill.server.PlayerSkillRequestPolicy;
 import com.kltyton.mob_battle.sounds.ModSounds;
 import com.kltyton.mob_battle.entity.support.EntityQueries;
-import com.kltyton.mob_battle.client.animation.gecko.GeoAnimationState;
+import com.kltyton.mob_battle.client.animation.gecko.SkillAnimationPlayback;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -25,6 +28,8 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Implements;
 import org.spongepowered.asm.mixin.Interface;
@@ -43,6 +48,9 @@ import com.geckolib.animation.object.PlayState;
 import com.geckolib.animation.RawAnimation;
 import com.geckolib.util.ClientUtil;
 import com.geckolib.util.GeckoLibUtil;
+
+import java.util.HashSet;
+import java.util.Set;
 
 @Mixin(Player.class)
 @Implements(@Interface(iface = GeoEntity.class, prefix = "gecko$"))
@@ -109,16 +117,20 @@ public abstract class PlayerEntityMixin extends LivingEntity implements GeoEntit
     @Unique
     private int collisionTicks = 0;
     @Unique
+    private String mobBattle$activeSkill;
+    @Unique
+    private final Set<String> mobBattle$consumedHitCommands = new HashSet<>();
+    @Unique
+    private long mobBattle$skillStartTick = -1L;
+    @Unique
+    private long mobBattle$earliestStopTick = -1L;
+    @Unique
     private boolean isColliding() {
         return this.entityData.get(ISCOLLIDING);
     }
     @Unique
     private boolean mobBattle$isValidCollisionTarget(LivingEntity target) {
-        return target != null
-                && target.isAlive()
-                && target != this
-                && !target.getUUID().equals(this.getUUID())
-                && !EntityQueries.isCreativeOrSpectator(target);
+        return EntityQueries.isValidCombatTarget((Player) (Object) this, target);
     }
     @Unique
     @Override
@@ -169,6 +181,40 @@ public abstract class PlayerEntityMixin extends LivingEntity implements GeoEntit
         builder.define(RUN_COLLISION_COOLDOWN, getMaxAttackCooldown("run_collision"));
         builder.define(SMASHING_THE_GROUND_COOLDOWN, getMaxAttackCooldown("smashing_the_ground"));
         builder.define(SCRAPING_COOLDOWN, getMaxAttackCooldown("scraping"));
+    }
+    @Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
+    private void mobBattle$readSkillCooldowns(ValueInput input, CallbackInfo ci) {
+        this.getEntityData().set(ATTACK_COOLDOWN,
+                Math.max(0, input.getIntOr("MobBattleAttackCooldown", this.getEntityData().get(ATTACK_COOLDOWN))));
+        this.getEntityData().set(ATTACK_COOLDOWN2,
+                Math.max(0, input.getIntOr("MobBattleAttack2Cooldown", this.getEntityData().get(ATTACK_COOLDOWN2))));
+        this.getEntityData().set(RETREAT_STEP_COOLDOWN,
+                Math.max(0, input.getIntOr("MobBattleRetreatStepCooldown", this.getEntityData().get(RETREAT_STEP_COOLDOWN))));
+        this.getEntityData().set(LEFT_WHIP_COOLDOWN,
+                Math.max(0, input.getIntOr("MobBattleLeftWhipCooldown", this.getEntityData().get(LEFT_WHIP_COOLDOWN))));
+        this.getEntityData().set(TOP_KNEE_COOLDOWN,
+                Math.max(0, input.getIntOr("MobBattleTopKneeCooldown", this.getEntityData().get(TOP_KNEE_COOLDOWN))));
+        this.getEntityData().set(COLLISION_COOLDOWN,
+                Math.max(0, input.getIntOr("MobBattleCollisionCooldown", this.getEntityData().get(COLLISION_COOLDOWN))));
+        this.getEntityData().set(RUN_COLLISION_COOLDOWN,
+                Math.max(0, input.getIntOr("MobBattleRunCollisionCooldown", this.getEntityData().get(RUN_COLLISION_COOLDOWN))));
+        this.getEntityData().set(SMASHING_THE_GROUND_COOLDOWN,
+                Math.max(0, input.getIntOr("MobBattleSmashCooldown", this.getEntityData().get(SMASHING_THE_GROUND_COOLDOWN))));
+        this.getEntityData().set(SCRAPING_COOLDOWN,
+                Math.max(0, input.getIntOr("MobBattleScrapingCooldown", this.getEntityData().get(SCRAPING_COOLDOWN))));
+    }
+
+    @Inject(method = "addAdditionalSaveData", at = @At("TAIL"))
+    private void mobBattle$writeSkillCooldowns(ValueOutput output, CallbackInfo ci) {
+        output.putInt("MobBattleAttackCooldown", this.getEntityData().get(ATTACK_COOLDOWN));
+        output.putInt("MobBattleAttack2Cooldown", this.getEntityData().get(ATTACK_COOLDOWN2));
+        output.putInt("MobBattleRetreatStepCooldown", this.getEntityData().get(RETREAT_STEP_COOLDOWN));
+        output.putInt("MobBattleLeftWhipCooldown", this.getEntityData().get(LEFT_WHIP_COOLDOWN));
+        output.putInt("MobBattleTopKneeCooldown", this.getEntityData().get(TOP_KNEE_COOLDOWN));
+        output.putInt("MobBattleCollisionCooldown", this.getEntityData().get(COLLISION_COOLDOWN));
+        output.putInt("MobBattleRunCollisionCooldown", this.getEntityData().get(RUN_COLLISION_COOLDOWN));
+        output.putInt("MobBattleSmashCooldown", this.getEntityData().get(SMASHING_THE_GROUND_COOLDOWN));
+        output.putInt("MobBattleScrapingCooldown", this.getEntityData().get(SCRAPING_COOLDOWN));
     }
     // 在 PlayerEntityMixin.java 中添加
     @Override
@@ -227,7 +273,12 @@ public abstract class PlayerEntityMixin extends LivingEntity implements GeoEntit
                         this.collidingEntity.teleportTo(targetPos.x, targetPos.y + 4, targetPos.z);
                         // 每 20 刻给予 70 点伤害
                         if (this.tickCount % 20 == 0) {
-                            this.collidingEntity.hurtServer((ServerLevel) this.level(), this.damageSources().playerAttack((Player) (Object) this), 150f);
+                            Player player = (Player) (Object) this;
+                            this.collidingEntity.hurtServer(
+                                    (ServerLevel) this.level(),
+                                    this.damageSources().playerAttack(player),
+                                    PlayerEntitySkill.withStrengthBonus(player, 150.0F)
+                            );
                             this.makeSound(ModSounds.PLAYER_ATTACK_4_SOUND_EVENT);
                         }
                     }
@@ -306,6 +357,48 @@ public abstract class PlayerEntityMixin extends LivingEntity implements GeoEntit
         }
     }
     @Unique
+    public String mobBattle$getActiveSkill() {
+        return this.mobBattle$activeSkill;
+    }
+    @Unique
+    public void mobBattle$setActiveSkill(String skillName) {
+        this.mobBattle$activeSkill = skillName;
+        if (skillName == null) {
+            this.mobBattle$skillStartTick = -1L;
+            this.mobBattle$earliestStopTick = -1L;
+        } else {
+            this.mobBattle$recordSkillStartIfNeeded();
+        }
+    }
+    @Unique
+    public long mobBattle$getSkillStartTick() {
+        return this.mobBattle$skillStartTick;
+    }
+    @Unique
+    public long mobBattle$getEarliestStopTick() {
+        return this.mobBattle$earliestStopTick;
+    }
+    @Unique
+    private void mobBattle$recordSkillStartIfNeeded() {
+        if (this.level().isClientSide()
+                || !this.mobBattle$hasSkill()
+                || this.mobBattle$skillStartTick >= 0L) {
+            return;
+        }
+        MinecraftServer server = this.level().getServer();
+        if (server == null) {
+            return;
+        }
+        this.mobBattle$skillStartTick = server.getTickCount();
+        this.mobBattle$earliestStopTick = this.mobBattle$skillStartTick
+                + PlayerSkillRequestPolicy.minimumStopTicks(this.mobBattle$activeSkill);
+    }
+    @Unique
+    @Override
+    public boolean mobBattle$consumeHitCommand(String command) {
+        return this.mobBattle$consumedHitCommands.add(command);
+    }
+    @Unique
     private static int getMaxAttackCooldown(String animationName) {
         return switch (animationName) {
             case "attack" -> 40;
@@ -322,22 +415,22 @@ public abstract class PlayerEntityMixin extends LivingEntity implements GeoEntit
     }
     public void gecko$registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>("main_controller", 5 ,this::animationController));
-        controllers.add(new AnimationController<>("jump_controller", GeoAnimationState::playTriggeredAnimationOrStop)
+        controllers.add(new AnimationController<>("jump_controller", SkillAnimationPlayback::playTriggeredAnimationOrStop)
                 .receiveTriggeredAnimations()
                 .triggerableAnim("jump", JUMP_ANIM));
-        controllers.add(new AnimationController<>("wave_controller", GeoAnimationState::playTriggeredAnimationOrStop)
+        controllers.add(new AnimationController<>("wave_controller", SkillAnimationPlayback::playTriggeredAnimationOrStop)
                 .receiveTriggeredAnimations()
                 .triggerableAnim("wave", WAVE_ANIM));
         controllers.add(new AnimationController<>("attack_controller", animTest -> {
                     if (animTest.controller().getCurrentRawAnimation() != SCRAPING_ANIM
-                            && GeoAnimationState.consumeFinishedTriggeredAnimation(animTest)) {
+                            && SkillAnimationPlayback.consumeFinishedTriggeredAnimation(animTest)) {
                         if (this.mobBattle$hasSkill()) {
                             ((IClientPlayerEntityAccessor)this).clientSend("stop");
                             ((IClientPlayerEntityAccessor)this).clientSend("can_move");
                             //((IClientPlayerEntityAccessor)this).setPerson(1);
                         }
                     }
-                    return GeoAnimationState.playTriggeredAnimationOrStop(animTest);
+                    return SkillAnimationPlayback.playTriggeredAnimationOrStop(animTest);
                 })
                 .receiveTriggeredAnimations()
                 .triggerableAnim("attack", ATTACK_ANIM)
@@ -448,6 +541,14 @@ public abstract class PlayerEntityMixin extends LivingEntity implements GeoEntit
     @Unique
     public void mobBattle$setHasSkill(boolean hasSkill) {
         this.getEntityData().set(DataTrackersEvent.HAS_SKILL, hasSkill);
+        if (!hasSkill) {
+            this.mobBattle$activeSkill = null;
+            this.mobBattle$consumedHitCommands.clear();
+            this.mobBattle$skillStartTick = -1L;
+            this.mobBattle$earliestStopTick = -1L;
+        } else {
+            this.mobBattle$recordSkillStartIfNeeded();
+        }
     }
     @Unique
     public boolean mobBattle$canMove() {
@@ -510,19 +611,30 @@ public abstract class PlayerEntityMixin extends LivingEntity implements GeoEntit
     }
 
     @Unique
-    public void mobBattle$runAttack(String controllerName, boolean canMove) {
-        if (this.mobBattle$canAttack(controllerName)) {
-            this.mobBattle$setHasSkill(true);
-            this.mobBattle$setCanMove(canMove);
-            this.triggerAnim("attack_controller", controllerName);
-            this.mobBattle$setAttackCooldown(controllerName, getMaxAttackCooldown(controllerName));
-            // 新增：切换到第三人称后视角（客户端专属）
-            if (this.level().isClientSide()) {
-                //((IClientPlayerEntityAccessor)this).setPerson(2);
-            } else {
-                ServerPlayNetworking.send((ServerPlayer)(Object)this, new PlayerSkillUtilPayload("setPerson_2"));
+    public boolean mobBattle$runAttack(String controllerName, boolean canMove) {
+        if (!this.mobBattle$canAttack(controllerName)) {
+            if (!this.level().isClientSide() && this.mobBattle$getAttackCooldown(controllerName) > 0) {
+                int remainingTicks = this.mobBattle$getAttackCooldown(controllerName);
+                ((ServerPlayer) (Object) this).sendOverlayMessage(Component.translatable(
+                        "message.mob_battle.player_skill_cooldown",
+                        String.format("%.1f", remainingTicks / 20.0F)
+                ));
             }
+            return false;
         }
+        this.mobBattle$consumedHitCommands.clear();
+        this.mobBattle$setActiveSkill(controllerName);
+        this.mobBattle$setHasSkill(true);
+        this.mobBattle$setCanMove(canMove);
+        this.triggerAnim("attack_controller", controllerName);
+        this.mobBattle$setAttackCooldown(controllerName, getMaxAttackCooldown(controllerName));
+        // 新增：切换到第三人称后视角（客户端专属）
+        if (this.level().isClientSide()) {
+            //((IClientPlayerEntityAccessor)this).setPerson(2);
+        } else {
+            ServerPlayNetworking.send((ServerPlayer)(Object)this, new PlayerSkillUtilPayload("setPerson_2"));
+        }
+        return true;
     }
 
 

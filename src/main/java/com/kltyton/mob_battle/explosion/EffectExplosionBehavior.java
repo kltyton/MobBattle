@@ -1,5 +1,6 @@
 package com.kltyton.mob_battle.explosion;
 
+import com.kltyton.mob_battle.entity.support.EntityQueries;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.ExplosionDamageCalculator;
@@ -11,10 +12,12 @@ public class EffectExplosionBehavior extends ExplosionDamageCalculator {
         this.ownerEntity = entity;
     }
     public boolean shouldDamageEntity(Explosion explosion, Entity entity) {
-        return !ownerEntity.isAlliedTo(entity) && super.shouldDamageEntity(explosion, entity);
+        return !EntityQueries.areTeammates(ownerEntity, entity)
+                && super.shouldDamageEntity(explosion, entity);
     }
 
     public float getKnockbackMultiplier(Entity entity) {
-        return ownerEntity.isAlliedTo(entity) ? 0.0f : super.getKnockbackMultiplier(entity);
+        return EntityQueries.areTeammates(ownerEntity, entity)
+                ? 0.0f : super.getKnockbackMultiplier(entity);
     }
 }

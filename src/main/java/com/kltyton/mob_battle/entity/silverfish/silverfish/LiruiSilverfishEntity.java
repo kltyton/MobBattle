@@ -32,6 +32,7 @@ public class LiruiSilverfishEntity extends CoalSilverfishEntity {
         return Silverfish.createAttributes()
                 .add(Attributes.MAX_HEALTH, 300.0D)
                 .add(Attributes.ATTACK_DAMAGE, 100.0D)
+                .add(Attributes.FOLLOW_RANGE, 40.0D)
                 .add(ModEntityAttributes.DAMAGE_REDUCTION, 0.5);
     }
 }

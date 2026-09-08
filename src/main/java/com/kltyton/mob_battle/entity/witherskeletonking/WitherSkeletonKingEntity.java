@@ -13,7 +13,7 @@ import com.kltyton.mob_battle.entity.witherskeletonking.summon.ShieldAxeWitherSk
 import com.kltyton.mob_battle.network.packet.SkillPayload;
 import com.kltyton.mob_battle.combat.effect.CombatEffectApplier;
 import com.kltyton.mob_battle.animation.death.DeathAnimationState;
-import com.kltyton.mob_battle.client.animation.gecko.GeoAnimationState;
+import com.kltyton.mob_battle.client.animation.gecko.SkillAnimationPlayback;
 import com.kltyton.mob_battle.client.animation.keyframe.ParticleKeyframeHandler;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.core.Holder;
@@ -186,7 +186,20 @@ public class WitherSkeletonKingEntity extends WitherSkeleton implements GeoEntit
     }
     @Override
     public void readAdditionalSaveData(ValueInput nbt) {
-        super.readAdditionalSaveData(nbt);
+        this.loadingAdditionalData = true;
+        try {
+            super.readAdditionalSaveData(nbt);
+        } finally {
+            this.loadingAdditionalData = false;
+        }
+        setSkillCooldown(Math.max(0, nbt.getIntOr("SkillCooldown", getSkillCooldown())));
+        setSuperAttackSkillCooldown(Math.max(0, nbt.getIntOr("SuperAttackCooldown", getSuperAttackSkillCooldown())));
+        setShotWitherSkullCooldown(Math.max(0, nbt.getIntOr("ShotWitherSkullCooldown", getShotWitherSkullCooldown())));
+        setSuperShotWitherSkullCooldown(Math.max(0, nbt.getIntOr("SuperShotWitherSkullCooldown", getSuperShotWitherSkullCooldown())));
+        setShotAllWitherSkullCooldown(Math.max(0, nbt.getIntOr("ShotAllWitherSkullCooldown", getShotAllWitherSkullCooldown())));
+        setThornCooldown(Math.max(0, nbt.getIntOr("ThornCooldown", getThornCooldown())));
+        setEnhanceWitherCallCooldown(Math.max(0, nbt.getIntOr("EnhanceWitherCallCooldown", getEnhanceWitherCallCooldown())));
+        this.isPlaySound = nbt.getBooleanOr("EnrageSoundPlayed", this.isHealthy(0.35));
         if (this.hasCustomName()) {
             updateBossBar();
         }
@@ -194,6 +207,14 @@ public class WitherSkeletonKingEntity extends WitherSkeleton implements GeoEntit
     @Override
     public void addAdditionalSaveData(ValueOutput nbt) {
         super.addAdditionalSaveData(nbt);
+        nbt.putInt("SkillCooldown", getSkillCooldown());
+        nbt.putInt("SuperAttackCooldown", getSuperAttackSkillCooldown());
+        nbt.putInt("ShotWitherSkullCooldown", getShotWitherSkullCooldown());
+        nbt.putInt("SuperShotWitherSkullCooldown", getSuperShotWitherSkullCooldown());
+        nbt.putInt("ShotAllWitherSkullCooldown", getShotAllWitherSkullCooldown());
+        nbt.putInt("ThornCooldown", getThornCooldown());
+        nbt.putInt("EnhanceWitherCallCooldown", getEnhanceWitherCallCooldown());
+        nbt.putBoolean("EnrageSoundPlayed", this.isPlaySound);
     }
     @Override
     public boolean isWithinMeleeAttackRange(LivingEntity entity) {
@@ -462,12 +483,12 @@ public class WitherSkeletonKingEntity extends WitherSkeleton implements GeoEntit
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>("main_controller", 0,this::animationController));
         controllers.add(new AnimationController<>("skill_controller",animTest -> {
-            if (GeoAnimationState.consumeFinishedTriggeredAnimation(animTest)) {
+            if (SkillAnimationPlayback.consumeFinishedTriggeredAnimation(animTest)) {
                 ClientPlayNetworking.send(new SkillPayload(
                         "stop", this.getId()
                 ));
             }
-            return GeoAnimationState.playTriggeredAnimationOrStop(animTest);
+            return SkillAnimationPlayback.playTriggeredAnimationOrStop(animTest);
         })
                 .receiveTriggeredAnimations()
                 .triggerableAnim("attack", ATTACK_ANIM)
@@ -549,10 +570,18 @@ public class WitherSkeletonKingEntity extends WitherSkeleton implements GeoEntit
                 .add(ModEntityAttributes.DAMAGE_REDUCTION, 0.5D)
                 .add(Attributes.ARMOR_TOUGHNESS, 30.0D);
     }
-    boolean isPlaySound = false;
+    private boolean isPlaySound;
+    private boolean loadingAdditionalData;
     @Override
     public void setHealth(float health) {
+        float previousHealth = this.getHealth();
         super.setHealth(health);
+        if (this.bossBar != null) {
+            updateBossBar();
+        }
+        if (this.loadingAdditionalData || this.level().isClientSide()) {
+            return;
+        }
         if (!this.level().isClientSide() && this.isHealthy(0.35)) {
             this.addEffect(new MobEffectInstance(
                     MobEffects.SPEED,
@@ -560,12 +589,10 @@ public class WitherSkeletonKingEntity extends WitherSkeleton implements GeoEntit
                     0,
                     true, true, true));
         }
-        if (!this.level().isClientSide() && this.getHealth() == this.getMaxHealth() * 0.35 && !isPlaySound) {
+        float threshold = this.getMaxHealth() * 0.35F;
+        if (previousHealth > threshold && this.getHealth() <= threshold && !isPlaySound) {
             this.level().playSound(this, this.getX(), this.getY(), this.getZ(), SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.HOSTILE, 3.0F, 1.0F);
             isPlaySound = true;
-        }
-        if (this.bossBar != null) {
-            updateBossBar();
         }
     }
 

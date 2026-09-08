@@ -1,11 +1,13 @@
 package com.kltyton.mob_battle.network.receiver.server;
 
 import com.kltyton.mob_battle.command.CombatLogSystem;
+import com.kltyton.mob_battle.entity.player.IPlayerSkillAccessor;
 import com.kltyton.mob_battle.entity.player.PlayerEntitySkill;
 import com.kltyton.mob_battle.items.tool.sword.BloodKnifeItem;
 import com.kltyton.mob_battle.items.tool.sword.PoisonKnifeItem;
 import com.kltyton.mob_battle.network.packet.PlayerSkillPayload;
 import com.kltyton.mob_battle.skill.server.SkillRequestPolicy;
+import com.kltyton.mob_battle.skill.server.PlayerSkillRequestPolicy;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.server.level.ServerPlayer;
 
@@ -32,8 +34,34 @@ public final class PlayerSkillReceiver {
                             || payload.skillName().length() > SkillRequestPolicy.MAX_COMMAND_LENGTH) {
                         return;
                     }
-                    CombatLogSystem.logSkill(player, payload.skillName());
-                    switch (payload.skillName()) {
+                    IPlayerSkillAccessor skillState = (IPlayerSkillAccessor) player;
+                    String command = payload.skillName();
+                    if (!PlayerSkillRequestPolicy.isKnownCommand(command)) {
+                        return;
+                    }
+                    if (!PlayerSkillRequestPolicy.allows(
+                            command,
+                            skillState.mobBattle$hasSkill(),
+                            skillState.mobBattle$getActiveSkill())) {
+                        return;
+                    }
+                    if ("stop".equals(command) && !PlayerEntitySkill.canStopSkill(player)) {
+                        return;
+                    }
+                    if ("knife_run_attack".equals(command)) {
+                        if (!PoisonKnifeItem.releasePendingSkill(player)
+                                && !BloodKnifeItem.releasePendingSkill(player)) {
+                            return;
+                        }
+                        CombatLogSystem.logSkill(player, command);
+                        return;
+                    }
+                    if (PlayerSkillRequestPolicy.isHitCommand(command)
+                            && !skillState.mobBattle$consumeHitCommand(command)) {
+                        return;
+                    }
+                    CombatLogSystem.logSkill(player, command);
+                    switch (command) {
                         case "attack" -> PlayerEntitySkill.runAttackSkill(player);
 
                         case "attack2" -> PlayerEntitySkill.runAttackSkill_2(player);
@@ -64,15 +92,11 @@ public final class PlayerSkillReceiver {
 
                         case "retreat_step" -> PlayerEntitySkill.runRetreatStepRunSkill(player);
 
-                        case "knife_run_attack" -> {
-                            PoisonKnifeItem.releasePendingSkill(player);
-                            BloodKnifeItem.releasePendingSkill(player);
-                        }
-
                         case "stop" -> PlayerEntitySkill.stopSkill(player);
                         case "can_move" -> PlayerEntitySkill.canMove(player);
                     }
                 }
         );
     }
+
 }

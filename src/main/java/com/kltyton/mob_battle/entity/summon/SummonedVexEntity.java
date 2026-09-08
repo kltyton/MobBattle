@@ -88,7 +88,10 @@ public class SummonedVexEntity extends Vex implements OwnedSummon {
     @Override
     protected void addAdditionalSaveData(ValueOutput output) {
         super.addAdditionalSaveData(output);
-        EntityReference.store(this.entityData.get(OWNER).orElse(null), output, "SummonOwner");
+        EntityReference<LivingEntity> owner = this.entityData.get(OWNER).orElse(null);
+        if (owner != null) {
+            EntityReference.store(owner, output, "SummonOwner");
+        }
     }
 
     @Override

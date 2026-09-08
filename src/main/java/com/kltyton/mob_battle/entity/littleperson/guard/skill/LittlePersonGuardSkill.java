@@ -1,6 +1,7 @@
 package com.kltyton.mob_battle.entity.littleperson.guard.skill;
 
 import com.kltyton.mob_battle.entity.littleperson.guard.LittlePersonGuardEntity;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
 import java.util.List;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
@@ -19,10 +20,8 @@ public class LittlePersonGuardSkill {
         return entity.level().getEntitiesOfClass(
                 LivingEntity.class,
                 entity.getBoundingBox().inflate(radius),
-                p -> p.isAlive() &&
-                        entity.distanceTo(p) <= radius &&
-                        p != entity &&
-                        !p.isAlliedTo(entity)
+                p -> EntityQueries.isValidCombatTarget(entity, p)
+                        && entity.distanceTo(p) <= radius
         );
     }
 }

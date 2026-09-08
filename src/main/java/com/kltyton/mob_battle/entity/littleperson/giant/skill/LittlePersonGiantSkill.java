@@ -3,6 +3,7 @@ package com.kltyton.mob_battle.entity.littleperson.giant.skill;
 import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.entity.littleperson.archer.littlearrow.LittleArrowEntity;
 import com.kltyton.mob_battle.entity.littleperson.giant.LittlePersonGiantEntity;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
 import java.util.List;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -62,7 +63,7 @@ public class LittlePersonGiantSkill {
         return entity.level().getEntitiesOfClass(
                 LivingEntity.class,
                 entity.getBoundingBox().inflate(radius),
-                p -> p.isAlive() && entity.distanceTo(p) <= radius && p != entity && !p.isAlliedTo(entity)
+                p -> EntityQueries.isValidCombatTarget(entity, p) && entity.distanceTo(p) <= radius
         );
     }
 }

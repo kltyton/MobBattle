@@ -80,12 +80,22 @@ public class LittlePersonGeneralEntity extends RequestedTaskLittlePersonEntity {
                 }
             }
             case 6 -> {
-                lungeTowardTarget(1.6D, 1.35D);
                 startMovingHitbox(18, 80.0F);
                 areaDamage(3.0D, 80.0F, 0.0F);
             }
             default -> {
             }
+        }
+    }
+
+    /**
+     * attack6 在服务端决定释放时立即恢复 AI 并开始冲刺，伤害仍由动画关键帧触发。
+     */
+    @Override
+    public void performSkill(String skill, boolean isAfterSkill) {
+        super.performSkill(skill, isAfterSkill);
+        if ("attack6".equals(skill)) {
+            lungeTowardTarget(1.6D, 1.35D);
         }
     }
 

@@ -8,7 +8,7 @@ import com.kltyton.mob_battle.entity.littleperson.king.skill.LittlePersonKingSki
 import com.kltyton.mob_battle.entity.littleperson.militia.LittlePersonMilitiaEntity;
 import com.kltyton.mob_battle.entity.littleperson.skillentity.requested.EliteLittlePersonGuardEntity;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
-import com.kltyton.mob_battle.client.animation.gecko.GeoAnimationState;
+import com.kltyton.mob_battle.client.animation.gecko.SkillAnimationPlayback;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -23,6 +23,8 @@ import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import org.jetbrains.annotations.NotNull;
 import com.geckolib.animatable.manager.AnimatableManager;
 import com.geckolib.animation.AnimationController;
@@ -38,6 +40,7 @@ public class LittlePersonKingEntity extends LittlePersonMilitiaEntity implements
     public static final EntityDataAccessor<Integer> SKILL_COOLDOWN_3 = SynchedEntityData.defineId(LittlePersonKingEntity.class, EntityDataSerializers.INT);
     public static final EntityDataAccessor<Integer> STAGE = SynchedEntityData.defineId(LittlePersonKingEntity.class, EntityDataSerializers.INT);
     public static final EntityDataAccessor<Boolean> IS_VIOLENT = SynchedEntityData.defineId(LittlePersonKingEntity.class, EntityDataSerializers.BOOLEAN);
+    private boolean loadingAdditionalData;
     public LittlePersonKingEntity(EntityType<? extends Monster> entityType, Level world) {
         super(entityType, world);
         this.setNoAi(false);
@@ -56,34 +59,56 @@ public class LittlePersonKingEntity extends LittlePersonMilitiaEntity implements
     @Override
     public void setHealth(float health) {
         super.setHealth(health);
-        if (health == this.getMaxHealth()) {
+        if (this.loadingAdditionalData || this.level().isClientSide()) {
+            return;
+        }
+        float currentHealth = this.getHealth();
+        if (currentHealth >= this.getMaxHealth()) {
             this.setIsViolent(false);
             this.setStage(0);
+            return;
         }
         int stage = this.getStage();
-        switch ((int) health) {
-            case 1500:
-                if (stage < 1) {
-                    this.setStage(1);
-                    LittlePersonKingSkill.summonLittlePersonGuardEntity(this, 6);
-                }
-                break;
-            case 1000:
-                if (stage < 2) {
-                    this.setStage(2);
-                    LittlePersonKingSkill.summonLittlePersonGuardEntity(this, 10);
-                }
-                break;
-            case 500:
-                if (stage < 3) {
-                    this.setStage(3);
-                    LittlePersonKingSkill.summonLittlePersonGuardEntity(this, 20);
-                    setIsViolent(true);
-                }
-                break;
-            default:
-                break;
+        if (currentHealth <= 1500.0F && stage < 1) {
+            this.setStage(1);
+            summonGuards(6);
+            stage = 1;
         }
+        if (currentHealth <= 1000.0F && stage < 2) {
+            this.setStage(2);
+            summonGuards(10);
+            stage = 2;
+        }
+        if (currentHealth <= 500.0F && stage < 3) {
+            this.setStage(3);
+            summonGuards(20);
+            setIsViolent(true);
+        }
+    }
+
+    @Override
+    public void readAdditionalSaveData(ValueInput input) {
+        this.loadingAdditionalData = true;
+        try {
+            super.readAdditionalSaveData(input);
+        } finally {
+            this.loadingAdditionalData = false;
+        }
+        setStage(Math.max(0, input.getIntOr("SkillStage", getStage())));
+        setIsViolent(input.getBooleanOr("IsViolent", isViolent()));
+        setSkillCooldown1(Math.max(0, input.getIntOr("SkillCooldown1", getSkillCooldown1())));
+        setSkillCooldown2(Math.max(0, input.getIntOr("SkillCooldown2", getSkillCooldown2())));
+        setSkillCooldown3(Math.max(0, input.getIntOr("SkillCooldown3", getSkillCooldown3())));
+    }
+
+    @Override
+    public void addAdditionalSaveData(ValueOutput output) {
+        super.addAdditionalSaveData(output);
+        output.putInt("SkillStage", getStage());
+        output.putBoolean("IsViolent", isViolent());
+        output.putInt("SkillCooldown1", getSkillCooldown1());
+        output.putInt("SkillCooldown2", getSkillCooldown2());
+        output.putInt("SkillCooldown3", getSkillCooldown3());
     }
     public boolean canSkill(String skill) {
         if (!canSkill()) return false;
@@ -123,7 +148,7 @@ public class LittlePersonKingEntity extends LittlePersonMilitiaEntity implements
         switch (skillName) {
             case "attack2" -> LittlePersonKingSkill.runSkill_2(this);
             case "attack3" -> LittlePersonKingSkill.runSkill_3(this);
-            case "attack4" -> LittlePersonKingSkill.runSkill_4(this);
+            case "attack4" -> summonEliteGuard();
             case "stop_ai" -> this.setNoAi(true);
             case "start_ai" -> this.setNoAi(false);
             case "stop" -> {
@@ -176,13 +201,28 @@ public class LittlePersonKingEntity extends LittlePersonMilitiaEntity implements
     public void heal() {
         this.heal(2.0F);
     }
+
+    /** 皇族原型共用技能时序，由实体族系选择实际召唤目标。 */
+    public void summonGuards(int count) {
+        LittlePersonKingSkill.summonLittlePersonGuardEntity(this, count);
+    }
+
+    /** 大护卫召唤入口，感染型覆写此处以保留原来的技能冷却与触发条件。 */
+    public void summonEliteGuard() {
+        LittlePersonKingSkill.runSkill_4(this);
+    }
+
+    /** 免伤叠加方式不变，族系仅调整最大上限。 */
+    protected double damageReductionCap() {
+        return 0.96D;
+    }
     @Override
     public void tick() {
         super.tick();
         if (!this.level().isClientSide()) {
             List<LittlePersonGuardEntity> guardEntities = LittlePersonKingSkill.getNearbyLittlePersonGuardEntity(this, 50);
             List<EliteLittlePersonGuardEntity> eliteGuardEntities = LittlePersonKingSkill.getNearbyEliteLittlePersonGuardEntity(this, 50);
-            double damageReduction = Math.min(0.96, guardEntities.size() * 0.2 + eliteGuardEntities.size() * 0.3);
+            double damageReduction = Math.min(damageReductionCap(), guardEntities.size() * 0.2 + eliteGuardEntities.size() * 0.3);
             AttributeInstance attributeInstance = this.getAttribute(ModEntityAttributes.DAMAGE_REDUCTION);
             if (attributeInstance != null) attributeInstance.setBaseValue(damageReduction);
 
@@ -231,12 +271,12 @@ public class LittlePersonKingEntity extends LittlePersonMilitiaEntity implements
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         super.registerControllers(controllers);
         controllers.add(new AnimationController<>( "skill_controller", animTest -> {
-                    if (GeoAnimationState.consumeFinishedTriggeredAnimation(animTest)) {
+                    if (SkillAnimationPlayback.consumeFinishedTriggeredAnimation(animTest)) {
                         ClientPlayNetworking.send(new SkillPayload(
                                 "stop", this.getId()
                         ));
                     }
-                    return GeoAnimationState.playTriggeredAnimationOrStop(animTest);
+                    return SkillAnimationPlayback.playTriggeredAnimationOrStop(animTest);
                 })
                         .receiveTriggeredAnimations()
                         .triggerableAnim("attack2", ATTACK_ANIM_2)

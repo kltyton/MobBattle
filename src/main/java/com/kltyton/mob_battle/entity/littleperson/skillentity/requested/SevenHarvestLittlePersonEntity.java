@@ -10,6 +10,11 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
 public class SevenHarvestLittlePersonEntity extends RequestedTaskLittlePersonEntity {
+    @Override
+    public String getDeathAnimationName() {
+        return "die";
+    }
+
     private static final double MIN_KITE_DISTANCE = 14.0D;
     private static final double MAX_KITE_DISTANCE = 24.0D;
     private int normalAttackCooldown;

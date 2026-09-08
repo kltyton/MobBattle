@@ -7,6 +7,7 @@ import com.kltyton.mob_battle.event.scheduler.ServerTickScheduler;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -18,12 +19,14 @@ import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
 
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.UUID;
 
 /**
  * COMPRESSED_GOLD 套装技能：弹药模式切换、子弹消耗与射击、枪口/弹道粒子。
- * 模式数组与玩家 UUID 模式索引常驻内存，射击消耗以玩家服务端库存为准。
+ * 模式数组与按 MinecraftServer identity、玩家 UUID 索引的模式状态常驻内存，
+ * 射击消耗以玩家服务端库存为准。
  */
 final class GoldArmorSkills {
     private static final String TEXT_GOLD_BULLET_MODE = "message.mob_battle.gold_bullet_mode";
@@ -39,7 +42,7 @@ final class GoldArmorSkills {
             new GoldBulletMode(ModBlocks.COMPRESSED_GOLD_BLOCK.asItem(), 200.0F)
     };
 
-    private static final Map<UUID, Integer> GOLD_MODE_INDEX = new HashMap<>();
+    private static final Map<MinecraftServer, Map<UUID, Integer>> GOLD_MODE_INDEX = new IdentityHashMap<>();
 
     private GoldArmorSkills() {
     }
@@ -48,25 +51,36 @@ final class GoldArmorSkills {
      * 释放指定玩家的模式索引状态。玩家断线时调用，防止已离线玩家的 UUID
      * 残留在静态 Map 中。
      *
+     * @param server 目标玩家所属服务器
      * @param playerId 目标玩家 UUID
      */
-    static void clearPlayer(UUID playerId) {
-        GOLD_MODE_INDEX.remove(playerId);
+    static void clearPlayer(MinecraftServer server, UUID playerId) {
+        Map<UUID, Integer> playerStates = GOLD_MODE_INDEX.get(server);
+        if (playerStates != null) {
+            playerStates.remove(playerId);
+            if (playerStates.isEmpty()) {
+                GOLD_MODE_INDEX.remove(server);
+            }
+        }
     }
 
     /**
-     * 清空全部玩家的模式索引状态。服务器停止时调用，避免跨会话复用旧玩家状态。
+     * 清空指定 MinecraftServer 的全部模式索引状态。服务器停止时调用，避免跨会话复用旧玩家状态。
+     *
+     * @param server 目标服务器
      */
-    static void clearAll() {
-        GOLD_MODE_INDEX.clear();
+    static void clearAll(MinecraftServer server) {
+        GOLD_MODE_INDEX.remove(server);
     }
 
     /**
      * 切换弹药模式：模式索引循环 +1，播放金色爆发/圆环/烟花并显示当前模式物品名 HUD。
      */
     static void switchGoldBulletMode(ServerPlayer player) {
+        MinecraftServer server = player.level().getServer();
+        Map<UUID, Integer> modeIndices = stateFor(server);
         int index = (getGoldModeIndex(player) + 1) % GOLD_BULLET_MODES.length;
-        GOLD_MODE_INDEX.put(player.getUUID(), index);
+        modeIndices.put(player.getUUID(), index);
 
         ServerLevel world = player.level();
         CompressArmorSkillSupport.spawnArmorBurst(world, player.position().add(0.0D, 1.0D, 0.0D), COLOR_GOLD, 1.15F, 28, 0.7D);
@@ -111,7 +125,12 @@ final class GoldArmorSkills {
     }
 
     private static int getGoldModeIndex(ServerPlayer player) {
-        return GOLD_MODE_INDEX.getOrDefault(player.getUUID(), 0);
+        Map<UUID, Integer> modeIndices = GOLD_MODE_INDEX.get(player.level().getServer());
+        return modeIndices == null ? 0 : modeIndices.getOrDefault(player.getUUID(), 0);
+    }
+
+    private static Map<UUID, Integer> stateFor(MinecraftServer server) {
+        return GOLD_MODE_INDEX.computeIfAbsent(server, ignored -> new HashMap<>());
     }
 
     /**

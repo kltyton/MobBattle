@@ -2,16 +2,16 @@ package com.kltyton.mob_battle.items.armor.compressarmor;
 
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
-
-import java.util.UUID;
+import net.minecraft.server.MinecraftServer;
 
 /**
  * 压缩护甲静态玩家状态的生命周期管理。
  *
  * <p>解决压缩护甲技能类中按玩家 UUID 常驻静态 Map 的释放问题：玩家断线或
  * 服务器停止后，旧 UUID 状态不会自动消失，重新上线/下次开服时可能拿到过期状态。
- * 本类在断线时按 UUID 调用两类技能的 {@code clearPlayer}，在服务器停止时调用
- * {@code clearAll}，保证静态状态只覆盖在线会话。
+ * 本类在断线时把所属 {@link MinecraftServer} 与 UUID 一起传给两类技能的
+ * {@code clearPlayer}，在服务器停止时只清理对应 server 的 {@code clearAll}，保证
+ * 多个服务器实例之间不会互相覆盖或清理状态。
  *
  * <p>生命周期约束：
  * <ul>
@@ -41,14 +41,15 @@ public final class CompressArmorPlayerStateLifecycle {
         initialized = true;
 
         ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> {
-            UUID playerId = handler.getPlayer().getUUID();
-            EcredcultistArmorSkills.clearPlayer(playerId);
-            GoldArmorSkills.clearPlayer(playerId);
+            MinecraftServer minecraftServer = server;
+            var playerId = handler.getPlayer().getUUID();
+            EcredcultistArmorSkills.clearPlayer(minecraftServer, playerId);
+            GoldArmorSkills.clearPlayer(minecraftServer, playerId);
         });
 
         ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
-            EcredcultistArmorSkills.clearAll();
-            GoldArmorSkills.clearAll();
+            EcredcultistArmorSkills.clearAll(server);
+            GoldArmorSkills.clearAll(server);
         });
     }
 }

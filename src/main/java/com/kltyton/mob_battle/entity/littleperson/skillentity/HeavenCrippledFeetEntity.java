@@ -34,7 +34,9 @@ public class HeavenCrippledFeetEntity extends BaseSkillLittlePersonEntity {
     @Override
     public void runSkill_2(BaseSkillLittlePersonEntity entity) {
         LivingEntity target = this.getTarget();
-        if (target != null && target.isAlive() && this.level() instanceof ServerLevel serverWorld) {
+        if (target != null
+                && EntityQueries.isValidSummonCombatTarget(entity, entity.getSummonOwner(), target)
+                && this.level() instanceof ServerLevel serverWorld) {
             target.hurtServer(serverWorld, this.damageSources().mobAttack(entity), 50);
         }
     }
@@ -48,7 +50,9 @@ public class HeavenCrippledFeetEntity extends BaseSkillLittlePersonEntity {
     @Override
     public void runSkill_4(BaseSkillLittlePersonEntity entity) {
         LivingEntity target = this.getTarget();
-        if (target != null && target.isAlive() && !this.isAlliedTo(target) && this.level() instanceof ServerLevel serverWorld) {
+        if (target != null
+                && EntityQueries.isValidSummonCombatTarget(entity, entity.getSummonOwner(), target)
+                && this.level() instanceof ServerLevel serverWorld) {
             target.invulnerableTime = 0;
             target.hurtServer(serverWorld, this.damageSources().mobAttack(entity), 150);
         }

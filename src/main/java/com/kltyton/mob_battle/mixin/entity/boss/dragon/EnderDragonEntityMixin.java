@@ -19,6 +19,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
@@ -338,6 +339,10 @@ public abstract class EnderDragonEntityMixin extends Mob {
             float amount,
             CallbackInfoReturnable<Boolean> cir
     ) {
+        if (source.is(DamageTypes.DRAGON_BREATH)) {
+            cir.setReturnValue(false);
+            return;
+        }
         if (source.getDirectEntity() instanceof EnderDragon || source.getEntity() instanceof EnderDragon) {
             cir.setReturnValue(false);
             return;

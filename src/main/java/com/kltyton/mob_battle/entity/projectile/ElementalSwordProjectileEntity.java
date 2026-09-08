@@ -2,6 +2,7 @@ package com.kltyton.mob_battle.entity.projectile;
 
 import com.kltyton.mob_battle.effect.ModEffects;
 import com.kltyton.mob_battle.entity.ModEntities;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
 import net.minecraft.core.particles.ItemParticleOption;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
@@ -74,7 +75,7 @@ public class ElementalSwordProjectileEntity extends ThrowableItemProjectile {
             return;
         }
         Entity owner = this.getOwner();
-        if (owner != null && owner.isAlliedTo(target)) {
+        if (owner != null && EntityQueries.areTeammates(owner, target)) {
             return;
         }
 

@@ -3,7 +3,7 @@ package com.kltyton.mob_battle.entity.villager.archervillager;
 import com.kltyton.mob_battle.entity.ModSkillEntityType;
 import com.kltyton.mob_battle.entity.ai.goal.GeneralProtectionVillagerGoal;
 import com.kltyton.mob_battle.entity.support.EntityQueries;
-import com.kltyton.mob_battle.client.animation.gecko.GeoAnimationState;
+import com.kltyton.mob_battle.client.animation.gecko.SkillAnimationPlayback;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
@@ -225,7 +225,7 @@ public class ArcherVillager extends SnowGolem implements NeutralMob, GeoEntity {
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllerRegistrar) {
         controllerRegistrar.add(new AnimationController<>("main_controller", 0,this::animationController));
-        controllerRegistrar.add(new AnimationController<>( "attack_controller", GeoAnimationState::playTriggeredAnimationOrStop)
+        controllerRegistrar.add(new AnimationController<>( "attack_controller", SkillAnimationPlayback::playTriggeredAnimationOrStop)
                 .receiveTriggeredAnimations()
                 .triggerableAnim("attack", ATTACK_ANIM));
     }

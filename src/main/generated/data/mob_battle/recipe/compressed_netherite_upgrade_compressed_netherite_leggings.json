@@ -5,5 +5,5 @@
   "result": {
     "id": "mob_battle:compressed_netherite_leggings"
   },
-  "template": "minecraft:netherite_upgrade_smithing_template"
+  "template": "mob_battle:advanced_smithing_template"
 }

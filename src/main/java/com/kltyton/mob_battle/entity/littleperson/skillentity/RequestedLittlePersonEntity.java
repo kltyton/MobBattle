@@ -8,7 +8,7 @@ import com.kltyton.mob_battle.entity.littleperson.militia.LittlePersonMilitiaEnt
 import com.kltyton.mob_battle.entity.littleperson.skillentity.base.BaseSkillLittlePersonEntity;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
 import com.kltyton.mob_battle.entity.support.EntityQueries;
-import com.kltyton.mob_battle.client.animation.gecko.GeoAnimationState;
+import com.kltyton.mob_battle.client.animation.gecko.SkillAnimationPlayback;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -61,14 +61,14 @@ public abstract class RequestedLittlePersonEntity extends BaseSkillLittlePersonE
     protected int lifeTicks = -1;
 
     private final AnimationController<?> requestedSkillController = new AnimationController<>("skill_controller", 0, animTest -> {
-        if (GeoAnimationState.consumeFinishedTriggeredAnimation(animTest)) {
+        if (SkillAnimationPlayback.consumeFinishedTriggeredAnimation(animTest)) {
             ClientPlayNetworking.send(new SkillPayload("stop", this.getId()));
-            if (GeoAnimationState.isLastFinishedAnimation(animTest, DIE_ANIM)
-                    || GeoAnimationState.isLastFinishedAnimation(animTest, DEATH_ANIM)) {
+            if (animTest.isCurrentAnimation(DIE_ANIM)
+                    || animTest.isCurrentAnimation(DEATH_ANIM)) {
                 ClientPlayNetworking.send(new SkillPayload("die", this.getId()));
             }
         }
-        return GeoAnimationState.playTriggeredAnimationOrStop(animTest);
+        return SkillAnimationPlayback.playTriggeredAnimationOrStop(animTest);
     })
             .receiveTriggeredAnimations()
             .triggerableAnim("attack", ATTACK_ANIM)
@@ -100,6 +100,12 @@ public abstract class RequestedLittlePersonEntity extends BaseSkillLittlePersonE
 
     protected RequestedLittlePersonEntity(EntityType<? extends Monster> entityType, Level world, int skillCount) {
         super(entityType, world, skillCount);
+    }
+
+    /** 按需实体不默认具备死亡动画；提供该动作的具体实体显式覆写。 */
+    @Override
+    public @org.jetbrains.annotations.Nullable String getDeathAnimationName() {
+        return null;
     }
 
     protected RawAnimation attackAnimation(int attackNumber) {
@@ -143,7 +149,7 @@ public abstract class RequestedLittlePersonEntity extends BaseSkillLittlePersonE
 
     @Override
     public PlayState mainController(final AnimationTest<LittlePersonMilitiaEntity> event) {
-        if (this.hasSkill() && !GeoAnimationState.hasRecentlyFinishedTriggeredAnimation(this)) {
+        if (this.hasSkill() && SkillAnimationPlayback.hasActiveSkill(event)) {
             return PlayState.CONTINUE;
         }
         if (event.isMoving()) {

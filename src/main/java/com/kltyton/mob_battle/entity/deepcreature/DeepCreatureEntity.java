@@ -8,7 +8,7 @@ import com.kltyton.mob_battle.entity.deepcreature.skill.Skill;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
 import com.kltyton.mob_battle.animation.death.DeathAnimationState;
 import com.kltyton.mob_battle.entity.support.EntityQueries;
-import com.kltyton.mob_battle.client.animation.gecko.GeoAnimationState;
+import com.kltyton.mob_battle.client.animation.gecko.SkillAnimationPlayback;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.core.Holder;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
@@ -169,12 +169,12 @@ public class DeepCreatureEntity extends Monster implements GeoEntity, ModSkillEn
             }
         }).receiveTriggeredAnimations().triggerableAnim("death", DEAD_ANIM));
         controllers.add(new AnimationController<>("skill_controller",animTest -> {
-            if (GeoAnimationState.consumeFinishedTriggeredAnimation(animTest)) {
+            if (SkillAnimationPlayback.consumeFinishedTriggeredAnimation(animTest)) {
                 ClientPlayNetworking.send(new SkillPayload(
                         "stop", this.getId()
                 ));
             }
-            return GeoAnimationState.playTriggeredAnimationOrStop(animTest);
+            return SkillAnimationPlayback.playTriggeredAnimationOrStop(animTest);
         }).receiveTriggeredAnimations().setSoundKeyframeHandler(s -> {
             Player player = ClientUtil.getClientPlayer();
             if ("minecraft:entity.polar_bear.warning".equals(s.keyframeData().getSound())) {
@@ -302,6 +302,7 @@ public class DeepCreatureEntity extends Monster implements GeoEntity, ModSkillEn
     @Override
     public void readAdditionalSaveData(ValueInput nbt) {
         super.readAdditionalSaveData(nbt);
+        setSkillCooldown(Math.max(0, nbt.getIntOr("SkillCooldown", getSkillCooldown())));
         this.setSpawnAnim(nbt.getBooleanOr("SpawnAnimBoolean", false));
         if (this.hasCustomName()) {
             this.bossBar.setName(Objects.requireNonNull(this.getDisplayName()).copy().append(" | " + (int)this.getHealth() + "/" + (int)this.getMaxHealth()));
@@ -310,14 +311,16 @@ public class DeepCreatureEntity extends Monster implements GeoEntity, ModSkillEn
     @Override
     public void addAdditionalSaveData(ValueOutput nbt) {
         super.addAdditionalSaveData(nbt);
+        nbt.putInt("SkillCooldown", getSkillCooldown());
         nbt.putBoolean("SpawnAnimBoolean", this.isSpawnAnimEnd());
     }
 
     @Override
     public void setHealth(float health) {
         if (this.bossBar != null) {
-            this.bossBar.setProgress(health / this.getMaxHealth());
-            this.bossBar.setName(Objects.requireNonNull(this.getDisplayName()).copy().append(" | " + (int)this.getHealth() + "/" + (int)this.getMaxHealth()));
+            this.bossBar.setProgress(Math.clamp(health / this.getMaxHealth(), 0.0F, 1.0F));
+            this.bossBar.setName(Objects.requireNonNull(this.getDisplayName()).copy()
+                    .append(" | " + (int)Math.max(0.0F, health) + "/" + (int)this.getMaxHealth()));
         }
         if (health <= 0.0F) {
             boolean firstDeathFrame = this.deathFrozenPose == null;
@@ -342,12 +345,12 @@ public class DeepCreatureEntity extends Monster implements GeoEntity, ModSkillEn
             ClientPlayNetworking.send(new SkillPayload(
                     "stop_ai", this.getId()
             ));
-            if (GeoAnimationState.consumeFinishedTriggeredAnimation(state)) {
+            if (SkillAnimationPlayback.consumeFinishedTriggeredAnimation(state)) {
                 ClientPlayNetworking.send(new SkillPayload(
                         "kill", this.getId()
                 ));
             }
-            return GeoAnimationState.playTriggeredAnimationOrStop(state);
+            return SkillAnimationPlayback.playTriggeredAnimationOrStop(state);
         }
         // 当实体刚生成时播放spawn动画
         if (this.tickCount < 220 && !this.isSpawnAnimEnd()) {

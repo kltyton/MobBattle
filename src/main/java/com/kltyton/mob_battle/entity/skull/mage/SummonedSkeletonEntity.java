@@ -98,7 +98,10 @@ public class SummonedSkeletonEntity extends Skeleton implements OwnedSummon {
     @Override
     protected void addAdditionalSaveData(ValueOutput output) {
         super.addAdditionalSaveData(output);
-        EntityReference.store(this.entityData.get(OWNER).orElse(null), output, "Owner");
+        EntityReference<LivingEntity> owner = this.entityData.get(OWNER).orElse(null);
+        if (owner != null) {
+            EntityReference.store(owner, output, "Owner");
+        }
     }
 
     @Override

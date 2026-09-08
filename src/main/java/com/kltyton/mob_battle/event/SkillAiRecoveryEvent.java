@@ -5,6 +5,7 @@ import com.kltyton.mob_battle.config.MobBattleConfig;
 import com.kltyton.mob_battle.entity.deepcreature.DeepCreatureEntity;
 import com.kltyton.mob_battle.entity.littleperson.skillentity.SexEntity;
 import com.kltyton.mob_battle.skill.api.SkillEntity;
+import com.kltyton.mob_battle.skill.server.SkillCommandLedger;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
@@ -48,6 +49,7 @@ public final class SkillAiRecoveryEvent {
             }
         });
         ServerEntityEvents.ENTITY_UNLOAD.register((entity, level) -> {
+            SkillCommandLedger.clearEntity(level.getServer(), entity);
             if (entity instanceof Mob mob) {
                 ServerSkillTracker tracker = TRACKERS.get(level.getServer());
                 if (tracker != null) {
@@ -58,7 +60,10 @@ public final class SkillAiRecoveryEvent {
         ServerTickEvents.END_SERVER_TICK.register(server -> {
             tracker(server).tick();
         });
-        ServerLifecycleEvents.SERVER_STOPPING.register(TRACKERS::remove);
+        ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
+            TRACKERS.remove(server);
+            SkillCommandLedger.clearServer(server);
+        });
     }
 
     private static ServerSkillTracker tracker(MinecraftServer server) {
@@ -97,6 +102,7 @@ public final class SkillAiRecoveryEvent {
         private void tick() {
             tracked.removeIf(mob -> {
                 if (mob.isRemoved()) {
+                    SkillCommandLedger.clearEntity(mob.level().getServer(), mob);
                     activeSkillTicks.remove(mob);
                     idleNoAiTicks.remove(mob);
                     return true;
@@ -110,6 +116,7 @@ public final class SkillAiRecoveryEvent {
             // 只有实现 SkillEntity 的 Mob 会被 track() 加入，此处转换安全。
             SkillEntity skillEntity = (SkillEntity) mob;
             if (skillEntity.hasSkill()) {
+                SkillCommandLedger.observeSession(mob.level().getServer(), mob, true);
                 int ticks = activeSkillTicks.merge(mob, 1, Integer::sum);
                 idleNoAiTicks.remove(mob);
                 if (ticks >= activeSkillLimit(mob)) {
@@ -119,6 +126,7 @@ public final class SkillAiRecoveryEvent {
             }
 
             activeSkillTicks.remove(mob);
+            SkillCommandLedger.observeSession(mob.level().getServer(), mob, false);
             if (mob.isNoAi() && mob.getTarget() != null) {
                 int ticks = idleNoAiTicks.merge(mob, 1, Integer::sum);
                 if (ticks >= IDLE_NO_AI_LIMIT) {
@@ -132,6 +140,7 @@ public final class SkillAiRecoveryEvent {
         private void recover(Mob mob, String reason, int ticks) {
             ((SkillEntity) mob).setHasSkill(false);
             mob.setNoAi(false);
+            SkillCommandLedger.clearEntity(mob.level().getServer(), mob);
             activeSkillTicks.remove(mob);
             idleNoAiTicks.remove(mob);
             if (MobBattleConfig.isDebugLoggingEnabled()) {

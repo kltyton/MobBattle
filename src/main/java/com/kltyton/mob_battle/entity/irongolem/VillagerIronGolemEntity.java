@@ -6,7 +6,7 @@ import com.kltyton.mob_battle.entity.irongolem.skill.IronGolemSkill;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
 import com.kltyton.mob_battle.combat.effect.CombatEffectApplier;
 import com.kltyton.mob_battle.entity.support.EntityQueries;
-import com.kltyton.mob_battle.client.animation.gecko.GeoAnimationState;
+import com.kltyton.mob_battle.client.animation.gecko.SkillAnimationPlayback;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -37,6 +37,8 @@ import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import com.geckolib.animatable.GeoEntity;
 import com.geckolib.animatable.instance.AnimatableInstanceCache;
 import com.geckolib.animatable.manager.AnimatableManager;
@@ -81,6 +83,16 @@ public class VillagerIronGolemEntity extends IronGolem implements GeoEntity, Mod
         super.defineSynchedData(builder);
         builder.define(HAS_SKILL, false);
         builder.define(SKILL_COOLDOWN, 400);
+    }
+    @Override
+    public void readAdditionalSaveData(ValueInput input) {
+        super.readAdditionalSaveData(input);
+        setSkillCooldown(Math.max(0, input.getIntOr("SkillCooldown", getSkillCooldown())));
+    }
+    @Override
+    public void addAdditionalSaveData(ValueOutput output) {
+        super.addAdditionalSaveData(output);
+        output.putInt("SkillCooldown", getSkillCooldown());
     }
     public boolean hasSkill() {
         return getEntityData().get(HAS_SKILL);
@@ -192,9 +204,6 @@ public class VillagerIronGolemEntity extends IronGolem implements GeoEntity, Mod
         DamageSource damageSource = this.damageSources().mobAttack(this);
         boolean bl = target.hurtServer(world, damageSource, g * i);
         if (bl) {
-            if (target instanceof LivingEntity livingEntity) {
-                CombatEffectApplier.addStackingArmorPiercing(livingEntity, this);
-            }
             double d = target instanceof LivingEntity livingEntity ? livingEntity.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE) : 0.0;
             double e = Math.max(0.0, 1.0 - d);
             target.setDeltaMovement(target.getDeltaMovement().add(0.0, 0.4F * e, 0.0));
@@ -208,12 +217,12 @@ public class VillagerIronGolemEntity extends IronGolem implements GeoEntity, Mod
     public void registerControllers(AnimatableManager.ControllerRegistrar controllerRegistrar) {
         controllerRegistrar.add(new AnimationController<>("main_controller", 0,this::animationController));
         controllerRegistrar.add(new AnimationController<>( "attack_controller",animTest -> {
-                    if (GeoAnimationState.consumeFinishedTriggeredAnimation(animTest)) {
+                    if (SkillAnimationPlayback.consumeFinishedTriggeredAnimation(animTest)) {
                         ClientPlayNetworking.send(new SkillPayload(
                                 "stop", this.getId()
                         ));
                     }
-                    return GeoAnimationState.playTriggeredAnimationOrStop(animTest);
+                    return SkillAnimationPlayback.playTriggeredAnimationOrStop(animTest);
                 })
                 .receiveTriggeredAnimations()
                 .triggerableAnim("attack", ATTACK_ANIM)

@@ -3,7 +3,7 @@ package com.kltyton.mob_battle.skill.server;
 /**
  * 服务端技能指令的纯策略边界。
  *
- * <p>网络层先验证玩家确实在跟踪目标实体，再要求目标处于服务端已启动的技能状态。
+ * <p>网络层先验证玩家确实在跟踪目标实体，再校验已知的玩家 owner，最后要求目标处于服务端已启动的技能状态。
  * {@code kill}/{@code die} 是死亡动画完成信号，只允许作用于已经死亡或濒死的实体。
  * {@code spawn} 是出生动画完成信号，属于实体专属指令：只有实体自身通过
  * {@code SkillEntity.canAcceptSpawnCommand()} 声明当前处于“服务端已进入出生流程”的
@@ -26,6 +26,21 @@ public final class SkillRequestPolicy {
             boolean entityAllowsSpawnCommand,
             String command
     ) {
+        return decide(senderTracksEntity, true, entityHasActiveSkill, entityIsDeadOrDying,
+                entityAllowsSpawnCommand, command);
+    }
+
+    /**
+     * 根据网络边界采集的事实裁决技能请求；已知玩家 owner 时由调用方传入实际归属结果。
+     */
+    public static Result decide(
+            boolean senderTracksEntity,
+            boolean senderIsKnownPlayerOwner,
+            boolean entityHasActiveSkill,
+            boolean entityIsDeadOrDying,
+            boolean entityAllowsSpawnCommand,
+            String command
+    ) {
         if (command == null || command.isBlank()) {
             return new Result(Decision.INVALID_COMMAND);
         }
@@ -37,6 +52,9 @@ public final class SkillRequestPolicy {
         }
         if (!senderTracksEntity) {
             return new Result(Decision.ENTITY_NOT_TRACKED);
+        }
+        if (!senderIsKnownPlayerOwner) {
+            return new Result(Decision.NOT_OWNER);
         }
         if (isDeathCompletion(command)) {
             return new Result(entityIsDeadOrDying ? Decision.ACCEPTED : Decision.ENTITY_NOT_DYING);
@@ -56,6 +74,27 @@ public final class SkillRequestPolicy {
 
     private static boolean isSpawnCompletion(String command) {
         return "spawn".equals(command);
+    }
+
+    /**
+     * 返回不应占用影响命令账本的生命周期/流程控制命令。
+     * {@code *_stop} 保留已有多阶段技能的结束信号语义。
+     */
+    public static boolean isLifecycleCommand(String command) {
+        return "stop".equals(command)
+                || "stop_ai".equals(command)
+                || "start_ai".equals(command)
+                || "kill".equals(command)
+                || "die".equals(command)
+                || "spawn".equals(command)
+                || command != null && command.endsWith("_stop");
+    }
+
+    /**
+     * 返回会结束当前活动技能会话、需要清理命令账本的生命周期命令。
+     */
+    public static boolean endsSkillSession(String command) {
+        return "stop".equals(command) || "kill".equals(command) || "die".equals(command);
     }
 
     private static boolean isCommandShapeValid(String command) {
@@ -87,6 +126,7 @@ public final class SkillRequestPolicy {
         INVALID_COMMAND,
         COMMAND_TOO_LONG,
         ENTITY_NOT_TRACKED,
+        NOT_OWNER,
         NO_ACTIVE_SKILL,
         ENTITY_NOT_DYING,
         /** 实体未声明允许出生指令，或当前不处于服务端已启动的出生流程。 */

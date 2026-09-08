@@ -72,7 +72,8 @@ final class CopperArmorSkills {
         spawnCopperBurst(world, impact.add(0.0D, target.getBbHeight() * 0.5D, 0.0D), 36, 0.8D);
 
         ServerTickScheduler.schedule(world.getServer(), 6, () -> {
-            if (player.isRemoved()) {
+            if (player.isRemoved() || player.level() != world
+                    || !target.isRemoved() && target.level() != world) {
                 return;
             }
             Vec3 center = target.isRemoved() ? impact : target.position();
@@ -115,7 +116,8 @@ final class CopperArmorSkills {
         world.playSound(null, start.x, start.y, start.z, SoundEvents.TRIDENT_RIPTIDE_1.value(), SoundSource.PLAYERS, 0.9F, 1.25F);
 
         ServerTickScheduler.schedule(world.getServer(), 8, () -> {
-            if (player.isRemoved() || !target.isAlive()) {
+            if (player.isRemoved() || player.level() != world
+                    || !target.isAlive() || target.level() != world) {
                 return;
             }
 
@@ -134,7 +136,8 @@ final class CopperArmorSkills {
             player.hurtMarked = true;
 
             ServerTickScheduler.schedule(world.getServer(), 4, () -> {
-                if (player.isRemoved() || !target.isAlive()) {
+                if (player.isRemoved() || player.level() != world
+                        || !target.isAlive() || target.level() != world) {
                     return;
                 }
                 target.invulnerableTime = 0;

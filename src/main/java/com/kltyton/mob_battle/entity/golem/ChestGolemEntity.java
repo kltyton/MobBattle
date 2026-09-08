@@ -50,6 +50,8 @@ public class ChestGolemEntity extends IronGolem implements Container, MenuProvid
     private static final double FOLLOW_OWNER_SPEED = 1.1D;
     private static final EntityDataAccessor<Boolean> HAS_VINES =
             SynchedEntityData.defineId(ChestGolemEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Boolean> SITTING =
+            SynchedEntityData.defineId(ChestGolemEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Optional<EntityReference<LivingEntity>>> OWNER =
             SynchedEntityData.defineId(ChestGolemEntity.class, EntityDataSerializers.OPTIONAL_LIVING_ENTITY_REFERENCE);
 
@@ -74,6 +76,7 @@ public class ChestGolemEntity extends IronGolem implements Container, MenuProvid
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
         super.defineSynchedData(builder);
         builder.define(HAS_VINES, true);
+        builder.define(SITTING, false);
         builder.define(OWNER, Optional.empty());
     }
 
@@ -98,6 +101,12 @@ public class ChestGolemEntity extends IronGolem implements Container, MenuProvid
     }
 
     private void updateOwnerBehavior() {
+        if (isSitting()) {
+            this.getNavigation().stop();
+            this.setTarget(null);
+            return;
+        }
+
         Entity ownerEntity = getSummonOwner();
         if (!(ownerEntity instanceof LivingEntity owner) || !owner.isAlive()) {
             return;
@@ -109,6 +118,11 @@ public class ChestGolemEntity extends IronGolem implements Container, MenuProvid
         if (this.getTarget() == null && this.distanceToSqr(owner) > FOLLOW_OWNER_DISTANCE_SQ) {
             this.getNavigation().moveTo(owner, FOLLOW_OWNER_SPEED);
         }
+    }
+
+    @Override
+    public boolean isEffectiveAi() {
+        return !isSitting() && super.isEffectiveAi();
     }
 
     private boolean trySetOwnerTarget(@Nullable LivingEntity target) {
@@ -127,6 +141,24 @@ public class ChestGolemEntity extends IronGolem implements Container, MenuProvid
         this.entityData.set(HAS_VINES, hasVines);
     }
 
+    /**
+     * 返回箱子傀儡的持久化坐下状态；该状态同时作为跟随和战斗的服务端开关。
+     */
+    public boolean isSitting() {
+        return this.entityData.get(SITTING);
+    }
+
+    /**
+     * 切换箱子傀儡的跟随模式。坐下时立即停止导航并清除目标，防止当前攻击继续执行。
+     */
+    public void setSitting(boolean sitting) {
+        this.entityData.set(SITTING, sitting);
+        if (sitting) {
+            this.getNavigation().stop();
+            this.setTarget(null);
+        }
+    }
+
     public void setSummonOwner(@Nullable LivingEntity owner) {
         this.entityData.set(OWNER, Optional.ofNullable(owner).map(EntityReference::of));
         if (owner != null) {
@@ -143,11 +175,16 @@ public class ChestGolemEntity extends IronGolem implements Container, MenuProvid
 
     @Override
     public boolean canAttack(LivingEntity target) {
-        return EntityQueries.isValidSummonCombatTarget(this, getSummonOwner(), target) && super.canAttack(target);
+        return !isSitting()
+                && EntityQueries.isValidSummonCombatTarget(this, getSummonOwner(), target)
+                && super.canAttack(target);
     }
 
     @Override
     public boolean doHurtTarget(ServerLevel level, Entity target) {
+        if (isSitting()) {
+            return false;
+        }
         level.broadcastEntityEvent(this, (byte) 4);
         boolean hurt = target.hurtServer(level, this.damageSources().mobAttack(this), 4.0F);
         if (hurt) {
@@ -158,6 +195,19 @@ public class ChestGolemEntity extends IronGolem implements Container, MenuProvid
 
     @Override
     protected InteractionResult mobInteract(Player player, InteractionHand hand) {
+        Entity owner = getSummonOwner();
+        if (owner == null && !this.level().isClientSide()) {
+            setSummonOwner(player);
+            owner = player;
+        }
+
+        if (owner == null || !owner.getUUID().equals(player.getUUID())) {
+            if (!this.level().isClientSide()) {
+                player.openMenu(this);
+            }
+            return InteractionResult.SUCCESS;
+        }
+
         ItemStack stack = player.getItemInHand(hand);
         if (stack.is(Items.SHEARS) && hasVines()) {
             if (!this.level().isClientSide()) {
@@ -176,13 +226,8 @@ public class ChestGolemEntity extends IronGolem implements Container, MenuProvid
             }
             return InteractionResult.SUCCESS;
         }
-        if (getSummonOwner() == null) {
-            setSummonOwner(player);
-        }
-        if (!this.level().isClientSide()) {
-            player.openMenu(this);
-        }
-        return InteractionResult.SUCCESS;
+        setSitting(!isSitting());
+        return InteractionResult.SUCCESS.withoutItem();
     }
 
     @Override
@@ -254,7 +299,11 @@ public class ChestGolemEntity extends IronGolem implements Container, MenuProvid
     protected void addAdditionalSaveData(ValueOutput output) {
         super.addAdditionalSaveData(output);
         output.putBoolean("HasVines", hasVines());
-        EntityReference.store(this.entityData.get(OWNER).orElse(null), output, "Owner");
+        output.putBoolean("Sitting", isSitting());
+        EntityReference<LivingEntity> owner = this.entityData.get(OWNER).orElse(null);
+        if (owner != null) {
+            EntityReference.store(owner, output, "Owner");
+        }
         ContainerHelper.saveAllItems(output, this.items, false);
     }
 
@@ -262,6 +311,7 @@ public class ChestGolemEntity extends IronGolem implements Container, MenuProvid
     protected void readAdditionalSaveData(ValueInput input) {
         super.readAdditionalSaveData(input);
         setHasVines(input.getBooleanOr("HasVines", true));
+        setSitting(input.getBooleanOr("Sitting", false));
         this.entityData.set(OWNER, Optional.ofNullable(EntityReference.readWithOldOwnerConversion(input, "Owner", this.level())));
         ContainerHelper.loadAllItems(input, this.items);
     }

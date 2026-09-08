@@ -7,7 +7,7 @@ import com.kltyton.mob_battle.network.packet.SkillPayload;
 import com.kltyton.mob_battle.combat.effect.CombatEffectApplier;
 import com.kltyton.mob_battle.animation.death.DeathAnimationState;
 import com.kltyton.mob_battle.entity.support.EntityQueries;
-import com.kltyton.mob_battle.client.animation.gecko.GeoAnimationState;
+import com.kltyton.mob_battle.client.animation.gecko.SkillAnimationPlayback;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -36,6 +36,8 @@ import net.minecraft.world.entity.monster.piglin.AbstractPiglin;
 import net.minecraft.world.entity.monster.piglin.PiglinArmPose;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -88,6 +90,7 @@ public class PiglinGeneralEntity extends AbstractPiglin implements GeneralEntity
 
     private int swordEnergyPosAge = -1000;
     private int pendingAttack7FollowUpTicks = -1;
+    private static final double MAX_SWORD_ENERGY_DISTANCE = 8.0D;
 
     public PiglinGeneralEntity(EntityType<? extends AbstractPiglin> entityType, Level world) {
         super(entityType, world);
@@ -131,6 +134,10 @@ public class PiglinGeneralEntity extends AbstractPiglin implements GeneralEntity
     public void tick() {
         super.tick();
         entityTick();
+
+        if (!this.level().isClientSide() && this.tickCount % 20 == 0 && !this.isDeadOrDying()) {
+            this.heal(1.0F);
+        }
 
         if (!this.level().isClientSide() && isPlayingDeathAnimation()) {
             tickDeathAnimation();
@@ -418,6 +425,19 @@ public class PiglinGeneralEntity extends AbstractPiglin implements GeneralEntity
         areaDamage((ServerLevel) level(), 5.5D, 220.0F, STRONG_MARK_LAYERS, STRONG_MARK_DURATION, false);
         scheduleAttack7FollowUp();
     }
+    @Override
+    public void readAdditionalSaveData(ValueInput input) {
+        super.readAdditionalSaveData(input);
+        GeneralEntity.super.readSkillCooldowns(input);
+        this.entityData.set(SKILL_COOLDOWN_6,
+                Math.max(-1, input.getIntOr("SkillCooldown6", this.entityData.get(SKILL_COOLDOWN_6))));
+    }
+    @Override
+    public void addAdditionalSaveData(ValueOutput output) {
+        super.addAdditionalSaveData(output);
+        GeneralEntity.super.writeSkillCooldowns(output);
+        output.putInt("SkillCooldown6", this.entityData.get(SKILL_COOLDOWN_6));
+    }
 
     @Override
     public void runSkill_7_1(PiglinGeneralEntity entity) {
@@ -491,8 +511,31 @@ public class PiglinGeneralEntity extends AbstractPiglin implements GeneralEntity
     }
 
     public void setSwordEnergyPos(Vec3 swordEnergyPos) {
+        acceptSwordEnergyPosition(swordEnergyPos);
+    }
+
+    /**
+     * 接收剑气骨骼的服务端帧坐标。越界或非有限坐标不会覆盖最近一次合法值，
+     * 从而保证 attack5 的伤害中心不能被客户端任意搬移。
+     */
+    public boolean acceptSwordEnergyPosition(Vec3 swordEnergyPos) {
+        if (!isFiniteAndNear(swordEnergyPos)) {
+            return false;
+        }
         this.swordEnergyPos = swordEnergyPos;
         this.swordEnergyPosAge = this.tickCount;
+        return true;
+    }
+
+    private boolean isFiniteAndNear(Vec3 position) {
+        return position != null
+                && Double.isFinite(position.x)
+                && Double.isFinite(position.y)
+                && Double.isFinite(position.z)
+                && Double.isFinite(this.getX())
+                && Double.isFinite(this.getY())
+                && Double.isFinite(this.getZ())
+                && position.distanceToSqr(this.position()) <= MAX_SWORD_ENERGY_DISTANCE * MAX_SWORD_ENERGY_DISTANCE;
     }
 
     @Override
@@ -625,11 +668,11 @@ public class PiglinGeneralEntity extends AbstractPiglin implements GeneralEntity
         controllers.add(new AnimationController<>("main_controller", 0, this::mainController));
 
         controllers.add(new AnimationController<>("skill_controller", 0, animTest -> {
-            if (GeoAnimationState.consumeFinishedTriggeredAnimation(animTest)) {
+            if (SkillAnimationPlayback.consumeFinishedTriggeredAnimation(animTest)) {
                 ClientPlayNetworking.send(new SkillPayload("stop", this.getId()));
             }
 
-            return GeoAnimationState.playTriggeredAnimationOrStop(animTest);
+            return SkillAnimationPlayback.playTriggeredAnimationOrStop(animTest);
         })
                 .receiveTriggeredAnimations()
                 .triggerableAnim("attack1_1", NORMAL_ATTACK_ANIM_1)
@@ -677,7 +720,7 @@ public class PiglinGeneralEntity extends AbstractPiglin implements GeneralEntity
             return event.setAndContinue(RUN_ANIM);
         }
 
-        if (hasSkill() && !GeoAnimationState.hasRecentlyFinishedTriggeredAnimation(this)) {
+        if (hasSkill() && SkillAnimationPlayback.hasActiveSkill(event)) {
             return PlayState.CONTINUE;
         }
 

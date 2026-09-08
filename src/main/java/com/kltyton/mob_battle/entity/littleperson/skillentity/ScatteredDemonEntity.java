@@ -18,6 +18,11 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 
 public class ScatteredDemonEntity extends RequestedLittlePersonEntity {
+    @Override
+    public String getDeathAnimationName() {
+        return "die";
+    }
+
     private boolean clone;
 
     public ScatteredDemonEntity(EntityType<? extends Monster> entityType, Level world) {

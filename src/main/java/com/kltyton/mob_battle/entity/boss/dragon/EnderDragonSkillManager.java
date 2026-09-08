@@ -84,7 +84,7 @@ public class EnderDragonSkillManager {
 
         for (int i = 0; i < 10; i++) {
             ServerTickScheduler.schedule(world.getServer(), i * 8, () -> { // 每8tick一颗
-                if (dragon.isRemoved()) return;
+                if (!canRunDelayedTask(world)) return;
                 Vec3 dir = dragon.getViewVector(0).normalize().scale(1.8);
                 DragonFireball fireball = new DragonFireball(
                         world, dragon, new Vec3(dir.x, dir.y - 0.5, dir.z));
@@ -123,7 +123,7 @@ public class EnderDragonSkillManager {
         int count = 3 + random.nextInt(3);
         for (int i = 0; i < count; i++) {
             ServerTickScheduler.schedule(world.getServer(), i * 12, () -> {
-                if (dragon.isRemoved()) return;
+                if (!canRunDelayedTask(world)) return;
                 Vec3 target = dragon.position().add(
                         (random.nextDouble() - 0.5) * 60,
                         60 + random.nextDouble() * 20,
@@ -166,7 +166,7 @@ public class EnderDragonSkillManager {
 
                 // 每段生成多粒子，形成“粗线”效果
                 ServerTickScheduler.schedule(world.getServer(), i, () -> {  // 每tick生成一帧粒子（更连贯）
-                    if (dragon.isRemoved()) return;
+                    if (!canRunDelayedTask(world)) return;
 
                     for (int layer = 0; layer < 4; layer++) {  // 4层叠加，显得更粗
                         double offset = (layer - 1.5) * 0.4;  // 轻微径向偏移
@@ -185,7 +185,7 @@ public class EnderDragonSkillManager {
 
             // 2秒后爆炸（范围略扩大，视觉更震撼）
             ServerTickScheduler.schedule(world.getServer(), 40, () -> {
-                if (dragon.isRemoved()) return;
+                if (!canRunDelayedTask(world)) return;
                 world.explode(dragon, end.x, end.y, end.z, 8.0F, false, Level.ExplosionInteraction.MOB);
                 AABB box = new AABB(end.x - 10, end.y - 10, end.z - 10, end.x + 10, end.y + 10, end.z + 10);
                 for (Entity e : world.getEntities(null, box)) {
@@ -230,7 +230,7 @@ public class EnderDragonSkillManager {
         // 定时结束冲刺状态（防止卡住）
         ServerTickScheduler.schedule(world.getServer(), 40, () -> {
             isChargingRush = false;
-            if (!dragon.isRemoved()) {
+            if (canRunDelayedTask(world)) {
                 dragon.setDeltaMovement(dragon.getDeltaMovement().scale(0.4)); // 减速
             }
         });
@@ -253,6 +253,7 @@ public class EnderDragonSkillManager {
                 // 画直径3格紫色圈（持续2秒）
                 for (int t = 0; t < 40; t++) {
                     ServerTickScheduler.schedule(world.getServer(), t, () -> {
+                        if (!canRunDelayedTask(world)) return;
                         double r = 1.5;
                         for (int a = 0; a < 24; a++) {
                             double ang = a * Math.PI * 2 / 24;
@@ -265,6 +266,7 @@ public class EnderDragonSkillManager {
 
                 // 2秒后爆炸
                 ServerTickScheduler.schedule(world.getServer(), 40, () -> {
+                    if (!canRunDelayedTask(world)) return;
                     AABB box = new AABB(center.x-2, center.y-2, center.z-2, center.x+2, center.y+3, center.z+2);
                     for (Entity e : world.getEntities(null, box)) {
                         if (e instanceof LivingEntity living) {
@@ -345,6 +347,7 @@ public class EnderDragonSkillManager {
         if (now % 200 == 0) { // 每10秒掉一批
             for (int i = 0; i < 20; i++) {
                 ServerTickScheduler.schedule(world.getServer(), i * 3, () -> {
+                    if (!canRunDelayedTask(world)) return;
                     Vec3 spawn = dragon.position().add(
                             (random.nextDouble()-0.5)*120,
                             70 + random.nextDouble()*30,
@@ -361,5 +364,9 @@ public class EnderDragonSkillManager {
 
     private static boolean canDragonTargetPlayer(Player player) {
         return !player.isCreative() && !player.isSpectator();
+    }
+
+    private boolean canRunDelayedTask(ServerLevel world) {
+        return !dragon.isRemoved() && !dragon.isDeadOrDying() && dragon.level() == world;
     }
 }

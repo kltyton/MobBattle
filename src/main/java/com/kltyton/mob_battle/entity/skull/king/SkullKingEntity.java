@@ -9,7 +9,7 @@ import com.kltyton.mob_battle.entity.skull.IModSkullEntity;
 import com.kltyton.mob_battle.entity.witherskeletonking.WitherSkeletonKingEntity;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
 import com.kltyton.mob_battle.entity.support.EntityQueries;
-import com.kltyton.mob_battle.client.animation.gecko.GeoAnimationState;
+import com.kltyton.mob_battle.client.animation.gecko.SkillAnimationPlayback;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -127,6 +127,9 @@ public class SkullKingEntity extends WitherSkeleton implements GeoEntity, IModSk
     @Override
     public void readAdditionalSaveData(ValueInput nbt) {
         super.readAdditionalSaveData(nbt);
+        setSkillCooldown(Math.max(0, nbt.getIntOr("SkillCooldown", getSkillCooldown())));
+        setSuperAttackSkillCooldown(Math.max(0, nbt.getIntOr("SuperAttackCooldown", getSuperAttackSkillCooldown())));
+        setSummonSkullCooldown(Math.max(0, nbt.getIntOr("SummonSkullCooldown", getSummonSkullCooldown())));
         if (this.hasCustomName()) {
             this.bossBar.setName(Objects.requireNonNull(this.getDisplayName()).copy().append(" | " + (int)this.getHealth() + "/" + (int)this.getMaxHealth()));
         }
@@ -134,6 +137,9 @@ public class SkullKingEntity extends WitherSkeleton implements GeoEntity, IModSk
     @Override
     public void addAdditionalSaveData(ValueOutput nbt) {
         super.addAdditionalSaveData(nbt);
+        nbt.putInt("SkillCooldown", getSkillCooldown());
+        nbt.putInt("SuperAttackCooldown", getSuperAttackSkillCooldown());
+        nbt.putInt("SummonSkullCooldown", getSummonSkullCooldown());
     }
     @Nullable
     public SpawnGroupData initializeBase(ServerLevelAccessor world, DifficultyInstance difficulty, EntitySpawnReason spawnReason, @Nullable SpawnGroupData entityData) {
@@ -194,7 +200,8 @@ public class SkullKingEntity extends WitherSkeleton implements GeoEntity, IModSk
         DamageSource damageSource = this.damageSources().mobAttack(this);
         f = EnchantmentHelper.modifyDamage(world, itemStack, target, damageSource, f);
         f += itemStack.getItem().getAttackDamageBonus(target, f, damageSource);
-        if (this.isAlliedTo(target)) return false;
+        if (!(target instanceof LivingEntity livingTarget)
+                || !EntityQueries.isValidCombatTarget(this, livingTarget)) return false;
         boolean bl = target.hurtServer(world, damageSource, f);
         if (bl) {
             float g = this.getKnockback(target, damageSource);
@@ -291,12 +298,12 @@ public class SkullKingEntity extends WitherSkeleton implements GeoEntity, IModSk
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>("main_controller", 0,this::animationController));
         controllers.add(new AnimationController<>("skill_controller",animTest -> {
-            if (GeoAnimationState.consumeFinishedTriggeredAnimation(animTest)) {
+            if (SkillAnimationPlayback.consumeFinishedTriggeredAnimation(animTest)) {
                 ClientPlayNetworking.send(new SkillPayload(
                         "stop", this.getId()
                 ));
             }
-            return GeoAnimationState.playTriggeredAnimationOrStop(animTest);
+            return SkillAnimationPlayback.playTriggeredAnimationOrStop(animTest);
         })
                 .receiveTriggeredAnimations()
                 .triggerableAnim("attack", ATTACK_ANIM)

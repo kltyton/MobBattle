@@ -16,6 +16,7 @@ import net.minecraft.data.recipes.SmithingTransformRecipeBuilder;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.item.crafting.CookingBookCategory;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.ItemLike;
@@ -50,6 +51,21 @@ public class ModRecipeGenerator extends FabricRecipeProvider {
                         300, // Cooking time
                         "food" // group
                 );
+                oreSmelting(
+                        List.of(Items.CARROT),
+                        RecipeCategory.FOOD,
+                        CookingBookCategory.FOOD,
+                        ModItems.ROASTED_CARROT,
+                        0.1F,
+                        200,
+                        "food"
+                );
+                shaped(RecipeCategory.TRANSPORTATION, ModItems.OBSIDIAN_BOAT)
+                        .pattern("o o")
+                        .pattern("ooo")
+                        .define('o', Blocks.OBSIDIAN)
+                        .unlockedBy(getHasName(Blocks.OBSIDIAN), has(Blocks.OBSIDIAN))
+                        .save(output);
                 shaped(RecipeCategory.TOOLS, ModItems.FINE_KNIFE, 1)
                         .pattern("a")
                         .pattern("b")
@@ -304,11 +320,11 @@ public class ModRecipeGenerator extends FabricRecipeProvider {
                 offerMechanicalSwordRecipe(itemLookup, output, ModItems.COMPRESSED_GOLD_INGOT, ModItems.COMPRESSED_GOLD_SWORD, "compressed_gold");
                 offerMechanicalSwordRecipe(itemLookup, output, ModItems.COMPRESSED_DIAMOND, ModItems.COMPRESSED_DIAMOND_SWORD, "compressed_diamond");
 
-                offerCompressedNetheriteUpgrade(output, ModItems.COMPRESSED_DIAMOND_HELMET, ModItems.COMPRESSED_NETHERITE_HELMET);
-                offerCompressedNetheriteUpgrade(output, ModItems.COMPRESSED_DIAMOND_CHESTPLATE, ModItems.COMPRESSED_NETHERITE_CHESTPLATE);
-                offerCompressedNetheriteUpgrade(output, ModItems.COMPRESSED_DIAMOND_LEGGINGS, ModItems.COMPRESSED_NETHERITE_LEGGINGS);
-                offerCompressedNetheriteUpgrade(output, ModItems.COMPRESSED_DIAMOND_BOOTS, ModItems.COMPRESSED_NETHERITE_BOOTS);
-                offerCompressedNetheriteUpgrade(output, ModItems.COMPRESSED_DIAMOND_SWORD, ModItems.COMPRESSED_NETHERITE_SWORD);
+                offerCompressedNetheriteUpgrade(output, ModItems.ADVANCED_SMITHING_TEMPLATE, ModItems.COMPRESSED_DIAMOND_HELMET, ModItems.COMPRESSED_NETHERITE_HELMET);
+                offerCompressedNetheriteUpgrade(output, ModItems.ADVANCED_SMITHING_TEMPLATE, ModItems.COMPRESSED_DIAMOND_CHESTPLATE, ModItems.COMPRESSED_NETHERITE_CHESTPLATE);
+                offerCompressedNetheriteUpgrade(output, ModItems.ADVANCED_SMITHING_TEMPLATE, ModItems.COMPRESSED_DIAMOND_LEGGINGS, ModItems.COMPRESSED_NETHERITE_LEGGINGS);
+                offerCompressedNetheriteUpgrade(output, ModItems.ADVANCED_SMITHING_TEMPLATE, ModItems.COMPRESSED_DIAMOND_BOOTS, ModItems.COMPRESSED_NETHERITE_BOOTS);
+                offerCompressedNetheriteUpgrade(output, Items.NETHERITE_UPGRADE_SMITHING_TEMPLATE, ModItems.COMPRESSED_DIAMOND_SWORD, ModItems.COMPRESSED_NETHERITE_SWORD);
 
                 nineBlockStorageRecipes(
                         RecipeCategory.MISC,
@@ -396,9 +412,9 @@ public class ModRecipeGenerator extends FabricRecipeProvider {
                         .save(exporter, "mob_battle:mechanical/" + materialName + "_boots");
             }
 
-            private void offerCompressedNetheriteUpgrade(RecipeOutput exporter, ItemLike base, Item result) {
+            private void offerCompressedNetheriteUpgrade(RecipeOutput exporter, ItemLike template, ItemLike base, Item result) {
                 SmithingTransformRecipeBuilder.smithing(
-                                Ingredient.of(Items.NETHERITE_UPGRADE_SMITHING_TEMPLATE),
+                                Ingredient.of(template),
                                 Ingredient.of(base),
                                 Ingredient.of(ModItems.COMPRESSED_NETHERITE_INGOT),
                                 RecipeCategory.COMBAT,

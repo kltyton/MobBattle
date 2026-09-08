@@ -10,5 +10,9 @@ public final class ClientPermissionState {
     public static void setWhitelisted(boolean value) {
         whitelisted = value;
     }
+
+    public static void reset() {
+        whitelisted = false;
+    }
 }
 

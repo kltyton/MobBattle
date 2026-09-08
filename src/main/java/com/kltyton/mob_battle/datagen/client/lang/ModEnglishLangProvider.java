@@ -19,6 +19,7 @@ public class ModEnglishLangProvider extends FabricLanguageProvider {
 
     @Override
     public void generateTranslations(HolderLookup.Provider registryLookup, TranslationBuilder translationBuilder) {
+        com.kltyton.mob_battle.datagen.client.lang.littleperson.ZombieLittlePersonTranslations.add(translationBuilder, false);
         translationBuilder.add("gamerule.mob_battle.combat_log_system", "Combat Log System");
         translationBuilder.add("itemGroup.mob_battle.off", "Mob Battle obsolete");
         translationBuilder.add("itemGroup.mob_battle.main", "Mob Battle");
@@ -40,6 +41,9 @@ public class ModEnglishLangProvider extends FabricLanguageProvider {
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModBlocks.COMPRESSED_GOLD_BLOCK), "Compressed Gold Block");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModBlocks.COMPRESSED_DIAMOND_BLOCK), "Compressed Diamond Block");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModBlocks.COMPRESSED_NETHERITE_BLOCK), "Compressed Netherite Block");
+        translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.ROASTED_CARROT), "Roasted Carrot");
+        translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.STRANGE_STEW), "Strange Stew");
+        translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.BERRY_JUICE), "Bottled Sweet Berry Juice");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.LOBSTER_MAIN_COURSE), "Lobster Main Course");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.COOKED_HIGHBIRD_EGG), "Cooked Highbird Egg");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModEffects.SELF_DESTRUCT), "Self Destruct");
@@ -187,6 +191,8 @@ public class ModEnglishLangProvider extends FabricLanguageProvider {
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModEntities.ICE_BOMB), "Ice Bomb");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModEntities.ICE_FANGS), "Ice Fangs");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModEntities.NINJA_CLONE), "Ninja Clone");
+        translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModEntities.DIAMOND_GIANT), "Diamond Giant");
+        translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.SPAWN_EGG_ITEMS.get("diamond_giant")), "Diamond Giant Spawn Egg");
 
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModEffects.TRUE_INVISIBLE), "True Invisible");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModEffects.BLOCK), "Block");
@@ -203,6 +209,8 @@ public class ModEnglishLangProvider extends FabricLanguageProvider {
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModEffects.STUTTER), "Stutter");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModEffects.DECAY), "Decay");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModEffects.LITTLE_PERSON_GUARDIANSHIP), "Little Person Guardianship");
+        translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModEffects.THICKET), "Thicket");
+        translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModEffects.IMBALANCE), "Imbalance");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.SMALL_BACKPACK), "Small Backpack");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.BIG_BACKPACK), "Big Backpack");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.LARGE_BACKPACK), "Large Backpack");
@@ -211,10 +219,16 @@ public class ModEnglishLangProvider extends FabricLanguageProvider {
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.BLOOD_KNIFE), "Blood Knife");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.IRON_MAN_MISSILE_LAUNCHER), "Iron Man Missile Launcher");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.LITTLE_PERSON_TOOL), "Little Person Tool");
+        translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.LITTLE_PERSON_SHIELD), "Little Person Shield");
+        translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.BIOCHEMICAL_BLADE), "Biochemical Blade");
+        translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.OBSIDIAN_BOAT), "Obsidian Boat");
+        translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.LITTLE_PERSON_HAMMER), "Little Person Hammer");
+        translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.ICE_KNIFE), "Ice Knife");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.LITTLE_PERSON_SCEPTER), "Little Person Scepter");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.LITTLE_STONE), "Little Stone");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.WOODEN_WHISTLE), "Wooden Whistle");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.ILLAGER_CURRENCY), "Illager Currency");
+        translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.ADVANCED_SMITHING_TEMPLATE), "Advanced Smithing Template");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.NIBI), "Nibi");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.NIBI_BAG), "Nibi Bag");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.NIBI_BOX), "Nibi Box");
@@ -361,6 +375,11 @@ public class ModEnglishLangProvider extends FabricLanguageProvider {
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.WARRIOR_VILLAGER_SPAWN_EGG), "Warrior Villager Spawn Egg");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.MILITIA_ARCHER_VILLAGER_SPAWN_EGG), "Militia Archer Villager Spawn Egg");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.MILITIA_WARRIOR_VILLAGER_SPAWN_EGG), "Militia Warrior Villager Spawn Egg");
+        translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.SPAWN_EGG_ITEMS.get("chuan_ren_gong")), "Chuan Ren Gong Spawn Egg");
+        translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.SPAWN_EGG_ITEMS.get("rough_white_zetsu")), "Rough White Zetsu Spawn Egg");
+        translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.SPAWN_EGG_ITEMS.get("wither_skeleton_villager")), "Wither Skeleton Villager Spawn Egg");
+        translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.SPAWN_EGG_ITEMS.get("piglin_villager")), "Piglin Villager Spawn Egg");
+        translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.SPAWN_EGG_ITEMS.get("evoker_villager")), "Evoker Villager Spawn Egg");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.VILLAGER_KING_SPAWN_EGG), "Villager King Spawn Egg");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.BLUE_IRON_GOLEM_SPAWN_EGG), "Blue Iron Golem Spawn Egg");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.IRON_GOLEM_SPAWN_EGG), "Iron Golem Spawn Egg");
@@ -400,6 +419,12 @@ public class ModEnglishLangProvider extends FabricLanguageProvider {
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModEntities.WARRIOR_VILLAGER), "Warrior Villager");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModEntities.MILITIA_ARCHER_VILLAGER), "Militia Archer Villager");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModEntities.MILITIA_WARRIOR_VILLAGER), "Militia Warrior Villager");
+        translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModEntities.CHUAN_REN_GONG), "Chuan Ren Gong");
+        translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModEntities.ROUGH_WHITE_ZETSU), "Rough White Zetsu");
+        translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModEntities.ICE_SOLDIER), "Ice Soldier");
+        translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModEntities.WITHER_SKELETON_VILLAGER), "Wither Skeleton Villager");
+        translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModEntities.PIGLIN_VILLAGER), "Piglin Villager");
+        translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModEntities.EVOKER_VILLAGER), "Evoker Villager");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModEntities.VILLAGER_KING_ENTITY), "Villager King");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModEntities.BLUE_IRON_GOLEM), "Blue Iron Golem");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModEntities.SUGAR_MAN_SCORPION), "Sugar Man Scorpion");
@@ -415,6 +440,13 @@ public class ModEnglishLangProvider extends FabricLanguageProvider {
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.METEORICORE_SWORD), "Meteoricore Sword");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.IRON_GOLD_SWORD), "Iron Gold Sword");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.VS_SNIPE), "V.S. Snipe");
+        translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.MONEY_GUN), "Money Gun");
+        translationBuilder.add("message.mob_battle.money_gun_mode_illager", "Illager Currency semi-automatic mode");
+        translationBuilder.add("message.mob_battle.money_gun_mode_auto", "Emerald automatic mode");
+        translationBuilder.add("message.mob_battle.money_gun_mode_shotgun", "Emerald semi-automatic shotgun mode");
+        translationBuilder.add("message.mob_battle.money_gun_cooldown", "Money Gun cooldown: %s seconds remaining");
+        translationBuilder.add("message.mob_battle.money_gun_no_ammo", "Not enough Money Gun ammunition");
+        translationBuilder.add("message.mob_battle.player_skill_cooldown", "Skill cooldown: %s seconds remaining");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.MUTUAL_ATTACK_STICK), "Mutual Attack Stick");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.MASTER_SCEPTER), "Master Scepter");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.UNIVERSAL_LEAD), "Universal Lead");

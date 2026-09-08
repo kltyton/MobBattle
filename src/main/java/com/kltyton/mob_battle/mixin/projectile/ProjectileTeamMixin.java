@@ -19,6 +19,9 @@ public abstract class ProjectileTeamMixin {
         if (owner == null) {
             return;
         }
+        if (EntityQueries.isUnteamedShulkerSelfHit(projectile, owner, entity)) {
+            return;
+        }
         if (owner instanceof LivingEntity livingOwner
                 && entity instanceof LivingEntity living
                 && TeamFightManager.areForcedOpponents(livingOwner, living)) {

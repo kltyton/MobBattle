@@ -11,7 +11,11 @@ import com.kltyton.mob_battle.entity.cbot.Cbot002Entity;
 import com.kltyton.mob_battle.entity.cbot.CbotSnowballEntity;
 import com.kltyton.mob_battle.entity.cbot.SnowmanIceBlockEntity;
 import com.kltyton.mob_battle.entity.customfireball.MagmaLobsterBigFireballEntity;
+import com.kltyton.mob_battle.entity.chuanrengong.ChuanRenGongEntity;
+import com.kltyton.mob_battle.entity.chuanrengong.ChuanRenGongLargeProjectileEntity;
+import com.kltyton.mob_battle.entity.chuanrengong.ChuanRenGongSmallProjectileEntity;
 import com.kltyton.mob_battle.entity.deepcreature.DeepCreatureEntity;
+import com.kltyton.mob_battle.entity.diamondgiant.DiamondGiantEntity;
 import com.kltyton.mob_battle.entity.drone.attackdrone.AttackDroneEntity;
 import com.kltyton.mob_battle.entity.drone.treatmentdrone.TreatmentDroneEntity;
 import com.kltyton.mob_battle.entity.evoker.SuperEvokerEntity;
@@ -46,6 +50,7 @@ import com.kltyton.mob_battle.entity.registry.AttackDroneEntityTypes;
 import com.kltyton.mob_battle.entity.registry.BlueIronGolemEntityTypes;
 import com.kltyton.mob_battle.entity.registry.BossMonsterEntityTypes;
 import com.kltyton.mob_battle.entity.registry.CoalSilverfishEntityTypes;
+import com.kltyton.mob_battle.entity.registry.ChuanRenGongEntityTypes;
 import com.kltyton.mob_battle.entity.registry.HighbirdEntityTypes;
 import com.kltyton.mob_battle.entity.registry.PassiveCreatureEntityTypes;
 import com.kltyton.mob_battle.entity.registry.SilencePhantomEntityTypes;
@@ -54,11 +59,15 @@ import com.kltyton.mob_battle.entity.registry.SugarManScorpionEntityTypes;
 import com.kltyton.mob_battle.entity.registry.TreatmentDroneEntityTypes;
 import com.kltyton.mob_battle.entity.registry.VillagerKingdomEntityTypes;
 import com.kltyton.mob_battle.entity.registry.VillagerVariantEntityTypes;
+import com.kltyton.mob_battle.entity.registry.VehicleEntityTypes;
+import com.kltyton.mob_battle.entity.registry.IceSoldierEntityTypes;
 import com.kltyton.mob_battle.entity.registry.VanillaVariantEntityTypes;
 import com.kltyton.mob_battle.entity.registry.WitherFactionEntityTypes;
 import com.kltyton.mob_battle.entity.registry.CommandedUnitEntityTypes;
+import com.kltyton.mob_battle.entity.registry.DiamondGiantEntityTypes;
 import com.kltyton.mob_battle.entity.registry.SilverfishEntityTypes;
 import com.kltyton.mob_battle.entity.registry.RareCreatureEntityTypes;
+import com.kltyton.mob_battle.entity.registry.RoughWhiteZetsuEntityTypes;
 import com.kltyton.mob_battle.entity.registry.LittlePersonBaseEntityTypes;
 import com.kltyton.mob_battle.entity.registry.SkullSupportEntityTypes;
 import com.kltyton.mob_battle.entity.registry.LittlePersonSkillEffectEntityTypes;
@@ -76,6 +85,10 @@ import com.kltyton.mob_battle.entity.hazard.PoisonousBeachEntity;
 import com.kltyton.mob_battle.entity.shield.ShieldEntity;
 import com.kltyton.mob_battle.entity.projectile.ElementalSwordProjectileEntity;
 import com.kltyton.mob_battle.entity.projectile.LittleStoneEntity;
+import com.kltyton.mob_battle.entity.projectile.MoneyGunProjectileEntity;
+import com.kltyton.mob_battle.entity.roughwhitezetsu.RoughWhiteZetsuEntity;
+import com.kltyton.mob_battle.entity.vehicle.obsidianboat.ObsidianBoatEntity;
+import com.kltyton.mob_battle.entity.littleperson.icesoldier.IceSoldierEntity;
 import com.kltyton.mob_battle.entity.registry.ProjectileEntityTypes;
 import com.kltyton.mob_battle.entity.silencephantom.SilencePhantomEntity;
 import com.kltyton.mob_battle.entity.silverfish.silverfish.*;
@@ -93,6 +106,9 @@ import com.kltyton.mob_battle.entity.villager.militia.MilitiaArcherVillager;
 import com.kltyton.mob_battle.entity.villager.militia.MilitiaWarriorVillager;
 import com.kltyton.mob_battle.entity.villager.villagerking.VillagerKingEntity;
 import com.kltyton.mob_battle.entity.villager.warriorvillager.WarriorVillager;
+import com.kltyton.mob_battle.entity.villager.trading.EvokerVillagerEntity;
+import com.kltyton.mob_battle.entity.villager.trading.PiglinVillagerEntity;
+import com.kltyton.mob_battle.entity.villager.trading.WitherSkeletonVillagerEntity;
 import com.kltyton.mob_battle.entity.vindicatorgeneral.VindicatorGeneralEntity;
 import com.kltyton.mob_battle.entity.vindicatorgeneral.VindicatorGeneralAxeEntity;
 import com.kltyton.mob_battle.entity.voidcell.VoidCellEntity;
@@ -136,6 +152,9 @@ public class ModEntities {
     public static final ResourceKey<EntityType<?>> militia_archer_villager = ResourceKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID,"militia_archer_villager"));
     public static final ResourceKey<EntityType<?>> warrior_villager = ResourceKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID,"warrior_villager"));
     public static final ResourceKey<EntityType<?>> archer_villager = ResourceKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID,"archer_villager"));
+    public static final ResourceKey<EntityType<?>> wither_skeleton_villager = ResourceKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID,"wither_skeleton_villager"));
+    public static final ResourceKey<EntityType<?>> piglin_villager = ResourceKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID,"piglin_villager"));
+    public static final ResourceKey<EntityType<?>> evoker_villager = ResourceKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID,"evoker_villager"));
     public static final ResourceKey<EntityType<?>> void_cell = ResourceKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID,"void_cell"));
     public static final ResourceKey<EntityType<?>> xun_sheng= ResourceKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID,"xun_sheng"));
     public static final ResourceKey<EntityType<?>> deep_creature = ResourceKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID,"deep_creature"));
@@ -176,6 +195,7 @@ public class ModEntities {
     public static final ResourceKey<EntityType<?>> ice_sword_energy = ResourceKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID,"ice_sword_energy"));
     public static final ResourceKey<EntityType<?>> ice_bomb = ResourceKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID,"ice_bomb"));
     public static final ResourceKey<EntityType<?>> ice_fangs = ResourceKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID,"ice_fangs"));
+    public static final ResourceKey<EntityType<?>> diamond_giant = ResourceKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID,"diamond_giant"));
     public static final ResourceKey<EntityType<?>> ninja_clone = ResourceKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID,"ninja_clone"));
     public static final ResourceKey<EntityType<?>> elemental_sword_projectile = ResourceKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID,"elemental_sword_projectile"));
     public static final ResourceKey<EntityType<?>> green_concrete_projectile = ResourceKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID,"green_concrete_projectile"));
@@ -201,6 +221,9 @@ public class ModEntities {
     public static final EntityType<MilitiaArcherVillager> MILITIA_ARCHER_VILLAGER = VillagerVariantEntityTypes.MILITIA_ARCHER_VILLAGER;
     public static final EntityType<WarriorVillager> WARRIOR_VILLAGER = VillagerVariantEntityTypes.WARRIOR_VILLAGER;
     public static final EntityType<ArcherVillager> ARCHER_VILLAGER = VillagerVariantEntityTypes.ARCHER_VILLAGER;
+    public static final EntityType<WitherSkeletonVillagerEntity> WITHER_SKELETON_VILLAGER = VillagerVariantEntityTypes.WITHER_SKELETON_VILLAGER;
+    public static final EntityType<PiglinVillagerEntity> PIGLIN_VILLAGER = VillagerVariantEntityTypes.PIGLIN_VILLAGER;
+    public static final EntityType<EvokerVillagerEntity> EVOKER_VILLAGER = VillagerVariantEntityTypes.EVOKER_VILLAGER;
     public static final EntityType<VoidCellEntity> VOID_CELL = BossMonsterEntityTypes.VOID_CELL;
 
     public static final EntityType<XunShengEntity> XUN_SHENG = BossMonsterEntityTypes.XUN_SHENG;
@@ -279,6 +302,12 @@ public class ModEntities {
     public static final EntityType<AngrySilverfishEntity> ANGRY_SILVERFISH = SilverfishEntityTypes.ANGRY_SILVERFISH;
     public static final EntityType<FlowerFairyEntity> FLOWER_FAIRY = RareCreatureEntityTypes.FLOWER_FAIRY;
     public static final EntityType<SuperEvokerEntity> SUPER_EVOKER = RareCreatureEntityTypes.SUPER_EVOKER;
+    public static final EntityType<ChuanRenGongEntity> CHUAN_REN_GONG = ChuanRenGongEntityTypes.CHUAN_REN_GONG;
+    public static final EntityType<ChuanRenGongSmallProjectileEntity> CHUAN_REN_GONG_SMALL_PROJECTILE = ChuanRenGongEntityTypes.SMALL_PROJECTILE;
+    public static final EntityType<ChuanRenGongLargeProjectileEntity> CHUAN_REN_GONG_LARGE_PROJECTILE = ChuanRenGongEntityTypes.LARGE_PROJECTILE;
+    public static final EntityType<RoughWhiteZetsuEntity> ROUGH_WHITE_ZETSU = RoughWhiteZetsuEntityTypes.ROUGH_WHITE_ZETSU;
+    public static final EntityType<ObsidianBoatEntity> OBSIDIAN_BOAT = VehicleEntityTypes.OBSIDIAN_BOAT;
+    public static final EntityType<IceSoldierEntity> ICE_SOLDIER = IceSoldierEntityTypes.ICE_SOLDIER;
     public static final EntityType<TreatmentDroneEntity> TREATMENT_DRONE = TreatmentDroneEntityTypes.TREATMENT_DRONE;
     public static final EntityType<LittlePersonCivilianEntity> LITTLE_PERSON_CIVILIAN = LittlePersonBaseEntityTypes.LITTLE_PERSON_CIVILIAN;
     public static final EntityType<LittlePersonWorkerEntity> LITTLE_PERSON_WORKER = LittlePersonBaseEntityTypes.LITTLE_PERSON_WORKER;
@@ -353,6 +382,8 @@ public class ModEntities {
     public static final EntityType<VindicatorGeneralAxeEntity> VINDICATOR_GENERAL_AXE = LittlePersonSkillEffectEntityTypes.VINDICATOR_GENERAL_AXE;
     public static final EntityType<SkillVisualEntity> ICE_FANGS = LittlePersonSkillEffectEntityTypes.ICE_FANGS;
     public static final EntityType<SkillVisualEntity> NINJA_CLONE = LittlePersonSkillEffectEntityTypes.NINJA_CLONE;
+    public static final EntityType<DiamondGiantEntity> DIAMOND_GIANT = DiamondGiantEntityTypes.DIAMOND_GIANT;
+    public static final EntityType<SkillVisualEntity> DIAMOND_GIANT_SPIKE = DiamondGiantEntityTypes.DIAMOND_GIANT_SPIKE;
 
 
 
@@ -370,6 +401,7 @@ public class ModEntities {
     public static final EntityType<GreenConcreteProjectileEntity> GREEN_CONCRETE_PROJECTILE = SpecialProjectileEntityTypes.GREEN_CONCRETE_PROJECTILE;
     public static final EntityType<LittleStoneEntity> LITTLE_STONE_PROJECTILE = SpecialProjectileEntityTypes.LITTLE_STONE_PROJECTILE;
     public static final EntityType<ElementalSwordProjectileEntity> ELEMENTAL_SWORD_PROJECTILE = SpecialProjectileEntityTypes.ELEMENTAL_SWORD_PROJECTILE;
+    public static final EntityType<MoneyGunProjectileEntity> MONEY_GUN_PROJECTILE = SpecialProjectileEntityTypes.MONEY_GUN_PROJECTILE;
     public static final EntityType<LobsterEntity> LOBSTER = LobsterEntityTypes.LOBSTER;
     public static final EntityType<MagmaLobsterEntity> MAGMA_LOBSTER = LobsterEntityTypes.MAGMA_LOBSTER;
     static {
@@ -378,6 +410,9 @@ public class ModEntities {
         SPAWN_EGG_ENTITIES.put("shield_axe_wither_skeleton", SHIELD_AXE_WITHER_SKELETON);
         SPAWN_EGG_ENTITIES.put("cbot002", CBOT002);
         SPAWN_EGG_ENTITIES.put("piglin_general", PIGLIN_GENERAL);
+        SPAWN_EGG_ENTITIES.put("wither_skeleton_villager", WITHER_SKELETON_VILLAGER);
+        SPAWN_EGG_ENTITIES.put("piglin_villager", PIGLIN_VILLAGER);
+        SPAWN_EGG_ENTITIES.put("evoker_villager", EVOKER_VILLAGER);
         GENERAL_RENDERERS.put("cbot002", CBOT002);
         GENERAL_RENDERERS.put("piglin_general", PIGLIN_GENERAL);
     }
@@ -386,6 +421,9 @@ public class ModEntities {
         Registry.register(BuiltInRegistries.ENTITY_TYPE, militia_archer_villager, MILITIA_ARCHER_VILLAGER);
         Registry.register(BuiltInRegistries.ENTITY_TYPE, warrior_villager, WARRIOR_VILLAGER);
         Registry.register(BuiltInRegistries.ENTITY_TYPE, archer_villager, ARCHER_VILLAGER);
+        Registry.register(BuiltInRegistries.ENTITY_TYPE, wither_skeleton_villager, WITHER_SKELETON_VILLAGER);
+        Registry.register(BuiltInRegistries.ENTITY_TYPE, piglin_villager, PIGLIN_VILLAGER);
+        Registry.register(BuiltInRegistries.ENTITY_TYPE, evoker_villager, EVOKER_VILLAGER);
         Registry.register(BuiltInRegistries.ENTITY_TYPE, void_cell, VOID_CELL);
         Registry.register(BuiltInRegistries.ENTITY_TYPE, xun_sheng, XUN_SHENG);
         Registry.register(BuiltInRegistries.ENTITY_TYPE, deep_creature, DEEP_CREATURE);

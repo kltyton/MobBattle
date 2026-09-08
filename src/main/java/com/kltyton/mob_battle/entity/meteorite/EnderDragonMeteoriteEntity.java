@@ -5,9 +5,12 @@ import com.kltyton.mob_battle.entity.customfireball.CustomFireballEntity;
 import com.kltyton.mob_battle.sounds.ModSounds;
 import com.kltyton.mob_battle.entity.support.EntityQueries;
 import com.kltyton.mob_battle.event.scheduler.ServerTickScheduler;
+import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
+import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.particles.PowerParticleOption;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
@@ -25,6 +28,11 @@ import com.geckolib.util.GeckoLibUtil;
 
 public class EnderDragonMeteoriteEntity extends MeteoriteEntity implements GeoEntity {
     private static final double MAX_SHOCKWAVE_RADIUS = 25.0;
+    private static final int SHOCKWAVE_STEPS = 50;
+    private static final int PARTICLE_POINTS = 24;
+    private static final int PARTICLE_STEP_INTERVAL = 2;
+    static final double PARTICLE_VIEW_RADIUS = 64.0;
+    private static final double PARTICLE_VIEW_RADIUS_SQUARED = PARTICLE_VIEW_RADIUS * PARTICLE_VIEW_RADIUS;
 
     public EnderDragonMeteoriteEntity(EntityType<? extends CustomFireballEntity> entityType, Level world) {
         super(entityType, world);
@@ -42,7 +50,7 @@ public class EnderDragonMeteoriteEntity extends MeteoriteEntity implements GeoEn
                 ModSounds.METEORITE_SOUND_EVENT_REFERENCE, SoundSource.BLOCKS, 4.0f, 0.5f);
         if (world instanceof ServerLevel serverWorld) {
             spawnShockwave(serverWorld);
-            serverWorld.sendParticles(ParticleTypes.EXPLOSION_EMITTER,
+            sendParticleToNearbyPlayers(serverWorld, this.position(), ParticleTypes.EXPLOSION_EMITTER,
                     this.getX(), this.getY(), this.getZ(), 3, 1.0, 1.0, 1.0, 0.1);
         }
     }
@@ -51,69 +59,80 @@ public class EnderDragonMeteoriteEntity extends MeteoriteEntity implements GeoEn
         Entity owner = this.getOwner();
         java.util.Set<Integer> hitEntities = new java.util.HashSet<>();
 
-        int totalSteps = 240;           // 更少步数让冲击波扩散更快
         double maxRadius = MAX_SHOCKWAVE_RADIUS;
-        double wallHeight = 6.0;        // ← 加高一点，更有冲击波高度
-        double thickness = 12.0;        // ← 厚度加大，烟雾更连贯
+        double wallHeight = 6.0;
+        double thickness = 12.0;
 
-        for (int step = 0; step < totalSteps; step++) {
+        for (int step = 0; step < SHOCKWAVE_STEPS; step++) {
             int finalStep = step;
             ServerTickScheduler.schedule(world.getServer(), step, () -> {
                 if (world.isClientSide()) return;
 
-                double progress = (double) finalStep / totalSteps;
-                double currentRadius = maxRadius * progress;   // ← 改成线性！最自然
+                double progress = (double) finalStep / (SHOCKWAVE_STEPS - 1);
+                double currentRadius = maxRadius * progress;
 
-                // 遍历所有玩家
-                for (net.minecraft.server.level.ServerPlayer player : world.players()) {
-                    Vec3 playerPos = player.position();
-                    double distToCenter = playerPos.distanceTo(center);   // 3D距离也行
-
-                    // 优化可见性：波浪正在靠近或刚经过玩家时才渲染（提前400格看到）
-                    if (currentRadius > distToCenter - 400 && currentRadius < distToCenter + 150) {
-                        int burstCount = 900;   // 全圆环密度，够密又不卡
-
-                        for (int i = 0; i < burstCount; i++) {
-                            // === 核心修复：完整360°均匀分布 ===
-                            double angle = i * (2.0 * Math.PI / burstCount);   // 均匀，不再是扇形！
-
-                            double rOffset = (Math.random() - 0.5) * thickness;
-                            double finalRadius = currentRadius + rOffset;
-
-                            double x = center.x + Math.cos(angle) * finalRadius;
-                            double z = center.z + Math.sin(angle) * finalRadius;
-                            double y = center.y + (Math.random() * wallHeight) - 1.0;  // 稍微贴地一点
-
-                            // 粒子混合（云团感更强）
-                            if (i % 3 == 0) {  // 更多烟雾
-                                world.sendParticles(player, ParticleTypes.CAMPFIRE_COSY_SMOKE, true, false,
-                                        x, y, z, 1, 0, 0.1, 0, 0.04);
-                            }
-                            if (i % 2 == 0) {
-                                world.sendParticles(player, ParticleTypes.LARGE_SMOKE, true, false,
-                                        x, y + 1.0, z, 1, 0.15, 0.15, 0.15, 0.02);  // 新增大烟雾，超级推荐！
-                            }
-                            world.sendParticles(player, PowerParticleOption.create(ParticleTypes.DRAGON_BREATH, 1.0F), true, false,
-                                    x, y, z, 1, 0.12, 0.12, 0.12, 0);
-
-                            if (i % 6 == 0) {
-                                world.sendParticles(player, ParticleTypes.WITCH, true, false,
-                                        x, y + 0.8, z, 1, 0, 0, 0, 0);
-                            }
-                            if (i % 25 == 0) {
-                                world.sendParticles(player, ParticleTypes.END_ROD, true, false,
-                                        x, center.y + 0.2, z, 1, 0, 0, 0, 0);
-                            }
-                        }
-                    }
+                // 由服务端按冲击波中心的64格观察距离定向发送，避免向整个 ServerLevel 广播。
+                if (finalStep % PARTICLE_STEP_INTERVAL == 0) {
+                    spawnParticleRing(world, center, currentRadius, wallHeight);
                 }
 
-                // 伤害逻辑（步长改成每3步一次，更平滑）
-                if (finalStep % 3 == 0) {
-                    applyDamage(world, center, currentRadius, thickness, wallHeight, owner, hitEntities);
-                }
+                applyDamage(world, center, currentRadius, thickness, wallHeight, owner, hitEntities);
             });
         }
+    }
+
+    private void spawnParticleRing(ServerLevel world, Vec3 center, double radius, double wallHeight) {
+        for (int i = 0; i < PARTICLE_POINTS; i++) {
+            double angle = i * (2.0D * Math.PI / PARTICLE_POINTS);
+            double x = center.x + Math.cos(angle) * radius;
+            double z = center.z + Math.sin(angle) * radius;
+            double y = center.y + world.getRandom().nextDouble() * wallHeight - 1.0D;
+
+            sendParticleToNearbyPlayers(world, center,
+                    PowerParticleOption.create(ParticleTypes.DRAGON_BREATH, 1.0F),
+                    x, y, z, 1, 0.12D, 0.12D, 0.12D, 0.0D
+            );
+            if (i % 3 == 0) {
+                sendParticleToNearbyPlayers(world, center, ParticleTypes.LARGE_SMOKE,
+                        x, y + 0.8D, z, 1, 0.12D, 0.12D, 0.12D, 0.02D);
+            }
+            if (i % 8 == 0) {
+                sendParticleToNearbyPlayers(world, center, ParticleTypes.END_ROD,
+                        x, center.y + 0.2D, z, 1, 0.0D, 0.0D, 0.0D, 0.0D);
+            }
+        }
+    }
+
+    /**
+     * 只向冲击波中心 64 格内的玩家发送粒子数据。调用点来自服务端 tick，符合
+     * PlayerLookup.around 的服务端线程约束。
+     */
+    private static <T extends ParticleOptions> void sendParticleToNearbyPlayers(
+            ServerLevel world,
+            Vec3 viewCenter,
+            T particle,
+            double x,
+            double y,
+            double z,
+            int count,
+            double xDist,
+            double yDist,
+            double zDist,
+            double speed
+    ) {
+        for (ServerPlayer player : PlayerLookup.around(world, viewCenter, PARTICLE_VIEW_RADIUS)) {
+            if (!isWithinParticleViewRange(viewCenter, player.position())) {
+                continue;
+            }
+
+            // 64格筛选由 PlayerLookup 完成；overrideLimiter=true 避免 ServerLevel 的默认32格裁剪。
+            world.sendParticles(player, particle, true, false,
+                    x, y, z, count, xDist, yDist, zDist, speed);
+        }
+    }
+
+    static boolean isWithinParticleViewRange(Vec3 viewCenter, Vec3 playerPosition) {
+        return viewCenter.distanceToSqr(playerPosition) <= PARTICLE_VIEW_RADIUS_SQUARED;
     }
 
     private void applyDamage(ServerLevel world, Vec3 center, double radius, double thickness, double height, Entity owner, java.util.Set<Integer> hitEntities) {

@@ -29,7 +29,7 @@ public class LittlePersonHostilesSensor extends NearestVisibleLivingEntitySensor
     }
 
     private boolean isCloseEnoughForDanger(LivingEntity villager, LivingEntity target) {
-        float f = SQUARED_DISTANCES_FOR_DANGER.get(target.getType());
+        float f = SQUARED_DISTANCES_FOR_DANGER.getOrDefault(target.getType(), 8.0F);
         return target.distanceToSqr(villager) <= f * f;
     }
 
@@ -39,6 +39,7 @@ public class LittlePersonHostilesSensor extends NearestVisibleLivingEntitySensor
     }
 
     private boolean isHostile(LivingEntity entity) {
-        return SQUARED_DISTANCES_FOR_DANGER.containsKey(entity.getType());
+        return entity instanceof com.kltyton.mob_battle.entity.littleperson.zombie.ZombieLittlePerson
+                || SQUARED_DISTANCES_FOR_DANGER.containsKey(entity.getType());
     }
 }

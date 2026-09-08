@@ -4,7 +4,7 @@ import com.kltyton.mob_battle.entity.skull.IModSkullEntity;
 import com.kltyton.mob_battle.entity.witherskeletonking.WitherSkeletonKingEntity;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
 import com.kltyton.mob_battle.entity.support.EntityQueries;
-import com.kltyton.mob_battle.client.animation.gecko.GeoAnimationState;
+import com.kltyton.mob_battle.client.animation.gecko.SkillAnimationPlayback;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -203,12 +203,12 @@ public class SkullWarriorEntity extends WitherSkeleton implements GeoEntity, IMo
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>("main_controller", 0,this::animationController));
         controllers.add(new AnimationController<>("skill_controller",animTest -> {
-            if (GeoAnimationState.consumeFinishedTriggeredAnimation(animTest)) {
+            if (SkillAnimationPlayback.consumeFinishedTriggeredAnimation(animTest)) {
                 ClientPlayNetworking.send(new SkillPayload(
                         "stop", this.getId()
                 ));
             }
-            return GeoAnimationState.playTriggeredAnimationOrStop(animTest);
+            return SkillAnimationPlayback.playTriggeredAnimationOrStop(animTest);
         })
                 .receiveTriggeredAnimations()
                 .triggerableAnim("attack", ATTACK_ANIM)
@@ -271,7 +271,10 @@ public class SkullWarriorEntity extends WitherSkeleton implements GeoEntity, IMo
     protected void addAdditionalSaveData(ValueOutput view) {
         super.addAdditionalSaveData(view);
         EntityReference<LivingEntity> lazyEntityReference = this.getOwnerReference();
-        EntityReference.store(lazyEntityReference, view, "Owner");
+        if (lazyEntityReference != null) {
+            EntityReference.store(lazyEntityReference, view, "Owner");
+        }
+        view.putInt("SkillCooldown", getSkillCooldown());
     }
 
     @Override
@@ -283,6 +286,7 @@ public class SkullWarriorEntity extends WitherSkeleton implements GeoEntity, IMo
         } else {
             this.entityData.set(OWNER_UUID, Optional.empty());
         }
+        setSkillCooldown(Math.max(0, view.getIntOr("SkillCooldown", getSkillCooldown())));
     }
     @Override
     public void setOwner(@Nullable LivingEntity owner) {

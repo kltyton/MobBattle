@@ -12,7 +12,7 @@ import com.kltyton.mob_battle.network.packet.SkillPayload;
 import com.kltyton.mob_battle.combat.effect.CombatEffectApplier;
 import com.kltyton.mob_battle.animation.death.DeathAnimationState;
 import com.kltyton.mob_battle.entity.support.EntityQueries;
-import com.kltyton.mob_battle.client.animation.gecko.GeoAnimationState;
+import com.kltyton.mob_battle.client.animation.gecko.SkillAnimationPlayback;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.network.chat.Component;
@@ -174,6 +174,12 @@ public class HulkbusterEntity extends IronGolem implements GeoEntity, ModBaseIro
     @Override
     public void readAdditionalSaveData(ValueInput nbt) {
         super.readAdditionalSaveData(nbt);
+        setSkillCooldown(Math.max(0, nbt.getIntOr("SkillCooldown", getSkillCooldown())));
+        setSuperAttackSkillCooldown(Math.max(0, nbt.getIntOr("SuperAttackCooldown", getSuperAttackSkillCooldown())));
+        setMiniAttackSkillCooldown(Math.max(0, nbt.getIntOr("MiniAttackCooldown", getMiniAttackSkillCooldown())));
+        setMaxAttackSkillCooldown(Math.max(0, nbt.getIntOr("MaxAttackCooldown", getMaxAttackSkillCooldown())));
+        setClapHandsCooldown(Math.max(0, nbt.getIntOr("ClapHandsCooldown", getClapHandsCooldown())));
+        setPunchCooldown(Math.max(0, nbt.getIntOr("PunchCooldown", getPunchCooldown())));
         if (this.hasCustomName()) {
             updateBossBar();
         }
@@ -181,6 +187,12 @@ public class HulkbusterEntity extends IronGolem implements GeoEntity, ModBaseIro
     @Override
     public void addAdditionalSaveData(ValueOutput nbt) {
         super.addAdditionalSaveData(nbt);
+        nbt.putInt("SkillCooldown", getSkillCooldown());
+        nbt.putInt("SuperAttackCooldown", getSuperAttackSkillCooldown());
+        nbt.putInt("MiniAttackCooldown", getMiniAttackSkillCooldown());
+        nbt.putInt("MaxAttackCooldown", getMaxAttackSkillCooldown());
+        nbt.putInt("ClapHandsCooldown", getClapHandsCooldown());
+        nbt.putInt("PunchCooldown", getPunchCooldown());
     }
     @Override
     public void setHealth(float health) {
@@ -399,13 +411,13 @@ public class HulkbusterEntity extends IronGolem implements GeoEntity, ModBaseIro
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>("main_controller", this::animationController));
         controllers.add(new AnimationController<>("skill_controller", animTest -> {
-            if (GeoAnimationState.consumeFinishedTriggeredAnimation(animTest)) {
+            if (SkillAnimationPlayback.consumeFinishedTriggeredAnimation(animTest)) {
                 ClientPlayNetworking.send(new SkillPayload(
                         "stop", this.getId()
                 ));
                 animTest.renderState().addGeckolibData(HulkbusterEntityRenderer.SYNC_CATCH, false);
             }
-            return GeoAnimationState.playTriggeredAnimationOrStop(animTest);
+            return SkillAnimationPlayback.playTriggeredAnimationOrStop(animTest);
         })
                 .receiveTriggeredAnimations()
                 .triggerableAnim("attack", ATTACK_ANIM)
@@ -474,6 +486,38 @@ public class HulkbusterEntity extends IronGolem implements GeoEntity, ModBaseIro
     }
     public Vec3 leftMuzzle = Vec3.ZERO;
     public Vec3 rightMuzzle = Vec3.ZERO;
+
+    private static final double MAX_MUZZLE_DISTANCE = 8.0D;
+
+    /**
+     * 接收服务端帧同步的炮口位置。坐标必须是有限值，且仍处于当前实体附近；
+     * 拒绝时保留上一次合法坐标，避免远程包污染导弹生成中心。
+     */
+    public boolean acceptMuzzlePosition(String name, Vec3 position) {
+        if (!isFiniteAndNear(position)) {
+            return false;
+        }
+        if ("right_muzzle".equals(name)) {
+            this.rightMuzzle = position;
+            return true;
+        }
+        if ("left_muzzle".equals(name)) {
+            this.leftMuzzle = position;
+            return true;
+        }
+        return false;
+    }
+
+    private boolean isFiniteAndNear(Vec3 position) {
+        return position != null
+                && Double.isFinite(position.x)
+                && Double.isFinite(position.y)
+                && Double.isFinite(position.z)
+                && Double.isFinite(this.getX())
+                && Double.isFinite(this.getY())
+                && Double.isFinite(this.getZ())
+                && position.distanceToSqr(this.position()) <= MAX_MUZZLE_DISTANCE * MAX_MUZZLE_DISTANCE;
+    }
 
     public void startPunch() {
         this.punching = true;

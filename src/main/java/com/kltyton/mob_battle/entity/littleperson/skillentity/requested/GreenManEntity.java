@@ -8,6 +8,11 @@ import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.level.Level;
 
 public class GreenManEntity extends RequestedTaskLittlePersonEntity {
+    @Override
+    public String getDeathAnimationName() {
+        return "die";
+    }
+
     public GreenManEntity(EntityType<? extends Monster> entityType, Level world) {
         super(entityType, world, 2);
         this.healPerSecond = 1.0F;

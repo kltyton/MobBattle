@@ -5,8 +5,10 @@ import com.kltyton.mob_battle.animation.PalMorePlayerAnimationServerHandler;
 import com.kltyton.mob_battle.items.cooldown.StackBoundCooldowns;
 import com.kltyton.mob_battle.items.ModFabricItem;
 import com.kltyton.mob_battle.event.scheduler.ServerTickScheduler;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
@@ -23,15 +25,17 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class PoisonKnifeItem extends Item implements ModFabricItem {
     public static final String COOLDOWN_ID = "poison_knife";
     public static final int COOLDOWN_TICKS = 10 * 20;
     private static final int FALLBACK_RELEASE_TICKS = 10;
-    private static final Map<UUID, InteractionHand> PENDING_RELEASES = new ConcurrentHashMap<>();
+    private static final Map<MinecraftServer, Map<UUID, PendingRelease>> PENDING_RELEASES = new IdentityHashMap<>();
+    private static long nextPendingToken;
 
     public PoisonKnifeItem(Properties properties) {
         super(properties);
@@ -50,9 +54,15 @@ public class PoisonKnifeItem extends Item implements ModFabricItem {
         }
         if (level instanceof ServerLevel) {
             if (player instanceof ServerPlayer serverPlayer) {
-                PENDING_RELEASES.put(serverPlayer.getUUID(), hand);
+                MinecraftServer server = serverPlayer.level().getServer();
+                if (server == null) {
+                    return InteractionResult.FAIL;
+                }
+                long token = ++nextPendingToken;
+                pendingFor(server).put(serverPlayer.getUUID(), new PendingRelease(hand, token));
                 PalMorePlayerAnimationServerHandler.play(serverPlayer, ModPlayerAnimationIds.POISON_KNIFE);
-                ServerTickScheduler.schedule(level.getServer(), FALLBACK_RELEASE_TICKS, () -> releasePendingSkill(serverPlayer));
+                ServerTickScheduler.schedule(server, FALLBACK_RELEASE_TICKS,
+                        () -> releasePendingSkill(serverPlayer, token));
             }
         }
         StackBoundCooldowns.start(player, stack, COOLDOWN_ID, COOLDOWN_TICKS);
@@ -64,19 +74,39 @@ public class PoisonKnifeItem extends Item implements ModFabricItem {
         StackBoundCooldowns.ensureGroup(stack, COOLDOWN_ID, COOLDOWN_TICKS);
     }
 
-    public static void releasePendingSkill(ServerPlayer player) {
-        InteractionHand hand = PENDING_RELEASES.remove(player.getUUID());
-        if (hand == null || !(player.level() instanceof ServerLevel world)) {
-            return;
+    /** 仅消费当前玩家在当前服务器上的一条 pending，并返回是否实际释放。 */
+    public static boolean releasePendingSkill(ServerPlayer player) {
+        return releasePendingSkill(player, null);
+    }
+
+    private static boolean releasePendingSkill(ServerPlayer player, Long expectedToken) {
+        MinecraftServer server = player.level().getServer();
+        if (server == null) {
+            return false;
         }
+        Map<UUID, PendingRelease> pending = PENDING_RELEASES.get(server);
+        PendingRelease pendingRelease = pending == null ? null : pending.get(player.getUUID());
+        if (pendingRelease == null
+                || expectedToken != null && expectedToken != pendingRelease.token()) {
+            return false;
+        }
+        pending.remove(player.getUUID());
+        if (pending.isEmpty()) {
+            PENDING_RELEASES.remove(server);
+        }
+        if (server.getPlayerList().getPlayer(player.getUUID()) != player
+                || !(player.level() instanceof ServerLevel world)) {
+            return false;
+        }
+        InteractionHand hand = pendingRelease.hand();
         ItemStack stack = player.getItemInHand(hand);
         if (!(stack.getItem() instanceof PoisonKnifeItem)) {
-            return;
+            return false;
         }
         Vec3 look = player.getLookAngle().normalize();
         AABB box = player.getBoundingBox().expandTowards(look.scale(4.0D)).inflate(2.0D, 1.0D, 2.0D);
         for (LivingEntity target : world.getEntitiesOfClass(LivingEntity.class, box,
-                target -> target.isAlive() && target != player && !player.isAlliedTo(target))) {
+                target -> EntityQueries.isValidCombatTarget(player, target))) {
             target.invulnerableTime = 0;
             target.hurtServer(world, player.damageSources().playerAttack(player), 80.0F);
             target.addEffect(new MobEffectInstance(MobEffects.POISON, 60 * 20, 4), player);
@@ -86,5 +116,30 @@ public class PoisonKnifeItem extends Item implements ModFabricItem {
         if (!player.getAbilities().instabuild) {
             stack.hurtAndBreak(20, player, hand);
         }
+        return true;
+    }
+
+    /** 清除指定服务器上指定玩家的 pending，供断线生命周期调用。 */
+    public static void clearPending(MinecraftServer server, UUID playerId) {
+        Map<UUID, PendingRelease> pending = PENDING_RELEASES.get(server);
+        if (pending == null) {
+            return;
+        }
+        pending.remove(playerId);
+        if (pending.isEmpty()) {
+            PENDING_RELEASES.remove(server);
+        }
+    }
+
+    /** 清除指定服务器上指定玩家的未释放动画状态，供断线生命周期调用。 */
+    public static void clearAllPending(MinecraftServer server) {
+        PENDING_RELEASES.remove(server);
+    }
+
+    private static Map<UUID, PendingRelease> pendingFor(MinecraftServer server) {
+        return PENDING_RELEASES.computeIfAbsent(server, ignored -> new HashMap<>());
+    }
+
+    private record PendingRelease(InteractionHand hand, long token) {
     }
 }

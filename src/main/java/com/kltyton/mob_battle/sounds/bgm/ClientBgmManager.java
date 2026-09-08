@@ -29,6 +29,8 @@ public class ClientBgmManager {
 
     // 重置所有状态
     public static void resetAll() {
+        forcedMusicId = null;
+        forcedVolume = 1.0F;
         fadeOutTicks = 0;
         isFadingOut = false;
         fadingOutMusicId = null;

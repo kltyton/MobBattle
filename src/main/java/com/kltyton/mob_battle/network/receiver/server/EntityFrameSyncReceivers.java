@@ -6,12 +6,14 @@ import com.kltyton.mob_battle.config.MobBattleConfig;
 import com.kltyton.mob_battle.entity.highbird.HighbirdBaseEntity;
 import com.kltyton.mob_battle.entity.irongolem.hulkbuster.HulkbusterEntity;
 import com.kltyton.mob_battle.entity.piglingeneral.PiglinGeneralEntity;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
 import com.kltyton.mob_battle.network.packet.HighbirdAttackPayload;
 import com.kltyton.mob_battle.network.packet.HulkbusterEntityPayload;
 import com.kltyton.mob_battle.network.packet.PiglinGeneralBonePayload;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 
 /**
@@ -36,39 +38,59 @@ public final class EntityFrameSyncReceivers {
     public static void init() {
         ServerPlayNetworking.registerGlobalReceiver(HighbirdAttackPayload.ID,
                 (payload, context) -> {
+                    ServerPlayer player = context.player();
                     Entity attacker = context.player().level().getEntity(payload.attackerId());
                     if (attacker instanceof HighbirdBaseEntity highbird
-                            && PlayerLookup.tracking(highbird).contains(context.player())
+                            && isAuthorizedSender(highbird, player)
                             && highbird.level() instanceof ServerLevel serverWorld) {
-                        CombatLogSystem.logSkill(highbird, "highbird_attack");
-                        highbird.performAttack(serverWorld, highbird.getTarget());
+                        if (highbird.performAttack(serverWorld, highbird.getTarget())) {
+                            CombatLogSystem.logSkill(highbird, "highbird_attack");
+                        }
                     }
                 }
         );
         ServerPlayNetworking.registerGlobalReceiver(HulkbusterEntityPayload.ID,
                 (payload, context) -> {
+                    ServerPlayer player = context.player();
                     Entity entity = context.player().level().getEntity(payload.uuid());
-                    // 先 instanceof 后使用：任意客户端 UUID 都可能解析到非 Hulkbuster 实体，
-                    // 旧实现直接强转存在可触发的 ClassCastException。
                     if (entity instanceof HulkbusterEntity hulkbuster
-                            && PlayerLookup.tracking(hulkbuster).contains(context.player())) {
-                        switch (payload.name()) {
-                            case "right_muzzle" -> hulkbuster.rightMuzzle = payload.pos();
-                            case "left_muzzle" -> hulkbuster.leftMuzzle = payload.pos();
-                            default -> logUnknownMuzzleName(payload);
+                            && isAuthorizedSender(hulkbuster, player)) {
+                        if (isKnownMuzzleName(payload.name())) {
+                            hulkbuster.acceptMuzzlePosition(payload.name(), payload.pos());
+                        } else {
+                            logUnknownMuzzleName(payload);
                         }
                     }
                 }
         );
         ServerPlayNetworking.registerGlobalReceiver(PiglinGeneralBonePayload.ID,
                 (payload, context) -> {
+                    ServerPlayer player = context.player();
                     Entity entity = context.player().level().getEntity(payload.uuid());
                     if (entity instanceof PiglinGeneralEntity piglinGeneral
-                            && PlayerLookup.tracking(piglinGeneral).contains(context.player())) {
-                        piglinGeneral.setSwordEnergyPos(payload.swordEnergyPos());
+                            && isAuthorizedSender(piglinGeneral, player)) {
+                        piglinGeneral.acceptSwordEnergyPosition(payload.swordEnergyPos());
                     }
                 }
         );
+    }
+
+    /**
+     * 帧同步包只能由正在跟踪实体的玩家提交；实体存在明确的玩家 owner 时，
+     * 还必须匹配该 owner。无 owner 的自然实体保持原有 tracking 兼容行为。
+     */
+    static boolean isAuthorizedSender(Entity entity, ServerPlayer player) {
+        return PlayerLookup.tracking(entity).contains(player)
+                && isKnownPlayerOwner(entity, player);
+    }
+
+    static boolean isKnownPlayerOwner(Entity entity, ServerPlayer player) {
+        Entity knownOwner = EntityQueries.getKnownPlayerOwner(entity);
+        return knownOwner == null || knownOwner.getUUID().equals(player.getUUID());
+    }
+
+    private static boolean isKnownMuzzleName(String name) {
+        return "right_muzzle".equals(name) || "left_muzzle".equals(name);
     }
 
     private static void logUnknownMuzzleName(HulkbusterEntityPayload payload) {

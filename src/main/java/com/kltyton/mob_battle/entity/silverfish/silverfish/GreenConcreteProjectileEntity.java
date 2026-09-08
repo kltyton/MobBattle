@@ -10,6 +10,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.phys.BlockHitResult;
 
 public class GreenConcreteProjectileEntity extends TrueDamageProjectile {
     public GreenConcreteProjectileEntity(EntityType<GreenConcreteProjectileEntity> entityType, Level level) {
@@ -30,6 +31,12 @@ public class GreenConcreteProjectileEntity extends TrueDamageProjectile {
     @Override
     protected ItemStack getDefaultPickupItem() {
         return new ItemStack(Blocks.GREEN_CONCRETE);
+    }
+
+    @Override
+    protected void onHitBlock(BlockHitResult hitResult) {
+        super.onHitBlock(hitResult);
+        this.discard();
     }
 
     @Override

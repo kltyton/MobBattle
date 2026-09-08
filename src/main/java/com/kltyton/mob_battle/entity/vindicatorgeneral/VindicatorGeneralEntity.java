@@ -12,7 +12,7 @@ import com.kltyton.mob_battle.combat.effect.CombatEffectApplier;
 import com.kltyton.mob_battle.animation.death.DeathAnimationState;
 import com.kltyton.mob_battle.enchantment.support.EnchantmentAccess;
 import com.kltyton.mob_battle.entity.support.EntityQueries;
-import com.kltyton.mob_battle.client.animation.gecko.GeoAnimationState;
+import com.kltyton.mob_battle.client.animation.gecko.SkillAnimationPlayback;
 import com.kltyton.mob_battle.client.animation.keyframe.ParticleKeyframeHandler;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.network.chat.Component;
@@ -156,6 +156,13 @@ public class VindicatorGeneralEntity extends Vindicator implements GeoEntity, Mo
     @Override
     public void readAdditionalSaveData(ValueInput nbt) {
         super.readAdditionalSaveData(nbt);
+        setSkillCooldown(Math.max(0, nbt.getIntOr("SkillCooldown", getSkillCooldown())));
+        setSuperAttackSkillCooldown(Math.max(0, nbt.getIntOr("SuperAttackCooldown", getSuperAttackSkillCooldown())));
+        setMiniAttackSkillCooldown(Math.max(0, nbt.getIntOr("MiniAttackCooldown", getMiniAttackSkillCooldown())));
+        setMaxAttackSkillCooldown(Math.max(0, nbt.getIntOr("MaxAttackCooldown", getMaxAttackSkillCooldown())));
+        setCollisionKillCooldown(Math.max(0, nbt.getIntOr("CollisionKillCooldown", getCollisionKillCooldown())));
+        setSpinChopCooldown(Math.max(0, nbt.getIntOr("SpinChopCooldown", getSpinChopCooldown())));
+        setThrowAxeCooldown(Math.max(0, nbt.getIntOr("ThrowAxeCooldown", getThrowAxeCooldown())));
         if (this.hasCustomName()) {
             updateBossBar();
         }
@@ -163,6 +170,13 @@ public class VindicatorGeneralEntity extends Vindicator implements GeoEntity, Mo
     @Override
     public void addAdditionalSaveData(ValueOutput nbt) {
         super.addAdditionalSaveData(nbt);
+        nbt.putInt("SkillCooldown", getSkillCooldown());
+        nbt.putInt("SuperAttackCooldown", getSuperAttackSkillCooldown());
+        nbt.putInt("MiniAttackCooldown", getMiniAttackSkillCooldown());
+        nbt.putInt("MaxAttackCooldown", getMaxAttackSkillCooldown());
+        nbt.putInt("CollisionKillCooldown", getCollisionKillCooldown());
+        nbt.putInt("SpinChopCooldown", getSpinChopCooldown());
+        nbt.putInt("ThrowAxeCooldown", getThrowAxeCooldown());
     }
     @Override
     public void setHealth(float health) {
@@ -416,14 +430,14 @@ public class VindicatorGeneralEntity extends Vindicator implements GeoEntity, Mo
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>("main_controller", this::animationController));
         controllers.add(new AnimationController<>("skill_controller", animTest -> {
-            if (GeoAnimationState.consumeFinishedTriggeredAnimation(animTest)) {
+            if (SkillAnimationPlayback.consumeFinishedTriggeredAnimation(animTest)) {
                 if (!this.isWaitingForAxeRecovery()) {
                     ClientPlayNetworking.send(new SkillPayload(
                             "stop", this.getId()
                     ));
                 }
             }
-            return GeoAnimationState.playTriggeredAnimationOrStop(animTest);
+            return SkillAnimationPlayback.playTriggeredAnimationOrStop(animTest);
         })
                 .receiveTriggeredAnimations()
                 .triggerableAnim("attack", ATTACK_ANIM)

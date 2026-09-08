@@ -5,7 +5,7 @@ import com.kltyton.mob_battle.entity.ModSkillEntityType;
 import com.kltyton.mob_battle.entity.general.GeneralEntityOnlyOneSkill;
 import com.kltyton.mob_battle.entity.irongolem.VillagerIronGolemEntity;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
-import com.kltyton.mob_battle.client.animation.gecko.GeoAnimationState;
+import com.kltyton.mob_battle.client.animation.gecko.SkillAnimationPlayback;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -21,6 +21,8 @@ import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.monster.Silverfish;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import com.geckolib.animatable.instance.AnimatableInstanceCache;
 import com.geckolib.animatable.manager.AnimatableManager;
@@ -52,6 +54,16 @@ public class CoalSilverfishEntity extends Silverfish implements GeneralEntityOnl
         super.defineSynchedData(builder);
         builder.define(HAS_SKILL, false);
         builder.define(SKILL_COOLDOWN, getCooldownTime());
+    }
+    @Override
+    public void readAdditionalSaveData(ValueInput input) {
+        super.readAdditionalSaveData(input);
+        setSkillCooldown(Math.max(0, input.getIntOr("SkillCooldown", getSkillCooldown())));
+    }
+    @Override
+    public void addAdditionalSaveData(ValueOutput output) {
+        super.addAdditionalSaveData(output);
+        output.putInt("SkillCooldown", getSkillCooldown());
     }
     @Override
     public void runSkill(CoalSilverfishEntity entity) {
@@ -123,12 +135,12 @@ public class CoalSilverfishEntity extends Silverfish implements GeneralEntityOnl
     public void registerControllers(AnimatableManager.ControllerRegistrar controllerRegistrar) {
         controllerRegistrar.add(new AnimationController<>("main_controller", 0,this::animationController));
         controllerRegistrar.add(new AnimationController<>( "attack_controller",animTest -> {
-                    if (GeoAnimationState.consumeFinishedTriggeredAnimation(animTest)) {
+                    if (SkillAnimationPlayback.consumeFinishedTriggeredAnimation(animTest)) {
                         ClientPlayNetworking.send(new SkillPayload(
                                 "stop", this.getId()
                         ));
                     }
-                    return GeoAnimationState.playTriggeredAnimationOrStop(animTest);
+                    return SkillAnimationPlayback.playTriggeredAnimationOrStop(animTest);
                 })
                         .receiveTriggeredAnimations()
                         .triggerableAnim("attack", ATTACK_ANIM)
@@ -154,6 +166,7 @@ public class CoalSilverfishEntity extends Silverfish implements GeneralEntityOnl
         return Silverfish.createAttributes()
                 .add(Attributes.MAX_HEALTH, 700.0D)
                 .add(Attributes.ATTACK_DAMAGE, 60.0D)
+                .add(Attributes.FOLLOW_RANGE, 40.0D)
                 .add(ModEntityAttributes.DAMAGE_REDUCTION, 0.68);
     }
     @Override

@@ -77,7 +77,7 @@ dependencies {
     include(implementation "maven.modrinth:xxl-packets:1.0.6-26.x.x-fabric")
     include(implementation "maven.modrinth:packet-fixer:3.3.5")
     include(api("fuzs.forgeconfigapiport:forgeconfigapiport-fabric:26.1.4"))
-    include(implementation "org.mesdag:particlestorm:1.0.0")
+    include(implementation "org.mesdag:particlestorm:1.4.0")
     include(implementation "com.kltyton:playeranimationlibrarymorerotation-fabric-26.1.2:1.0.2")
     include(implementation "maven.modrinth:bendable-cuboids:2.0.2")
     include(implementation "com.zigythebird.playeranim:PlayerAnimationLibFabric:${pal_version}")

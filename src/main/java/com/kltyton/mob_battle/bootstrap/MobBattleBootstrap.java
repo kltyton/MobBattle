@@ -148,7 +148,6 @@ public final class MobBattleBootstrap {
      *         注册完成之后。</li>
      *     <li>{@code ModScreenHandlers} 保持为最后一个调用：其扩展菜单工厂在运行时
      *         构造背包/工作台 handler，依赖已注册的物品与方块。</li>
-     *     <li>保留 {@code //ClearItemEvent.init();} 注释占位，与原始顺序一致。</li>
      * </ul>
      */
     private static void initRuntimeIntegration() {
@@ -156,7 +155,6 @@ public final class MobBattleBootstrap {
         ServerBgmManager.init();
         DroneManager.init();
         ModItemGroups.init();
-        //ClearItemEvent.init();
         SkillAiRecoveryEvent.init();
         // 压缩护甲静态玩家状态释放：只注册断线/停服事件，无注册表依赖，
         // 插入此处不影响任何既有初始化顺序。

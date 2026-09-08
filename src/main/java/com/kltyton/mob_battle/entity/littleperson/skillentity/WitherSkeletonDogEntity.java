@@ -5,7 +5,7 @@ import com.kltyton.mob_battle.entity.OwnedSummon;
 import com.kltyton.mob_battle.entity.general.GeneralEntity;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
 import com.kltyton.mob_battle.entity.support.EntityQueries;
-import com.kltyton.mob_battle.client.animation.gecko.GeoAnimationState;
+import com.kltyton.mob_battle.client.animation.gecko.SkillAnimationPlayback;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -22,6 +22,8 @@ import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.monster.skeleton.WitherSkeleton;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import org.jetbrains.annotations.Nullable;
 import com.geckolib.animatable.instance.AnimatableInstanceCache;
 import com.geckolib.animatable.manager.AnimatableManager;
@@ -52,6 +54,16 @@ public class WitherSkeletonDogEntity extends WitherSkeleton implements GeneralEn
     public WitherSkeletonDogEntity(EntityType<? extends WitherSkeleton> entityType, Level world) {
         super(entityType, world);
         this.setHasSkill(false);
+    }
+    @Override
+    public void readAdditionalSaveData(ValueInput input) {
+        super.readAdditionalSaveData(input);
+        GeneralEntity.super.readSkillCooldowns(input);
+    }
+    @Override
+    public void addAdditionalSaveData(ValueOutput output) {
+        super.addAdditionalSaveData(output);
+        GeneralEntity.super.writeSkillCooldowns(output);
     }
 
     public void setSummonOwner(@Nullable LivingEntity summonOwner) {
@@ -122,10 +134,10 @@ public class WitherSkeletonDogEntity extends WitherSkeleton implements GeneralEn
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>("main_controller", 0, this::mainController));
         controllers.add(new AnimationController<>("skill_controller", 0, animTest -> {
-            if (GeoAnimationState.consumeFinishedTriggeredAnimation(animTest)) {
+            if (SkillAnimationPlayback.consumeFinishedTriggeredAnimation(animTest)) {
                 ClientPlayNetworking.send(new SkillPayload("stop", this.getId()));
             }
-            return GeoAnimationState.playTriggeredAnimationOrStop(animTest);
+            return SkillAnimationPlayback.playTriggeredAnimationOrStop(animTest);
         })
                 .receiveTriggeredAnimations()
                 .triggerableAnim("attack1", ATTACK_1_ANIM)
@@ -140,7 +152,7 @@ public class WitherSkeletonDogEntity extends WitherSkeleton implements GeneralEn
     }
 
     public PlayState mainController(AnimationTest<?> state) {
-        if (this.hasSkill() && !GeoAnimationState.hasRecentlyFinishedTriggeredAnimation(this)) {
+        if (this.hasSkill() && SkillAnimationPlayback.hasActiveSkill(state)) {
             return PlayState.CONTINUE;
         }
         if (state.isMoving()) {

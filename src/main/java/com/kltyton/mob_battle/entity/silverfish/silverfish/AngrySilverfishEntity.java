@@ -18,7 +18,6 @@ import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.ai.goal.RangedBowAttackGoal;
-import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.monster.RangedAttackMob;
@@ -45,7 +44,6 @@ public class AngrySilverfishEntity extends Silverfish implements GeoEntity, Rang
     protected void registerGoals() {
         this.goalSelector.addGoal(1, new FloatGoal(this));
         this.goalSelector.addGoal(2, new RangedBowAttackGoal<>(this, 1.0D, 40, 15.0F));
-        this.goalSelector.addGoal(3, new WaterAvoidingRandomStrollGoal(this, 1.0D));
         this.goalSelector.addGoal(4, new LookAtPlayerGoal(this, Player.class, 8.0F));
         this.goalSelector.addGoal(5, new RandomLookAroundGoal(this));
         this.targetSelector.addGoal(1, new HurtByTargetGoal(this));
@@ -77,19 +75,19 @@ public class AngrySilverfishEntity extends Silverfish implements GeoEntity, Rang
         GreenConcreteProjectileEntity projectile = new GreenConcreteProjectileEntity(this.level(), this);
         projectile.setBaseDamage(this.getAttributeValue(Attributes.ATTACK_DAMAGE));
         projectile.setOwner(this);
-        double x = target.getX() - this.getX();
-        double y = target.getY(0.3333333333333333D) - projectile.getY();
-        double z = target.getZ() - this.getZ();
-        double horizontalDistance = Math.sqrt(x * x + z * z);
+        net.minecraft.world.phys.Vec3 targetCenter = target.getBoundingBox().getCenter();
+        double x = targetCenter.x - projectile.getX();
+        double y = targetCenter.y - projectile.getY();
+        double z = targetCenter.z - projectile.getZ();
         Projectile.spawnProjectileUsingShoot(
                 projectile,
                 world,
                 new ItemStack(Blocks.GREEN_CONCRETE),
                 x,
-                y + horizontalDistance * 0.20000000298023224D,
+                y,
                 z,
                 1.6F,
-                14 - world.getDifficulty().getId() * 4
+                0.0F
         );
         this.playSound(net.minecraft.sounds.SoundEvents.SKELETON_SHOOT, 1.0F,
                 1.0F / (this.getRandom().nextFloat() * 0.4F + 0.8F));

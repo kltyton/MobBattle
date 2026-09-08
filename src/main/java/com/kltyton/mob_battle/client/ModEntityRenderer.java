@@ -2,6 +2,10 @@ package com.kltyton.mob_battle.client;
 
 import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.client.render.ModPiglinBruteRenderer;
+import com.kltyton.mob_battle.client.renderer.entity.villager.EvokerVillagerRenderer;
+import com.kltyton.mob_battle.client.renderer.entity.villager.PiglinVillagerRenderer;
+import com.kltyton.mob_battle.client.renderer.entity.villager.WitherSkeletonVillagerRenderer;
+import com.kltyton.mob_battle.client.renderer.entity.vehicle.ObsidianBoatRenderer;
 import com.kltyton.mob_battle.entity.blueirongolem.BlueIronGolemEntityRenderer;
 import com.kltyton.mob_battle.entity.bullet.BulletEntityRenderer;
 import com.kltyton.mob_battle.entity.bullet.GoldenBulletEntityRenderer;
@@ -84,6 +88,10 @@ public class ModEntityRenderer {
         EntityRenderers.register(ModEntities.MILITIA_ARCHER_VILLAGER, MilitiaArcherVillagerRenderer::new);
         EntityRenderers.register(ModEntities.WARRIOR_VILLAGER, WarriorVillagerRenderer::new);
         EntityRenderers.register(ModEntities.ARCHER_VILLAGER, ArcherVillagerRenderer::new);
+        EntityRenderers.register(ModEntities.WITHER_SKELETON_VILLAGER, WitherSkeletonVillagerRenderer::new);
+        EntityRenderers.register(ModEntities.PIGLIN_VILLAGER, PiglinVillagerRenderer::new);
+        EntityRenderers.register(ModEntities.EVOKER_VILLAGER, EvokerVillagerRenderer::new);
+        EntityRenderers.register(ModEntities.OBSIDIAN_BOAT, ObsidianBoatRenderer::new);
         EntityRenderers.register(ModEntities.XUN_SHENG, XunShengEntityRenderer::new);
         EntityRenderers.register(ModEntities.DEEP_CREATURE, DeepCreatureEntityRenderer::new);
         EntityRenderers.register(ModEntities.WITHER_SKELETON_KING, WitherSkeletonKingRenderer::new);
@@ -134,6 +142,7 @@ public class ModEntityRenderer {
         EntityRenderers.register(ModEntities.GREEN_CONCRETE_PROJECTILE, GreenConcreteProjectileRenderer::new);
         EntityRenderers.register(ModEntities.LITTLE_STONE_PROJECTILE, ThrownItemRenderer::new);
         EntityRenderers.register(ModEntities.ELEMENTAL_SWORD_PROJECTILE, ThrownItemRenderer::new);
+        EntityRenderers.register(ModEntities.MONEY_GUN_PROJECTILE, ThrownItemRenderer::new);
         EntityRenderers.register(ModEntities.SNOWMAN_ICE_BLOCK, SnowmanIceBlockRenderer::new);
         EntityRenderers.register(ModEntities.CBOT_SNOWBALL, CbotSnowballRenderer::new);
         EntityRenderers.register(ModEntities.NEW_SNOW_GOLEM, SnowGolemRenderer::new);
@@ -183,6 +192,8 @@ public class ModEntityRenderer {
             EntityType<? extends BaseSkillLittlePersonEntity> mobType = (EntityType<? extends BaseSkillLittlePersonEntity>) entityType;
             EntityRenderers.register(mobType, ctx -> new BaseSkillLittlePersonEntityRenderer<>(ctx, id, false));
         });
+        com.kltyton.mob_battle.entity.registry.LittlePersonZombieEntityTypes.types().forEach((id, type) ->
+                EntityRenderers.register(type, ctx -> new com.kltyton.mob_battle.client.renderer.littleperson.zombie.ZombieLittlePersonRenderer<>(ctx, id)));
         ModEntities.GENERAL_RENDERERS.forEach((id, entityType) -> {
             if ("piglin_general".equals(id)) {
                 return;

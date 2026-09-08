@@ -25,6 +25,8 @@ public class ModBlockTagGenerator extends FabricTagsProvider.BlockTagsProvider {
         // 将 NEST_BLOCK 添加到铲子挖掘标签中
         valueLookupBuilder(BlockTags.MINEABLE_WITH_SHOVEL)
                 .add(ModBlocks.NEST_BLOCK);
+        valueLookupBuilder(BlockTags.CAULDRONS)
+                .add(ModBlocks.BERRY_JUICE_CAULDRON);
         valueLookupBuilder(BlockTags.MINEABLE_WITH_PICKAXE)
                 .add(
                         ModBlocks.MACHINE_WORKTABLE_BLOCK,

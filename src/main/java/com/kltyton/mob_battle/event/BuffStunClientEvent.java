@@ -5,6 +5,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import java.util.HashMap;
 import java.util.Map;
@@ -14,11 +15,23 @@ public class BuffStunClientEvent {
     record PlayerStunState(Vec3 position, float yaw, float pitch) {
     }
     private static final Map<UUID, PlayerStunState> STUN_MAP = new HashMap<>();
+    private static Level lastLevel;
 
     public static void ClientInit() {
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
+            if (client.level != lastLevel) {
+                STUN_MAP.clear();
+                lastLevel = client.level;
+            }
             Player player = client.player;
-            if (player == null || player.isCreative() || player.isSpectator()) return;
+            if (player == null) {
+                STUN_MAP.clear();
+                return;
+            }
+            if (player.isCreative() || player.isSpectator()) {
+                STUN_MAP.remove(player.getUUID());
+                return;
+            }
             UUID id = player.getUUID();
             // 被眩晕中
             if (player.hasEffect(ModEffects.STUN_ENTRY)) {
@@ -40,5 +53,10 @@ public class BuffStunClientEvent {
                 STUN_MAP.remove(id);
             }
         });
+    }
+
+    public static void reset() {
+        STUN_MAP.clear();
+        lastLevel = null;
     }
 }

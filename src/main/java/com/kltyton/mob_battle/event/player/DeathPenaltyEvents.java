@@ -6,14 +6,16 @@ import com.kltyton.mob_battle.items.consumable.CardiotonicInjectionItem;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.UUID;
 
 public class DeathPenaltyEvents {
-    private static final Map<UUID, Integer> DEATH_PENALTY_CACHE = new HashMap<>();
+    private static final Map<MinecraftServer, Map<UUID, Integer>> DEATH_PENALTY_CACHE = new IdentityHashMap<>();
     public static void init() {
         //死亡惩罚事件
         // 1. 监听死亡事件：在玩家点击重生前记录数据
@@ -56,10 +58,10 @@ public class DeathPenaltyEvents {
                 if (effect != null) {
                     // 如果死亡时有效果，计算下一级
                     int nextLevel = Math.min(effect.getAmplifier() + 1, 4);
-                    DEATH_PENALTY_CACHE.put(player.getUUID(), nextLevel);
+                    cacheFor(player).put(player.getUUID(), nextLevel);
                 } else {
                     // 如果死亡时没有效果，重置死亡次数/等级为 0
-                    DEATH_PENALTY_CACHE.put(player.getUUID(), 0);
+                    cacheFor(player).put(player.getUUID(), 0);
                 }
             }
         });
@@ -69,7 +71,12 @@ public class DeathPenaltyEvents {
             UUID uuid = newPlayer.getUUID();
 
             // 从缓存中取出等级（remove 会直接取出并从 Map 中删除，防止内存泄漏）
-            Integer nextLevel = DEATH_PENALTY_CACHE.remove(uuid);
+            MinecraftServer server = newPlayer.level().getServer();
+            Map<UUID, Integer> serverCache = DEATH_PENALTY_CACHE.get(server);
+            Integer nextLevel = serverCache == null ? null : serverCache.remove(uuid);
+            if (serverCache != null && serverCache.isEmpty()) {
+                DEATH_PENALTY_CACHE.remove(server);
+            }
 
             if (nextLevel != null) {
                 // 给新玩家施加效果
@@ -80,5 +87,22 @@ public class DeathPenaltyEvents {
                 ));
             }
         });
+    }
+
+    private static Map<UUID, Integer> cacheFor(ServerPlayer player) {
+        return DEATH_PENALTY_CACHE.computeIfAbsent(player.level().getServer(), ignored -> new HashMap<>());
+    }
+
+    public static void clearPlayer(MinecraftServer server, UUID playerUuid) {
+        Map<UUID, Integer> serverCache = DEATH_PENALTY_CACHE.get(server);
+        if (serverCache == null) return;
+        serverCache.remove(playerUuid);
+        if (serverCache.isEmpty()) {
+            DEATH_PENALTY_CACHE.remove(server);
+        }
+    }
+
+    public static void clearServer(MinecraftServer server) {
+        DEATH_PENALTY_CACHE.remove(server);
     }
 }

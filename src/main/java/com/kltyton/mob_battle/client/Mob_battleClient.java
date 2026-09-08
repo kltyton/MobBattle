@@ -2,6 +2,9 @@ package com.kltyton.mob_battle.client;
 
 import com.kltyton.mob_battle.block.ModBlocksClient;
 import com.kltyton.mob_battle.client.keybinding.ModKeyBinding;
+import com.kltyton.mob_battle.client.renderer.entitydomain.EntityDomainRendererRegistrar;
+import com.kltyton.mob_battle.client.renderer.entitydomain.IceSoldierRendererRegistrar;
+import com.kltyton.mob_battle.client.color.BerryJuiceBlockColors;
 import com.kltyton.mob_battle.client.screen.ModScreen;
 import com.kltyton.mob_battle.config.MobBattleClientConfig;
 import com.kltyton.mob_battle.event.ModClientEvents;
@@ -16,7 +19,10 @@ public class Mob_battleClient implements ClientModInitializer {
         MobBattleClientConfig.init();
         ClientPlayNetwork.init();
         ModClientEvents.clientInit();
+        BerryJuiceBlockColors.init();
         ModModel.init();
+        EntityDomainRendererRegistrar.init();
+        IceSoldierRendererRegistrar.init();
         ModEntityRenderer.init();
         ModKeyBinding.init();
         ModArmorRenderer.init();

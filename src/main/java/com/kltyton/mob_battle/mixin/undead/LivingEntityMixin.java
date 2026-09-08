@@ -114,12 +114,6 @@ public abstract class LivingEntityMixin extends Entity implements Attackable, Wa
     @Shadow
     public abstract boolean isDeadOrDying();
 
-    @Inject(method = "hurtServer", at = @At("HEAD"))
-    private void mobBattle$resetAppliedDamage(ServerLevel world, DamageSource source, float amount,
-                                              CallbackInfoReturnable<Boolean> cir) {
-        this.mobBattle$lastAppliedDamage = 0.0F;
-    }
-
     @Inject(method = "canAttack(Lnet/minecraft/world/entity/LivingEntity;)Z", at = @At("HEAD"), cancellable = true)
     private void preventTeamTargeting(LivingEntity target, CallbackInfoReturnable<Boolean> cir) {
         LivingEntity self = (LivingEntity) (Object) this;
@@ -285,7 +279,9 @@ public abstract class LivingEntityMixin extends Entity implements Attackable, Wa
         }
         if (sourceEntity instanceof Projectile projectile) {
             Entity owner = projectile.getOwner();
-            if (owner != null && (owner.isAlliedTo(target) || target.isAlliedTo(owner))) {
+            if (owner != null
+                    && (owner.isAlliedTo(target) || target.isAlliedTo(owner))
+                    && !EntityQueries.isUnteamedShulkerSelfHit(projectile, owner, target)) {
                 cir.setReturnValue(false);
                 cir.cancel();
                 return;
@@ -305,13 +301,28 @@ public abstract class LivingEntityMixin extends Entity implements Attackable, Wa
     @Inject(method = "hurtServer", at = @At("RETURN"))
     public void damageReturn(ServerLevel world, DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
         Entity attacker = source.getEntity();
-        if (!cir.getReturnValue() || this.mobBattle$handlingExcitementBonus || !mobBattle$isDirectMeleeDamage(source)) {
+        if (!cir.getReturnValue()) {
+            return;
+        }
+        LivingEntity target = (LivingEntity) (Object) this;
+        MobEffectInstance thicket = target.getEffect(ModEffects.THICKET_ENTRY);
+        if (thicket != null
+                && !source.is(DamageTypes.THORNS)
+                && attacker instanceof LivingEntity livingAttacker
+                && livingAttacker != target) {
+            livingAttacker.invulnerableTime = 0;
+            livingAttacker.hurtServer(
+                    world,
+                    target.damageSources().thorns(target),
+                    (thicket.getAmplifier() + 1) * 5.0F
+            );
+        }
+        if (this.mobBattle$handlingExcitementBonus || !mobBattle$isDirectMeleeDamage(source)) {
             return;
         }
         if (attacker instanceof LivingEntity livingAttacker) {
             MobEffectInstance excitement = livingAttacker.getEffect(ModEffects.EXCITEMENT_ENTRY);
             if (excitement != null && livingAttacker.getRandom().nextFloat() < 0.20F) {
-                LivingEntity target = (LivingEntity) (Object) this;
                 int level = excitement.getAmplifier() + 1;
                 this.mobBattle$handlingExcitementBonus = true;
                 try {
@@ -370,7 +381,10 @@ public abstract class LivingEntityMixin extends Entity implements Attackable, Wa
     public boolean isIronGoldSword = false;
     @Inject(method = "checkTotemDeathProtection", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;copy()Lnet/minecraft/world/item/ItemStack;"), locals = LocalCapture.CAPTURE_FAILSOFT, cancellable = true)
     public void tryUseDeathProtector(DamageSource source, CallbackInfoReturnable<Boolean> cir, ItemStack protectionItem, DeathProtection deathProtectionComponent, ItemStack itemStack, InteractionHand[] var5, int var6, int var7, InteractionHand hand) {
-        if (itemStack.is(ModItems.IRON_GOLD_SWORD) && (!ArmorSetRules.hasFullArmor((LivingEntity) (Object) this, ModMaterial.IRON_GOLD_INSTANCE) || itemStack.getDamageValue() >= itemStack.getMaxDamage() - 1)) {
+        if (itemStack.is(ModItems.IRON_GOLD_SWORD)
+                && (this.mobBattle$lastAppliedDamage > 400.0F
+                || !ArmorSetRules.hasFullArmor((LivingEntity) (Object) this, ModMaterial.IRON_GOLD_INSTANCE)
+                || itemStack.getDamageValue() >= itemStack.getMaxDamage() - 1)) {
             isIronGoldSword = false;
             cir.cancel();
             cir.setReturnValue(false);

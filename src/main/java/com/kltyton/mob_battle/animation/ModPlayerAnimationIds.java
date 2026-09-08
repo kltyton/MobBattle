@@ -10,6 +10,8 @@ public final class ModPlayerAnimationIds {
             Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "poison_knife_animation");
     public static final Identifier BLOOD_KNIFE =
             Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "blood_knife_animation");
+    public static final Identifier MONEY_GUN_SHOOT =
+            Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "shoot2");
 
     private ModPlayerAnimationIds() {
     }

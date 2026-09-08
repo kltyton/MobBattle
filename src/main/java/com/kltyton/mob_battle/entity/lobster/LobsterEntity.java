@@ -2,7 +2,7 @@ package com.kltyton.mob_battle.entity.lobster;
 
 import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.entity.general.GeneralEntity;
-import com.kltyton.mob_battle.client.animation.gecko.GeoAnimationState;
+import com.kltyton.mob_battle.client.animation.gecko.SkillAnimationPlayback;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.world.entity.Entity;
@@ -414,6 +414,11 @@ public class LobsterEntity extends Animal implements GeneralEntity<LobsterEntity
         view.putBoolean("Retreating", this.isRetreating());
         view.putBoolean("PanicRetreating", this.isPanicRetreating());
         view.putBoolean("TargetingUnderwater", this.targetingUnderwater);
+        view.putInt("SkillCooldown1", getSkillCooldown1());
+        view.putInt("SkillCooldown2", getSkillCooldown2());
+        view.putInt("SkillCooldown3", getSkillCooldown3());
+        view.putInt("SkillCooldown4", getSkillCooldown4());
+        view.putInt("SkillCooldown5", getSkillCooldown5());
     }
 
     @Override
@@ -423,11 +428,16 @@ public class LobsterEntity extends Animal implements GeneralEntity<LobsterEntity
         this.setRetreating(view.getBooleanOr("Retreating", false));
         this.setPanicRetreating(view.getBooleanOr("PanicRetreating", false));
         this.targetingUnderwater = view.getBooleanOr("TargetingUnderwater", false);
+        setSkillCooldown1(Math.max(0, view.getIntOr("SkillCooldown1", getSkillCooldown1())));
+        setSkillCooldown2(Math.max(0, view.getIntOr("SkillCooldown2", getSkillCooldown2())));
+        setSkillCooldown3(Math.max(0, view.getIntOr("SkillCooldown3", getSkillCooldown3())));
+        setSkillCooldown4(Math.max(0, view.getIntOr("SkillCooldown4", getSkillCooldown4())));
+        setSkillCooldown5(Math.max(0, view.getIntOr("SkillCooldown5", getSkillCooldown5())));
     }
 
     @Override
     public PlayState mainController(AnimationTest<?> event) {
-        if (this.hasSkill() && !GeoAnimationState.hasRecentlyFinishedTriggeredAnimation(this)) {
+        if (this.hasSkill() && SkillAnimationPlayback.hasActiveSkill(event)) {
             return PlayState.CONTINUE;
         }
 

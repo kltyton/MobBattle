@@ -31,6 +31,7 @@ public class ModBlockLootTableGenerator extends FabricBlockLootSubProvider {
         dropSelf(ModBlocks.COMPRESSED_GOLD_BLOCK);
         dropSelf(ModBlocks.COMPRESSED_DIAMOND_BLOCK);
         dropSelf(ModBlocks.COMPRESSED_NETHERITE_BLOCK);
+        dropOther(ModBlocks.BERRY_JUICE_CAULDRON, Blocks.CAULDRON);
         add(Blocks.COBBLESTONE, LootTable.lootTable()
                 .withPool(LootPool.lootPool()
                         .setRolls(ConstantValue.exactly(1.0F))

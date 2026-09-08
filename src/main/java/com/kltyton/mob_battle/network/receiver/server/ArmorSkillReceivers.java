@@ -42,12 +42,15 @@ import java.util.List;
  * <p>信任边界：三个接收器都以服务端全套盔甲检查（
  * {@link ArmorSetRules#hasFullArmor}）作为进入门；技能 id 是否有效、冷却、粒子、
  * 伤害等全部语义由服务端技能管理器（{@link CompressArmorSkillManager} 等）裁决，
- * 负载中的数值不作为操作目标。冷却占位物品沿用 HEAD（{@code Items.AIR} 与
- * {@code Items.COMMAND_BLOCK_MINECART}），冷却时长常量亦与 HEAD 完全一致。
+ * 负载中的数值不作为操作目标。冷却占位物品沿用既有入口（{@code Items.AIR} 与
+ * {@code Items.COMMAND_BLOCK_MINECART}）；紫金套 C 技能为 12 秒，X 技能为 15 秒。
  * 本文件不新增权限或速率限制等推测性约束。
  */
 public final class ArmorSkillReceivers {
-    private static final int ZIJIN_SKILL_0_COOLDOWN_TICKS = 12 * 20;
+    private static final int MIN_COMPRESS_ARMOR_SKILL_ID = 0;
+    private static final int MAX_COMPRESS_ARMOR_SKILL_ID = 2;
+    private static final int ZIJIN_C_COOLDOWN_TICKS = 12 * 20;
+    private static final int ZIJIN_X_COOLDOWN_TICKS = 15 * 20;
     private static final int EMERALD_SHIELD_COOLDOWN_TICKS = 35 * 20;
 
     private ArmorSkillReceivers() {
@@ -93,21 +96,24 @@ public final class ArmorSkillReceivers {
      *
      * <p>行为与 HEAD 完全一致：仅当服务端判定玩家穿着全套
      * {@link ModMaterial#ZIJIN_ARMOR_INSTANCE} 时生效；技能 0/1 的上印记、爆炸、
-     * 魔法/近战伤害、粒子与冷却全部保持原样（{@code Items.AIR} 冷却 12*20 tick、
-     * {@code Items.COMMAND_BLOCK_MINECART} 冷却 300 tick）。
+     * 魔法/近战伤害与粒子保持原样；C/X 分别使用 12/15 秒冷却。
      */
     public static void initZiJin() {
         ServerPlayNetworking.registerGlobalReceiver(ZiJinPayload.ID, (payload, context) -> {
             //紫金套装效果
             ServerPlayer player = context.player();
             ServerLevel world = player.level();
+            int cooldownTicks = zijinCooldownTicks(payload.skill_id());
+            if (cooldownTicks < 0) {
+                return;
+            }
             if (ArmorSetRules.hasFullArmor(player, ModMaterial.ZIJIN_ARMOR_INSTANCE)) {
                     if (payload.skill_id() == 0) {
                         ItemStack cooldownItem = Items.AIR.getDefaultInstance();
                         if (player.getCooldowns().isOnCooldown(cooldownItem)) {
                             // 获取剩余冷却进度 (0.0 到 1.0 之间的浮点数)
                             float progress = player.getCooldowns().getCooldownPercent(cooldownItem, 0);
-                            float remainingSeconds = (progress * ZIJIN_SKILL_0_COOLDOWN_TICKS) / 20.0F;
+                            float remainingSeconds = (progress * cooldownTicks) / 20.0F;
                             player.sendOverlayMessage(
                                     Component.literal("套装技能冷却中！还需等待 " + String.format("%.1f", remainingSeconds) + " 秒")
                                             .withStyle(ChatFormatting.RED)
@@ -138,12 +144,12 @@ public final class ArmorSkillReceivers {
                             }
                         }
                         ParticleEffectEmitter.spawnZiJinSkill0DetonateParticles(world, player, secondRangeTargets);
-                        player.getCooldowns().addCooldown(cooldownItem, ZIJIN_SKILL_0_COOLDOWN_TICKS);
+                        player.getCooldowns().addCooldown(cooldownItem, cooldownTicks);
                     } else if (payload.skill_id() == 1) {
                         ItemStack cooldownItem = Items.COMMAND_BLOCK_MINECART.getDefaultInstance();
                         if (player.getCooldowns().isOnCooldown(cooldownItem)) {
                             float progress = player.getCooldowns().getCooldownPercent(cooldownItem, 0);
-                            float remainingSeconds = (progress * 300) / 20.0F;
+                            float remainingSeconds = (progress * cooldownTicks) / 20.0F;
                             player.sendOverlayMessage(
                                     Component.literal("套装技能冷却中！还需等待 " + String.format("%.1f", remainingSeconds) + " 秒")
                                             .withStyle(ChatFormatting.RED)
@@ -158,7 +164,7 @@ public final class ArmorSkillReceivers {
                         // 技能1：强化上印记粒子
                         ParticleEffectEmitter.spawnZiJinSkill1MarkParticles(world, player, targets);
 
-                        player.getCooldowns().addCooldown(cooldownItem, 300);
+                        player.getCooldowns().addCooldown(cooldownItem, cooldownTicks);
                     }
             }
         });
@@ -167,15 +173,37 @@ public final class ArmorSkillReceivers {
     /**
      * 压缩护甲技能接收器（原注册顺序第 14 位）。
      *
-     * <p>行为与 HEAD 完全一致：服务端记录技能使用日志后，把技能 id 交给
+     * <p>先拒绝未知技能 id，再记录合法请求并把技能 id 交给
      * {@link CompressArmorSkillManager#handleSkill} 裁决（其中仍包含全套盔甲门、
      * 弹药/冷却/伤害/粒子等全部原语义）。
      */
     public static void initCompressArmorSkill() {
         ServerPlayNetworking.registerGlobalReceiver(CompressArmorSkillPayload.ID, (payload, context) -> {
             ServerPlayer player = context.player();
-            CombatLogSystem.logAction(player, "使用压缩护甲技能 " + payload.skill_id());
-            CompressArmorSkillManager.handleSkill(player, payload.skill_id());
+            int skillId = payload.skill_id();
+            if (!isKnownCompressArmorSkillId(skillId)) {
+                return;
+            }
+            CombatLogSystem.logAction(player, "使用压缩护甲技能 " + skillId);
+            CompressArmorSkillManager.handleSkill(player, skillId);
         });
+    }
+
+    /**
+     * 验证压缩护甲兼容协议 skill_id，必须在日志和技能管理器调用前执行。
+     *
+     * @param skillId 客户端携带的技能编号：Z=0、X=1、C=2
+     * @return 仅当编号属于现有兼容协议 0、1、2 时返回 true
+     */
+    static boolean isKnownCompressArmorSkillId(int skillId) {
+        return skillId >= MIN_COMPRESS_ARMOR_SKILL_ID && skillId <= MAX_COMPRESS_ARMOR_SKILL_ID;
+    }
+
+    static int zijinCooldownTicks(int skillId) {
+        return switch (skillId) {
+            case 0 -> ZIJIN_C_COOLDOWN_TICKS;
+            case 1 -> ZIJIN_X_COOLDOWN_TICKS;
+            default -> -1;
+        };
     }
 }

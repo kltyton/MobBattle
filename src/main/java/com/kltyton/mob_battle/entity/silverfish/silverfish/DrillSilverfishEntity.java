@@ -1,6 +1,7 @@
 package com.kltyton.mob_battle.entity.silverfish.silverfish;
 
 import com.kltyton.mob_battle.entity.ModEntityAttributes;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
 import java.util.List;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
@@ -52,8 +53,7 @@ public class DrillSilverfishEntity extends CoalSilverfishEntity {
 
         List<Entity> targets = serverWorld.getEntities(this, hitBox,
                 target -> target instanceof LivingEntity
-                        && target.isAlive()
-                        && !target.isAlliedTo(this));
+                        && EntityQueries.isValidCombatTarget(this, (LivingEntity) target));
 
         float damageAmount = (float) this.getAttributeValue(Attributes.ATTACK_DAMAGE);
 
@@ -75,6 +75,7 @@ public class DrillSilverfishEntity extends CoalSilverfishEntity {
         return Silverfish.createAttributes()
                 .add(Attributes.MAX_HEALTH, 200.0D)
                 .add(Attributes.ATTACK_DAMAGE, 100.0D)
+                .add(Attributes.FOLLOW_RANGE, 40.0D)
                 .add(ModEntityAttributes.DAMAGE_REDUCTION, 0.4);
     }
 }

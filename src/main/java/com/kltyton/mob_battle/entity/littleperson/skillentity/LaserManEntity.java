@@ -29,6 +29,11 @@ import org.jetbrains.annotations.Nullable;
 import java.util.EnumSet;
 
 public class LaserManEntity extends RequestedLittlePersonEntity implements RangedAttackMob {
+    @Override
+    public String getDeathAnimationName() {
+        return "die";
+    }
+
     private static final double MELEE_SWITCH_RANGE = 4.0D;
     private static final double RANGED_ATTACK_RANGE = 16.0D;
     private static final double RANGED_PREFERRED_RANGE = 8.0D;

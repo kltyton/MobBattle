@@ -2,6 +2,7 @@ package com.kltyton.mob_battle.items.tool.snipe;
 
 import com.kltyton.mob_battle.entity.bullet.BulletEntity;
 import com.kltyton.mob_battle.entity.bullet.ITrueDamageProjectile;
+import com.kltyton.mob_battle.entity.player.IPlayerEntityAccessor;
 import com.kltyton.mob_battle.items.ModFabricItem;
 import com.kltyton.mob_battle.items.ModItems;
 import com.kltyton.mob_battle.sounds.ModSounds;
@@ -48,8 +49,8 @@ import java.util.Optional;
 import java.util.function.Predicate;
 
 public class VsSnipe extends ProjectileWeaponItem implements ModFabricItem {
-    private boolean charged = false;
-    private boolean loaded = false;
+    public static final float BULLET_SPEED = 3.15F;
+    public static final float BULLET_INACCURACY = 1.0F;
 
     private static final CrossbowItem.ChargingSounds DEFAULT_LOADING_SOUNDS = new CrossbowItem.ChargingSounds(
             Optional.of(ModSounds.GUN_RELOAD_SOUND_EVENT_REFERENCE),
@@ -102,8 +103,9 @@ public class VsSnipe extends ProjectileWeaponItem implements ModFabricItem {
             this.shootAll(world, user, hand, itemStack, getSpeed(chargedProjectilesComponent), 1.0F, null);
             return InteractionResult.CONSUME;
         } else if (!user.getProjectile(itemStack).isEmpty()) {
-            this.charged = false;
-            this.loaded = false;
+            if (user instanceof IPlayerEntityAccessor state) {
+                state.resetVsSnipeLoading(itemStack);
+            }
             user.startUsingItem(hand);
             return InteractionResult.CONSUME;
         } else {
@@ -112,7 +114,22 @@ public class VsSnipe extends ProjectileWeaponItem implements ModFabricItem {
     }
 
     private static float getSpeed(ChargedProjectiles stack) {
-        return stack.contains(Items.FIREWORK_ROCKET) ? 1.6F : 3.15F;
+        return stack.contains(Items.FIREWORK_ROCKET) ? 1.6F : BULLET_SPEED;
+    }
+
+    /**
+     * 供需要与狙击枪完全一致弹道的模组弹体复用。
+     */
+    public static void shootLikeSniper(Projectile projectile, LivingEntity shooter, float pitchOffset, float yawOffset) {
+        projectile.shootFromRotation(
+                shooter,
+                shooter.getXRot() + pitchOffset,
+                shooter.getYRot() + yawOffset,
+                0.0F,
+                BULLET_SPEED,
+                BULLET_INACCURACY
+        );
+        projectile.setNoGravity(true);
     }
 
     @Override
@@ -252,19 +269,23 @@ public class VsSnipe extends ProjectileWeaponItem implements ModFabricItem {
         if (!world.isClientSide()) {
             CrossbowItem.ChargingSounds loadingSounds = this.getLoadingSounds(stack);
             float f = (float)(stack.getUseDuration(user) - remainingUseTicks) / getPullTime(stack, user);
-            if (f < 0.2F) {
-                this.charged = false;
-                this.loaded = false;
+            IPlayerEntityAccessor state = user instanceof Player player
+                    && player.getMainHandItem() == stack
+                    && player instanceof IPlayerEntityAccessor accessor
+                    ? accessor : null;
+
+            if (f < 0.2F && state != null) {
+                state.resetVsSnipeLoading(stack);
             }
 
-            if (f >= 0.2F && !this.charged) {
-                this.charged = true;
+            if (f >= 0.2F && state != null && !state.isVsSnipeCharging(stack)) {
+                state.setVsSnipeCharging(stack, true);
                 loadingSounds.start()
                         .ifPresent(sound -> world.playSound(null, user.getX(), user.getY(), user.getZ(), sound.value(), SoundSource.PLAYERS, 0.5F, 1.0F));
             }
 
-            if (f >= 0.5F && !this.loaded) {
-                this.loaded = true;
+            if (f >= 0.5F && state != null && !state.isVsSnipeLoaded(stack)) {
+                state.setVsSnipeLoaded(stack, true);
 /*                loadingSounds.mid()
                         .ifPresent(sound -> world.playSound(null, user.getX(), user.getY(), user.getZ(), (SoundEvent)sound.value(), SoundCategory.PLAYERS, 0.5F, 1.0F));*/
             }
@@ -324,19 +345,29 @@ public class VsSnipe extends ProjectileWeaponItem implements ModFabricItem {
     public int getDefaultProjectileRange() {
         return 8;
     }
-    public boolean isLeftClick = false;
     @Override
     public void onLeftClickStart(Player player, ItemStack stack, boolean isServer) {
         if (player.isShiftKeyDown()) {
             player.playSound(SoundEvents.SPYGLASS_USE, 1.0F, 1.0F);
-            isLeftClick = true;
+            if (player instanceof IPlayerEntityAccessor state) {
+                state.setVsSnipeLeftClicking(stack, true);
+            }
         }
     }
 
     @Override
     public void onLeftClickStop(Player player, ItemStack stack, boolean isServer) {
-        isLeftClick = false;
+        if (player instanceof IPlayerEntityAccessor state) {
+            state.setVsSnipeLeftClicking(stack, false);
+        }
         player.playSound(SoundEvents.SPYGLASS_STOP_USING, 1.0F, 1.0F);
+    }
+
+    /** 断线或停服时清除该玩家的狙击枪瞬态状态；状态不写入存档。 */
+    public static void clearPlayerState(Player player) {
+        if (player instanceof IPlayerEntityAccessor state) {
+            state.clearVsSnipeState();
+        }
     }
 
     private static boolean isSupportedBowOrCrossbowEnchantment(Holder<Enchantment> enchantment) {

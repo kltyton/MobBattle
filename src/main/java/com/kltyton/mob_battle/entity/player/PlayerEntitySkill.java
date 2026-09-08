@@ -4,10 +4,12 @@ import com.kltyton.mob_battle.Mob_battle;
 import com.kltyton.mob_battle.effect.ModEffects;
 import com.kltyton.mob_battle.event.DataTrackersEvent;
 import com.kltyton.mob_battle.entity.support.EntityQueries;
+import com.kltyton.mob_battle.skill.server.PlayerSkillRequestPolicy;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
@@ -30,11 +32,15 @@ public class PlayerEntitySkill {
             );
 
     private static boolean isValidSkillTarget(ServerPlayer player, LivingEntity target) {
-        return target != null
-                && target.isAlive()
-                && target != player
-                && !target.getUUID().equals(player.getUUID())
-                && !EntityQueries.isCreativeOrSpectator(target);
+        return EntityQueries.isValidCombatTarget(player, target);
+    }
+
+    /**
+     * 玩家实体技能沿用原版力量效果的固定加值：每级力量增加 3 点伤害。
+     */
+    public static float withStrengthBonus(Player player, float baseDamage) {
+        MobEffectInstance strength = player.getEffect(MobEffects.STRENGTH);
+        return strength == null ? baseDamage : baseDamage + (strength.getAmplifier() + 1) * 3.0F;
     }
 
     public static void clearJumpSkillGravityModifier(LivingEntity entity) {
@@ -45,24 +51,55 @@ public class PlayerEntitySkill {
     }
 
     public static void canMove(ServerPlayer player) {
+        IPlayerSkillAccessor accessor = (IPlayerSkillAccessor) player;
+        if (!accessor.mobBattle$hasSkill()
+                || !"smashing_the_ground".equals(accessor.mobBattle$getActiveSkill())
+                || !canStopSkill(player)) {
+            return;
+        }
         clearJumpSkillGravityModifier(player);
         player.getEntityData().set(DataTrackersEvent.CAN_MOVE, true);
     }
+
+    /**
+     * 服务端唯一的技能 stop 判定；客户端命令不能缩短服务端记录的动画窗口。
+     */
+    public static boolean canStopSkill(ServerPlayer player) {
+        IPlayerSkillAccessor accessor = (IPlayerSkillAccessor) player;
+        MinecraftServer server = player.level().getServer();
+        return server != null && PlayerSkillRequestPolicy.allowsStop(
+                accessor.mobBattle$hasSkill(),
+                accessor.mobBattle$getActiveSkill(),
+                server.getTickCount(),
+                accessor.mobBattle$getEarliestStopTick()
+        );
+    }
+
     public static void stopSkill(ServerPlayer player) {
+        if (!canStopSkill(player)) {
+            return;
+        }
         clearJumpSkillGravityModifier(player);
-        player.getEntityData().set(DataTrackersEvent.HAS_SKILL, false);
+        IPlayerSkillAccessor accessor = (IPlayerSkillAccessor) player;
+        accessor.mobBattle$stopCollision();
+        accessor.mobBattle$setGrabbedEntity(null);
+        accessor.mobBattle$setCanMove(true);
+        accessor.mobBattle$setHasSkill(false);
+        accessor.mobBattle$setActiveSkill(null);
     }
     public static void runAttackSkill(ServerPlayer player) {
         EntityQueries.getNearbyEntity(player, LivingEntity.class, 8, false, EntityQueries.TeamFilter.EXCLUDE_TEAM).forEach(livingEntity -> {
             if (!isValidSkillTarget(player, livingEntity)) return;
-            livingEntity.hurtServer(player.level(), player.damageSources().playerAttack(player), 130);
+            if (livingEntity.hurtServer(player.level(), player.damageSources().playerAttack(player), withStrengthBonus(player, 130.0F))) {
+                livingEntity.addEffect(new MobEffectInstance(ModEffects.ARMOR_PIERCING_ENTRY, 5 * 20, 0), player);
+            }
             livingEntity.knockback(1.5, player.getX() - livingEntity.getX(), player.getZ() - livingEntity.getZ());
         });
     }
     public static void runAttackSkill_2(ServerPlayer player) {
         EntityQueries.getNearbyEntity(player, LivingEntity.class, 8, false, EntityQueries.TeamFilter.EXCLUDE_TEAM).forEach(livingEntity -> {
             if (!isValidSkillTarget(player, livingEntity)) return;
-            livingEntity.hurtServer(player.level(), player.damageSources().playerAttack(player), 150);
+            livingEntity.hurtServer(player.level(), player.damageSources().playerAttack(player), withStrengthBonus(player, 150.0F));
             livingEntity.knockback(1.5, player.getX() - livingEntity.getX(), player.getZ() - livingEntity.getZ());
         });
     }
@@ -74,14 +111,14 @@ public class PlayerEntitySkill {
     public static void runUpperHookSkill(ServerPlayer player) {
         EntityQueries.getNearbyEntity(player, LivingEntity.class, 8, false, EntityQueries.TeamFilter.EXCLUDE_TEAM).forEach(livingEntity -> {
             if (!isValidSkillTarget(player, livingEntity)) return;
-            livingEntity.hurtServer(player.level(), player.damageSources().playerAttack(player), 160);
+            livingEntity.hurtServer(player.level(), player.damageSources().playerAttack(player), withStrengthBonus(player, 160.0F));
             livingEntity.knockback(1.5, player.getX() - livingEntity.getX(), player.getZ() - livingEntity.getZ());
         });
     }
     public static void runTopKneeSkill(ServerPlayer player) {
         LivingEntity livingEntity = EntityQueries.getClosestNearbyEntity(player, LivingEntity.class, 8, EntityQueries.TeamFilter.EXCLUDE_TEAM);
         if (isValidSkillTarget(player, livingEntity)) {
-            livingEntity.hurtServer(player.level(), player.damageSources().playerAttack(player), 120);
+            livingEntity.hurtServer(player.level(), player.damageSources().playerAttack(player), withStrengthBonus(player, 120.0F));
             livingEntity.addEffect(new MobEffectInstance(ModEffects.STUN_ENTRY, 2 * 20));
             livingEntity.knockback(1.5, player.getX() - livingEntity.getX(), player.getZ() - livingEntity.getZ());
             livingEntity.hurtMarked = true;
@@ -111,7 +148,7 @@ public class PlayerEntitySkill {
     public static void runLeftWhipSkill(ServerPlayer player) {
         LivingEntity livingEntity = EntityQueries.getClosestNearbyEntity(player, LivingEntity.class, 8, EntityQueries.TeamFilter.EXCLUDE_TEAM);
         if (isValidSkillTarget(player, livingEntity)) {
-            livingEntity.hurtServer(player.level(), player.damageSources().playerAttack(player), 120);
+            livingEntity.hurtServer(player.level(), player.damageSources().playerAttack(player), withStrengthBonus(player, 120.0F));
             livingEntity.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 5 * 20, 4));
             livingEntity.knockback(1.5, player.getX() - livingEntity.getX(), player.getZ() - livingEntity.getZ());
         }
@@ -143,7 +180,7 @@ public class PlayerEntitySkill {
         EntityQueries.getNearbyEntity(player, LivingEntity.class, 8, false, EntityQueries.TeamFilter.EXCLUDE_TEAM).forEach(target -> {
             // 1. 造成 350 点巨额伤害
             if (!isValidSkillTarget(player, target)) return;
-            target.hurtServer(world, player.damageSources().playerAttack(player), 300f);
+            target.hurtServer(world, player.damageSources().playerAttack(player), withStrengthBonus(player, 300.0F));
             target.knockback(5.0, player.getX() - target.getX(), player.getZ() - target.getZ());
         });
 
@@ -156,8 +193,8 @@ public class PlayerEntitySkill {
 
 
     public static void runRunCollisionSkillRun(ServerPlayer player) {
-        if (player.isSprinting()) {
-            ((IPlayerSkillAccessor)player).mobBattle$runAttack("run_collision", false);
+        IPlayerSkillAccessor accessor = (IPlayerSkillAccessor) player;
+        if (player.isSprinting() && accessor.mobBattle$runAttack("run_collision", false)) {
             Vec3 lookVec = player.getViewVector(1.0F);
             Vec3 velocity = new Vec3(lookVec.x, 0, lookVec.z).normalize().scale(2.5);
             player.setDeltaMovement(velocity.x, player.getDeltaMovement().y + 0.22, velocity.z);
@@ -167,7 +204,7 @@ public class PlayerEntitySkill {
     public static void runRunCollisionSkill(ServerPlayer player) {
         EntityQueries.getNearbyEntity(player, LivingEntity.class, 8, false, EntityQueries.TeamFilter.EXCLUDE_TEAM).forEach(livingEntity -> {
             if (isValidSkillTarget(player, livingEntity)) {
-                livingEntity.hurtServer(player.level(), player.damageSources().playerAttack(player), 210);
+                livingEntity.hurtServer(player.level(), player.damageSources().playerAttack(player), withStrengthBonus(player, 210.0F));
                 livingEntity.addEffect(new MobEffectInstance(ModEffects.STUN_ENTRY, 2 * 20));
                 if (livingEntity instanceof Player) {
                     livingEntity.knockback(1.2, player.getX() - livingEntity.getX(), player.getZ() - livingEntity.getZ());
@@ -200,7 +237,7 @@ public class PlayerEntitySkill {
         // 从 Mixin 获取被抓取的实体
         LivingEntity target = ((IPlayerSkillAccessor)player).mobBattle$getGrabbedEntity();
         if (target != null && target.isAlive() && isValidSkillTarget(player, target)) {
-            target.hurtServer(player.level(), player.damageSources().playerAttack(player), 135f);
+            target.hurtServer(player.level(), player.damageSources().playerAttack(player), withStrengthBonus(player, 135.0F));
             // 反胃 V (Nausea 5) - 10秒
             target.addEffect(new MobEffectInstance(MobEffects.NAUSEA, 200, 4));
             // 虚弱 V (Weakness 5) - 10秒
@@ -219,10 +256,14 @@ public class PlayerEntitySkill {
 
 
     public static void runRetreatStepRunSkill(ServerPlayer player) {
-        ((IPlayerSkillAccessor)player).mobBattle$runAttack("retreat_step", true);
-        if (((IPlayerSkillAccessor)player).mobBattle$canAttack("retreat_step")) {
-            runRetreatStepSkill(player);
+        IPlayerSkillAccessor accessor = (IPlayerSkillAccessor) player;
+        if (!accessor.mobBattle$canAttack("retreat_step")) {
+            accessor.mobBattle$runAttack("retreat_step", true);
+            return;
         }
+        accessor.mobBattle$runAttack("retreat_step", true);
+        player.addEffect(new MobEffectInstance(MobEffects.RESISTANCE, 5 * 20, 4));
+        runRetreatStepSkill(player);
     }
     public static void runRetreatStepSkill(Player player) {
         // 获取玩家当前朝向（yaw）

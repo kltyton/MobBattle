@@ -59,6 +59,13 @@ public class CustomFireballEntity extends LargeFireball {
         this.explosionKnockback = explosionKnockback;
     }
 
+    /**
+     * 返回爆炸是否保留原版爆炸击退，供卷轴与护甲技能的行为测试读取。
+     */
+    public boolean hasExplosionKnockback() {
+        return this.explosionKnockback;
+    }
+
     @Override
     protected void onHit(HitResult hitResult) {
         HitResult.Type type = hitResult.getType();

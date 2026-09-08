@@ -105,7 +105,7 @@ public final class CompressArmorSkillManager {
                         ModItems.COMPRESSED_NETHERITE_SWORD,
                         13,
                         7.0,
-                        150.0F,
+                        300.0F,
                         20.0F,
                         ModEffects.NETHERITE_MARK_ENTRY
                 );

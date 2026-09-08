@@ -372,7 +372,7 @@ public final class LittlePersonEntityTypes {
                             (mob) -> mob.defaultAttributes(Xbot002Entity::createLittlePersonAttributes)
                     .spawnPlacement(SpawnPlacementTypes.ON_GROUND,
                                             Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (type, world, reason, pos, random) -> false))
-                    .sized(1.4F, 2.7F)
+                    .sized(2.2F, 3.6F)
                     .clientTrackingRange(40)
                     .fireImmune()
     );

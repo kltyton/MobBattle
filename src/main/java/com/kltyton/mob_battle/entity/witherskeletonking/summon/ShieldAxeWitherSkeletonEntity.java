@@ -6,7 +6,7 @@ import com.kltyton.mob_battle.entity.ModSkillEntityType;
 import com.kltyton.mob_battle.entity.OwnedSummon;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
 import com.kltyton.mob_battle.entity.support.EntityQueries;
-import com.kltyton.mob_battle.client.animation.gecko.GeoAnimationState;
+import com.kltyton.mob_battle.client.animation.gecko.SkillAnimationPlayback;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -30,6 +30,8 @@ import net.minecraft.world.entity.monster.skeleton.WitherSkeleton;
 import net.minecraft.world.item.AxeItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import com.geckolib.animatable.GeoEntity;
@@ -103,6 +105,17 @@ public class ShieldAxeWitherSkeletonEntity extends WitherSkeleton implements Geo
         builder.define(HAS_SKILL, false);
         builder.define(ATTACK3_COOLDOWN, 8 * 20);
         builder.define(WALK2_BLOCKING, false);
+    }
+    @Override
+    public void readAdditionalSaveData(ValueInput input) {
+        super.readAdditionalSaveData(input);
+        this.entityData.set(ATTACK3_COOLDOWN,
+                Math.max(0, input.getIntOr("Attack3Cooldown", this.entityData.get(ATTACK3_COOLDOWN))));
+    }
+    @Override
+    public void addAdditionalSaveData(ValueOutput output) {
+        super.addAdditionalSaveData(output);
+        output.putInt("Attack3Cooldown", this.entityData.get(ATTACK3_COOLDOWN));
     }
 
     @Override
@@ -278,10 +291,10 @@ public class ShieldAxeWitherSkeletonEntity extends WitherSkeleton implements Geo
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>("main_controller", 0, this::mainController));
         controllers.add(new AnimationController<>("skill_controller", 0, animTest -> {
-            if (GeoAnimationState.consumeFinishedTriggeredAnimation(animTest)) {
+            if (SkillAnimationPlayback.consumeFinishedTriggeredAnimation(animTest)) {
                 ClientPlayNetworking.send(new SkillPayload("stop", this.getId()));
             }
-            return GeoAnimationState.playTriggeredAnimationOrStop(animTest);
+            return SkillAnimationPlayback.playTriggeredAnimationOrStop(animTest);
         })
                 .receiveTriggeredAnimations()
                 .triggerableAnim("attack1", ATTACK_1_ANIM)
@@ -304,7 +317,7 @@ public class ShieldAxeWitherSkeletonEntity extends WitherSkeleton implements Geo
         if (this.birthTicks > 0) {
             return state.setAndContinue(BIRTH_ANIM);
         }
-        if (this.hasSkill() && !GeoAnimationState.hasRecentlyFinishedTriggeredAnimation(this)) {
+        if (this.hasSkill() && SkillAnimationPlayback.hasActiveSkill(state)) {
             return PlayState.CONTINUE;
         }
         if (state.isMoving()) {

@@ -119,11 +119,17 @@ final class DiamondNetheriteArmorSkills {
         boolean markedHit = false;
 
         for (LivingEntity target : targets) {
+            if (netherite) {
+                target.invulnerableTime = 0;
+            }
             target.hurtServer(world, player.damageSources().playerAttack(player), attackDamage);
 
             if (magicDamage > 0.0F) {
                 target.invulnerableTime = 0;
                 target.hurtServer(world, player.damageSources().indirectMagic(player, player), magicDamage);
+            }
+            if (netherite) {
+                target.invulnerableTime = 0;
             }
 
             CompressArmorSkillSupport.spawnHitSpark(world, target, secondaryColor, netherite);

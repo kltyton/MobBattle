@@ -1,12 +1,15 @@
 package com.kltyton.mob_battle.mixin.client.render.entity.player;
 
 import com.kltyton.mob_battle.Mob_battle;
+import com.kltyton.mob_battle.client.hud.player.CustomHealthBarLayout;
 import com.kltyton.mob_battle.entity.player.IPlayerEntityAccessor;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.components.BossHealthOverlay;
+import net.minecraft.client.gui.components.PlayerFaceExtractor;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
@@ -31,24 +34,6 @@ public abstract class CustomHealthBarMixin {
     @Unique
     private static final Identifier HEALTH_PROGRESS =
             Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "textures/gui/health_progress.png");
-
-    @Unique
-    private static final int BAR_WIDTH = 224;
-
-    @Unique
-    private static final int BAR_HEIGHT = 32;
-
-    @Unique
-    private static final int PER_BOSS_OFFSET = 19;
-
-    @Unique
-    private static final int CUSTOM_BAR_SPACING = 38;
-
-    @Unique
-    private static final int BASE_Y = 0;
-
-    @Unique
-    private static final int PLAYER_HEAD_SIZE = 14;
 
     @Unique
     private boolean shouldUseCustomHealthBar(Player player) {
@@ -82,9 +67,9 @@ public abstract class CustomHealthBarMixin {
         }
 
         int bossCount = this.getBossOverlay().events.size();
-        int customBarY = BASE_Y + bossCount * PER_BOSS_OFFSET;
+        CustomHealthBarLayout.Layout layout = CustomHealthBarLayout.forBar(context.guiWidth(), bossCount, 0);
 
-        renderCustomHealthBar(context, player, customBarY);
+        renderCustomHealthBar(context, player, layout);
         ci.cancel();
     }
 
@@ -105,7 +90,7 @@ public abstract class CustomHealthBarMixin {
         }
 
         int bossCount = this.getBossOverlay().events.size();
-        int barIndex = 0;
+        int barIndex = shouldUseCustomHealthBar(client.player) ? 1 : 0;
 
         for (Player player : client.level.players()) {
             // 本地玩家已经由 renderHealthBar 处理，避免重复画
@@ -126,21 +111,19 @@ public abstract class CustomHealthBarMixin {
             //     continue;
             // }
 
-            int barY = BASE_Y
-                    + bossCount * PER_BOSS_OFFSET
-                    + barIndex * CUSTOM_BAR_SPACING;
+            CustomHealthBarLayout.Layout layout =
+                    CustomHealthBarLayout.forBar(context.guiWidth(), bossCount, barIndex);
 
-            renderCustomHealthBar(context, player, barY);
+            renderCustomHealthBar(context, player, layout);
             barIndex++;
         }
     }
 
     @Unique
-    private void renderCustomHealthBar(GuiGraphicsExtractor context, Player player, int barY) {
+    private void renderCustomHealthBar(
+            GuiGraphicsExtractor context, Player player, CustomHealthBarLayout.Layout layout
+    ) {
         Minecraft client = Minecraft.getInstance();
-
-        int screenWidth = client.getWindow().getGuiScaledWidth();
-        int barX = (screenWidth - BAR_WIDTH) / 2;
 
         float currentHealth = player.getHealth();
         float maxH = player.getMaxHealth();
@@ -152,58 +135,91 @@ public abstract class CustomHealthBarMixin {
 
         float progress = Math.min(1.0F, (currentHealth + absorption) / maxH);
 
-        renderPlayerHead(context, player, barX + 105, barY + 9);
-
+        // 绘制顺序固定为 frame -> progress -> head -> text，头像框和头像不能被后续血条覆盖。
         context.blit(
                 RenderPipelines.GUI_TEXTURED,
                 HEALTH_FRAME,
-                barX,
-                barY,
+                layout.barX(),
+                layout.barY(),
                 0,
                 0,
-                BAR_WIDTH,
-                BAR_HEIGHT,
-                BAR_WIDTH,
-                BAR_HEIGHT
+                CustomHealthBarLayout.BAR_WIDTH,
+                CustomHealthBarLayout.BAR_HEIGHT,
+                CustomHealthBarLayout.BAR_WIDTH,
+                CustomHealthBarLayout.BAR_HEIGHT
         );
 
-        int filledWidth = (int) (BAR_WIDTH * progress);
+        int filledWidth = (int) (CustomHealthBarLayout.BAR_WIDTH * progress);
 
         if (filledWidth > 0) {
             context.blit(
                     RenderPipelines.GUI_TEXTURED,
                     HEALTH_PROGRESS,
-                    barX,
-                    barY,
+                    layout.barX(),
+                    layout.barY(),
                     0,
                     0,
                     filledWidth,
-                    BAR_HEIGHT,
-                    BAR_WIDTH,
-                    BAR_HEIGHT
+                    CustomHealthBarLayout.BAR_HEIGHT,
+                    CustomHealthBarLayout.BAR_WIDTH,
+                    CustomHealthBarLayout.BAR_HEIGHT
             );
         }
 
-        String text = player.getName().getString()
-                + "  "
-                + (int) currentHealth
-                + " / "
-                + (int) maxH;
+        renderPlayerHead(context, player, layout.headX(), layout.headY());
 
-        if (absorption > 0) {
-            text += " (+" + (int) absorption + ")";
-        }
-
-        int textWidth = client.font.width(text);
+        String playerName = fitText(
+                client.font,
+                player.getName().getString(),
+                layout.leftTextWidth()
+        );
+        String healthText = formatHealthText(
+                client.font,
+                currentHealth,
+                maxH,
+                absorption,
+                layout.rightTextWidth()
+        );
 
         context.text(
                 client.font,
-                text,
-                barX + (BAR_WIDTH - textWidth) / 2,
-                barY + (BAR_HEIGHT - 8) / 2,
+                playerName,
+                layout.leftTextX(client.font.width(playerName)),
+                layout.textY(),
                 0xFFFFFFFF,
                 true
         );
+        context.text(
+                client.font,
+                healthText,
+                layout.rightTextX(client.font.width(healthText)),
+                layout.textY(),
+                0xFFFFFFFF,
+                true
+        );
+    }
+
+    @Unique
+    private static String fitText(Font font, String text, int maxWidth) {
+        return font.plainSubstrByWidth(text, maxWidth);
+    }
+
+    @Unique
+    private static String formatHealthText(
+            Font font, float currentHealth, float maxHealth, float absorption, int maxWidth
+    ) {
+        String baseText = (int) currentHealth + " / " + (int) maxHealth;
+        if (!(absorption > 0.0F)) {
+            return fitText(font, baseText, maxWidth);
+        }
+
+        String absorptionText = " (+" + (int) absorption + ")";
+        int absorptionWidth = font.width(absorptionText);
+        if (absorptionWidth >= maxWidth) {
+            return fitText(font, absorptionText, maxWidth);
+        }
+
+        return fitText(font, baseText, maxWidth - absorptionWidth) + absorptionText;
     }
 
     @Unique
@@ -212,35 +228,6 @@ public abstract class CustomHealthBarMixin {
             return;
         }
 
-        Identifier skinTexture = clientPlayer.getSkin().body().texturePath();
-
-        context.blit(
-                RenderPipelines.GUI_TEXTURED,
-                skinTexture,
-                x,
-                y,
-                8.0F,
-                8.0F,
-                PLAYER_HEAD_SIZE,
-                PLAYER_HEAD_SIZE,
-                8,
-                8,
-                64,
-                64
-        );
-        context.blit(
-                RenderPipelines.GUI_TEXTURED,
-                skinTexture,
-                x,
-                y,
-                40.0F,
-                8.0F,
-                PLAYER_HEAD_SIZE,
-                PLAYER_HEAD_SIZE,
-                8,
-                8,
-                64,
-                64
-        );
+        PlayerFaceExtractor.extractRenderState(context, clientPlayer.getSkin(), x, y, 16);
     }
 }

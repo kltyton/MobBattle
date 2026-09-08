@@ -1,6 +1,5 @@
 package com.kltyton.mob_battle.items.tool.sword;
 
-import com.kltyton.mob_battle.Mob_battle;
 import com.kltyton.mob_battle.items.tool.BaseSword;
 import net.minecraft.core.Holder;
 import net.minecraft.world.effect.MobEffect;
@@ -17,7 +16,6 @@ public class CompressedMarkedSword extends BaseSword {
 
     @Override
     public void addStatusEffect(LivingEntity target, LivingEntity attacker) {
-        Mob_battle.LOGGER.info("CompressedMarkedSword");
         target.addEffect(new MobEffectInstance(this.markEffect, 7 * 20, 0, false, true, true), attacker);
     }
 }

@@ -122,12 +122,14 @@ public class FrenchSphereFlowEntity extends BaseSkillLittlePersonEntity {
             livingEntity.heal(100f);
         }
         ServerTickScheduler.schedule(entity.level().getServer(), 40, () -> {
-            if (!(entity.level() instanceof ServerLevel world) || entity.isRemoved()) {
+            if (!(entity.level() instanceof ServerLevel world)
+                    || entity.isRemoved() || !entity.isAlive()) {
                 return;
             }
 
             LivingEntity target = entity.getTarget();
-            if (target != null && target.isAlive()) {
+            if (target != null && EntityQueries.isValidSummonCombatTarget(
+                    entity, EntityQueries.getSummonOwner(entity), target)) {
                 target.invulnerableTime = 0;
                 target.hurtServer(world, entity.damageSources().explosion(entity, entity), 200);
                 target.invulnerableTime = 0;

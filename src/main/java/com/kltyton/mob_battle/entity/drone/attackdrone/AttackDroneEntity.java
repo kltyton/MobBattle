@@ -4,6 +4,7 @@ import com.kltyton.mob_battle.entity.ModSkillEntityType;
 import com.kltyton.mob_battle.entity.bullet.BulletEntity;
 import com.kltyton.mob_battle.entity.drone.DroneEntity;
 import com.kltyton.mob_battle.entity.drone.goal.FlyRangedAttackGoal;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -74,12 +75,7 @@ public class AttackDroneEntity extends DroneEntity {
                 break;
             case AGGRESSIVE:
                 this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, LivingEntity.class, 10, true, false, (target, world) -> {
-                    if (target == this) return false;
-                    if (target == this.getOwner()) return false;
-                    if (target instanceof TamableAnimal tameableEntity && tameableEntity.getOwner() == this.getOwner()) {
-                        return false;
-                    }
-                    return !this.isAlliedTo(target);
+                    return EntityQueries.isValidSummonCombatTarget(this, this.getOwner(), target);
                 }));
                 break;
         }

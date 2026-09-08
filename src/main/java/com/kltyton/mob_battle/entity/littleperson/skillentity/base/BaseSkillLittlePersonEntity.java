@@ -10,7 +10,7 @@ import com.kltyton.mob_battle.entity.littleperson.skillentity.IronManEntity;
 import com.kltyton.mob_battle.entity.littleperson.skillentity.KeyframedLittlePersonEntity;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
 import com.kltyton.mob_battle.animation.death.DeathAnimationState;
-import com.kltyton.mob_battle.client.animation.gecko.GeoAnimationState;
+import com.kltyton.mob_battle.client.animation.gecko.SkillAnimationPlayback;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -23,6 +23,8 @@ import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import com.geckolib.animatable.manager.AnimatableManager;
 import com.geckolib.animation.AnimationController;
 import com.geckolib.animation.object.PlayState;
@@ -264,7 +266,7 @@ public class BaseSkillLittlePersonEntity extends LittlePersonMilitiaEntity imple
         if (!this.level().isClientSide()) {
             this.setAggressive(this.getTarget() != null);
             if (this.isDeadOrDying()) {
-                String deathAnimation = GeoAnimationState.getDeathAnimationName(this).orElse(null);
+                String deathAnimation = getDeathAnimationName();
                 if (deathAnimation == null) {
                     return;
                 }
@@ -318,17 +320,17 @@ public class BaseSkillLittlePersonEntity extends LittlePersonMilitiaEntity imple
     protected static final RawAnimation DIE_ANIM = RawAnimation.begin().thenPlay("die");
     protected static final RawAnimation DEATH_ANIM = RawAnimation.begin().thenPlay("death");
     public AnimationController<?> skillController = new AnimationController<>( "skill_controller", animTest -> {
-        if (GeoAnimationState.consumeFinishedTriggeredAnimation(animTest)) {
+        if (SkillAnimationPlayback.consumeFinishedTriggeredAnimation(animTest)) {
             ClientPlayNetworking.send(new SkillPayload("stop", this.getId()));
-            if ((GeoAnimationState.isLastFinishedAnimation(animTest, DIE_ANIM)
-                    || GeoAnimationState.isLastFinishedAnimation(animTest, DEATH_ANIM)) && this instanceof IronManEntity) {
+            if ((animTest.isCurrentAnimation(DIE_ANIM)
+                    || animTest.isCurrentAnimation(DEATH_ANIM)) && this instanceof IronManEntity) {
                 this.deathTime = 400;
                 ClientPlayNetworking.send(new SkillPayload(
                         "die", this.getId()
                 ));
             }
         }
-        return GeoAnimationState.playTriggeredAnimationOrStop(animTest);
+        return SkillAnimationPlayback.playTriggeredAnimationOrStop(animTest);
     })
             .receiveTriggeredAnimations()
             .triggerableAnim("attack2", ATTACK_ANIM_2)
@@ -476,9 +478,48 @@ public class BaseSkillLittlePersonEntity extends LittlePersonMilitiaEntity imple
     public void die(BaseSkillLittlePersonEntity entity) {
 
     }
+
+    @Override
+    public void readAdditionalSaveData(ValueInput input) {
+        super.readAdditionalSaveData(input);
+        setSkillCooldown1(Math.max(-1, input.getIntOr("SkillCooldown1", getSkillCooldown1())));
+        setSkillCooldown2(Math.max(-1, input.getIntOr("SkillCooldown2", getSkillCooldown2())));
+        setSkillCooldown3(Math.max(-1, input.getIntOr("SkillCooldown3", getSkillCooldown3())));
+        setSkillCooldown4(Math.max(-1, input.getIntOr("SkillCooldown4", getSkillCooldown4())));
+        setSkillCooldown5(Math.max(-1, input.getIntOr("SkillCooldown5", getSkillCooldown5())));
+        setSkillCooldown6(Math.max(-1, input.getIntOr("SkillCooldown6", getSkillCooldown6())));
+        setSkillCooldown7(Math.max(-1, input.getIntOr("SkillCooldown7", getSkillCooldown7())));
+        setSkillCooldown8(Math.max(-1, input.getIntOr("SkillCooldown8", getSkillCooldown8())));
+        setSkillCooldown9(Math.max(-1, input.getIntOr("SkillCooldown9", getSkillCooldown9())));
+        setSkillCooldown10(Math.max(-1, input.getIntOr("SkillCooldown10", getSkillCooldown10())));
+    }
+
+    @Override
+    public void addAdditionalSaveData(ValueOutput output) {
+        super.addAdditionalSaveData(output);
+        output.putInt("SkillCooldown1", getSkillCooldown1());
+        output.putInt("SkillCooldown2", getSkillCooldown2());
+        output.putInt("SkillCooldown3", getSkillCooldown3());
+        output.putInt("SkillCooldown4", getSkillCooldown4());
+        output.putInt("SkillCooldown5", getSkillCooldown5());
+        output.putInt("SkillCooldown6", getSkillCooldown6());
+        output.putInt("SkillCooldown7", getSkillCooldown7());
+        output.putInt("SkillCooldown8", getSkillCooldown8());
+        output.putInt("SkillCooldown9", getSkillCooldown9());
+        output.putInt("SkillCooldown10", getSkillCooldown10());
+    }
+
+    /**
+     * 既有技能小人的服务端死亡动作契约；没有死亡动作的子类返回 {@code null}。
+     * 动作名称由实体玩法声明，专用服务端不读取客户端动画资源或资源包。
+     */
+    public @org.jetbrains.annotations.Nullable String getDeathAnimationName() {
+        return "die";
+    }
+
     protected void tickDeath() {
         if (this instanceof IronManEntity) {
-            if (!GeoAnimationState.hasDeathAnimation(this)) {
+            if (getDeathAnimationName() == null) {
                 super.tickDeath();
                 return;
             }

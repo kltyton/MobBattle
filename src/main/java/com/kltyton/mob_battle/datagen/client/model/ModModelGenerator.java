@@ -2,7 +2,9 @@ package com.kltyton.mob_battle.datagen.client.model;
 
 import com.kltyton.mob_battle.Mob_battle;
 import com.kltyton.mob_battle.block.ModBlocks;
+import com.kltyton.mob_battle.block.berryjuice.BerryJuiceBlocks;
 import com.kltyton.mob_battle.items.ModItems;
+import com.kltyton.mob_battle.items.registry.SpawnEggItemRegistrar;
 import net.fabricmc.fabric.api.client.datagen.v1.provider.FabricModelProvider;
 import net.fabricmc.fabric.api.datagen.v1.FabricPackOutput;
 import net.minecraft.client.data.models.BlockModelGenerators;
@@ -13,6 +15,8 @@ import net.minecraft.client.data.models.model.ModelTemplate;
 import net.minecraft.client.data.models.model.ModelTemplates;
 import net.minecraft.client.data.models.model.TextureMapping;
 import net.minecraft.client.data.models.model.TextureSlot;
+import net.minecraft.client.data.models.blockstates.MultiVariantGenerator;
+import net.minecraft.client.data.models.blockstates.PropertyDispatch;
 import net.minecraft.client.resources.model.sprite.Material;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -20,6 +24,8 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.SpawnEggItem;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.LayeredCauldronBlock;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
@@ -55,6 +61,22 @@ public class ModModelGenerator extends FabricModelProvider {
         FacingBlockModels.register(blockStateCollector, ModBlocks.TARGET_BLOCK, Direction.EAST);
         blockStateCollector.createNonTemplateHorizontalBlock(ModBlocks.MACHINE_WORKTABLE_BLOCK);
         blockStateCollector.registerSimpleItemModel(ModBlocks.MACHINE_WORKTABLE_BLOCK, Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "block/machine_worktable"));
+        blockStateCollector.blockStateOutput.accept(
+                MultiVariantGenerator.dispatch(BerryJuiceBlocks.BERRY_JUICE_CAULDRON)
+                        .with(PropertyDispatch.initial(LayeredCauldronBlock.LEVEL)
+                                .select(1, BlockModelGenerators.plainVariant(ModelTemplates.CAULDRON_LEVEL1.createWithSuffix(
+                                        BerryJuiceBlocks.BERRY_JUICE_CAULDRON, "_level1",
+                                        TextureMapping.cauldron(TextureMapping.getBlockTexture(Blocks.WATER, "_still")),
+                                        blockStateCollector.modelOutput)))
+                                .select(2, BlockModelGenerators.plainVariant(ModelTemplates.CAULDRON_LEVEL2.createWithSuffix(
+                                        BerryJuiceBlocks.BERRY_JUICE_CAULDRON, "_level2",
+                                        TextureMapping.cauldron(TextureMapping.getBlockTexture(Blocks.WATER, "_still")),
+                                        blockStateCollector.modelOutput)))
+                                .select(3, BlockModelGenerators.plainVariant(ModelTemplates.CAULDRON_FULL.createWithSuffix(
+                                        BerryJuiceBlocks.BERRY_JUICE_CAULDRON, "_full",
+                                        TextureMapping.cauldron(TextureMapping.getBlockTexture(Blocks.WATER, "_still")),
+                                        blockStateCollector.modelOutput))))
+        );
     }
 
     private void registerCompressedBlock(BlockModelGenerators blockStateCollector, Block block) {
@@ -84,16 +106,15 @@ public class ModModelGenerator extends FabricModelProvider {
 
         itemModelCollector.generateFlatItem(ModItems.EMERALD_DIAMOND_SWORD, ModelTemplates.FLAT_HANDHELD_ITEM);
         itemModelCollector.generateFlatItem(ModItems.ZIJIN_SWORD, ModelTemplates.FLAT_HANDHELD_ITEM);
-        generateItemWithTexture(itemModelCollector, ModItems.COMPRESSED_COPPER_SWORD,
-                Identifier.withDefaultNamespace("item/copper_sword"), ModelTemplates.FLAT_HANDHELD_ITEM);
+        itemModelCollector.generateFlatItem(ModItems.COMPRESSED_COPPER_SWORD, ModelTemplates.FLAT_HANDHELD_ITEM);
         itemModelCollector.generateFlatItem(ModItems.COMPRESSED_IRON_SWORD, ModelTemplates.FLAT_HANDHELD_ITEM);
         itemModelCollector.generateFlatItem(ModItems.COMPRESSED_GOLD_SWORD, ModelTemplates.FLAT_HANDHELD_ITEM);
         itemModelCollector.generateFlatItem(ModItems.COMPRESSED_DIAMOND_SWORD, ModelTemplates.FLAT_HANDHELD_ITEM);
         itemModelCollector.generateFlatItem(ModItems.COMPRESSED_NETHERITE_SWORD, ModelTemplates.FLAT_HANDHELD_ITEM);
-        generateFlatItemWithTexture(itemModelCollector, ModItems.COMPRESSED_COPPER_HELMET, Identifier.withDefaultNamespace("item/copper_helmet"));
-        generateFlatItemWithTexture(itemModelCollector, ModItems.COMPRESSED_COPPER_CHESTPLATE, Identifier.withDefaultNamespace("item/copper_chestplate"));
-        generateFlatItemWithTexture(itemModelCollector, ModItems.COMPRESSED_COPPER_LEGGINGS, Identifier.withDefaultNamespace("item/copper_leggings"));
-        generateFlatItemWithTexture(itemModelCollector, ModItems.COMPRESSED_COPPER_BOOTS, Identifier.withDefaultNamespace("item/copper_boots"));
+        itemModelCollector.generateFlatItem(ModItems.COMPRESSED_COPPER_HELMET, ModelTemplates.FLAT_ITEM);
+        itemModelCollector.generateFlatItem(ModItems.COMPRESSED_COPPER_CHESTPLATE, ModelTemplates.FLAT_ITEM);
+        itemModelCollector.generateFlatItem(ModItems.COMPRESSED_COPPER_LEGGINGS, ModelTemplates.FLAT_ITEM);
+        itemModelCollector.generateFlatItem(ModItems.COMPRESSED_COPPER_BOOTS, ModelTemplates.FLAT_ITEM);
 
         itemModelCollector.generateFlatItem(ModItems.CARDIOTONIC_INJECTION, STICK_TEMPLATE);
         registerExistingItemModel(itemModelCollector, ModItems.POISON_KNIFE, "poison_knife");
@@ -113,7 +134,7 @@ public class ModModelGenerator extends FabricModelProvider {
                         Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "item/slowness_scroll"));
             } else if (item == ModItems.PIGLIN_CANNON) {
                 generateFlatItemWithTexture(itemModelCollector, item,
-                        Identifier.withDefaultNamespace("item/crossbow_standby"));
+                        Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "item/weapon/piglin_cannon"));
             } else if (item == ModItems.WOODEN_WHISTLE) {
                 generateFlatItemWithTexture(itemModelCollector, item,
                         Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "item/wooden_whistle"));
@@ -140,6 +161,11 @@ public class ModModelGenerator extends FabricModelProvider {
         // 动态生成蛋的模型
         for (SpawnEggItem item : ModItems.SPAWN_EGG_ITEMS.values()) {
             String itemName = BuiltInRegistries.ITEM.getKey(item).getPath();
+            Identifier vanillaModel = SpawnEggItemRegistrar.getVanillaSpawnEggModel(item);
+            if (vanillaModel != null) {
+                itemModelCollector.itemModelOutput.accept(item, ItemModelUtils.plainModel(vanillaModel));
+                continue;
+            }
             Identifier textureId;
             if (item == ModItems.PIGLIN_BRUTE_SPEAR_USE_SPAWN_EGG
                     || item == ModItems.PIGLIN_BRUTE_SPEAR_MELEE_SPAWN_EGG

@@ -1,5 +1,17 @@
 {
   "values": [
+    "mob_battle:little_person_zombie",
+    "mob_battle:little_person_sprayer_zombie",
+    "mob_battle:little_person_shield_zombie",
+    "mob_battle:zombie_little_person_king",
+    "mob_battle:zombie_little_person_giant",
+    "mob_battle:zombie_little_person_archer",
+    "mob_battle:little_person_claw_zombie",
+    "mob_battle:zombie_little_person_guard",
+    "mob_battle:little_person_headless_zombie",
+    "mob_battle:zombie_little_person_militia",
+    "mob_battle:zombie_elite_little_person_guard",
+    "mob_battle:little_person_sprayer_zombie_head",
     "mob_battle:bow_zombie_mod"
   ]
 }

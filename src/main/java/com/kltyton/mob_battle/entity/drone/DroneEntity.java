@@ -4,7 +4,7 @@ import com.kltyton.mob_battle.entity.drone.goal.FlyFollowOwnerGoal;
 import com.kltyton.mob_battle.entity.drone.goal.FlyWanderAroundFarGoal;
 import com.kltyton.mob_battle.items.ModMaterial;
 import com.kltyton.mob_battle.items.armor.support.ArmorSetRules;
-import com.kltyton.mob_battle.client.animation.gecko.GeoAnimationState;
+import com.kltyton.mob_battle.client.animation.gecko.SkillAnimationPlayback;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -201,7 +201,7 @@ public abstract class DroneEntity extends TamableAnimal implements RangedAttackM
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>("main_controller", 0, this::animationController));
-        controllers.add(new AnimationController<>( "attack_controller", GeoAnimationState::playTriggeredAnimationOrStop)
+        controllers.add(new AnimationController<>( "attack_controller", SkillAnimationPlayback::playTriggeredAnimationOrStop)
                 .receiveTriggeredAnimations()
                 .triggerableAnim("attack", ATTACK_ANIM));
     }

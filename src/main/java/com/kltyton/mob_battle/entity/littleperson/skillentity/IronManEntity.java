@@ -7,7 +7,7 @@ import com.kltyton.mob_battle.entity.littleperson.skillentity.base.BaseSkillLitt
 import com.kltyton.mob_battle.entity.littleperson.skillentity.ironmanbullet.IronManBulletEntity;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
 import com.kltyton.mob_battle.entity.support.EntityQueries;
-import com.kltyton.mob_battle.client.animation.gecko.GeoAnimationState;
+import com.kltyton.mob_battle.client.animation.gecko.SkillAnimationPlayback;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
@@ -26,14 +26,14 @@ import net.minecraft.world.phys.Vec3;
 public class IronManEntity extends BaseSkillLittlePersonEntity {
     private static final RawAnimation IRON_MAN_ATTACK_ANIM_5 = RawAnimation.begin().thenPlay("attack5").thenPlay("attack5_1");
     private final AnimationController<?> ironManSkillController = new AnimationController<>("skill_controller", animTest -> {
-        if (GeoAnimationState.consumeFinishedTriggeredAnimation(animTest)) {
+        if (SkillAnimationPlayback.consumeFinishedTriggeredAnimation(animTest)) {
             ClientPlayNetworking.send(new SkillPayload("stop", this.getId()));
-            if (GeoAnimationState.isLastFinishedAnimation(animTest, DIE_ANIM)) {
+            if (animTest.isCurrentAnimation(DIE_ANIM)) {
                 this.deathTime = 400;
                 ClientPlayNetworking.send(new SkillPayload("die", this.getId()));
             }
         }
-        return GeoAnimationState.playTriggeredAnimationOrStop(animTest);
+        return SkillAnimationPlayback.playTriggeredAnimationOrStop(animTest);
     })
             .receiveTriggeredAnimations()
             .triggerableAnim("attack2", ATTACK_ANIM_2)

@@ -11,7 +11,10 @@ public class LeftClickEvent {
     private static boolean wasPressed = false;
     public static void init() {
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            if (client.player == null) return;
+            if (client.player == null) {
+                wasPressed = false;
+                return;
+            }
             boolean isPressed = client.options.keyAttack.isDown();
             if (isPressed != wasPressed) {
                 wasPressed = isPressed;
@@ -20,5 +23,9 @@ public class LeftClickEvent {
                 LeftClickDispatcher.leftClick(player, isPressed, false);
             }
         });
+    }
+
+    public static void reset() {
+        wasPressed = false;
     }
 }

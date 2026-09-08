@@ -6,7 +6,7 @@ import com.kltyton.mob_battle.entity.littleperson.LittlePersonEntity;
 import com.kltyton.mob_battle.entity.littleperson.giant.skill.LittlePersonGiantSkill;
 import com.kltyton.mob_battle.entity.littleperson.militia.LittlePersonMilitiaEntity;
 import com.kltyton.mob_battle.network.packet.SkillPayload;
-import com.kltyton.mob_battle.client.animation.gecko.GeoAnimationState;
+import com.kltyton.mob_battle.client.animation.gecko.SkillAnimationPlayback;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -20,6 +20,8 @@ import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import org.jetbrains.annotations.NotNull;
 import com.geckolib.animatable.manager.AnimatableManager;
 import com.geckolib.animation.AnimationController;
@@ -60,6 +62,20 @@ public class LittlePersonGiantEntity extends LittlePersonMilitiaEntity implement
     }
     public void setHasSkill(boolean hasSkill) {
         this.entityData.set(HAS_SKILL, hasSkill);
+    }
+    @Override
+    public void readAdditionalSaveData(ValueInput input) {
+        super.readAdditionalSaveData(input);
+        setSkillCooldown1(Math.max(0, input.getIntOr("SkillCooldown1", getSkillCooldown1())));
+        setSkillCooldown2(Math.max(0, input.getIntOr("SkillCooldown2", getSkillCooldown2())));
+        setSkillCooldown3(Math.max(0, input.getIntOr("SkillCooldown3", getSkillCooldown3())));
+    }
+    @Override
+    public void addAdditionalSaveData(ValueOutput output) {
+        super.addAdditionalSaveData(output);
+        output.putInt("SkillCooldown1", getSkillCooldown1());
+        output.putInt("SkillCooldown2", getSkillCooldown2());
+        output.putInt("SkillCooldown3", getSkillCooldown3());
     }
     /**
      * 处理服务端边界校验后的技能指令。
@@ -180,12 +196,12 @@ public class LittlePersonGiantEntity extends LittlePersonMilitiaEntity implement
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         super.registerControllers(controllers);
         controllers.add(new AnimationController<>( "skill_controller",animTest -> {
-            if (GeoAnimationState.consumeFinishedTriggeredAnimation(animTest)) {
+            if (SkillAnimationPlayback.consumeFinishedTriggeredAnimation(animTest)) {
                 ClientPlayNetworking.send(new SkillPayload(
                         "stop", this.getId()
                 ));
             }
-            return GeoAnimationState.playTriggeredAnimationOrStop(animTest);
+            return SkillAnimationPlayback.playTriggeredAnimationOrStop(animTest);
         })
                 .receiveTriggeredAnimations()
                 .triggerableAnim("attack2", ATTACK_ANIM_2)

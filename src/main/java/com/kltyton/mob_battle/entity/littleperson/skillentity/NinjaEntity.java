@@ -12,6 +12,11 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
 public class NinjaEntity extends RequestedLittlePersonEntity {
+    @Override
+    public String getDeathAnimationName() {
+        return "die";
+    }
+
     private static final int CLONES_PER_VARIANT = 20;
     private static final int CLONE_MAX_AGE = 25;
     private int cloneSequenceVariant;

@@ -75,6 +75,7 @@ public class PoisonousSilverfishEntity extends CoalSilverfishEntity {
         return Silverfish.createAttributes()
                 .add(Attributes.MAX_HEALTH, 150.0D)
                 .add(Attributes.ATTACK_DAMAGE, 0.0D)
+                .add(Attributes.FOLLOW_RANGE, 40.0D)
                 .add(ModEntityAttributes.MAGIC_DAMAGE, 10.0D)
                 .add(ModEntityAttributes.DAMAGE_REDUCTION, 0.3);
     }

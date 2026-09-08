@@ -4,6 +4,7 @@ import com.kltyton.mob_battle.entity.ModEntities;
 import com.kltyton.mob_battle.entity.drone.attackdrone.AttackDroneEntity;
 import com.kltyton.mob_battle.entity.drone.treatmentdrone.TreatmentDroneEntity;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -15,21 +16,29 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.Scoreboard;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
 public class DroneManager {
     public static void init() {
         ServerTickEvents.END_SERVER_TICK.register(server -> {
-            for (var data : DroneManager.INSTANCE.playerDrones.values()) {
+            Map<UUID, DroneData> serverPlayerDrones = DroneManager.INSTANCE.serverDrones.get(server);
+            if (serverPlayerDrones == null) return;
+            for (var data : serverPlayerDrones.values()) {
                 if (data.cooldownTicks > 0) data.cooldownTicks--;
             }
         });
 
         ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> {
-            DroneManager.INSTANCE.removePlayer(handler.getPlayer().getUUID());
+            DroneManager.INSTANCE.removePlayer(server, handler.getPlayer().getUUID());
         });
+        ServerLifecycleEvents.SERVER_STOPPING.register(DroneManager.INSTANCE::clearServer);
     }
     public static void handleSummonRequest(ServerPlayer player) {
         DroneData data = DroneManager.INSTANCE.getOrCreate(player);
@@ -212,19 +221,65 @@ public class DroneManager {
     }
     public static final DroneManager INSTANCE = new DroneManager();
 
-    private final Map<UUID, DroneData> playerDrones = new HashMap<>();
+    private final Map<MinecraftServer, Map<UUID, DroneData>> serverDrones = new IdentityHashMap<>();
 
     private DroneManager() {}
 
     public DroneData getOrCreate(ServerPlayer player) {
-        return playerDrones.computeIfAbsent(player.getUUID(), uuid -> new DroneData());
+        MinecraftServer server = player.level().getServer();
+        return serverDrones.computeIfAbsent(server, ignored -> new HashMap<>())
+                .computeIfAbsent(player.getUUID(), ignored -> new DroneData());
     }
-    public void removePlayer(UUID playerUuid) {
-        DroneData data = playerDrones.get(playerUuid);
-        if (data != null) {
-            data.clearEntities();
-            playerDrones.remove(playerUuid);
+
+    /** 断线时移除该服务器中玩家登记或拥有的无人机，并清除玩家状态。 */
+    public void removePlayer(MinecraftServer server, UUID playerUuid) {
+        Map<UUID, DroneData> serverPlayerDrones = serverDrones.get(server);
+        DroneData data = serverPlayerDrones == null ? null : serverPlayerDrones.remove(playerUuid);
+        discardPlayerDrones(server, playerUuid, data);
+        if (serverPlayerDrones != null && serverPlayerDrones.isEmpty()) {
+            serverDrones.remove(server);
         }
+    }
+
+    /** 停服时只清理当前 MinecraftServer 的无人机和状态。 */
+    public void clearServer(MinecraftServer server) {
+        Map<UUID, DroneData> serverPlayerDrones = serverDrones.remove(server);
+        if (serverPlayerDrones != null) {
+            serverPlayerDrones.forEach((playerUuid, data) -> discardPlayerDrones(server, playerUuid, data));
+        }
+        for (var level : server.getAllLevels()) {
+            List<Entity> dronesToDiscard = new ArrayList<>();
+            for (Entity entity : level.getAllEntities()) {
+                if (entity instanceof AttackDroneEntity || entity instanceof TreatmentDroneEntity) {
+                    dronesToDiscard.add(entity);
+                }
+            }
+            dronesToDiscard.forEach(Entity::discard);
+        }
+    }
+
+    private static void discardPlayerDrones(MinecraftServer server, UUID playerUuid, DroneData data) {
+        Set<UUID> registeredIds = new HashSet<>();
+        if (data != null) {
+            if (data.attack1 != null) registeredIds.add(data.attack1);
+            if (data.attack2 != null) registeredIds.add(data.attack2);
+            if (data.treatment != null) registeredIds.add(data.treatment);
+        }
+
+        for (var level : server.getAllLevels()) {
+            List<Entity> dronesToDiscard = new ArrayList<>();
+            for (Entity entity : level.getAllEntities()) {
+                if (!(entity instanceof AttackDroneEntity || entity instanceof TreatmentDroneEntity)) continue;
+
+                var ownerReference = ((DroneEntity) entity).getOwnerReference();
+                boolean ownedByPlayer = ownerReference != null && playerUuid.equals(ownerReference.getUUID());
+                if (registeredIds.contains(entity.getUUID()) || ownedByPlayer) {
+                    dronesToDiscard.add(entity);
+                }
+            }
+            dronesToDiscard.forEach(Entity::discard);
+        }
+        if (data != null) data.clearEntities();
     }
 
     public static class DroneData {

@@ -4,7 +4,7 @@ import com.kltyton.mob_battle.entity.ModSkillEntityType;
 import com.kltyton.mob_battle.entity.highbird.adulthood.HighbirdAdulthoodEntity;
 import com.kltyton.mob_battle.network.packet.HighbirdAttackPayload;
 import com.kltyton.mob_battle.animation.death.DeathAnimationState;
-import com.kltyton.mob_battle.client.animation.gecko.GeoAnimationState;
+import com.kltyton.mob_battle.client.animation.gecko.SkillAnimationPlayback;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -62,6 +62,7 @@ public abstract class HighbirdBaseEntity extends HighbirdAndEggEntity {
     private final AnimatableInstanceCache geoCache = GeckoLibUtil.createInstanceCache(this);
     private DeathAnimationState.FrozenPose deathFrozenPose;
     private int wakeAiRestoreTicks;
+    private boolean attackFramePending;
     public boolean isSleeping = false;
     public boolean forcedWakeUp = false;
     public boolean farstAttack = false;
@@ -165,6 +166,10 @@ public abstract class HighbirdBaseEntity extends HighbirdAndEggEntity {
 
     // 当实体尝试攻击目标时调用此方法
     public boolean performAttack(ServerLevel world, Entity target) {
+        // 攻击伤害只允许消费服务端本次 doHurtTarget 开启的一个动画帧。
+        // 该标记在服务端线程上消费，防止同一 keyframe 包重放造成多次伤害。
+        if (!this.attackFramePending) return false;
+        this.attackFramePending = false;
         if (!ModSkillEntityType.canSkill(this)) return false;
         if (!(target instanceof LivingEntity livingTarget)
                 || !this.canAttack(livingTarget)
@@ -221,8 +226,7 @@ public abstract class HighbirdBaseEntity extends HighbirdAndEggEntity {
             this.playAttackSound();
         }
 
-        // 返回是否成功造成伤害
-        return false;
+        return bl;
     }
     @Override
     public boolean doHurtTarget(ServerLevel world, Entity target) {
@@ -236,6 +240,7 @@ public abstract class HighbirdBaseEntity extends HighbirdAndEggEntity {
             return false;
         } else {
             farstAttack = false;
+            this.attackFramePending = true;
             this.triggerAnim("attack_controller", "attack");
             return true;
         }
@@ -347,7 +352,7 @@ public abstract class HighbirdBaseEntity extends HighbirdAndEggEntity {
         // 攻击控制器
         controllers.add(
                 new AnimationController<>("attack_controller", state ->
-                    GeoAnimationState.playTriggeredAnimationOrStop(state)
+                    SkillAnimationPlayback.playTriggeredAnimationOrStop(state)
                 )
                         .receiveTriggeredAnimations()
                         .triggerableAnim("attack", ATTACK_ANIM)
@@ -363,7 +368,7 @@ public abstract class HighbirdBaseEntity extends HighbirdAndEggEntity {
                             }
                         }));
         controllers.add(
-                new AnimationController<>("sleep_controller", GeoAnimationState::playTriggeredAnimationOrStop)
+                new AnimationController<>("sleep_controller", SkillAnimationPlayback::playTriggeredAnimationOrStop)
                         .receiveTriggeredAnimations()
                         .triggerableAnim("sleep", SLEEP_ANIM)
                         .triggerableAnim("wake", WAKE_ANIM)

@@ -6,6 +6,7 @@ import com.kltyton.mob_battle.entity.littleperson.guard.LittlePersonGuardEntity;
 import com.kltyton.mob_battle.entity.littleperson.king.LittlePersonKingEntity;
 import com.kltyton.mob_battle.entity.littleperson.skillentity.requested.EliteLittlePersonGuardEntity;
 import com.kltyton.mob_battle.entity.support.EntityQueries;
+import com.kltyton.mob_battle.entity.littleperson.zombie.ZombieLittlePerson;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
@@ -20,7 +21,7 @@ import net.minecraft.world.phys.Vec3;
 public class LittlePersonKingSkill {
 
     public static void runSkill_2(LittlePersonKingEntity littlePersonKingEntity) {
-        summonLittlePersonGuardEntity(littlePersonKingEntity, littlePersonKingEntity.isViolent() ? 6 : 2);
+        littlePersonKingEntity.summonGuards(littlePersonKingEntity.isViolent() ? 6 : 2);
     }
 
     public static void runSkill_3(LittlePersonKingEntity littlePersonKingEntity) {
@@ -105,6 +106,7 @@ public class LittlePersonKingSkill {
                 LittlePersonGuardEntity.class,
                 entity.getBoundingBox().inflate(radius),
                 p -> p.isAlive() && entity.distanceTo(p) <= radius
+                        && (p instanceof ZombieLittlePerson) == (entity instanceof ZombieLittlePerson)
         );
     }
     public static List<EliteLittlePersonGuardEntity> getNearbyEliteLittlePersonGuardEntity(LittlePersonKingEntity entity, double radius) {

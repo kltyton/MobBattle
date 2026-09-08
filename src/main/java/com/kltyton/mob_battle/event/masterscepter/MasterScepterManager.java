@@ -2,18 +2,42 @@ package com.kltyton.mob_battle.event.masterscepter;
 
 import com.kltyton.mob_battle.effect.ModEffects;
 import com.kltyton.mob_battle.items.scroll.PurificationScrollItem;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 
 public class MasterScepterManager {
-    private static final Map<UUID, Map<String, Long>> COMMAND_COOLDOWNS = new ConcurrentHashMap<>();
+    private static final Map<MinecraftServer, Map<UUID, Map<String, Long>>> COMMAND_COOLDOWNS = new IdentityHashMap<>();
+    private static final AtomicBoolean LIFECYCLE_REGISTERED = new AtomicBoolean();
+
+    /** 注册权杖冷却的断线与停服清理，避免跨 server/JVM 生命周期复用。 */
+    public static void initLifecycle() {
+        if (!LIFECYCLE_REGISTERED.compareAndSet(false, true)) {
+            return;
+        }
+        SbFb.initLifecycle();
+        SbBfb.initLifecycle();
+        ServerPlayConnectionEvents.DISCONNECT.register((handler, server) ->
+                clearPlayer(server, handler.getPlayer().getUUID()));
+        ServerLifecycleEvents.SERVER_STOPPING.register(MasterScepterManager::clearServer);
+        ServerLifecycleEvents.SERVER_STOPPED.register(MasterScepterManager::clearServer);
+    }
+
     public static void runCommand(ServerPlayer player, String command) {
-        Map<String, Long> playerCooldowns = COMMAND_COOLDOWNS.computeIfAbsent(player.getUUID(), k -> new ConcurrentHashMap<>());
+        MinecraftServer server = player.level().getServer();
+        Map<UUID, Map<String, Long>> serverCooldowns = COMMAND_COOLDOWNS.computeIfAbsent(
+                server, ignored -> new HashMap<>());
+        Map<String, Long> playerCooldowns = serverCooldowns.computeIfAbsent(player.getUUID(),
+                ignored -> new HashMap<>());
         long now = player.level().getGameTime();
 
         // 定义每个命令的冷却时间（毫秒）
@@ -34,27 +58,12 @@ public class MasterScepterManager {
         boolean applied = switch (command) {
             case "fb" -> {
                 UUID playerId = player.getUUID();
-
-                if (!SbFb.ACTIVE_TASKS.contains(playerId)) {
-                    SbFb.TASK_QUEUE.add(new SbFb.DelayedTask(
-                            playerId,
-                            player.level().dimension(),
-                            50
-                    ));
-                    SbFb.ACTIVE_TASKS.add(playerId);
-                }
+                SbFb.tryStart(server, playerId, player.level().dimension());
                 yield true;
             }
             case "bfb" -> {
                 UUID playerId = player.getUUID();
-                if (!SbBfb.ACTIVE_TASKS.contains(playerId)) {
-                    SbBfb.TASK_QUEUE.add(new SbBfb.DelayedTask(
-                            playerId,
-                            player.level().dimension(),
-                            30
-                    ));
-                    SbBfb.ACTIVE_TASKS.add(playerId);
-                }
+                SbBfb.tryStart(server, playerId, player.level().dimension());
                 yield true;
             }
             case "bfbp" -> {
@@ -116,6 +125,27 @@ public class MasterScepterManager {
         } else {
             player.sendOverlayMessage(Component.literal("§c未知命令！"));
         }
+    }
+
+    /** 断线清除单个玩家的冷却；由 Fabric 连接生命周期回调调用。 */
+    static void clearPlayer(MinecraftServer server, UUID playerId) {
+        SbFb.clearPlayer(server, playerId);
+        SbBfb.clearPlayer(server, playerId);
+        Map<UUID, Map<String, Long>> serverCooldowns = COMMAND_COOLDOWNS.get(server);
+        if (serverCooldowns == null) {
+            return;
+        }
+        serverCooldowns.remove(playerId);
+        if (serverCooldowns.isEmpty()) {
+            COMMAND_COOLDOWNS.remove(server);
+        }
+    }
+
+    /** 停服清除该 server 的全部冷却，避免旧世界状态进入下一次启动。 */
+    static void clearServer(MinecraftServer server) {
+        SbFb.clearServer(server);
+        SbBfb.clearServer(server);
+        COMMAND_COOLDOWNS.remove(server);
     }
 
 }

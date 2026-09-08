@@ -1,6 +1,7 @@
 package com.kltyton.mob_battle.entity.drone.goal;
 
 import com.kltyton.mob_battle.entity.drone.treatmentdrone.TreatmentDroneEntity;
+import com.kltyton.mob_battle.entity.support.EntityQueries;
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
@@ -78,7 +79,7 @@ public class HealTeamGoal extends Goal {
             if (entity.isDeadOrDying()) return false;
             if (entity.getHealth() >= entity.getMaxHealth()) return false;
 
-            if (!drone.isAlliedTo(entity)) return false;
+            if (!EntityQueries.areTeammates(drone, entity)) return false;
 
             return !drone.isOnlyPlayer() || entity instanceof Player;
         });
@@ -95,7 +96,7 @@ public class HealTeamGoal extends Goal {
         List<LivingEntity> injured = world.getEntitiesOfClass(LivingEntity.class, box, entity -> {
             if (entity.isDeadOrDying()) return false;
             if (entity.getHealth() >= entity.getMaxHealth()) return false;
-            if (!drone.isAlliedTo(entity)) return false;
+            if (!EntityQueries.areTeammates(drone, entity)) return false;
             return !drone.isOnlyPlayer() || entity instanceof Player;
         });
 

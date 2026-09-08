@@ -6,6 +6,8 @@ import com.kltyton.mob_battle.block.doubleblock.scarecrow.ScarecrowBlock;
 import com.kltyton.mob_battle.block.doubleblock.target.TargetBlock;
 import com.kltyton.mob_battle.block.mushroom.MushroomBlock;
 import com.kltyton.mob_battle.block.nest.NestBlock;
+import com.kltyton.mob_battle.block.berryjuice.BerryJuiceBlocks;
+import com.kltyton.mob_battle.block.berryjuice.BerryJuiceCauldronBlock;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -34,6 +36,7 @@ public class ModBlocks {
     public static Block COMPRESSED_GOLD_BLOCK;
     public static Block COMPRESSED_DIAMOND_BLOCK;
     public static Block COMPRESSED_NETHERITE_BLOCK;
+    public static BerryJuiceCauldronBlock BERRY_JUICE_CAULDRON;
     public static void init() {
         SCARECROW_BLOCK = register(
                 "scarecrow",
@@ -117,6 +120,8 @@ public class ModBlocks {
                 compressedBlockSettings(MapColor.COLOR_BLACK, NoteBlockInstrument.BASEDRUM),
                 true
         );
+        BerryJuiceBlocks.init();
+        BERRY_JUICE_CAULDRON = BerryJuiceBlocks.BERRY_JUICE_CAULDRON;
     }
 
     private static BlockBehaviour.Properties compressedBlockSettings(MapColor mapColor, NoteBlockInstrument instrument) {
