@@ -39,6 +39,7 @@
     "ender.EnderpearlItemMixin",
     "entity.ai.goal.GoalSelectorMixin",
     "entity.AgeableMobMixin",
+    "entity.player.ServerPlayerIceKnifeSwingMixin",
     "entity.boss.dragon.DragonFireballMixin",
     "entity.boss.dragon.EnderDragonEntityMixin",
     "entity.boss.dragon.EnderDragonFightMixin",

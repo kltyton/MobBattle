@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "mob_battle:item/weapon/piglin_cannon"
+    "layer0": "minecraft:item/crossbow_standby"
   }
 }

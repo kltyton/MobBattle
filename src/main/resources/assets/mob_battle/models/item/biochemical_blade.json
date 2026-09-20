@@ -1,0 +1,62 @@
+{
+	"format_version": "1.21.11",
+	"credit": "Made with Blockbench",
+	"textures": {
+		"0": "mob_battle:item/biochemical_blade",
+		"particle": "mob_battle:item/biochemical_blade"
+	},
+	"elements": [
+		{
+			"from": [9, 4, 8],
+			"to": [9.09, 8, 10],
+			"rotation": {"angle": 0, "axis": "y", "origin": [9, 6, 8]},
+			"faces": {
+				"north": {"uv": [2, 0, 3, 2], "texture": "#0"},
+				"east": {"uv": [0, 0, 2, 2], "texture": "#0"},
+				"south": {"uv": [2, 2, 3, 4], "texture": "#0"},
+				"west": {"uv": [0, 2, 2, 4], "texture": "#0"},
+				"up": {"uv": [4, 2, 3, 0], "texture": "#0"},
+				"down": {"uv": [4, 2, 3, 4], "texture": "#0"}
+			}
+		}
+	],
+	"display": {
+		"thirdperson_righthand": {
+			"translation": [1, 0, -8],
+			"scale": [1, 1, 4]
+		},
+		"thirdperson_lefthand": {
+			"translation": [3.1, 0, -8],
+			"scale": [1, 1, 4]
+		},
+		"firstperson_righthand": {
+			"rotation": [-85.23, -2.45, 1.76],
+			"translation": [0, 0.5, -2.75],
+			"scale": [1, 3, 2.5]
+		},
+		"firstperson_lefthand": {
+			"rotation": [-80, -5.25, 0],
+			"translation": [0.75, 1.75, 0],
+			"scale": [1, 3, 2.5]
+		},
+		"ground": {
+			"rotation": [-14, -3.66, 20.37],
+			"scale": [1, 2.5, 1]
+		},
+		"gui": {
+			"rotation": [-162.69, 48.01, 136.27],
+			"translation": [-3.5, 4.5, 0],
+			"scale": [1, 2.5, 1]
+		},
+		"fixed": {
+			"rotation": [-82.77, -73.86, -83.06],
+			"translation": [1, 6.75, -1.25],
+			"scale": [1, 2.5, 1]
+		},
+		"on_shelf": {
+			"rotation": [-180, 32.5, -180],
+			"translation": [0, 7.5, -1.25],
+			"scale": [1, 2.5, 1]
+		}
+	}
+}

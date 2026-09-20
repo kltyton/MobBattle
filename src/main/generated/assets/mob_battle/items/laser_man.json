@@ -1,6 +1,20 @@
 {
   "model": {
-    "type": "minecraft:model",
-    "model": "mob_battle:item/laser_man"
+    "type": "minecraft:select",
+    "cases": [
+      {
+        "model": {
+          "type": "minecraft:model",
+          "model": "mob_battle:item/fufu/laser_man"
+        },
+        "when": "fufu"
+      }
+    ],
+    "component": "minecraft:custom_name",
+    "fallback": {
+      "type": "minecraft:model",
+      "model": "mob_battle:item/laser_man"
+    },
+    "property": "minecraft:component"
   }
 }

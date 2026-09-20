@@ -1,36 +1,14 @@
 package com.kltyton.mob_battle.entity.littleperson.skillentity.base;
 
-import com.kltyton.mob_battle.Mob_battle;
+import com.kltyton.mob_battle.client.model.littleperson.LittlePersonAppearanceModel;
 import com.kltyton.mob_battle.entity.littleperson.LittlePersonEntity;
-import net.minecraft.resources.Identifier;
-import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
-import com.geckolib.animation.state.AnimationTest;
-import com.geckolib.cache.model.GeoBone;
-import com.geckolib.constant.DataTickets;
-import com.geckolib.model.GeoModel;
-import com.geckolib.renderer.base.GeoRenderState;
 
-public class BaseSkillLittlePersonEntityModel<T extends LivingEntity & LittlePersonEntity> extends GeoModel<T> {
-    public String name;
+/** 技能小人沿用公开名称和手部标志，外观资源由共享彩蛋模型选择。 */
+public class BaseSkillLittlePersonEntityModel<T extends LivingEntity & LittlePersonEntity> extends LittlePersonAppearanceModel<T> {
     public boolean hasHand;
     public BaseSkillLittlePersonEntityModel(String name, boolean hasHand) {
-        super();
-        this.name = name;
+        super(name);
         this.hasHand = hasHand;
-    }
-    @Override
-    public Identifier getModelResource(GeoRenderState renderState) {
-        return Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, name);
-    }
-
-    @Override
-    public Identifier getTextureResource(GeoRenderState renderState) {
-        return Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "textures/entity/little_person/" + name + ".png");
-    }
-
-    @Override
-    public Identifier getAnimationResource(T animatable) {
-        return Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, name);
     }
 }

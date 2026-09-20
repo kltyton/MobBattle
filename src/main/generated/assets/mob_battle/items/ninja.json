@@ -1,6 +1,20 @@
 {
   "model": {
-    "type": "minecraft:model",
-    "model": "mob_battle:item/ninja"
+    "type": "minecraft:select",
+    "cases": [
+      {
+        "model": {
+          "type": "minecraft:model",
+          "model": "mob_battle:item/fufu/ninja"
+        },
+        "when": "fufu"
+      }
+    ],
+    "component": "minecraft:custom_name",
+    "fallback": {
+      "type": "minecraft:model",
+      "model": "mob_battle:item/ninja"
+    },
+    "property": "minecraft:component"
   }
 }

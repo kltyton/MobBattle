@@ -1,27 +1,10 @@
 package com.kltyton.mob_battle.entity.littleperson.king;
 
-import com.kltyton.mob_battle.Mob_battle;
-import net.minecraft.resources.Identifier;
-import com.geckolib.model.GeoModel;
-import com.geckolib.renderer.base.GeoRenderState;
+import com.kltyton.mob_battle.client.model.littleperson.LittlePersonAppearanceModel;
 
-public class LittlePersonKingEntityModel extends GeoModel<LittlePersonKingEntity> {
-    private final Identifier model = Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "little_person_king");
-    private final Identifier animations = Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "little_person_king");
-    private final Identifier texture = Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "textures/entity/little_person/little_person_king.png");
-
-    @Override
-    public Identifier getModelResource(GeoRenderState renderState) {
-        return model;
-    }
-
-    @Override
-    public Identifier getTextureResource(GeoRenderState renderState) {
-        return texture;
-    }
-
-    @Override
-    public Identifier getAnimationResource(LittlePersonKingEntity animatable) {
-        return animations;
+/** 保留本实体的模型入口，统一使用名称彩蛋选择器。 */
+public class LittlePersonKingEntityModel extends LittlePersonAppearanceModel<LittlePersonKingEntity> {
+    public LittlePersonKingEntityModel() {
+        super("little_person_king");
     }
 }

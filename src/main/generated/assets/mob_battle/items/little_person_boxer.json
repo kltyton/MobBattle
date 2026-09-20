@@ -1,6 +1,20 @@
 {
   "model": {
-    "type": "minecraft:model",
-    "model": "mob_battle:item/little_person_boxer"
+    "type": "minecraft:select",
+    "cases": [
+      {
+        "model": {
+          "type": "minecraft:model",
+          "model": "mob_battle:item/fufu/little_person_boxer"
+        },
+        "when": "fufu"
+      }
+    ],
+    "component": "minecraft:custom_name",
+    "fallback": {
+      "type": "minecraft:model",
+      "model": "mob_battle:item/little_person_boxer"
+    },
+    "property": "minecraft:component"
   }
 }

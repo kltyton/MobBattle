@@ -1,6 +1,20 @@
 {
   "model": {
-    "type": "minecraft:model",
-    "model": "mob_battle:item/hidden_eye_spawn_egg"
+    "type": "minecraft:select",
+    "cases": [
+      {
+        "model": {
+          "type": "minecraft:model",
+          "model": "mob_battle:item/fufu/hidden_eye_spawn_egg"
+        },
+        "when": "fufu"
+      }
+    ],
+    "component": "minecraft:custom_name",
+    "fallback": {
+      "type": "minecraft:model",
+      "model": "mob_battle:item/hidden_eye_spawn_egg"
+    },
+    "property": "minecraft:component"
   }
 }

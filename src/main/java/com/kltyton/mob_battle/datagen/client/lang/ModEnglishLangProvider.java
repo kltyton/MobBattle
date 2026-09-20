@@ -389,7 +389,7 @@ public class ModEnglishLangProvider extends FabricLanguageProvider {
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.SKULL_WARRIOR_SPAWN_EGG), "Skull Warrior Spawn Egg");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.SKULL_MAGE_SPAWN_EGG), "Skull Mage Spawn Egg");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.VOID_CELL_SPAWN_EGG), "Void Cell Spawn Egg");
-        translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.YOUNG_MIN_SPAWN_EGG), "Young Min Spawn Egg");
+        translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.YOUNG_MIN_SPAWN_EGG), "Ming Spawn Egg");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.HIDDEN_EYE_SPAWN_EGG), "Hidden Eye Spawn Egg");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.LITTLE_PERSON_CIVILIAN_SPAWN_EGG), "Little Person Civilian Spawn Egg");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.LITTLE_PERSON_MILITIA_SPAWN_EGG), "Little Person Militia Spawn Egg");
@@ -413,7 +413,7 @@ public class ModEnglishLangProvider extends FabricLanguageProvider {
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModEntities.SKULL_WARRIOR), "Skull Warrior");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModEntities.SKULL_MAGE), "Skull Mage");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModEntities.VOID_CELL), "Void Cell");
-        translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModEntities.YOUNG_MIN), "Young Min");
+        translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModEntities.YOUNG_MIN), "Ming");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModEntities.HIDDEN_EYE), "Hidden Eye");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModEntities.ARCHER_VILLAGER), "Archer Villager");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModEntities.WARRIOR_VILLAGER), "Warrior Villager");

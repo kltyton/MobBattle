@@ -1,6 +1,20 @@
 {
   "model": {
-    "type": "minecraft:model",
-    "model": "mob_battle:item/bloody_blade"
+    "type": "minecraft:select",
+    "cases": [
+      {
+        "model": {
+          "type": "minecraft:model",
+          "model": "mob_battle:item/fufu/bloody_blade"
+        },
+        "when": "fufu"
+      }
+    ],
+    "component": "minecraft:custom_name",
+    "fallback": {
+      "type": "minecraft:model",
+      "model": "mob_battle:item/bloody_blade"
+    },
+    "property": "minecraft:component"
   }
 }

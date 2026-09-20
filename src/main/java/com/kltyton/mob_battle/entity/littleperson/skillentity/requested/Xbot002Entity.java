@@ -26,6 +26,7 @@ import net.minecraft.world.phys.Vec3;
 
 public class Xbot002Entity extends RequestedTaskLittlePersonEntity {
     private boolean deathBlastDone;
+    private static final double ATTACK_2_SLAM_RADIUS = 4.0D;
 
     public Xbot002Entity(EntityType<? extends Monster> entityType, Level world) {
         super(entityType, world, 3);
@@ -65,15 +66,7 @@ public class Xbot002Entity extends RequestedTaskLittlePersonEntity {
     @Override
     protected void runSkill(int attack, int phase) {
         switch (attack) {
-            case 2 -> {
-                LivingEntity target = this.getTarget();
-                boolean validTarget = target != null && EntityQueries.isValidCombatTarget(this, target);
-                damageTarget(phase == 2 ? 210.0F : 105.0F, 0.0F);
-                if (validTarget && this.level() instanceof ServerLevel serverLevel) {
-                    serverLevel.levelEvent(2013, target.getOnPos(), 750);
-                }
-                knockTargetLikeIronGolem(1.3D);
-            }
+            case 2 -> runAttack2(phase);
             case 3 -> {
                 damageTarget(100.0F, 0.0F);
                 knockTargetLikeIronGolem(1.4D);
@@ -88,6 +81,30 @@ public class Xbot002Entity extends RequestedTaskLittlePersonEntity {
         }
     }
 
+    /** 第二段重击以自身为中心；两段都复用已有的无敌帧穿透与阵营校验。 */
+    private void runAttack2(int phase) {
+        if (!(this.level() instanceof ServerLevel world)) {
+            return;
+        }
+        if (phase == 2) {
+            world.levelEvent(2013, this.getOnPos(), 750);
+            for (LivingEntity nearby : EntityQueries.getNearbyEntity(this, LivingEntity.class,
+                    ATTACK_2_SLAM_RADIUS, false, EntityQueries.TeamFilter.EXCLUDE_TEAM)) {
+                if (isValidSummonTarget(nearby)) {
+                    damagePhysicalNoInvulnerability(nearby, 210.0F);
+                    knockTargetLikeIronGolem(nearby, 1.3D);
+                }
+            }
+        } else {
+            LivingEntity target = this.getTarget();
+            if (target != null && isValidSummonTarget(target)) {
+                damagePhysicalNoInvulnerability(target, 105.0F);
+                world.levelEvent(2013, target.getOnPos(), 750);
+                knockTargetLikeIronGolem(target, 1.3D);
+            }
+        }
+    }
+
     @Override
     public void knockback(double strength, double x, double z) {
     }
@@ -97,6 +114,10 @@ public class Xbot002Entity extends RequestedTaskLittlePersonEntity {
         if (target == null || !EntityQueries.isValidCombatTarget(this, target)) {
             return;
         }
+        knockTargetLikeIronGolem(target, strength);
+    }
+
+    private void knockTargetLikeIronGolem(LivingEntity target, double strength) {
         target.knockback(strength, Mth.sin(this.getYRot() * (float) (Math.PI / 180.0)), -Mth.cos(this.getYRot() * (float) (Math.PI / 180.0)));
         target.hurtMarked = true;
         this.playSound(SoundEvents.ANVIL_LAND, 1.0F, 0.85F + this.random.nextFloat() * 0.2F);

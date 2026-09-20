@@ -385,7 +385,7 @@ public class ModChineseLangProvider extends FabricLanguageProvider {
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.SKULL_WARRIOR_SPAWN_EGG), "骷髅战士刷怪蛋");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.SKULL_MAGE_SPAWN_EGG), "骷髅法师刷怪蛋");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.VOID_CELL_SPAWN_EGG), "虚空细胞刷怪蛋");
-        translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.YOUNG_MIN_SPAWN_EGG), "青年愚民刷怪蛋");
+        translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.YOUNG_MIN_SPAWN_EGG), "铭刷怪蛋");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.HIDDEN_EYE_SPAWN_EGG), "隐匿之眼刷怪蛋");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.LITTLE_PERSON_CIVILIAN_SPAWN_EGG), "小人平民刷怪蛋");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModItems.LITTLE_PERSON_MILITIA_SPAWN_EGG), "小人民兵刷怪蛋");
@@ -409,7 +409,7 @@ public class ModChineseLangProvider extends FabricLanguageProvider {
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModEntities.SKULL_WARRIOR), "骷髅战士");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModEntities.SKULL_MAGE), "骷髅法师");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModEntities.VOID_CELL), "虚空细胞");
-        translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModEntities.YOUNG_MIN), "青年愚民");
+        translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModEntities.YOUNG_MIN), "铭");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModEntities.HIDDEN_EYE), "隐匿之眼");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModEntities.ARCHER_VILLAGER), "弓手村民");
         translationBuilder.add(LanguageProviderSupport.getTranslationKey(ModEntities.WARRIOR_VILLAGER), "战士村民");

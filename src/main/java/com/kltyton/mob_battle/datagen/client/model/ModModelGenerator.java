@@ -95,6 +95,7 @@ public class ModModelGenerator extends FabricModelProvider {
 
     @Override
     public void generateItemModels(ItemModelGenerators itemModelCollector) {
+        itemModelCollector = FufuItemModels.wrap(itemModelCollector, output);
         itemModelCollector.itemModelOutput.accept(ModBlocks.NEST_BLOCK.asItem(), ItemModelUtils.plainModel(Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "block/nest")));
         itemModelCollector.itemModelOutput.accept(ModBlocks.MUSHROOM_BLOCK.asItem(), ItemModelUtils.plainModel(Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "block/mushroom")));
         itemModelCollector.generateFlatItem(ModItems.FINE_KNIFE, ModelTemplates.FLAT_HANDHELD_ITEM);
@@ -106,15 +107,16 @@ public class ModModelGenerator extends FabricModelProvider {
 
         itemModelCollector.generateFlatItem(ModItems.EMERALD_DIAMOND_SWORD, ModelTemplates.FLAT_HANDHELD_ITEM);
         itemModelCollector.generateFlatItem(ModItems.ZIJIN_SWORD, ModelTemplates.FLAT_HANDHELD_ITEM);
-        itemModelCollector.generateFlatItem(ModItems.COMPRESSED_COPPER_SWORD, ModelTemplates.FLAT_HANDHELD_ITEM);
+        generateItemWithTexture(itemModelCollector, ModItems.COMPRESSED_COPPER_SWORD,
+                Identifier.withDefaultNamespace("item/copper_sword"), ModelTemplates.FLAT_HANDHELD_ITEM);
         itemModelCollector.generateFlatItem(ModItems.COMPRESSED_IRON_SWORD, ModelTemplates.FLAT_HANDHELD_ITEM);
         itemModelCollector.generateFlatItem(ModItems.COMPRESSED_GOLD_SWORD, ModelTemplates.FLAT_HANDHELD_ITEM);
         itemModelCollector.generateFlatItem(ModItems.COMPRESSED_DIAMOND_SWORD, ModelTemplates.FLAT_HANDHELD_ITEM);
         itemModelCollector.generateFlatItem(ModItems.COMPRESSED_NETHERITE_SWORD, ModelTemplates.FLAT_HANDHELD_ITEM);
-        itemModelCollector.generateFlatItem(ModItems.COMPRESSED_COPPER_HELMET, ModelTemplates.FLAT_ITEM);
-        itemModelCollector.generateFlatItem(ModItems.COMPRESSED_COPPER_CHESTPLATE, ModelTemplates.FLAT_ITEM);
-        itemModelCollector.generateFlatItem(ModItems.COMPRESSED_COPPER_LEGGINGS, ModelTemplates.FLAT_ITEM);
-        itemModelCollector.generateFlatItem(ModItems.COMPRESSED_COPPER_BOOTS, ModelTemplates.FLAT_ITEM);
+        generateFlatItemWithTexture(itemModelCollector, ModItems.COMPRESSED_COPPER_HELMET, Identifier.withDefaultNamespace("item/copper_helmet"));
+        generateFlatItemWithTexture(itemModelCollector, ModItems.COMPRESSED_COPPER_CHESTPLATE, Identifier.withDefaultNamespace("item/copper_chestplate"));
+        generateFlatItemWithTexture(itemModelCollector, ModItems.COMPRESSED_COPPER_LEGGINGS, Identifier.withDefaultNamespace("item/copper_leggings"));
+        generateFlatItemWithTexture(itemModelCollector, ModItems.COMPRESSED_COPPER_BOOTS, Identifier.withDefaultNamespace("item/copper_boots"));
 
         itemModelCollector.generateFlatItem(ModItems.CARDIOTONIC_INJECTION, STICK_TEMPLATE);
         registerExistingItemModel(itemModelCollector, ModItems.POISON_KNIFE, "poison_knife");
@@ -134,7 +136,7 @@ public class ModModelGenerator extends FabricModelProvider {
                         Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "item/slowness_scroll"));
             } else if (item == ModItems.PIGLIN_CANNON) {
                 generateFlatItemWithTexture(itemModelCollector, item,
-                        Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "item/weapon/piglin_cannon"));
+                        Identifier.withDefaultNamespace("item/crossbow_standby"));
             } else if (item == ModItems.WOODEN_WHISTLE) {
                 generateFlatItemWithTexture(itemModelCollector, item,
                         Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "item/wooden_whistle"));
@@ -179,7 +181,7 @@ public class ModModelGenerator extends FabricModelProvider {
             } else {
                 Path texturePath = this.output.getModContainer().findPath("assets/" + Mob_battle.MOD_ID + "/textures/item/dan/" + itemName + ".png")
                         .orElse(null);
-                if (texturePath != null && Files.exists(texturePath)) {
+                if (!FufuItemModels.usesSharedLegacyEgg(itemName) && texturePath != null && Files.exists(texturePath)) {
                     textureId = Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "item/dan/" + itemName);
                 } else {
                     textureId = Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "item/dan/dan");
@@ -201,6 +203,8 @@ public class ModModelGenerator extends FabricModelProvider {
         // 旧手写 items/*.json 描述符的代码生成:标准 flat 模型同时生成模型本体,
         // 复杂/自定义 display 模型只生成 item descriptor(模型本体保留手写)。
         generateHandwrittenItemModels(itemModelCollector);
+        itemModelCollector.itemModelOutput.accept(ModItems.MASTER_SCEPTER, ItemModelUtils.plainModel(Identifier.withDefaultNamespace("item/stick")));
+        itemModelCollector.itemModelOutput.accept(ModItems.MUTUAL_ATTACK_STICK, ItemModelUtils.plainModel(Identifier.withDefaultNamespace("item/stick")));
     }
 
     /**

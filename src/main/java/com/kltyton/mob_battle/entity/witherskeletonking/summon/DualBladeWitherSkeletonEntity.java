@@ -56,6 +56,8 @@ public class DualBladeWitherSkeletonEntity extends WitherSkeleton implements Geo
         super(entityType, world);
         this.setHasSkill(false);
         this.setNoAi(true);
+        // 默认缩放属性在父类构造之后才可用，出生时同步原版碰撞尺寸缓存。
+        this.refreshDimensions();
     }
 
     @Override
@@ -242,7 +244,8 @@ public class DualBladeWitherSkeletonEntity extends WitherSkeleton implements Geo
                 .add(Attributes.KNOCKBACK_RESISTANCE, 0.7D)
                 .add(Attributes.FOLLOW_RANGE, 40.0D)
                 .add(Attributes.ATTACK_DAMAGE, 100.0D)
-                .add(Attributes.ARMOR, 25.0D)
+                .add(Attributes.ARMOR, 20.0D)
+                .add(Attributes.SCALE, 0.8D)
                 .add(Attributes.ARMOR_TOUGHNESS, 20.0D)
                 .add(ModEntityAttributes.DAMAGE_REDUCTION, 0.40D);
     }

@@ -1,0 +1,162 @@
+{
+	"format_version": "1.12.0",
+	"minecraft:geometry": [
+		{
+			"description": {
+				"identifier": "geometry.little_person_sprayer_zombie_head",
+				"texture_width": 256,
+				"texture_height": 256,
+				"visible_bounds_width": 2,
+				"visible_bounds_height": 1.5,
+				"visible_bounds_offset": [0, 0.25, 0]
+			},
+			"bones": [
+				{
+					"name": "root",
+					"pivot": [0, 0, 0]
+				},
+				{
+					"name": "body",
+					"parent": "root",
+					"pivot": [0, 2, 0]
+				},
+				{
+					"name": "head",
+					"parent": "body",
+					"pivot": [0, 0, 0],
+					"cubes": [
+						{
+							"origin": [-1, 0, -1],
+							"size": [2, 2, 2],
+							"uv": {
+								"north": {"uv": [0, 0], "uv_size": [16, 16]},
+								"east": {"uv": [17, 0], "uv_size": [16, 16]},
+								"south": {"uv": [34, 0], "uv_size": [16, 16]},
+								"west": {"uv": [51, 0], "uv_size": [16, 16]},
+								"up": {"uv": [84, 16], "uv_size": [-16, -16]},
+								"down": {"uv": [101, 16], "uv_size": [-16, -16]}
+							}
+						},
+						{
+							"origin": [-0.75, -0.1, -1.15],
+							"size": [1.5, 0.375, 0.375],
+							"uv": {
+								"north": {"uv": [102, 0], "uv_size": [12, 3]},
+								"east": {"uv": [115, 0], "uv_size": [3, 3]},
+								"south": {"uv": [119, 0], "uv_size": [12, 3]},
+								"west": {"uv": [132, 0], "uv_size": [3, 3]},
+								"up": {"uv": [148, 3], "uv_size": [-12, -3]},
+								"down": {"uv": [161, 3], "uv_size": [-12, -3]}
+							}
+						},
+						{
+							"origin": [0.1875, 1.375, -1.0625],
+							"size": [0.75, 0.25, 0.125],
+							"uv": {
+								"north": {"uv": [162, 0], "uv_size": [6, 2]},
+								"east": {"uv": [169, 0], "uv_size": [1, 2]},
+								"south": {"uv": [171, 0], "uv_size": [6, 2]},
+								"west": {"uv": [178, 0], "uv_size": [1, 2]},
+								"up": {"uv": [186, 1], "uv_size": [-6, -1]},
+								"down": {"uv": [193, 1], "uv_size": [-6, -1]}
+							}
+						},
+						{
+							"origin": [-0.875, 1.25, -1.0625],
+							"size": [0.75, 0.25, 0.125],
+							"uv": {
+								"north": {"uv": [194, 0], "uv_size": [6, 2]},
+								"east": {"uv": [201, 0], "uv_size": [1, 2]},
+								"south": {"uv": [203, 0], "uv_size": [6, 2]},
+								"west": {"uv": [210, 0], "uv_size": [1, 2]},
+								"up": {"uv": [218, 1], "uv_size": [-6, -1]},
+								"down": {"uv": [225, 1], "uv_size": [-6, -1]}
+							}
+						},
+						{
+							"origin": [0.875, 0.5, -0.875],
+							"size": [0.1875, 0.5, 0.625],
+							"uv": {
+								"north": {"uv": [226, 0], "uv_size": [2, 4]},
+								"east": {"uv": [229, 0], "uv_size": [5, 4]},
+								"south": {"uv": [235, 0], "uv_size": [2, 4]},
+								"west": {"uv": [238, 0], "uv_size": [5, 4]},
+								"up": {"uv": [246, 5], "uv_size": [-2, -5]},
+								"down": {"uv": [249, 5], "uv_size": [-2, -5]}
+							}
+						},
+						{
+							"origin": [-0.5, 0.1875, -1.1875],
+							"size": [0.1875, 0.375, 0.1875],
+							"uv": {
+								"north": {"uv": [250, 0], "uv_size": [2, 3]},
+								"east": {"uv": [253, 0], "uv_size": [2, 3]},
+								"south": {"uv": [0, 17], "uv_size": [2, 3]},
+								"west": {"uv": [3, 17], "uv_size": [2, 3]},
+								"up": {"uv": [8, 19], "uv_size": [-2, -2]},
+								"down": {"uv": [11, 19], "uv_size": [-2, -2]}
+							}
+						},
+						{
+							"origin": [-0.3125, -0.25, -0.3125],
+							"size": [0.625, 0.375, 0.625],
+							"uv": {
+								"north": {"uv": [12, 17], "uv_size": [5, 3]},
+								"east": {"uv": [18, 17], "uv_size": [5, 3]},
+								"south": {"uv": [24, 17], "uv_size": [5, 3]},
+								"west": {"uv": [30, 17], "uv_size": [5, 3]},
+								"up": {"uv": [41, 22], "uv_size": [-5, -5]},
+								"down": {"uv": [47, 22], "uv_size": [-5, -5]}
+							}
+						}
+					]
+				},
+				{
+					"name": "right_arm",
+					"parent": "body",
+					"pivot": [1.375, 3.75, 0]
+				},
+				{
+					"name": "right_forearm",
+					"parent": "right_arm",
+					"pivot": [1.375, 3, 0]
+				},
+				{
+					"name": "weapon",
+					"parent": "right_forearm",
+					"pivot": [1.375, 2.15625, 0]
+				},
+				{
+					"name": "left_arm",
+					"parent": "body",
+					"pivot": [-1.375, 3.75, 0]
+				},
+				{
+					"name": "left_forearm",
+					"parent": "left_arm",
+					"pivot": [-1.375, 3, 0]
+				},
+				{
+					"name": "shield",
+					"parent": "left_forearm",
+					"pivot": [-1.375, 2.5, 0]
+				},
+				{
+					"name": "cape",
+					"parent": "body",
+					"pivot": [0, 3.9, 0.65]
+				},
+				{
+					"name": "right_leg",
+					"parent": "body",
+					"pivot": [0.5, 2, 0]
+				},
+				{
+					"name": "left_leg",
+					"parent": "body",
+					"pivot": [-0.5, 2, 0]
+				}
+			]
+		}
+	]
+}
