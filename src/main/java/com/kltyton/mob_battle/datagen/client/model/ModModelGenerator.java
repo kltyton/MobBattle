@@ -5,6 +5,9 @@ import com.kltyton.mob_battle.block.ModBlocks;
 import com.kltyton.mob_battle.block.berryjuice.BerryJuiceBlocks;
 import com.kltyton.mob_battle.items.ModItems;
 import com.kltyton.mob_battle.items.registry.SpawnEggItemRegistrar;
+import com.kltyton.mob_battle.items.registry.PresenceArmorItems;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import net.fabricmc.fabric.api.client.datagen.v1.provider.FabricModelProvider;
 import net.fabricmc.fabric.api.datagen.v1.FabricPackOutput;
 import net.minecraft.client.data.models.BlockModelGenerators;
@@ -134,6 +137,11 @@ public class ModModelGenerator extends FabricModelProvider {
         for (Item item : ModItems.GENERATED_ITEMS.values()) {
             if (isCompressedCopperArmor(item)) {
                 continue;
+            } else if (PresenceArmorItems.all().contains(item)) {
+                float scale = item == PresenceArmorItems.HELMET ? 2.8F
+                        : item == PresenceArmorItems.LEGGINGS ? 7.0F / 3.0F : 2.0F;
+                generateEnlargedItemIcon(itemModelCollector, item,
+                        BuiltInRegistries.ITEM.getKey(item).withPrefix("item/"), scale);
             } else if (item == ModItems.PURIFICATION_SCROLL) {
                 generateFlatItemWithTexture(itemModelCollector, item,
                         Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "item/slowness_scroll"));
@@ -147,8 +155,8 @@ public class ModModelGenerator extends FabricModelProvider {
                 generateFlatItemWithTexture(itemModelCollector, item,
                         Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "item/big_backpack"));
             } else if (item == ModItems.ENDER_PURPLE_PEARL) {
-                generateFlatItemWithTexture(itemModelCollector, item,
-                        Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "item/ender_purple_pearl"));
+                generateEnlargedItemIcon(itemModelCollector, item,
+                        Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "item/ender_purple_pearl"), 28.0F / 13.0F);
             } else if (item == ModItems.ICE_SWORD) {
                 generateItemWithTexture(itemModelCollector, item,
                         Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "item/ice_sword"), ModelTemplates.FLAT_HANDHELD_ITEM);
@@ -234,6 +242,26 @@ public class ModModelGenerator extends FabricModelProvider {
 
     private static void generateFlatItemWithTexture(ItemModelGenerators itemModelCollector, Item item, Identifier textureId) {
         generateItemWithTexture(itemModelCollector, item, textureId, ModelTemplates.FLAT_ITEM);
+    }
+
+    /** 原图保留透明画布；按有效图案大小放大背包模型，避免重采样损失像素细节。 */
+    private static void generateEnlargedItemIcon(ItemModelGenerators generator, Item item, Identifier texture, float scale) {
+        Identifier model = ModelTemplates.FLAT_ITEM.create(ModelLocationUtils.getModelLocation(item),
+                TextureMapping.layer0(new Material(texture)),
+                (id, json) -> generator.modelOutput.accept(id, () -> {
+                    JsonObject definition = json.get().getAsJsonObject();
+                    JsonArray size = new JsonArray();
+                    size.add(scale);
+                    size.add(scale);
+                    size.add(1.0F);
+                    JsonObject gui = new JsonObject();
+                    gui.add("scale", size);
+                    JsonObject display = new JsonObject();
+                    display.add("gui", gui);
+                    definition.add("display", display);
+                    return definition;
+                }));
+        generator.itemModelOutput.accept(item, ItemModelUtils.plainModel(model));
     }
 
     private static void generateItemWithTexture(ItemModelGenerators itemModelCollector, Item item, Identifier textureId, ModelTemplate template) {

@@ -1,6 +1,7 @@
 package com.kltyton.mob_battle.client.renderer.entity.summon;
 
 import com.kltyton.mob_battle.entity.summon.presence.BlockAppearance;
+import com.kltyton.mob_battle.entity.summon.presence.PresenceOrbitBlockEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.renderer.SubmitNodeCollector;
@@ -46,6 +47,12 @@ public final class BlockBodyRenderer<T extends Entity & BlockAppearance> extends
     @Override
     public void extractRenderState(T entity, State state, float partialTick) {
         super.extractRenderState(entity, state, partialTick);
+        if (entity instanceof PresenceOrbitBlockEntity orbit) {
+            var position = orbit.renderPosition(partialTick);
+            state.x = position.x;
+            state.y = position.y;
+            state.z = position.z;
+        }
         var block = entity.visualBlockState();
         state.special = block.getRenderShape() != RenderShape.MODEL;
         if (state.special) items.updateForNonLiving(state.item, new ItemStack(block.getBlock()), ItemDisplayContext.NONE, entity);

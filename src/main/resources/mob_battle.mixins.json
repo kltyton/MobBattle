@@ -101,6 +101,7 @@
     "world.chunk.WorldChunkMixin"
   ],
   "client": [
+    "armor.ArmorModelVisibilityMixin",
     "armor.EcredcultistGlowArmorRendererMixin",
     "client.gui.StatusEffectsDisplayMixin",
     "client.gui.hud.BossBarHudMixin",

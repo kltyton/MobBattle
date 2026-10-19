@@ -10,7 +10,14 @@ public final class EquipmentTranslations {
 
     public static void add(TranslationBuilder builder, boolean chinese) {
         for (String slot : new String[]{"helmet", "chestplate", "leggings", "boots"}) {
-            builder.add("item.mob_battle.presence_" + slot, chinese ? "有" : "Presence");
+            String part = switch (slot) {
+                case "helmet" -> chinese ? "头盔" : "Helmet";
+                case "chestplate" -> chinese ? "胸甲" : "Chestplate";
+                case "leggings" -> chinese ? "护腿" : "Leggings";
+                case "boots" -> chinese ? "靴子" : "Boots";
+                default -> throw new IllegalArgumentException("Unknown armor slot: " + slot);
+            };
+            builder.add("item.mob_battle.presence_" + slot, chinese ? "有" + part : "Presence " + part);
         }
         for (var tool : CompressedToolItems.entries()) {
             String material = switch (tool.tier()) {
@@ -31,6 +38,11 @@ public final class EquipmentTranslations {
         builder.add("hud.mob_battle.presence_mode", chinese ? "模式：%s | 环绕：%s/5" : "Mode: %s | Blocks: %s/5");
         builder.add("hud.mob_battle.presence_aggressive", chinese ? "狂暴" : "Aggressive");
         builder.add("hud.mob_battle.presence_neutral", chinese ? "中立" : "Neutral");
+        builder.add("hud.mob_battle.presence_title", chinese ? "有套装" : "Presence Set");
+        builder.add("hud.mob_battle.presence_stomp", chinese ? "C  震地" : "C  Stomp");
+        builder.add("hud.mob_battle.presence_kick", chinese ? "X  踢击" : "X  Kick");
+        builder.add("hud.mob_battle.presence_ready", chinese ? "就绪" : "Ready");
+        builder.add("hud.mob_battle.presence_controls", chinese ? "Z 切换  ·  Shift+Z 唤醒" : "Z Mode  |  Shift+Z Awaken");
         builder.add("hud.mob_battle.presence_cooldown", chinese ? "C：%s秒 | 潜行+Z：唤醒方块" : "C: %ss | Sneak+Z: awaken block");
         builder.add("message.mob_battle.presence_hold_block", chinese ? "主手持有方块，再潜行按 Z 唤醒" : "Hold a block in your main hand, then sneak and press Z");
         builder.add("message.mob_battle.presence_unbreakable", chinese ? "无法唤醒不可破坏的方块" : "Unbreakable blocks cannot be awakened");

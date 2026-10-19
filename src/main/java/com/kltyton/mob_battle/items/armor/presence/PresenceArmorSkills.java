@@ -15,8 +15,6 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
-import net.minecraft.core.particles.BlockParticleOption;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
@@ -67,6 +65,7 @@ public final class PresenceArmorSkills {
             if (player.isShiftKeyDown()) summon(player);
             else {
                 ledger.preference(player.getUUID(), new PresenceBondLedger.Preference(!preference.aggressive(), preference.ammunition(), preference.readyAt()));
+                PresenceArmorParticles.mode(player, !preference.aggressive());
                 for (LivingBlockEntity block : runtime.livingBlocks.values()) {
                     if (player.getUUID().equals(block.ownerId())) block.resetCombatMemory(player);
                 }
@@ -131,6 +130,7 @@ public final class PresenceArmorSkills {
             return;
         }
         updateReservedHealth(player);
+        PresenceArmorParticles.awaken(player.level(), blockEntity.position(), block);
     }
 
     /** 用契约总额重建瞬态属性，不在玩家存档留下独立的永久扣血修饰符。 */
@@ -214,8 +214,7 @@ public final class PresenceArmorSkills {
                         target.addEffect(new MobEffectInstance(ModEffects.ARMOR_PIERCING_ENTRY, 200, 1));
                         target.addEffect(new MobEffectInstance(ModEffects.HEART_EATER_ENTRY, 200, 1));
                     }
-                    player.level().sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, player.level().getBlockState(player.blockPosition().below())),
-                            player.getX(), player.getY() + 0.1, player.getZ(), 35, 1.5, 0.1, 1.5, 0.08);
+                    PresenceArmorParticles.stomp(player);
                 }
             } else if (elapsed == 10) {
                 PresenceBlockProjectile projectile = new PresenceBlockProjectile(PresenceEntityTypes.PROJECTILE, player.level());
@@ -224,6 +223,7 @@ public final class PresenceArmorSkills {
                 Vec3 look = player.getLookAngle();
                 projectile.shoot(look.x, look.y, look.z, 2.0F, 0);
                 player.level().addFreshEntity(projectile);
+                PresenceArmorParticles.kick(player, projectile.position());
             }
             if (elapsed >= 20) {
                 runtime.actions.remove(player.getUUID());

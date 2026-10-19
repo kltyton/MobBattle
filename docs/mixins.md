@@ -33,6 +33,8 @@ Mixin 只用于公开事件、接口或 Access Widener 无法可靠完成的原�
 
 ## 注入与覆写
 
+`armor.ArmorModelVisibilityMixin` 在 PAL 第一人称护甲提交结束时恢复模型根节点的可见性。护甲模型会跨玩家和视角复用，原版姿势复位不恢复该标记；第一人称肢体配置和动画仍由 PAL 处理。
+
 `entity.player.ServerPlayerIceKnifeSwingMixin` 在原版 `ServerPlayer.swing` 重置攻击冷却前分发冰刀主手空挥；服务端校验实际物品与蓄力值，实体攻击和后续自定义左键包共用去重边界。该入口不更改原版挥手及冷却重置行为。
 
 `wither.WitherBossMixin` 仅在受伤路径跳过二阶段挡箭分支，并将二阶段弹射物伤害乘以 0.2；出生无敌、同阵营免疫、近战伤害和二阶段外观仍使用原版逻辑。

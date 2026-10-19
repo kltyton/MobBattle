@@ -21,19 +21,42 @@ public final class PresenceArmorHud {
                     if (client.player == null) return;
                     int state = ((PresenceArmorUser) client.player).mobBattle$getPresenceState();
                     if ((state & PresenceArmorUser.EQUIPPED) == 0) return;
-                    Component mode = Component.translatable((state & PresenceArmorUser.AGGRESSIVE) != 0
+                    boolean aggressive = (state & PresenceArmorUser.AGGRESSIVE) != 0;
+                    Component mode = Component.translatable(aggressive
                             ? "hud.mob_battle.presence_aggressive" : "hud.mob_battle.presence_neutral");
-                    var lines = new java.util.ArrayList<>(client.font.split(Component.translatable("hud.mob_battle.presence_mode", mode,
-                            state & PresenceArmorUser.AMMO_MASK), Math.max(1, graphics.guiWidth() - 12)));
-                    lines.addAll(client.font.split(Component.translatable("hud.mob_battle.presence_cooldown",
-                            ((state >>> PresenceArmorUser.COOLDOWN_SHIFT) + 19) / 20), Math.max(1, graphics.guiWidth() - 12)));
-                    int heartRows = Math.max(1, (int) Math.ceil((client.player.getMaxHealth() + client.player.getAbsorptionAmount()) / 20.0));
-                    int heartHeight = 39 + (heartRows - 1) * Math.max(3, 12 - heartRows);
-                    int y = Math.max(6, graphics.guiHeight() - heartHeight - lines.size() * client.font.lineHeight - 6);
-                    for (var line : lines) {
-                        graphics.text(client.font, line, 6, y, 0xFFFFFFFF, true);
-                        y += client.font.lineHeight;
+                    Component title = Component.translatable("hud.mob_battle.presence_title");
+                    Component controls = Component.translatable("hud.mob_battle.presence_controls");
+                    int width = Math.min(graphics.guiWidth() - 16, Math.max(152,
+                            Math.max(client.font.width(controls) + 16, client.font.width(title) + client.font.width(mode) + 28)));
+                    int height = 61;
+                    int x = 8;
+                    // 固定依附屏幕底边；仅在窄窗口与快捷栏相交时上移一行，不依赖最大生命。
+                    int bottom = (graphics.guiWidth() - 182) / 2 < x + width + 6 ? 32 : 8;
+                    int y = Math.max(4, graphics.guiHeight() - bottom - height);
+                    int accent = aggressive ? 0xFFFFAB72 : 0xFF81D8DE;
+                    graphics.fill(x, y, x + width, y + height, 0xC9171924);
+                    graphics.fill(x, y, x + 2, y + height, 0xFFAF98F5);
+                    graphics.text(client.font, title, x + 8, y + 6, 0xFFF2ECFF, false);
+                    int modeX = x + width - client.font.width(mode) - 8;
+                    graphics.text(client.font, mode, modeX, y + 6, accent, false);
+                    int remaining = state >>> PresenceArmorUser.COOLDOWN_SHIFT;
+                    Component cooldown = remaining == 0 ? Component.translatable("hud.mob_battle.presence_ready")
+                            : Component.literal(((remaining + 19) / 20) + "s");
+                    graphics.text(client.font, Component.translatable("hud.mob_battle.presence_stomp"), x + 8, y + 21, 0xFFD3CCD9, false);
+                    graphics.text(client.font, cooldown, x + width - client.font.width(cooldown) - 8, y + 21,
+                            remaining == 0 ? 0xFF9BE1B4 : 0xFFBBA7F2, false);
+                    graphics.fill(x + 8, y + 32, x + width - 8, y + 34, 0xFF3B3548);
+                    int progress = Math.round((width - 16) * (1 - Math.min(1100, remaining) / 1100.0F));
+                    graphics.fill(x + 8, y + 32, x + 8 + progress, y + 34, 0xFFBBA7F2);
+                    graphics.text(client.font, Component.translatable("hud.mob_battle.presence_kick"), x + 8, y + 38, 0xFFD3CCD9, false);
+                    for (int i = 0; i < 5; i++) {
+                        int slotX = x + width - 61 + i * 11;
+                        graphics.fill(slotX, y + 39, slotX + 8, y + 46, 0xFF4B4558);
+                        if (i < (state & PresenceArmorUser.AMMO_MASK)) {
+                            graphics.fill(slotX + 1, y + 40, slotX + 7, y + 45, 0xFFD5C6FF);
+                        }
                     }
+                    graphics.text(client.font, controls, x + 8, y + 50, 0xFF9994A5, false);
                 });
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (client.player != null && ((((PresenceArmorUser) client.player).mobBattle$getPresenceState() & PresenceArmorUser.STOMPING) != 0)) {

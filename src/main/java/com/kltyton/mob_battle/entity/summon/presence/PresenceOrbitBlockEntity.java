@@ -5,6 +5,7 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityReference;
@@ -15,6 +16,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.phys.Vec3;
 import java.util.Optional;
 
 /** 五个弹药槽的可见环绕方块；数量由服务器套装状态控制，不保存重复的实体副本。 */
@@ -53,9 +55,21 @@ public final class PresenceOrbitBlockEntity extends Entity implements BlockAppea
             discard();
             return;
         }
-        double angle = level().getGameTime() * 0.065 + entityData.get(SLOT) * Math.PI * 2 / 5;
-        setPos(owner.getX() + Math.cos(angle) * 1.7, owner.getY() + 1.0 + Math.sin(angle * 2) * 0.12,
-                owner.getZ() + Math.sin(angle) * 1.7);
+        setPos(orbitPosition(owner.position(), level().getGameTime()));
+    }
+
+    /** 以主人的原版帧插值位置计算环绕轨迹，避免跟随点被网络位置包和 tick 更新交替拉动。 */
+    public Vec3 renderPosition(float partialTick) {
+        LivingEntity owner = entityData.get(OWNER).map(ref -> ref.getEntity(level(), LivingEntity.class)).orElse(null);
+        if (owner == null) return getPosition(partialTick);
+        Vec3 center = new Vec3(Mth.lerp(partialTick, owner.xOld, owner.getX()),
+                Mth.lerp(partialTick, owner.yOld, owner.getY()), Mth.lerp(partialTick, owner.zOld, owner.getZ()));
+        return orbitPosition(center, level().getGameTime() - 1 + partialTick);
+    }
+
+    private Vec3 orbitPosition(Vec3 center, double time) {
+        double angle = time * 0.065 + entityData.get(SLOT) * Math.PI * 2 / 5;
+        return center.add(Math.cos(angle) * 1.7, 1.0 + Math.sin(angle * 2) * 0.12, Math.sin(angle) * 1.7);
     }
 
     @Override public BlockState visualBlockState() { return Blocks.GRAY_CONCRETE.defaultBlockState(); }

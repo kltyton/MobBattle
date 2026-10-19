@@ -2,6 +2,8 @@ package com.kltyton.mob_battle.entity.summon.presence;
 
 import com.kltyton.mob_battle.entity.support.EntityQueries;
 import com.kltyton.mob_battle.items.armor.presence.PresenceArmorSkills;
+import com.kltyton.mob_battle.items.armor.presence.PresenceArmorParticles;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -36,6 +38,13 @@ public final class PresenceBlockProjectile extends ThrowableProjectile implement
     @Override
     public void tick() {
         super.tick();
+        if (level().isClientSide() && !isRemoved()) {
+            // 飞行拖尾由客户端生成，避免为每一帧额外发送粒子网络包。
+            level().addParticle(ParticleTypes.END_ROD, getX(), getY() + 0.2, getZ(), 0, 0, 0);
+            if ((tickCount & 1) == 0) {
+                level().addParticle(ParticleTypes.REVERSE_PORTAL, getX(), getY() + 0.2, getZ(), 0, 0, 0);
+            }
+        }
         if (!level().isClientSide() && tickCount > 200) discard();
     }
 
@@ -62,6 +71,7 @@ public final class PresenceBlockProjectile extends ThrowableProjectile implement
                     return 150.0F * exposure;
                 }
             }, getX(), getY(), getZ(), 1.0F, false, Level.ExplosionInteraction.MOB);
+            PresenceArmorParticles.impact(world, position());
             discard();
         }
     }
