@@ -27,6 +27,7 @@ import net.minecraft.world.phys.Vec3;
 public class Xbot002Entity extends RequestedTaskLittlePersonEntity {
     private boolean deathBlastDone;
     private static final double ATTACK_2_SLAM_RADIUS = 4.0D;
+    private int attack2RepeatTicks;
 
     public Xbot002Entity(EntityType<? extends Monster> entityType, Level world) {
         super(entityType, world, 3);
@@ -66,7 +67,11 @@ public class Xbot002Entity extends RequestedTaskLittlePersonEntity {
     @Override
     protected void runSkill(int attack, int phase) {
         switch (attack) {
-            case 2 -> runAttack2(phase);
+            case 2 -> {
+                runAttack2(phase);
+                // 两个 runAttack2_1 相隔 0.625 秒；服务端续发第二击，保持网络重复请求只消费一次。
+                attack2RepeatTicks = phase == 1 ? 13 : 0;
+            }
             case 3 -> {
                 damageTarget(100.0F, 0.0F);
                 knockTargetLikeIronGolem(1.4D);
@@ -78,6 +83,22 @@ public class Xbot002Entity extends RequestedTaskLittlePersonEntity {
             }
             default -> {
             }
+        }
+    }
+
+    /** 技能结束或重新开始时丢弃上一轮连击，避免中断后的延迟伤害。 */
+    @Override
+    public void setHasSkill(boolean hasSkill) {
+        super.setHasSkill(hasSkill);
+        attack2RepeatTicks = 0;
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
+        if (!this.level().isClientSide() && this.isAlive() && this.hasSkill()
+                && attack2RepeatTicks > 0 && --attack2RepeatTicks == 0) {
+            runAttack2(1);
         }
     }
 

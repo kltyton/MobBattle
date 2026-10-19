@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:smithing_transform",
+  "addition": "minecraft:gray_concrete",
+  "base": "mob_battle:compressed_netherite_chestplate",
+  "result": {
+    "id": "mob_battle:presence_chestplate"
+  },
+  "template": "mob_battle:advanced_smithing_template"
+}

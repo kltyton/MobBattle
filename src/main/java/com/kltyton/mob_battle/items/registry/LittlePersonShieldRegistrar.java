@@ -25,7 +25,7 @@ import net.minecraft.world.item.component.ItemAttributeModifiers;
  * 再按需要把 {@link #LITTLE_PERSON_SHIELD} 接入旧字段或物品组。</p>
  */
 public final class LittlePersonShieldRegistrar {
-    /** 稳定公开注册字段，供主入口和专用测试使用。 */
+    /** 稳定公开注册字段，供主入口使用。 */
     public static LittlePersonShieldItem LITTLE_PERSON_SHIELD;
 
     private LittlePersonShieldRegistrar() {

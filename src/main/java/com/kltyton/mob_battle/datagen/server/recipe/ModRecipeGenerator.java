@@ -325,6 +325,35 @@ public class ModRecipeGenerator extends FabricRecipeProvider {
                 offerCompressedNetheriteUpgrade(output, ModItems.ADVANCED_SMITHING_TEMPLATE, ModItems.COMPRESSED_DIAMOND_LEGGINGS, ModItems.COMPRESSED_NETHERITE_LEGGINGS);
                 offerCompressedNetheriteUpgrade(output, ModItems.ADVANCED_SMITHING_TEMPLATE, ModItems.COMPRESSED_DIAMOND_BOOTS, ModItems.COMPRESSED_NETHERITE_BOOTS);
                 offerCompressedNetheriteUpgrade(output, Items.NETHERITE_UPGRADE_SMITHING_TEMPLATE, ModItems.COMPRESSED_DIAMOND_SWORD, ModItems.COMPRESSED_NETHERITE_SWORD);
+                for (var tool : com.kltyton.mob_battle.items.registry.CompressedToolItems.entries()) {
+                    if (tool.tier().equals("netherite")) {
+                        offerCompressedNetheriteUpgrade(output, Items.NETHERITE_UPGRADE_SMITHING_TEMPLATE,
+                                tool.axe() ? com.kltyton.mob_battle.items.registry.CompressedToolItems.DIAMOND_AXE
+                                        : com.kltyton.mob_battle.items.registry.CompressedToolItems.DIAMOND_PICKAXE, tool.item());
+                    } else {
+                        var recipe = MechanicalShapedRecipeJsonBuilder.create(itemLookup, RecipeCategory.TOOLS, tool.item());
+                        if (tool.axe()) recipe.pattern("xx").pattern("xs").pattern(" s");
+                        else recipe.pattern("xxx").pattern(" s ").pattern(" s ");
+                        recipe.input('x', tool.ingredient()).input('s', Items.STICK)
+                                .unlockedBy(getHasName(tool.ingredient()), has(tool.ingredient()))
+                                .save(output, "mob_battle:mechanical/" + BuiltInRegistries.ITEM.getKey(tool.item()).getPath());
+                    }
+                }
+                Item[] presenceArmor = {
+                        com.kltyton.mob_battle.items.registry.PresenceArmorItems.HELMET,
+                        com.kltyton.mob_battle.items.registry.PresenceArmorItems.CHESTPLATE,
+                        com.kltyton.mob_battle.items.registry.PresenceArmorItems.LEGGINGS,
+                        com.kltyton.mob_battle.items.registry.PresenceArmorItems.BOOTS
+                };
+                Item[] netheriteArmor = {ModItems.COMPRESSED_NETHERITE_HELMET, ModItems.COMPRESSED_NETHERITE_CHESTPLATE,
+                        ModItems.COMPRESSED_NETHERITE_LEGGINGS, ModItems.COMPRESSED_NETHERITE_BOOTS};
+                for (int slot = 0; slot < presenceArmor.length; slot++) {
+                    SmithingTransformRecipeBuilder.smithing(Ingredient.of(ModItems.ADVANCED_SMITHING_TEMPLATE),
+                                    Ingredient.of(netheriteArmor[slot]), Ingredient.of(Items.GRAY_CONCRETE),
+                                    RecipeCategory.COMBAT, presenceArmor[slot])
+                            .unlocks(getHasName(netheriteArmor[slot]), has(netheriteArmor[slot]))
+                            .save(output, "mob_battle:presence_upgrade_" + BuiltInRegistries.ITEM.getKey(presenceArmor[slot]).getPath());
+                }
 
                 nineBlockStorageRecipes(
                         RecipeCategory.MISC,

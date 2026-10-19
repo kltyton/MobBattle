@@ -19,7 +19,7 @@ import net.minecraft.world.item.component.Weapon;
  * 可调用 {@link #init()}，再由自己的集成层把 {@link #LITTLE_PERSON_HAMMER} 接入人锤实体掉落。</p>
  */
 public final class LittlePersonHammerRegistrar {
-    /** 供主入口和专用 GameTest 使用的稳定公开注册字段。 */
+    /** 供主入口使用的稳定公开注册字段。 */
     public static LittlePersonHammerItem LITTLE_PERSON_HAMMER;
 
     private LittlePersonHammerRegistrar() {

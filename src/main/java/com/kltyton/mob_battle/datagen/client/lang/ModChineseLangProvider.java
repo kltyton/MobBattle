@@ -18,6 +18,7 @@ public class ModChineseLangProvider extends FabricLanguageProvider {
 
     @Override
     public void generateTranslations(HolderLookup.Provider registryLookup, TranslationBuilder translationBuilder) {
+        com.kltyton.mob_battle.datagen.client.lang.equipment.EquipmentTranslations.add(translationBuilder, true);
         com.kltyton.mob_battle.datagen.client.lang.littleperson.ZombieLittlePersonTranslations.add(translationBuilder, true);
         translationBuilder.add("message.mob_battle.gold_bullet_mode", "金套弹种：%s");
         translationBuilder.add("message.mob_battle.missing_projectile_item", "缺少发射物品：%s");
@@ -28,6 +29,9 @@ public class ModChineseLangProvider extends FabricLanguageProvider {
         translationBuilder.add("itemGroup.mob_battle.off", "Mob Battle 废案");
         translationBuilder.add("itemGroup.mob_battle.main", "怪物大乱斗");
         translationBuilder.add("enchantment.mob_battle.magic_protection", "魔法保护");
+        translationBuilder.add("enchantment.mob_battle.falling_thunder", "陨雷");
+        translationBuilder.add("death.attack.mob_battle.falling_thunder", "%1$s 被 %2$s 的陨雷击中");
+        translationBuilder.add("death.attack.mob_battle.falling_thunder.item", "%1$s 被 %2$s 使用 %3$s 引发的陨雷击中");
         // 键位分类由 KeyMapping.Category 以 id.toLanguageKey("key.category") 生成
         // KeyMapping.Category 的实际消费者只读取规范键；早期错误键没有消费者，
         // 因此不作为兼容键继续生成。

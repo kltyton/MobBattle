@@ -3996,19 +3996,19 @@
 			},
 			"particle_effects": {
 				"0.8750": {
-					"effect": "mob_battle:laser",
+					"effect": "mob_battle:diamond_giant_laser",
 					"locator": "locator4"
 				},
 				"0.8751": {
-					"effect": "mob_battle:laser",
+					"effect": "mob_battle:diamond_giant_laser",
 					"locator": "locator3"
 				},
 				"0.8752": {
-					"effect": "mob_battle:laser",
+					"effect": "mob_battle:diamond_giant_laser",
 					"locator": "locator2"
 				},
 				"0.8753": {
-					"effect": "mob_battle:laser",
+					"effect": "mob_battle:diamond_giant_laser",
 					"locator": "locator"
 				}
 			},

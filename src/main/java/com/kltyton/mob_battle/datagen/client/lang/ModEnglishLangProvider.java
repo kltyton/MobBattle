@@ -19,11 +19,15 @@ public class ModEnglishLangProvider extends FabricLanguageProvider {
 
     @Override
     public void generateTranslations(HolderLookup.Provider registryLookup, TranslationBuilder translationBuilder) {
+        com.kltyton.mob_battle.datagen.client.lang.equipment.EquipmentTranslations.add(translationBuilder, false);
         com.kltyton.mob_battle.datagen.client.lang.littleperson.ZombieLittlePersonTranslations.add(translationBuilder, false);
         translationBuilder.add("gamerule.mob_battle.combat_log_system", "Combat Log System");
         translationBuilder.add("itemGroup.mob_battle.off", "Mob Battle obsolete");
         translationBuilder.add("itemGroup.mob_battle.main", "Mob Battle");
         translationBuilder.add("enchantment.mob_battle.magic_protection", "Magic Protection");
+        translationBuilder.add("enchantment.mob_battle.falling_thunder", "Falling Thunder");
+        translationBuilder.add("death.attack.mob_battle.falling_thunder", "%1$s was struck by %2$s's falling thunder");
+        translationBuilder.add("death.attack.mob_battle.falling_thunder.item", "%1$s was struck by %2$s's falling thunder using %3$s");
         // 键位分类由 KeyMapping.Category 以 id.toLanguageKey("key.category") 生成
         // KeyMapping.Category 的实际消费者只读取规范键；早期错误键没有消费者，
         // 因此不作为兼容键继续生成。

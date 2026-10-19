@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "o": "minecraft:obsidian"
+  },
+  "pattern": [
+    "o o",
+    "ooo"
+  ],
+  "result": {
+    "id": "mob_battle:obsidian_boat"
+  }
+}

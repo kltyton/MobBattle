@@ -1,5 +1,9 @@
 {
   "values": [
+    "mob_battle:presence_helmet",
+    "mob_battle:presence_chestplate",
+    "mob_battle:presence_leggings",
+    "mob_battle:presence_boots",
     "mob_battle:compressed_copper_helmet",
     "mob_battle:compressed_copper_chestplate",
     "mob_battle:compressed_copper_leggings",

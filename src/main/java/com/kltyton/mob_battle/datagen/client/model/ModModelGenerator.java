@@ -99,6 +99,9 @@ public class ModModelGenerator extends FabricModelProvider {
         itemModelCollector.itemModelOutput.accept(ModBlocks.NEST_BLOCK.asItem(), ItemModelUtils.plainModel(Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "block/nest")));
         itemModelCollector.itemModelOutput.accept(ModBlocks.MUSHROOM_BLOCK.asItem(), ItemModelUtils.plainModel(Identifier.fromNamespaceAndPath(Mob_battle.MOD_ID, "block/mushroom")));
         itemModelCollector.generateFlatItem(ModItems.FINE_KNIFE, ModelTemplates.FLAT_HANDHELD_ITEM);
+        for (var tool : com.kltyton.mob_battle.items.registry.CompressedToolItems.entries()) {
+            itemModelCollector.generateFlatItem(tool.item(), ModelTemplates.FLAT_HANDHELD_ITEM);
+        }
 
         itemModelCollector.generateFlatItem(ModItems.EMERALD_DIAMOND_HELMET, ModelTemplates.FLAT_ITEM);
         itemModelCollector.generateFlatItem(ModItems.EMERALD_DIAMOND_CHESTPLATE, ModelTemplates.FLAT_ITEM);

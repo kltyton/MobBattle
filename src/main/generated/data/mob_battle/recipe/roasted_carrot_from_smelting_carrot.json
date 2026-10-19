@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:smelting",
+  "category": "food",
+  "cookingtime": 200,
+  "experience": 0.1,
+  "group": "food",
+  "ingredient": "minecraft:carrot",
+  "result": {
+    "id": "mob_battle:roasted_carrot"
+  }
+}

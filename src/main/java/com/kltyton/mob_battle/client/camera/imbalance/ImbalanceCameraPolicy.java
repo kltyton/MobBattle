@@ -3,7 +3,7 @@ package com.kltyton.mob_battle.client.camera.imbalance;
 /**
  * 失衡镜头的无副作用数值策略。
  *
- * <p>该类不引用 Minecraft 客户端类型，因此可由服务端 GameTest 验证；真正的随机数仍只在
+ * <p>该类不引用 Minecraft 客户端类型；真正的随机数只在
  * {@code ImbalanceCameraEffect} 的客户端 tick 中产生。</p>
  */
 public final class ImbalanceCameraPolicy {
@@ -17,7 +17,7 @@ public final class ImbalanceCameraPolicy {
     }
 
     /**
-     * 客户端镜头扰动的生命周期状态；不持有 Minecraft 对象，便于 GameTest 验证状态转换。
+     * 客户端镜头扰动的生命周期状态；不持有 Minecraft 对象。
      *
      * <p>原始 pitch 只在一次有效激活的首个 tick 捕获，失效时由调用方恢复后清空；yaw 偏移
      * 始终保存为有限值，避免异常输入污染下一次生命周期。</p>

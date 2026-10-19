@@ -38,7 +38,7 @@ public final class MoneyGunItem extends Item implements ModFabricItem {
     // Shoot2 的连续后坐关键帧约每 0.21-0.25 秒回到基准姿势，按 20 TPS 取 5 tick。
     private static final int SHOT_INTERVAL_TICKS = 5;
     private static final int SHOTGUN_COOLDOWN_TICKS = 20 * 20;
-    private static final int SHOTGUN_PROJECTILES = 10;
+    private static final int SHOTGUN_PROJECTILES = 18;
     private static final Set<Player> AUTOMATIC_PLAYERS = Collections.newSetFromMap(new WeakHashMap<>());
     private static final Set<Player> ANIMATING_PLAYERS = Collections.newSetFromMap(new WeakHashMap<>());
 
@@ -144,14 +144,14 @@ public final class MoneyGunItem extends Item implements ModFabricItem {
     }
 
     private static void fireShotgun(ServerLevel level, Player player, ItemStack stack) {
-        if (!consume(player, Items.EMERALD, 10)) {
+        if (!consume(player, Items.EMERALD, SHOTGUN_PROJECTILES)) {
             player.sendOverlayMessage(Component.translatable("message.mob_battle.money_gun_no_ammo"));
             return;
         }
         for (int i = 0; i < SHOTGUN_PROJECTILES; i++) {
-            float yawOffset = (i - (SHOTGUN_PROJECTILES - 1) / 2.0F) * 4.0F;
-            float pitchOffset = i % 2 == 0 ? -2.0F : 2.0F;
-            spawnProjectile(level, player, stack, new ItemStack(Items.EMERALD), 15.0F, true, 0.35F, pitchOffset, yawOffset);
+            float yawOffset = (i - (SHOTGUN_PROJECTILES - 1) / 2.0F) * 1.5F;
+            float pitchOffset = i % 2 == 0 ? -1.0F : 1.0F;
+            spawnProjectile(level, player, stack, new ItemStack(Items.EMERALD), 18.5F, true, 0.35F, pitchOffset, yawOffset);
         }
         player.getCooldowns().addCooldown(stack, SHOTGUN_COOLDOWN_TICKS);
         markFired(level, stack);

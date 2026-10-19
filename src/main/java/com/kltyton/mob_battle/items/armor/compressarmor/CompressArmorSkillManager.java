@@ -30,6 +30,10 @@ public final class CompressArmorSkillManager {
      * @param skillId 兼容协议中的技能编号：Z=0、X=1、C=2
      */
     public static void handleSkill(ServerPlayer player, int skillId) {
+        if (com.kltyton.mob_battle.items.armor.presence.PresenceArmorSkills.isEquipped(player)) {
+            com.kltyton.mob_battle.items.armor.presence.PresenceArmorSkills.handle(player, skillId);
+            return;
+        }
         if (ArmorSetRules.hasFullArmor(player, ModMaterial.ECREDCULTIST_INSTANCE)) {
             tickEcredcultistArmor(player);
             if (skillId == SKILL_C) EcredcultistArmorSkills.runEcredcultistFireball(player);

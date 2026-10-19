@@ -1,0 +1,16 @@
+{
+  "type": "mob_battle:mechanical_crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "s": "minecraft:stick",
+    "x": "mob_battle:compressed_copper_ingot"
+  },
+  "pattern": [
+    "xx",
+    "xs",
+    " s"
+  ],
+  "result": {
+    "id": "mob_battle:compressed_copper_axe"
+  }
+}

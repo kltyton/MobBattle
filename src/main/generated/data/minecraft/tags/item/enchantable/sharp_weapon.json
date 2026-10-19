@@ -1,5 +1,10 @@
 {
   "values": [
+    "mob_battle:compressed_copper_axe",
+    "mob_battle:compressed_iron_axe",
+    "mob_battle:compressed_gold_axe",
+    "mob_battle:compressed_diamond_axe",
+    "mob_battle:compressed_netherite_axe",
     "mob_battle:compressed_copper_sword",
     "mob_battle:compressed_iron_sword",
     "mob_battle:compressed_gold_sword",

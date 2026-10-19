@@ -1,0 +1,16 @@
+{
+  "type": "mob_battle:mechanical_crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "s": "minecraft:stick",
+    "x": "mob_battle:compressed_diamond"
+  },
+  "pattern": [
+    "xxx",
+    " s ",
+    " s "
+  ],
+  "result": {
+    "id": "mob_battle:compressed_diamond_pickaxe"
+  }
+}

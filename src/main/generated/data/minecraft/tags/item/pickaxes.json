@@ -1,5 +1,10 @@
 {
   "values": [
+    "mob_battle:compressed_copper_pickaxe",
+    "mob_battle:compressed_iron_pickaxe",
+    "mob_battle:compressed_gold_pickaxe",
+    "mob_battle:compressed_diamond_pickaxe",
+    "mob_battle:compressed_netherite_pickaxe",
     "mob_battle:little_person_tool"
   ]
 }

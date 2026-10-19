@@ -100,7 +100,7 @@ public final class GeneralRequestReceivers {
     /**
      * 只对当前服务器注册表中存在的附魔执行写入；客户端伪造的未知键直接拒绝。
      *
-     * <p>返回值供 GameTest 锁定“未知键无异常且不修改物品”的边界行为。
+     * <p>返回值表示是否接受写入；未知键不抛出异常，也不修改物品。
      */
     static boolean tryAddEnchantment(
             ServerPlayer player,

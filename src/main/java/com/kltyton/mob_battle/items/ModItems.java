@@ -274,7 +274,9 @@ public class ModItems {
         SnackItemRegistrar.init();
         HeartStoneItemRegistrar.init();
         ArmorItemRegistrar.init();
+        com.kltyton.mob_battle.items.registry.PresenceArmorItems.init();
         WeaponItemRegistrar.init();
+        com.kltyton.mob_battle.items.registry.CompressedToolItems.init();
         LittlePersonShieldRegistrar.init();
         BiochemicalBladeRegistrar.init();
         VehicleItemRegistrar.init();

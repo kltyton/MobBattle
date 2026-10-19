@@ -3,8 +3,8 @@ package com.kltyton.mob_battle.client.hud.player;
 /**
  * 自定义玩家血条的纯几何布局策略。
  *
- * <p>该类只处理 GUI logical units，不引用客户端对象，因此可以由独立
- * GameTest 验证。中央纹理装饰固定在血条局部 x=104..121，所有文字区域
+ * <p>该类只处理 GUI logical units，不引用客户端对象。
+ * 中央纹理装饰固定在血条局部 x=104..121，所有文字区域
  * 在此保护区两侧独立居中，避免长文本覆盖头像框。</p>
  */
 public final class CustomHealthBarLayout {

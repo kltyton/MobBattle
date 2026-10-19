@@ -288,6 +288,8 @@ public class ModItemGroups {
                 ModItems.COMPRESSED_NETHERITE_LEGGINGS,
                 ModItems.COMPRESSED_NETHERITE_BOOTS
         );
+        com.kltyton.mob_battle.items.registry.PresenceArmorItems.all().forEach(entries::accept);
+        com.kltyton.mob_battle.items.registry.CompressedToolItems.entries().forEach(tool -> entries.accept(tool.item()));
     }
 
     private static void addWeapons(CreativeModeTab.Output entries) {

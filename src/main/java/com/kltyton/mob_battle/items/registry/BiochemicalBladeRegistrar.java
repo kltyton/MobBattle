@@ -15,7 +15,7 @@ import net.minecraft.world.item.component.Weapon;
 
 /** 生化刃领域注册器；不修改共享物品门面。 */
 public final class BiochemicalBladeRegistrar {
-    /** 稳定公开注册字段，供主入口别名和专用测试使用。 */
+    /** 稳定公开注册字段，供主入口别名使用。 */
     public static BiochemicalBladeItem BIOCHEMICAL_BLADE;
 
     private BiochemicalBladeRegistrar() {

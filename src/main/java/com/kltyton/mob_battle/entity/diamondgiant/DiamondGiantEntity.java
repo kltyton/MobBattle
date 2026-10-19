@@ -174,7 +174,7 @@ public final class DiamondGiantEntity extends Monster implements SkillEntity, Ge
         this.entityData.set(HAS_SKILL, hasSkill);
     }
 
-    /** 返回服务端维护的 attack2 剩余冷却，供 GameTest 和诊断读取。 */
+    /** 返回服务端维护的 attack2 剩余冷却，供诊断读取。 */
     public int getAttack2Cooldown() {
         return this.attack2Cooldown;
     }
@@ -206,47 +206,6 @@ public final class DiamondGiantEntity extends Monster implements SkillEntity, Ge
     /** 返回当前服务端技能名称，空闲时为 {@code none}。 */
     public String getActiveSkillName() {
         return this.activeSkill.animationName;
-    }
-
-    /**
-     * GameTest 的精确普攻触发入口；包可见且不属于网络协议，生产网络无法调用该入口。
-     */
-    boolean triggerNormalAttackForGameTest() {
-        return startNormalAttack();
-    }
-
-    /** GameTest 专用：避免自动 attack2 抢占需要独立验证的普攻状态机。 */
-    void suppressAutomaticAttack2ForGameTest() {
-        this.attack2Cooldown = Integer.MAX_VALUE;
-    }
-
-    /** GameTest 专用：从服务端直接开始一次 attack2，验证其完整计时队列。 */
-    boolean triggerAttack2ForGameTest() {
-        if (!(this.level() instanceof ServerLevel) || this.hasSkill()) {
-            return false;
-        }
-        startAttack2();
-        return true;
-    }
-
-    /** GameTest 专用：直接开始 attack3，以锁定客户端视觉阶段的服务端时序。 */
-    boolean triggerAttack3ForGameTest() {
-        if (!(this.level() instanceof ServerLevel) || this.hasSkill() || this.getTarget() == null) {
-            return false;
-        }
-        startAttack3();
-        return true;
-    }
-
-    /** GameTest 专用：读取当前 attack2 动画的服务端 tick，不作为运行时协议。 */
-    int getAttack2SkillTicksForGameTest() {
-        return this.activeSkill == ActiveSkill.ATTACK_2 ? this.skillTicks : 0;
-    }
-
-    /** GameTest 专用：立即执行一次已锁定朝向的激光判定。 */
-    void fireLaserForGameTest() {
-        faceCurrentTarget();
-        fireLaser();
     }
 
     @Override
@@ -539,7 +498,7 @@ public final class DiamondGiantEntity extends Monster implements SkillEntity, Ge
                 .triggerableAnim("attack1_2", ATTACK_1_2_ANIMATION)
                 .triggerableAnim("attack2", ATTACK_2_ANIMATION)
                 .triggerableAnim("attack3", ATTACK_3_ANIMATION)
-                // ParticleStorm 1.4.0 自动消费 particle_effects；该 handler 保留兼容调用，
+                // ParticleStorm 1.4.3.1 自动消费 particle_effects；该 handler 保留兼容调用，
                 // 不在客户端执行任何伤害或 AI 状态变更。
                 .setParticleKeyframeHandler(s -> ParticleKeyframeHandler.handle(this, s))
                 .setCustomInstructionKeyframeHandler(s -> {

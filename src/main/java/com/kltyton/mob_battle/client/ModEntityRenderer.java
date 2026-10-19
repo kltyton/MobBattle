@@ -6,6 +6,7 @@ import com.kltyton.mob_battle.client.renderer.entity.villager.EvokerVillagerRend
 import com.kltyton.mob_battle.client.renderer.entity.villager.PiglinVillagerRenderer;
 import com.kltyton.mob_battle.client.renderer.entity.villager.WitherSkeletonVillagerRenderer;
 import com.kltyton.mob_battle.client.renderer.entity.vehicle.ObsidianBoatRenderer;
+import com.kltyton.mob_battle.client.renderer.entity.projectile.SwordEnergyRenderer;
 import com.kltyton.mob_battle.entity.blueirongolem.BlueIronGolemEntityRenderer;
 import com.kltyton.mob_battle.entity.bullet.BulletEntityRenderer;
 import com.kltyton.mob_battle.entity.bullet.GoldenBulletEntityRenderer;
@@ -79,6 +80,12 @@ import net.minecraft.world.entity.EntityType;
 
 public class ModEntityRenderer {
     public static void init() {
+        EntityRenderers.register(com.kltyton.mob_battle.entity.registry.PresenceEntityTypes.ORBIT,
+                com.kltyton.mob_battle.client.renderer.entity.summon.BlockBodyRenderer::new);
+        EntityRenderers.register(com.kltyton.mob_battle.entity.registry.PresenceEntityTypes.PROJECTILE,
+                com.kltyton.mob_battle.client.renderer.entity.summon.BlockBodyRenderer::new);
+        EntityRenderers.register(com.kltyton.mob_battle.entity.registry.PresenceEntityTypes.LIVING_BLOCK,
+                com.kltyton.mob_battle.client.renderer.entity.summon.BlockBodyRenderer::new);
 /*        LivingEntityFeatureRendererRegistrationCallback.EVENT.register((entityType, entityRenderer, registrationHelper, context) -> {
             @SuppressWarnings({"unchecked"})
             FeatureRendererContext<LivingEntityRenderState, EntityModel<LivingEntityRenderState>> featureContext = (FeatureRendererContext<LivingEntityRenderState, EntityModel<LivingEntityRenderState>>) entityRenderer;
@@ -178,9 +185,9 @@ public class ModEntityRenderer {
                 ctx -> new TexturedSkillProjectileRenderer(ctx, ModModel.SKELETON_HEAD_PROJECTILE,
                         TexturedSkillProjectileRenderer.texture("skeleton_head_projectile"), 1.0F, SkeletonHeadProjectileModel.class));
         EntityRenderers.register(ModEntities.LASER_MAN, LaserManEntityRenderer::new);
-        EntityRenderers.register(ModEntities.BLOOD_SWORD_ENERGY, ctx -> new GeneralEntityRenderer<>(ctx, "blood_sword_energy", false, GeneralEntityModel.RenderTypes.TRANSLUCENT));
+        EntityRenderers.register(ModEntities.BLOOD_SWORD_ENERGY, ctx -> new SwordEnergyRenderer<>(ctx, "blood_sword_energy"));
         EntityRenderers.register(ModEntities.NINJA_CLONE, ctx -> new GeneralEntityRenderer<>(ctx, "ninja_clone", false));
-        EntityRenderers.register(ModEntities.ICE_SWORD_ENERGY, ctx -> new GeneralEntityRenderer<>(ctx, "ice_sword_energy", false, GeneralEntityModel.RenderTypes.TRANSLUCENT));
+        EntityRenderers.register(ModEntities.ICE_SWORD_ENERGY, ctx -> new SwordEnergyRenderer<>(ctx, "ice_sword_energy"));
         EntityRenderers.register(ModEntities.ICE_BOMB, ctx -> new GeneralEntityRenderer<>(ctx, "ice_bomb", false, GeneralEntityModel.RenderTypes.TRANSLUCENT));
         EntityRenderers.register(ModEntities.ICE_FANGS, ctx -> new GeneralEntityRenderer<>(ctx, "ice_fangs", false, GeneralEntityModel.RenderTypes.TRANSLUCENT));
 

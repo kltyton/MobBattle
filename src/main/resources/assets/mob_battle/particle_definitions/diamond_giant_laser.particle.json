@@ -1,0 +1,62 @@
+{
+	"format_version": "1.10.0",
+	"particle_effect": {
+		"description": {
+			"identifier": "mob_battle:diamond_giant_laser",
+			"basic_render_parameters": {
+				"material": "particles_add",
+				"texture": "mob_battle:laser"
+			}
+		},
+		"components": {
+			"minecraft:emitter_local_space": {
+				"position": true,
+				"rotation": true,
+				"velocity": true
+			},
+			"minecraft:emitter_rate_steady": {
+				"spawn_rate": 100,
+				"max_particles": 100
+			},
+			"minecraft:emitter_lifetime_once": {
+				"active_time": 0.8
+			},
+			"minecraft:emitter_shape_point": {
+				"direction": [0, "-v.scale", 240]
+			},
+			"minecraft:particle_initialization": {
+				"per_render_expression": "v.scale = 0.5 - math.pow(v.emitter_age/ v.emitter_lifetime, 2) * 0.5;"
+			},
+			"minecraft:particle_lifetime_expression": {
+				"max_lifetime": "v.emitter_lifetime - v.emitter_age"
+			},
+			"minecraft:particle_initial_spin": {
+				"rotation": 90
+			},
+			"minecraft:particle_initial_speed": "math.sqrt(240 * 240 + v.scale * v.scale)",
+			"minecraft:particle_motion_parametric": {
+				"relative_position": [0, 0, "- 4 - v.particle_age * 200"],
+				"direction": [0, 0, -0.1]
+			},
+			"minecraft:particle_appearance_billboard": {
+				"size": ["v.scale", 4],
+				"facing_camera_mode": "lookat_direction",
+				"uv": {
+					"texture_width": 16,
+					"texture_height": 16,
+					"uv": [0, 0],
+					"uv_size": [16, 16]
+				}
+			},
+			"minecraft:particle_appearance_tinting": {
+				"color": {
+					"interpolant": "v.emitter_age/ v.emitter_lifetime",
+					"gradient": {
+						"0.0": "#FF00CCFF",
+						"1.0": "#00FFFFFF"
+					}
+				}
+			}
+		}
+	}
+}

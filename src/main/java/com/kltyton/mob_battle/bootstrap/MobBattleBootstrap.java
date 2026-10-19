@@ -116,6 +116,7 @@ public final class MobBattleBootstrap {
         ModCommands.init();
         ModEvents.init();
         ModEntities.init();
+        com.kltyton.mob_battle.entity.registry.PresenceEntityTypes.init();
         ModBlocks.init();
         ModBlockEntities.init();
         ModAttributer.init();
@@ -159,6 +160,7 @@ public final class MobBattleBootstrap {
         // 压缩护甲静态玩家状态释放：只注册断线/停服事件，无注册表依赖，
         // 插入此处不影响任何既有初始化顺序。
         CompressArmorPlayerStateLifecycle.init();
+        com.kltyton.mob_battle.items.armor.presence.PresenceArmorSkills.init();
         ModScreenHandlers.init();
     }
 }

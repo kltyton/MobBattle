@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "mob_battle:block/target"
+    },
+    "facing=north": {
+      "model": "mob_battle:block/target",
+      "y": 270
+    },
+    "facing=south": {
+      "model": "mob_battle:block/target",
+      "y": 90
+    },
+    "facing=west": {
+      "model": "mob_battle:block/target",
+      "y": 180
+    }
+  }
+}

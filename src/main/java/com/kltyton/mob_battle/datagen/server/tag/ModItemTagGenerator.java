@@ -28,6 +28,21 @@ public class ModItemTagGenerator extends FabricTagsProvider.ItemTagsProvider {
 
     @Override
     protected void addTags(HolderLookup.Provider wrapperLookup) {
+        for (var tool : com.kltyton.mob_battle.items.registry.CompressedToolItems.entries()) {
+            valueLookupBuilder(tool.axe() ? ItemTags.AXES : ItemTags.PICKAXES).add(tool.item());
+            valueLookupBuilder(ItemTags.MINING_ENCHANTABLE).add(tool.item());
+            valueLookupBuilder(ItemTags.DURABILITY_ENCHANTABLE).add(tool.item());
+            if (tool.axe()) valueLookupBuilder(ItemTags.SHARP_WEAPON_ENCHANTABLE).add(tool.item());
+            if (!tool.axe()) valueLookupBuilder(tool.repairTag()).add(tool.ingredient());
+        }
+        valueLookupBuilder(ENCHANTABLE_HEAD_ARMOR).add(com.kltyton.mob_battle.items.registry.PresenceArmorItems.HELMET);
+        valueLookupBuilder(ENCHANTABLE_CHEST_ARMOR).add(com.kltyton.mob_battle.items.registry.PresenceArmorItems.CHESTPLATE);
+        valueLookupBuilder(ENCHANTABLE_LEG_ARMOR).add(com.kltyton.mob_battle.items.registry.PresenceArmorItems.LEGGINGS);
+        valueLookupBuilder(ENCHANTABLE_FOOT_ARMOR).add(com.kltyton.mob_battle.items.registry.PresenceArmorItems.BOOTS);
+        for (var armor : com.kltyton.mob_battle.items.registry.PresenceArmorItems.all()) {
+            valueLookupBuilder(ItemTags.TRIMMABLE_ARMOR).add(armor);
+            valueLookupBuilder(ItemTags.DURABILITY_ENCHANTABLE).add(armor);
+        }
         valueLookupBuilder(ItemTags.SWORDS).add(
                 ModItems.EMERALD_DIAMOND_SWORD,
                 ModItems.IRON_GOLD_SWORD,

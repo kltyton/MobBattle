@@ -5,7 +5,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
-import org.mesdag.particlestorm.PSGameClient;
+import org.mesdag.particlestorm.particle.MolangParticleEngine;
 import org.mesdag.particlestorm.particle.ParticleEmitter;
 
 public final class ParticleStormClientBridge {
@@ -21,7 +21,7 @@ public final class ParticleStormClientBridge {
                 return;
             }
 
-            Identifier resolvedParticleId = PSGameClient.LOADER.resolveParticleId(particleId);
+            Identifier resolvedParticleId = MolangParticleEngine.INSTANCE.resolveParticleId(particleId);
             if (resolvedParticleId == null) {
                 Mob_battle.LOGGER.warn("ParticleStorm 粒子不存在或未加载：{}", particleId);
                 return;
@@ -34,7 +34,7 @@ public final class ParticleStormClientBridge {
                     emitter.attachEntity(attached);
                 }
             }
-            PSGameClient.LOADER.addEmitter(emitter, false);
+            MolangParticleEngine.INSTANCE.addEmitter(emitter, false);
         } catch (LinkageError error) {
             logUnavailable("生成 ParticleStorm 发射器失败", error);
         } catch (RuntimeException exception) {

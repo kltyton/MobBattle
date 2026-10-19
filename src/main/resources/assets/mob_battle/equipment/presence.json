@@ -1,0 +1,6 @@
+{
+  "layers": {
+    "humanoid": [{ "texture": "mob_battle:presence" }],
+    "humanoid_leggings": [{ "texture": "mob_battle:presence" }]
+  }
+}

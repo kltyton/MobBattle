@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:entity",
+  "pools": [
+    {
+      "bonus_rolls": 0.0,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "mob_battle:biochemical_blade"
+        }
+      ],
+      "rolls": 1.0
+    }
+  ]
+}

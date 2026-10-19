@@ -172,6 +172,12 @@ public class ModKeyBinding {
                 }
             }
             if (((IPlayerEntityAccessor) client.player).isUsingGeckoLib()) {
+                if (com.kltyton.mob_battle.items.armor.support.ArmorSetRules.hasFullArmor(client.player,
+                        com.kltyton.mob_battle.items.registry.PresenceArmorItems.MATERIAL)) {
+                    while (keyCompressArmorSkill_Z.consumeClick()) ClientPlayNetworking.send(new CompressArmorSkillPayload(0));
+                    while (keyCompressArmorSkill_X.consumeClick()) ClientPlayNetworking.send(new CompressArmorSkillPayload(1));
+                    while (keyCompressArmorSkill_C.consumeClick()) ClientPlayNetworking.send(new CompressArmorSkillPayload(2));
+                }
                 while (keyPlayerRetreatStepRun.consumeClick()) {
                     if (((IPlayerSkillAccessor)client.player).mobBattle$canAttack("retreat_step")) {
                         PlayerEntitySkill.runRetreatStepSkill(client.player);

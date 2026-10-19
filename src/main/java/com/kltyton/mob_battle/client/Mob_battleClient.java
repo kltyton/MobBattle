@@ -25,6 +25,7 @@ public class Mob_battleClient implements ClientModInitializer {
         IceSoldierRendererRegistrar.init();
         ModEntityRenderer.init();
         ModKeyBinding.init();
+        com.kltyton.mob_battle.client.hud.player.PresenceArmorHud.init();
         ModArmorRenderer.init();
         ModBlocksClient.init();
         ModScreen.init();
